@@ -49,13 +49,17 @@
 
 #include "std_msgs/Float32.h"
 #include "std_msgs/Float64.h"
+#include "std_msgs/Int64.h"
 #include "std_msgs/Int32.h"
+#include "std_msgs/Int8.h"
 #include "std_msgs/Bool.h"
 #include "std_msgs/Char.h"
 
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/Float64MultiArray.h"
+#include "std_msgs/Int64MultiArray.h"
 #include "std_msgs/Int32MultiArray.h"
+#include "std_msgs/Int8MultiArray.h"
 
 
 namespace signal_logger_ros {
@@ -117,11 +121,17 @@ void LoggerRos::collectLoggerData() {
         } break;
 
         case(Short): {
-
+          std_msgs::Int8Ptr msg(new std_msgs::Int8);
+          int* var = boost::any_cast<int*>(elem.vectorPtr_);
+          msg->data = *var;
+          elem.pub_.publish(std_msgs::Int8ConstPtr(msg));
         } break;
 
         case(Long): {
-
+          std_msgs::Int64Ptr msg(new std_msgs::Int64);
+          int* var = boost::any_cast<int*>(elem.vectorPtr_);
+          msg->data = *var;
+          elem.pub_.publish(std_msgs::Int64ConstPtr(msg));
         } break;
 
         case(Char): {
@@ -319,11 +329,38 @@ void LoggerRos::addIntToLog(int* var, const std::string& name, const std::string
   }
 }
 
-void LoggerRos::addShortToLog(short* var,    const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 
-void LoggerRos::addLongToLog(long* var,      const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerRos::addShortToLog(short* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  const std::string& topicName = group + name;
+  std::vector<LoggerVarInfo>::iterator collectedIterator;
+  if (checkIfVarCollected(topicName, collectedIterator)) {
+    collectedIterator->vectorPtr_ = var;
+  } else {
+    LoggerVarInfo varInfo(topicName);
+    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int8>(topicName, 100);
+    varInfo.type_ = LoggerRos::VarType::Int;
+    varInfo.vectorPtr_ = var;
+    collectedVars_.push_back(varInfo);
+  }
+}
 
-void LoggerRos::addCharToLog(char* var,      const std::string& name, const std::string& group, const std::string& unit, bool update) {
+
+void LoggerRos::addLongToLog(long* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  const std::string& topicName = group + name;
+  std::vector<LoggerVarInfo>::iterator collectedIterator;
+  if (checkIfVarCollected(topicName, collectedIterator)) {
+    collectedIterator->vectorPtr_ = var;
+  } else {
+    LoggerVarInfo varInfo(topicName);
+    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int64>(topicName, 100);
+    varInfo.type_ = LoggerRos::VarType::Int;
+    varInfo.vectorPtr_ = var;
+    collectedVars_.push_back(varInfo);
+  }
+}
+
+
+void LoggerRos::addCharToLog(char* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
   const std::string& topicName = group + name;
   std::vector<LoggerVarInfo>::iterator collectedIterator;
   if (checkIfVarCollected(topicName, collectedIterator)) {
@@ -331,13 +368,13 @@ void LoggerRos::addCharToLog(char* var,      const std::string& name, const std:
   } else {
     LoggerVarInfo varInfo(topicName);
     varInfo.pub_ = nodeHandle_.advertise<std_msgs::Char>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::Bool;
+    varInfo.type_ = LoggerRos::VarType::Char;
     varInfo.vectorPtr_ = var;
     collectedVars_.push_back(varInfo);
   }
 }
 
-void LoggerRos::addBoolToLog(bool* var,      const std::string& name, const std::string& group, const std::string& unit, bool update) {
+void LoggerRos::addBoolToLog(bool* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
   const std::string& topicName = group + name;
   std::vector<LoggerVarInfo>::iterator collectedIterator;
   if (checkIfVarCollected(topicName, collectedIterator)) {
