@@ -47,19 +47,19 @@
 #include "geometry_msgs/WrenchStamped.h"
 
 
-#include "std_msgs/Float32.h"
-#include "std_msgs/Float64.h"
-#include "std_msgs/Int64.h"
-#include "std_msgs/Int32.h"
-#include "std_msgs/Int8.h"
-#include "std_msgs/Bool.h"
-#include "std_msgs/Char.h"
+#include <std_msgs/Float32.h>
+#include <std_msgs/Float64.h>
+#include <std_msgs/Int64.h>
+#include <std_msgs/Int32.h>
+#include <std_msgs/Int8.h>
+#include <std_msgs/Bool.h>
+#include <std_msgs/Char.h>
 
-#include "std_msgs/Float32MultiArray.h"
-#include "std_msgs/Float64MultiArray.h"
-#include "std_msgs/Int64MultiArray.h"
-#include "std_msgs/Int32MultiArray.h"
-#include "std_msgs/Int8MultiArray.h"
+#include <std_msgs/Float32MultiArray.h>
+#include <std_msgs/Float64MultiArray.h>
+#include <std_msgs/Int64MultiArray.h>
+#include <std_msgs/Int32MultiArray.h>
+#include <std_msgs/Int8MultiArray.h>
 
 
 namespace signal_logger_ros {
@@ -99,6 +99,9 @@ void LoggerRos::collectLoggerData() {
 
     if (elem.pub_.getNumSubscribers() > 0u) {
       switch (elem.type_) {
+        /**************
+         * Core types *
+         **************/
         case(Double): {
           std_msgs::Float64Ptr msg(new std_msgs::Float64);
           double* var = boost::any_cast<double*>(elem.vectorPtr_);
@@ -147,7 +150,27 @@ void LoggerRos::collectLoggerData() {
           msg->data = *var;
           elem.pub_.publish(std_msgs::BoolConstPtr(msg));
         } break;
+        /**************/
 
+        /****************
+         * Matrix types *
+         ****************/
+        case(MatrixDouble): {
+          std::cout << "adding double matrix" << std::endl;
+          std_msgs::Float64MultiArrayPtr msg(new std_msgs::Float64MultiArray);
+          const Eigen::MatrixXd& var = *boost::any_cast<Eigen::MatrixXd*>(elem.vectorPtr_);
+          for (int k=0; k<var.cols(); k++) {
+            for (int h=0; h<var.rows(); h++) {
+              msg->data.push_back((double)var(h,k));
+            }
+          }
+          elem.pub_.publish(std_msgs::Float64MultiArrayConstPtr(msg));
+        } break;
+        /****************/
+
+        /***************
+         * Kindr types *
+         ***************/
         case(KindrPositionType) : {
           geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
           const KindrPositionD* vec = boost::any_cast<const KindrPositionD*>(elem.vectorPtr_);
@@ -159,7 +182,14 @@ void LoggerRos::collectLoggerData() {
         } break;
 
         case(KindrRotationQuaternionType) : {
-
+          geometry_msgs::QuaternionStampedPtr msg(new geometry_msgs::QuaternionStamped);
+          const KindrRotationQuaternionD* vec = boost::any_cast<const KindrRotationQuaternionD*>(elem.vectorPtr_);
+          msg->header.stamp = stamp;
+          msg->quaternion.x = vec->x();
+          msg->quaternion.y = vec->y();
+          msg->quaternion.z = vec->z();
+          msg->quaternion.w = vec->w();
+          elem.pub_.publish(geometry_msgs::QuaternionStampedConstPtr(msg));
         } break;
 
         case(KindrEulerAnglesZyxType) : {
@@ -191,7 +221,13 @@ void LoggerRos::collectLoggerData() {
         } break;
 
         case(KindrRotationVectorType) : {
-
+          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
+          const KindrRotationVectorD* vec = boost::any_cast<const KindrRotationVectorD*>(elem.vectorPtr_);
+          msg->header.stamp = stamp;
+          msg->vector.x = vec->x();
+          msg->vector.y = vec->y();
+          msg->vector.z = vec->z();
+          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
         } break;
 
         case(KindrLinearVelocityType) : {
@@ -268,6 +304,7 @@ void LoggerRos::collectLoggerData() {
           msg->type = elem.kindrMsg_.type;
           elem.pub_.publish(kindr_msgs::VectorAtPositionConstPtr(msg));
         } break;
+        /***************/
 
         case(KindrTypeNone) : {
 
@@ -392,7 +429,20 @@ void LoggerRos::addBoolToLog(bool* var, const std::string& name, const std::stri
 /******************
  * Eigen wrappers *
  ******************/
-void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var,             const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  const std::string& topicName = group + name;
+  std::vector<LoggerVarInfo>::iterator collectedIterator;
+  if (checkIfVarCollected(topicName, collectedIterator)) {
+    collectedIterator->vectorPtr_ = &var;
+  } else {
+    LoggerVarInfo varInfo(topicName);
+    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Float64MultiArray>(topicName, 100);
+    varInfo.type_ = LoggerRos::VarType::MatrixDouble;
+    varInfo.vectorPtr_ = var;
+    collectedVars_.push_back(varInfo);
+  }
+}
+
 void LoggerRos::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var,              const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 void LoggerRos::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var,                const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 void LoggerRos::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>& var,         const std::string& name, const std::string& group, const std::string& unit, bool update) { }
@@ -421,7 +471,9 @@ void LoggerRos::addDoubleKindrPositionToLog(const KindrPositionD& position, cons
   addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrPositionType, &position);
 }
 
-void LoggerRos::addDoubleKindrRotationQuaternionToLog(const KindrRotationQuaternionD& rotation,  const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerRos::addDoubleKindrRotationQuaternionToLog(const KindrRotationQuaternionD& rotation,  const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrRotationQuaternionType, &rotation);
+}
 
 void LoggerRos::addDoubleKindrEulerAnglesZyxToLog(const KindrEulerAnglesZyxD& rotation, const std::string& name, const std::string& group, const std::string& unit, bool update) {
   addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrEulerAnglesZyxType, &rotation);
@@ -433,7 +485,10 @@ void LoggerRos::addDoubleKindrLocalAngularVelocityToLog(const KindrAngularVeloci
 
 void LoggerRos::addDoubleKindrAngleAxisToLog(const KindrAngleAxisD& angleAxis,                   const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 void LoggerRos::addDoubleKindrRotationMatrixToLog(const KindrRotationMatrixD& rotMat,            const std::string& name, const std::string& group, const std::string& unit, bool update) { }
-void LoggerRos::addDoubleKindrRotationVectorToLog(const KindrRotationVectorD& rotVec,            const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+
+void LoggerRos::addDoubleKindrRotationVectorToLog(const KindrRotationVectorD& rotVec, const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrRotationVectorType, &rotVec);
+}
 
 void LoggerRos::addDoubleKindrLinearVelocityToLog(const KindrLinearVelocityD& linVel, const std::string& name, const std::string& group, const std::string& unit, bool update) {
   addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrLinearVelocityType, &linVel);

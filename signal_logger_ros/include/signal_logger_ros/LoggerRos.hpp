@@ -77,6 +77,13 @@ class LoggerRos : public signal_logger::LoggerBase {
     KindrTorqueType = 23,
     KindrVectorType = 24,
     KindrVectorAtPositionType = 25,
+    MatrixDouble = 26,
+    MatrixFloat =27,
+    MatrixInt = 28,
+    MatrixShort = 29,
+    MatrixLong = 30,
+    MatrixChar = 31,
+    MatrixBool = 32,
     KindrTypeNone = -1
   };
 
