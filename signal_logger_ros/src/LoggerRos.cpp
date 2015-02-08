@@ -45,7 +45,7 @@
 #include "roco/log/log_messages.hpp"
 
 #include "geometry_msgs/WrenchStamped.h"
-
+#include "geometry_msgs/QuaternionStamped.h"
 
 #include <std_msgs/Float32.h>
 #include <std_msgs/Float64.h>

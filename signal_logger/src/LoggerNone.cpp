@@ -68,15 +68,15 @@ void LoggerNone::addBoolToLog(bool* var,      const std::string& name, const std
 /******************
  * Eigen wrappers *
  ******************/
-void LoggerNone::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var,              const std::string& name, const std::string& group, const std::string& unit, bool update ) { }
-void LoggerNone::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var,               const std::string& name, const std::string& group, const std::string& unit, bool update ) { }
-void LoggerNone::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var,                 const std::string& name, const std::string& group, const std::string& unit, bool update ) { }
-void LoggerNone::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>& var,          const std::string& name, const std::string& group, const std::string& unit, bool update ) { }
-void LoggerNone::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& var,           const std::string& name, const std::string& group, const std::string& unit, bool update ) { }
-void LoggerNone::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& var,           const std::string& name, const std::string& group, const std::string& unit, bool update ) { }
+void LoggerNone::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var,              const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerNone::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var,               const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerNone::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var,                 const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerNone::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>& var,          const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerNone::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& var,           const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerNone::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& var,           const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 void LoggerNone::addUnsignedCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXUc>& var,  const std::string& name, const std::string& group, const std::string& unit, bool update) { }
-void LoggerNone::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& var,           const std::string& name, const std::string& group, const std::string& unit, bool update ) { }
-void LoggerNone::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var,             const std::string& name, const std::string& group, const std::string& unit, bool update ) { }
+void LoggerNone::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& var,           const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerNone::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var,             const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 
 void LoggerNone::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var,              const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) { }
 void LoggerNone::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var,               const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) { }
