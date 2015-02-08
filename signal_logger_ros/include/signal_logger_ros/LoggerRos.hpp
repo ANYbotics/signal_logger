@@ -84,6 +84,7 @@ class LoggerRos : public signal_logger::LoggerBase {
     MatrixLong = 30,
     MatrixChar = 31,
     MatrixBool = 32,
+    EigenVector = 33,
     KindrTypeNone = -1
   };
 
@@ -102,7 +103,6 @@ class LoggerRos : public signal_logger::LoggerBase {
     kindr_msgs::VectorAtPosition kindrMsg_;
 
     boost::any vectorPtr_;
-//    std::shared_ptr<const KindrPositionD> positionPtr_;
     const KindrPositionD* positionPtr_ = nullptr;
 
     LoggerVarInfo() { }
@@ -211,7 +211,6 @@ class LoggerRos : public signal_logger::LoggerBase {
     std::vector<LoggerVarInfo>::iterator collectedIterator;
     if (checkIfVarCollected(topicName, collectedIterator)) {
       collectedIterator->vectorPtr_ = varRef;
-//      collectedIterator->positionPtr_.reset();
       collectedIterator->positionPtr_ = position;
     } else {
       LoggerVarInfo varInfo(topicName);
@@ -219,7 +218,6 @@ class LoggerRos : public signal_logger::LoggerBase {
       varInfo.type_ = LoggerRos::VarType::KindrVectorAtPositionType;
       varInfo.kindrMsg_ = kindrMsg;
       varInfo.vectorPtr_ = varRef;
-//      varInfo.positionPtr_.reset(position);
       varInfo.positionPtr_ = position;
       collectedVars_.push_back(varInfo);
     }

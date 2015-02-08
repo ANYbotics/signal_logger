@@ -156,15 +156,36 @@ void LoggerRos::collectLoggerData() {
          * Matrix types *
          ****************/
         case(MatrixDouble): {
-          std::cout << "adding double matrix" << std::endl;
           std_msgs::Float64MultiArrayPtr msg(new std_msgs::Float64MultiArray);
-          const Eigen::MatrixXd& var = *boost::any_cast<Eigen::MatrixXd*>(elem.vectorPtr_);
-          for (int k=0; k<var.cols(); k++) {
-            for (int h=0; h<var.rows(); h++) {
-              msg->data.push_back((double)var(h,k));
+          const Eigen::MatrixXd* var = boost::any_cast<Eigen::MatrixXd*>(elem.vectorPtr_);
+          for (int k=0; k<var->cols(); k++) {
+            for (int h=0; h<var->rows(); h++) {
+              msg->data.push_back((double)(*var)(h,k));
             }
           }
           elem.pub_.publish(std_msgs::Float64MultiArrayConstPtr(msg));
+        } break;
+
+        case(MatrixFloat): {
+          std_msgs::Float32MultiArrayPtr msg(new std_msgs::Float32MultiArray);
+          const Eigen::MatrixXd* var = boost::any_cast<Eigen::MatrixXd*>(elem.vectorPtr_);
+          for (int k=0; k<var->cols(); k++) {
+            for (int h=0; h<var->rows(); h++) {
+              msg->data.push_back((float)(*var)(h,k));
+            }
+          }
+          elem.pub_.publish(std_msgs::Float32MultiArrayConstPtr(msg));
+
+        } break;
+
+        case(EigenVector): {
+          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
+          const Eigen::Vector3d* var = boost::any_cast<Eigen::Vector3d*>(elem.vectorPtr_);
+          msg->header.stamp = stamp;
+          msg->vector.x = var->x();
+          msg->vector.y = var->y();
+          msg->vector.z = var->z();
+          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
         } break;
         /****************/
 
@@ -443,24 +464,149 @@ void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var
   }
 }
 
-void LoggerRos::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var,              const std::string& name, const std::string& group, const std::string& unit, bool update) { }
-void LoggerRos::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var,                const std::string& name, const std::string& group, const std::string& unit, bool update) { }
-void LoggerRos::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>& var,         const std::string& name, const std::string& group, const std::string& unit, bool update) { }
-void LoggerRos::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& var,          const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerRos::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  const std::string& topicName = group + name;
+  std::vector<LoggerVarInfo>::iterator collectedIterator;
+  if (checkIfVarCollected(topicName, collectedIterator)) {
+    collectedIterator->vectorPtr_ = &var;
+  } else {
+    LoggerVarInfo varInfo(topicName);
+    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Float32MultiArray>(topicName, 100);
+    varInfo.type_ = LoggerRos::VarType::MatrixFloat;
+    varInfo.vectorPtr_ = var;
+    collectedVars_.push_back(varInfo);
+  }
+}
+
+void LoggerRos::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var,                const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  const std::string& topicName = group + name;
+  std::vector<LoggerVarInfo>::iterator collectedIterator;
+  if (checkIfVarCollected(topicName, collectedIterator)) {
+    collectedIterator->vectorPtr_ = &var;
+  } else {
+    LoggerVarInfo varInfo(topicName);
+    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int32MultiArray>(topicName, 100);
+    varInfo.type_ = LoggerRos::VarType::MatrixInt;
+    varInfo.vectorPtr_ = var;
+    collectedVars_.push_back(varInfo);
+  }
+}
+
+void LoggerRos::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>& var,         const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  const std::string& topicName = group + name;
+  std::vector<LoggerVarInfo>::iterator collectedIterator;
+  if (checkIfVarCollected(topicName, collectedIterator)) {
+    collectedIterator->vectorPtr_ = &var;
+  } else {
+    LoggerVarInfo varInfo(topicName);
+    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int8MultiArray>(topicName, 100);
+    varInfo.type_ = LoggerRos::VarType::MatrixShort;
+    varInfo.vectorPtr_ = var;
+    collectedVars_.push_back(varInfo);
+  }
+}
+
+void LoggerRos::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& var,          const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  const std::string& topicName = group + name;
+  std::vector<LoggerVarInfo>::iterator collectedIterator;
+  if (checkIfVarCollected(topicName, collectedIterator)) {
+    collectedIterator->vectorPtr_ = &var;
+  } else {
+    LoggerVarInfo varInfo(topicName);
+    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int64MultiArray>(topicName, 100);
+    varInfo.type_ = LoggerRos::VarType::MatrixDouble;
+    varInfo.vectorPtr_ = var;
+    collectedVars_.push_back(varInfo);
+  }
+}
+
 void LoggerRos::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& var,          const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 void LoggerRos::addUnsignedCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXUc>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 void LoggerRos::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& var,          const std::string& name, const std::string& group, const std::string& unit, bool update) { }
-void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var,            const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 
-void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var,             const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) { }
-void LoggerRos::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var,              const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) { }
-void LoggerRos::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var,                const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) { }
-void LoggerRos::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>& var,         const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) { }
-void LoggerRos::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& var,          const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) { }
-void LoggerRos::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& var,          const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) { }
-void LoggerRos::addUnsignedCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXUc>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) { }
-void LoggerRos::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& var,          const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) { }
-void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var,            const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) { }
+void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  const std::string& topicName = group + name;
+  std::vector<LoggerVarInfo>::iterator collectedIterator;
+  if (checkIfVarCollected(topicName, collectedIterator)) {
+    collectedIterator->vectorPtr_ = &var;
+  } else {
+    LoggerVarInfo varInfo(topicName);
+    varInfo.pub_ = nodeHandle_.advertise<geometry_msgs::Vector3Stamped>(topicName, 100);
+    varInfo.type_ = LoggerRos::VarType::EigenVector;
+    varInfo.vectorPtr_ = var;
+    collectedVars_.push_back(varInfo);
+  }
+}
+
+void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
+  for (int r=0; r<var.rows(); r++)  {
+    for (int c=0; c<var.cols(); c++)  {
+      addDoubleToLog((double *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+    }
+  }
+}
+
+void LoggerRos::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
+  for (int r=0; r<var.rows(); r++)  {
+    for (int c=0; c<var.cols(); c++)  {
+      addFloatToLog((float *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+    }
+  }
+}
+
+void LoggerRos::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
+  for (int r=0; r<var.rows(); r++)  {
+    for (int c=0; c<var.cols(); c++)  {
+      addIntToLog((int *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+    }
+  }
+}
+
+void LoggerRos::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
+  for (int r=0; r<var.rows(); r++)  {
+    for (int c=0; c<var.cols(); c++)  {
+      addShortToLog((short *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+    }
+  }
+}
+
+void LoggerRos::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
+  for (int r=0; r<var.rows(); r++)  {
+    for (int c=0; c<var.cols(); c++)  {
+      addLongToLog((long *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+    }
+  }
+}
+
+void LoggerRos::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
+  for (int r=0; r<var.rows(); r++)  {
+    for (int c=0; c<var.cols(); c++)  {
+      addCharToLog((char *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+    }
+  }
+}
+
+void LoggerRos::addUnsignedCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXUc>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
+  for (int r=0; r<var.rows(); r++)  {
+    for (int c=0; c<var.cols(); c++)  {
+      addCharToLog((char *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+    }
+  }
+}
+
+void LoggerRos::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
+  for (int r=0; r<var.rows(); r++)  {
+    for (int c=0; c<var.cols(); c++)  {
+      addBoolToLog((bool *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+    }
+  }
+}
+
+void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
+  addDoubleToLog((double *)(&var(0)), static_cast<std::string>(names(0,0)), group, unit, update);
+  addDoubleToLog((double *)(&var(1)), static_cast<std::string>(names(1,0)), group, unit, update);
+  addDoubleToLog((double *)(&var(2)), static_cast<std::string>(names(2,0)), group, unit, update);
+}
 /******************/
 
 
