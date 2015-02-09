@@ -10,13 +10,13 @@ clc,  close all
 %% Configuration
 
 
-startNo = 102;       % number of first data file (filename will be generated based on this number
+startNo = 137;       % number of first data file (filename will be generated based on this number
 endNo = startNo;      % number of last data file
 
 folder = '';       % name of folder where the data files are stored
 
 tStart = 0;         % show only measurements of time range [tStart tEnd]
-tEnd = 130;
+tEnd = 60;
 
 
 % Plotting (1=activated 0=deactivated)
@@ -33,7 +33,7 @@ plotMotorVelocitiesMeasAnDes = 0;
 plotMotorPower = 0;
 plotMotorCurrent = 0;
 plotJointPower =0;
-
+plotOptoforces =1;
 plotMainbodyPositionFromMocap = 0;
 
 plotModes = 1;
@@ -46,6 +46,8 @@ if (plotLoco)
     plotLocoVMCandCFD = 1;
     plotLocoCFD = 1;
     plotLocoLegState = 1;
+    plotDesiredFootPositions = 1;
+    plotTerrain = 1;
 else
     
     plotLocoVMCandCFD = 0;
@@ -1856,7 +1858,7 @@ if (plotLocoVMCandCFD)
     
     subplot(4,1,1)
     hold on
-    plot(time, data(:,idx_rm_contacts_contactFlagLf)+data(:,idx_rm_contacts_contactFlagRf)+data(:,idx_rm_contacts_contactFlagLh)+data(:,idx_rm_contacts_contactFlagRf),'r');
+    plot(time, data(:,idx_rm_contacts_contactFlagLf)+data(:,idx_rm_contacts_contactFlagRf)+data(:,idx_rm_contacts_contactFlagLh)+data(:,idx_rm_contacts_contactFlagRh),'r');
     grid on
     xlabel('time [s]')
     ylabel('-')
@@ -2018,6 +2020,7 @@ if (plotLocoLegState)
     plot(time, data(:,idx_loco_leftForeLeg_shouldBeGrounded),'r');
     plot(time, data(:,idx_loco_leftForeLeg_isSupportLeg),'k--');
     plot(time, data(:,idx_loco_leftForeLeg_desControlMode_HAA)-2,'g:');
+    plot(time, data(:,idx_loco_leftForeLeg_currentState),'m-');
     grid on
     xlabel('time [s]')
     ylabel('LF')
@@ -2030,7 +2033,8 @@ if (plotLocoLegState)
     plot(time, data(:,idx_loco_rightForeLeg_isGrounded),'b');
     plot(time, data(:,idx_loco_rightForeLeg_shouldBeGrounded),'r');
     plot(time, data(:,idx_loco_rightForeLeg_isSupportLeg),'k--');
-    plot(time, data(:,idx_loco_leftForeLeg_desControlMode_HAA)-2,'g:');
+    plot(time, data(:,idx_loco_rightForeLeg_desControlMode_HAA)-2,'g:');
+    plot(time, data(:,idx_loco_rightForeLeg_currentState),'m-');
     grid on
     xlabel('time [s]')
     ylabel('RF')
@@ -2041,7 +2045,8 @@ if (plotLocoLegState)
     plot(time, data(:,idx_loco_leftHindLeg_isGrounded),'b');
     plot(time, data(:,idx_loco_leftHindLeg_shouldBeGrounded),'r');
     plot(time, data(:,idx_loco_leftHindLeg_isSupportLeg),'k--');
-    plot(time, data(:,idx_loco_leftForeLeg_desControlMode_HAA)-2,'g:');
+    plot(time, data(:,idx_loco_leftHindLeg_desControlMode_HAA)-2,'g:');
+    plot(time, data(:,idx_loco_leftHindLeg_currentState),'m-');
     grid on
     xlabel('time [s]')
     ylabel('LH') 
@@ -2051,9 +2056,323 @@ if (plotLocoLegState)
     plot(time, data(:,idx_loco_rightHindLeg_isGrounded),'b');
     plot(time, data(:,idx_loco_rightHindLeg_shouldBeGrounded),'r');
     plot(time, data(:,idx_loco_rightHindLeg_isSupportLeg),'k--');
-    plot(time, data(:,idx_loco_leftForeLeg_desControlMode_HAA)-2,'g:');
+    plot(time, data(:,idx_loco_rightHindLeg_desControlMode_HAA)-2,'g:');
+    plot(time, data(:,idx_loco_rightHindLeg_currentState),'m-');
     grid on
     xlabel('time [s]')
     ylabel('RH') 
     
 end
+
+
+%%
+if (plotOptoforces) 
+    contactForceThreshold = 3000;
+    named_figure('Contact forces from optoforce sensors'), clf
+    grid on
+    subplot(4,4,1)
+    hold on
+    plot(time, sqrt((data(:,idx_rm_sensors_contact_force_lf_foot_x).^2+data(:,idx_rm_sensors_contact_force_lf_foot_y).^2+data(:,idx_rm_sensors_contact_force_lf_foot_z).^2)),'r')
+    hline(contactForceThreshold,'-')
+    x = data(2:end,idx_rm_contacts_contactFlagLf);
+    y = data(1:end-1,idx_rm_contacts_contactFlagLf);
+    idx_contactSwitchLf = find((x(1:end)~=y(1:end)))+1;
+    if (~isempty(idx_contactSwitchLf))
+        vline(data(idx_contactSwitchLf),'k-')
+    end
+    xlim([tStart time(end)])
+    title('LF')
+    grid on
+    xlabel('time [s]')
+    ylabel('norm')  
+    subplot(4,4,5)
+    hold on
+    plot(time, data(:,idx_rm_sensors_contact_force_lf_foot_x),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('x')
+    subplot(4,4,9)
+    hold on
+    plot(time, data(:,idx_rm_sensors_contact_force_lf_foot_y),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('y')
+    subplot(4,4,13)
+    hold on
+    plot(time, data(:,idx_rm_sensors_contact_force_lf_foot_z),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('z')
+
+    
+    
+    subplot(4,4,2)
+    hold on
+    plot(time, sqrt((data(:,idx_rm_sensors_contact_force_rf_foot_x).^2+data(:,idx_rm_sensors_contact_force_rf_foot_y).^2+data(:,idx_rm_sensors_contact_force_rf_foot_z).^2)),'r')
+    hline(contactForceThreshold,'-')
+    x = data(2:end,idx_rm_contacts_contactFlagRf);
+    y = data(1:end-1,idx_rm_contacts_contactFlagRf);
+    idx_contactSwitchRf = find((x(1:end)~=y(1:end)))+1;
+    if (~isempty(idx_contactSwitchRf))
+        vline(data(idx_contactSwitchRf),'k-')
+    end
+    xlim([tStart time(end)])
+    title('RF')
+    grid on
+    xlabel('time [s]')
+    ylabel('norm')   
+    subplot(4,4,6)
+    hold on
+    plot(time, data(:,idx_rm_sensors_contact_force_rf_foot_x),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('x')
+    subplot(4,4,10)
+    hold on
+    plot(time, data(:,idx_rm_sensors_contact_force_rf_foot_y),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('y]')
+    subplot(4,4,14)
+    hold on
+    plot(time, data(:,idx_rm_sensors_contact_force_rf_foot_z),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('z')
+
+    subplot(4,4,3)
+    hold on
+    plot(time, sqrt((data(:,idx_rm_sensors_contact_force_lh_foot_x).^2+data(:,idx_rm_sensors_contact_force_lh_foot_y).^2+data(:,idx_rm_sensors_contact_force_lh_foot_z).^2)),'r')
+    hline(contactForceThreshold,'-')
+    x = data(2:end,idx_rm_contacts_contactFlagLh);
+    y = data(1:end-1,idx_rm_contacts_contactFlagLh);
+    idx_contactSwitchLh = find((x(1:end)~=y(1:end)))+1;
+    if (~isempty(idx_contactSwitchLh))
+        vline(data(idx_contactSwitchLh),'k-')
+    end
+    xlim([tStart time(end)])
+    title('LH')
+    grid on
+    xlabel('time [s]')
+    ylabel('norm')   
+    subplot(4,4,7)
+    hold on
+    plot(time, data(:,idx_rm_sensors_contact_force_lh_foot_x),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('x')
+    subplot(4,4,11)
+    hold on
+    plot(time, data(:,idx_rm_sensors_contact_force_lh_foot_y),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('y')
+    subplot(4,4,15)
+    hold on
+    plot(time, data(:,idx_rm_sensors_contact_force_lh_foot_z),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('z')
+
+    subplot(4,4,4)
+    hold on
+    plot(time, sqrt((data(:,idx_rm_sensors_contact_force_rh_foot_x).^2+data(:,idx_rm_sensors_contact_force_rh_foot_y).^2+data(:,idx_rm_sensors_contact_force_rh_foot_z).^2)),'r')
+    hline(contactForceThreshold,'-')
+    x = data(2:end,idx_rm_contacts_contactFlagRh);
+    y = data(1:end-1,idx_rm_contacts_contactFlagRh);
+    idx_contactSwitchRh = find((x(1:end)~=y(1:end)))+1;
+    if (~isempty(idx_contactSwitchRh))
+        vline(data(idx_contactSwitchRh),'k-')
+    end
+    xlim([tStart time(end)])
+    title('RH')
+    grid on
+    subplot(4,4,8)
+    hold on
+    plot(time, data(:,idx_rm_sensors_contact_force_rh_foot_x),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('x')
+    subplot(4,4,12)
+    hold on
+    plot(time, data(:,idx_rm_sensors_contact_force_rh_foot_y),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('y')
+    subplot(4,4,16)
+    hold on
+    plot(time, data(:,idx_rm_sensors_contact_force_rh_foot_z),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('z')
+end
+
+%%
+if (plotTerrain)
+    named_figure('Terrain position and normal vector'), clf;
+    
+    subplot(1,2,1);
+    title('Normal to plane in world frame');
+    hold on;
+    grid on;
+    plot(time, data(:,idx_loco_terrainModel_normalInWorldFrame_x),'r');
+    plot(time, data(:,idx_loco_terrainModel_normalInWorldFrame_y),'g');
+    plot(time, data(:,idx_loco_terrainModel_normalInWorldFrame_z),'b');
+    
+    subplot(1,2,2);
+    title('Plane position vector in world frame');
+    hold on;
+    grid on;
+    plot(time, data(:,idx_loco_terrainModel_positionInWorldFrame_x),'r');
+    plot(time, data(:,idx_loco_terrainModel_positionInWorldFrame_y),'g');
+    plot(time, data(:,idx_loco_terrainModel_positionInWorldFrame_z),'b');
+end
+
+
+%%
+if (plotDesiredFootPositions) 
+    contactForceThreshold = 3000;
+    named_figure('Desired foot positions'), clf
+    grid on
+    subplot(4,4,1)
+    hold on
+    x = data(2:end,idx_rm_contacts_contactFlagLf);
+    y = data(1:end-1,idx_rm_contacts_contactFlagLf);
+    idx_contactSwitchLf = find((x(1:end)~=y(1:end)))+1;
+    if (~isempty(idx_contactSwitchLf))
+        vline(data(idx_contactSwitchLf),'k-')
+    end
+    plot(time, data(:,idx_loco_leftForeLeg_currentState),'m-');
+    plot(time, data(:,idx_loco_leftForeLeg_isGrounded),'r');
+    plot(time, data(:,idx_rm_contacts_contactFlagLf), 'b');
+    
+    xlim([tStart time(end)])
+    title('LF')
+    grid on
+    xlabel('time [s]')
+    ylabel('norm')  
+    subplot(4,4,5)
+    hold on
+    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToDesiredFootInWorldFrame_x),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('x')
+    subplot(4,4,9)
+    hold on
+    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToDesiredFootInWorldFrame_y),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('y')
+    subplot(4,4,13)
+    hold on
+    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToDesiredFootInWorldFrame_z),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('z')
+
+    
+    
+    subplot(4,4,2)
+    hold on
+    x = data(2:end,idx_rm_contacts_contactFlagRf);
+    y = data(1:end-1,idx_rm_contacts_contactFlagRf);
+    idx_contactSwitchRf = find((x(1:end)~=y(1:end)))+1;
+    if (~isempty(idx_contactSwitchRf))
+        vline(data(idx_contactSwitchRf),'k-')
+    end
+    plot(time, data(:,idx_loco_rightForeLeg_currentState),'m-');
+    plot(time, data(:,idx_loco_rightForeLeg_isGrounded),'r');
+    plot(time, data(:,idx_rm_contacts_contactFlagRf), 'b');
+    xlim([tStart time(end)])
+    title('RF')
+    grid on
+    xlabel('time [s]')
+    ylabel('norm')   
+    subplot(4,4,6)
+    hold on
+    plot(time, data(:,idx_loco_rightForeLeg_positionWorldToDesiredFootInWorldFrame_x),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('x')
+    subplot(4,4,10)
+    hold on
+    plot(time, data(:,idx_loco_rightForeLeg_positionWorldToDesiredFootInWorldFrame_y),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('y]')
+    subplot(4,4,14)
+    hold on
+    plot(time, data(:,idx_loco_rightForeLeg_positionWorldToDesiredFootInWorldFrame_z),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('z')
+
+    subplot(4,4,3)
+    hold on
+    x = data(2:end,idx_rm_contacts_contactFlagLh);
+    y = data(1:end-1,idx_rm_contacts_contactFlagLh);
+    idx_contactSwitchLh = find((x(1:end)~=y(1:end)))+1;
+    if (~isempty(idx_contactSwitchLh))
+        vline(data(idx_contactSwitchLh),'k-')
+    end
+    plot(time, data(:,idx_loco_leftHindLeg_currentState),'m-');
+    plot(time, data(:,idx_loco_leftHindLeg_isGrounded),'r');
+    plot(time, data(:,idx_rm_contacts_contactFlagLh), 'b');
+    xlim([tStart time(end)])
+    title('LH')
+    grid on
+    xlabel('time [s]')
+    ylabel('norm')   
+    subplot(4,4,7)
+    hold on
+    plot(time, data(:,idx_loco_leftHindLeg_positionWorldToDesiredFootInWorldFrame_x),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('x')
+    subplot(4,4,11)
+    hold on
+    plot(time, data(:,idx_loco_leftHindLeg_positionWorldToDesiredFootInWorldFrame_y),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('y')
+    subplot(4,4,15)
+    hold on
+    plot(time, data(:,idx_loco_leftHindLeg_positionWorldToDesiredFootInWorldFrame_z),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('z')
+
+    subplot(4,4,4)
+    hold on
+    x = data(2:end,idx_rm_contacts_contactFlagRh);
+    y = data(1:end-1,idx_rm_contacts_contactFlagRh);
+    idx_contactSwitchRh = find((x(1:end)~=y(1:end)))+1;
+    if (~isempty(idx_contactSwitchRh))
+        vline(data(idx_contactSwitchRh),'k-')
+    end
+    plot(time, data(:,idx_loco_rightHindLeg_currentState),'m-');
+    plot(time, data(:,idx_loco_rightHindLeg_isGrounded),'r');
+    plot(time, data(:,idx_rm_contacts_contactFlagRh), 'b');
+    xlim([tStart time(end)])
+    title('RH')
+    grid on
+    subplot(4,4,8)
+    hold on
+    plot(time, data(:,idx_loco_rightHindLeg_positionWorldToDesiredFootInWorldFrame_x),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('x')
+    subplot(4,4,12)
+    hold on
+    plot(time, data(:,idx_loco_rightHindLeg_positionWorldToDesiredFootInWorldFrame_y),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('y')
+    subplot(4,4,16)
+    hold on
+    plot(time, data(:,idx_loco_rightHindLeg_positionWorldToDesiredFootInWorldFrame_z),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('z')
+end
+
