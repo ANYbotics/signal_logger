@@ -83,6 +83,7 @@ class LoggerRos : public signal_logger::LoggerBase {
     MatrixShort = 29,
     MatrixLong = 30,
     MatrixChar = 31,
+    MatrixUnsignedChar = 34,
     MatrixBool = 32,
     EigenVector = 33,
     KindrTypeNone = -1

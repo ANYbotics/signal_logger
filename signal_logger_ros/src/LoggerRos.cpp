@@ -178,6 +178,30 @@ void LoggerRos::collectLoggerData() {
 
         } break;
 
+        case(MatrixInt): {
+        // todo
+        } break;
+
+        case(MatrixShort): {
+        // todo
+        } break;
+
+        case(MatrixLong): {
+        // todo
+        } break;
+
+        case(MatrixChar): {
+          // todo
+        } break;
+
+        case(MatrixUnsignedChar): {
+           // todo
+        } break;
+
+        case(MatrixBool): {
+          // todo
+        } break;
+
         case(EigenVector): {
           geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
           const Eigen::Ref<Eigen::Vector3d>& var = boost::any_cast<const Eigen::Ref<Eigen::Vector3d>&>(elem.vectorPtr_);
@@ -234,11 +258,11 @@ void LoggerRos::collectLoggerData() {
         } break;
 
         case(KindrAngleAxis) : {
-
+        // todo
         } break;
 
         case(KindrRotationMatrixType) : {
-
+        // todo
         } break;
 
         case(KindrRotationVectorType) : {
@@ -520,9 +544,17 @@ void LoggerRos::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& 
   }
 }
 
-void LoggerRos::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& var,          const std::string& name, const std::string& group, const std::string& unit, bool update) { }
-void LoggerRos::addUnsignedCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXUc>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) { }
-void LoggerRos::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& var,          const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerRos::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  // todo: define appropriate ros msg
+}
+
+void LoggerRos::addUnsignedCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXUc>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  // todo: define appropriate ros msg
+}
+
+void LoggerRos::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  // todo: define appropriate ros msg
+}
 
 void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
   const std::string& topicName = group + name;
