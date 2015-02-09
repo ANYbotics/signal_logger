@@ -34,7 +34,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "robotUtils/loggers/LoggerSl.hpp"
+#include "signal_logger_sl/LoggerSl.hpp"
 
 /***************
  * SL includes *
@@ -45,7 +45,7 @@
 #include "SL_oscilloscope.h"
 /***************/
 
-namespace robotUtils {
+namespace signal_logger_sl {
 
 LoggerSl::LoggerSl():
   LoggerBase()

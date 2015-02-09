@@ -36,11 +36,11 @@
 
 #pragma once
 
-#include "robotUtils/loggers/LoggerBase.hpp"
+#include "signal_logger/LoggerBase.hpp"
 #include <boost/shared_ptr.hpp>
 
 
-namespace robotUtils {
+namespace signal_logger_sl {
 
 class LoggerSl : public LoggerBase {
   public:
