@@ -42,7 +42,7 @@
 
 namespace signal_logger_sl {
 
-class LoggerSl : public LoggerBase {
+class LoggerSl : public signal_logger::LoggerBase {
   public:
     LoggerSl();
     virtual ~LoggerSl();
@@ -114,6 +114,6 @@ class LoggerSl : public LoggerBase {
 
 };
 
-} /* namespace robotUtils */
+} /* namespace signal_logger_sl */
 
 

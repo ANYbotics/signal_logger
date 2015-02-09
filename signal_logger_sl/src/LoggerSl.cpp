@@ -385,6 +385,6 @@ void LoggerSl::addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector, c
 /******************/
 
 
-} /* namespace robotUtils */
+} /* namespace signal_logger_sl */
 
 //#endif
