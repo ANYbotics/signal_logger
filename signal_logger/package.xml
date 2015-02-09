@@ -4,8 +4,10 @@
   <version>0.0.0</version>
   <description>The signal_logger package</description>
   <maintainer email="gehrinch@ethz.ch">Christian Gehring</maintainer>
+  <maintainer email="bellicoso@mavt.ethz.ch">Dario Bellicoso</maintainer>
   <license>BSD</license>
   <url type="website">https://bitbucket.org/ethz-asl-lr/signal_logger</url>
   <author email="gehrinch@ethz.ch">Christian Gehring</author>
+  <author email="bellicoso@mavt.ethz.ch">Dario Bellicoso</author>
   <buildtool_depend>catkin</buildtool_depend>
 </package>

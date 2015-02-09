@@ -1,20 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(signal_logger_ros)
+project(signal_logger_sl)
 
 # Find Catkin
 find_package(catkin REQUIRED COMPONENTS 
     signal_logger
     roco
-    std_msgs
-    geometry_msgs
-    kindr_msgs
 )
 
 # Declare this project as a catkin package
 catkin_package(
  INCLUDE_DIRS include
- LIBRARIES signal_logger_ros
- CATKIN_DEPENDS signal_logger roco std_msgs geometry_msgs kindr_msgs
+ LIBRARIES signal_logger_sl
+ CATKIN_DEPENDS signal_logger roco
 # DEPENDS system_lib
 )
 
@@ -43,10 +40,11 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 include_directories(${Kindr_INCLUDE_DIRS})
 
 set(SRCS
-    src/LoggerRos.cpp
+    src/LoggerSl.cpp
 )
 
-add_library(signal_logger_ros SHARED ${SRCS})
-target_link_libraries(signal_logger_ros
+add_library(signal_logger_sl SHARED ${SRCS})
+target_link_libraries(signal_logger_sl
     ${catkin_LIBRARIES}
 )
+
