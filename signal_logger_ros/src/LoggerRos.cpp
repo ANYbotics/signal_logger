@@ -354,15 +354,41 @@ void LoggerRos::collectLoggerData() {
 
         case(KindrVectorAtPositionType): {
           kindr_msgs::VectorAtPositionPtr msg(new kindr_msgs::VectorAtPosition);
-          const KindrVectorD* vec = boost::any_cast<const KindrVectorD*>(elem.vectorPtr_);
+
+          switch(elem.kindrMsg_.type) {
+            case(kindr_msgs::VectorAtPosition::TYPE_TYPELESS): {
+              const KindrVectorD* vec = boost::any_cast<const KindrVectorD*>(elem.vectorPtr_);
+              msg->vector.x = vec->x();
+              msg->vector.y = vec->y();
+              msg->vector.z = vec->z();
+            } break;
+
+            case(kindr_msgs::VectorAtPosition::TYPE_FORCE): {
+              const KindrForceD* vec = boost::any_cast<const KindrForceD*>(elem.vectorPtr_);
+              msg->vector.x = vec->x();
+              msg->vector.y = vec->y();
+              msg->vector.z = vec->z();
+            } break;
+
+            case(kindr_msgs::VectorAtPosition::TYPE_TORQUE): {
+              const KindrTorqueD* vec = boost::any_cast<const KindrTorqueD*>(elem.vectorPtr_);
+              msg->vector.x = vec->x();
+              msg->vector.y = vec->y();
+              msg->vector.z = vec->z();
+            } break;
+
+            default: {
+              ROCO_WARN_STREAM("[LoggerRos::collectLoggerData] Unhandled kindr vector at position type.");
+            } break;
+          }
+
           msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
+          msg->header.frame_id = elem.kindrMsg_.header.frame_id;
+          msg->position_frame_id = elem.kindrMsg_.position_frame_id;
+
           msg->position.x = elem.positionPtr_->x();
           msg->position.y = elem.positionPtr_->y();
           msg->position.z = elem.positionPtr_->z();
-          msg->name = "";
           msg->type = elem.kindrMsg_.type;
           elem.pub_.publish(kindr_msgs::VectorAtPositionConstPtr(msg));
         } break;
@@ -710,12 +736,60 @@ void LoggerRos::addDoubleKindrVectorToLog(const KindrVectorD& vector, const std:
   addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrVectorType, &vector);
 }
 
-void LoggerRos::addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector, const KindrPositionD& position, const std::string& name, const std::string& group, const std::string& unit, bool update) {
+void LoggerRos::addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector,
+                                                 const KindrPositionD& position,
+                                                 const std::string& name,
+                                                 const std::string& vectorFrame,
+                                                 const std::string& positionFrame,
+                                                 const std::string& group,
+                                                 const std::string& unit,
+                                                 bool update) {
   kindr_msgs::VectorAtPosition msg;
   msg.type = kindr_msgs::VectorAtPosition::TYPE_TYPELESS;
+  msg.header.frame_id = vectorFrame;
+  msg.position_frame_id = positionFrame;
+  msg.name = name;
   addKindr3DVectorAtPositionToCollectedVariables(group+name,
                                                  msg,
                                                  &vector,
+                                                 &position);
+}
+
+void LoggerRos::addDoubleKindrForceAtPositionToLog( const KindrForceD& force,
+                                                 const KindrPositionD& position,
+                                                 const std::string& name,
+                                                 const std::string& forceFrame,
+                                                 const std::string& positionFrame,
+                                                 const std::string& group,
+                                                 const std::string& unit,
+                                                 bool update) {
+  kindr_msgs::VectorAtPosition msg;
+  msg.type = kindr_msgs::VectorAtPosition::TYPE_FORCE;
+  msg.header.frame_id = forceFrame;
+  msg.position_frame_id = positionFrame;
+  msg.name = name;
+  addKindr3DVectorAtPositionToCollectedVariables(group+name,
+                                                 msg,
+                                                 &force,
+                                                 &position);
+}
+
+void LoggerRos::addDoubleKindrTorqueAtPositionToLog(const KindrTorqueD& torque,
+                                                 const KindrPositionD& position,
+                                                 const std::string& name,
+                                                 const std::string& torqueFrame,
+                                                 const std::string& positionFrame,
+                                                 const std::string& group,
+                                                 const std::string& unit,
+                                                 bool update) {
+  kindr_msgs::VectorAtPosition msg;
+  msg.type = kindr_msgs::VectorAtPosition::TYPE_TORQUE;
+  msg.header.frame_id = torqueFrame;
+  msg.position_frame_id = positionFrame;
+  msg.name = name;
+  addKindr3DVectorAtPositionToCollectedVariables(group+name,
+                                                 msg,
+                                                 &torque,
                                                  &position);
 }
 /******************/

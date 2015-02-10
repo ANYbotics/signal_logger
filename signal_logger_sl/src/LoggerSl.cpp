@@ -379,9 +379,30 @@ void LoggerSl::addDoubleKindrVectorToLog(const KindrVectorD& vector, const std::
   addDoubleToLog(&const_cast<KindrVectorD&>(vector).toImplementation().z(), std::string{name + "_z"}, group, unit, update);
 }
 
-void LoggerSl::addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector, const KindrPositionD& position, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-
-}
+void LoggerSl::addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector,
+                                                   const KindrPositionD& position,
+                                                   const std::string& name,
+                                                   const std::string& vectorFrame,
+                                                   const std::string& positionFrame,
+                                                   const std::string& group,
+                                                   const std::string& unit,
+                                                   bool update) { }
+void LoggerSl::addDoubleKindrForceAtPositionToLog( const KindrForceD& force,
+                                                 const KindrPositionD& position,
+                                                 const std::string& name,
+                                                 const std::string& forceFrame,
+                                                 const std::string& positionFrame,
+                                                 const std::string& group,
+                                                 const std::string& unit,
+                                                 bool update) { }
+void LoggerSl::addDoubleKindrTorqueAtPositionToLog(const KindrTorqueD& torque,
+                                                 const KindrPositionD& position,
+                                                 const std::string& name,
+                                                 const std::string& torqueFrame,
+                                                 const std::string& positionFrame,
+                                                 const std::string& group,
+                                                 const std::string& unit,
+                                                 bool update) { }
 /******************/
 
 

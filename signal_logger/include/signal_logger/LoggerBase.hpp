@@ -164,7 +164,31 @@ class LoggerBase {
   virtual void addDoubleKindrTorqueToLog(const KindrTorqueD& torque,                            const std::string& name, const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, bool update = LOGGER_DEFAULT_UPDATE) = 0;
   virtual void addDoubleKindrVectorToLog(const KindrVectorD& vector,                            const std::string& name, const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, bool update = LOGGER_DEFAULT_UPDATE) = 0;
 
-  virtual void addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector, const KindrPositionD& position, const std::string& name, const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, bool update = LOGGER_DEFAULT_UPDATE) = 0;
+  virtual void addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector,
+                                                   const KindrPositionD& position,
+                                                   const std::string& name,
+                                                   const std::string& vectorFrame = "world",
+                                                   const std::string& positionFrame = "world",
+                                                   const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME},
+                                                   const std::string& unit = std::string{LOGGER_DEFAULT_UNIT},
+                                                   bool update = LOGGER_DEFAULT_UPDATE) = 0;
+  virtual void addDoubleKindrForceAtPositionToLog( const KindrForceD& force,
+                                                   const KindrPositionD& position,
+                                                   const std::string& name,
+                                                   const std::string& forceFrame = "world",
+                                                   const std::string& positionFrame = "world",
+                                                   const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME},
+                                                   const std::string& unit = std::string{LOGGER_DEFAULT_UNIT},
+                                                   bool update = LOGGER_DEFAULT_UPDATE) = 0;
+  virtual void addDoubleKindrTorqueAtPositionToLog(const KindrTorqueD& torque,
+                                                   const KindrPositionD& position,
+                                                   const std::string& name,
+                                                   const std::string& torqueFrame = "world",
+                                                   const std::string& positionFrame = "world",
+                                                   const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME},
+                                                   const std::string& unit = std::string{LOGGER_DEFAULT_UNIT},
+                                                   bool update = LOGGER_DEFAULT_UPDATE) = 0;
+
   /******************/
 
 protected:
