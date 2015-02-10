@@ -16,6 +16,7 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>kindr_msgs</build_depend>
+  <build_depend>signal_logger_msgs</build_depend>
   
   <run_depend>signal_logger</run_depend>
   <run_depend>roco</run_depend>
@@ -23,4 +24,5 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>kindr_msgs</run_depend>
+  <run_depend>signal_logger_msgs</run_depend>
 </package>

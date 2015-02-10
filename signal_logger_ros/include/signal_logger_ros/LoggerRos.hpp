@@ -50,6 +50,8 @@
 #include "geometry_msgs/Vector3Stamped.h"
 #include "kindr_msgs/VectorAtPosition.h"
 
+#include <realtime_tools/realtime_publisher.h>
+
 namespace signal_logger_ros {
 
 class LoggerRos : public signal_logger::LoggerBase {
@@ -98,6 +100,9 @@ class LoggerRos : public signal_logger::LoggerBase {
   struct LoggerVarInfo {
     std::string topicName_ = "";
     ros::Publisher pub_;
+
+//    realtime_tools::RealtimePublisher rtPub_;
+
     Frames frame_ = Base;
 
     VarType type_ = KindrTypeNone;

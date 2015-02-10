@@ -8,13 +8,14 @@ find_package(catkin REQUIRED COMPONENTS
     std_msgs
     geometry_msgs
     kindr_msgs
+    signal_logger_msgs
 )
 
 # Declare this project as a catkin package
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES signal_logger_ros
- CATKIN_DEPENDS signal_logger roco std_msgs geometry_msgs kindr_msgs
+ CATKIN_DEPENDS signal_logger roco std_msgs geometry_msgs kindr_msgs signal_logger_msgs
 # DEPENDS system_lib
 )
 
@@ -47,7 +48,7 @@ set(SRCS
 )
 
 add_library(signal_logger_ros SHARED ${SRCS})
-add_dependencies(signal_logger_ros std_msgs_gencpp geometry_msgs_gencpp kindr_msgs_gencpp)
+add_dependencies(signal_logger_ros std_msgs_gencpp geometry_msgs_gencpp kindr_msgs_gencpp signal_logger_msgs_gencpp)
 target_link_libraries(signal_logger_ros
     ${catkin_LIBRARIES}
 )

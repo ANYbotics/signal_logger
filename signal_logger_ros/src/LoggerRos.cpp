@@ -61,6 +61,9 @@
 #include <std_msgs/Int32MultiArray.h>
 #include <std_msgs/Int8MultiArray.h>
 
+#include <signal_logger_msgs/EigenMatrixDouble.h>
+#include <signal_logger_msgs/EigenMatrixFloat.h>
+
 
 namespace signal_logger_ros {
 
@@ -68,6 +71,8 @@ LoggerRos::LoggerRos(ros::NodeHandle& nodeHandle) :
     nodeHandle_(nodeHandle),
     collectedVars_(0)
 {
+
+//  realtime_tools::RealtimePublisher rtPub = ;
 
 }
 
@@ -156,14 +161,26 @@ void LoggerRos::collectLoggerData() {
          * Matrix types *
          ****************/
         case(MatrixDouble): {
-          std_msgs::Float64MultiArrayPtr msg(new std_msgs::Float64MultiArray);
-          const Eigen::Ref<Eigen::MatrixXd>& var = boost::any_cast<const Eigen::Ref<Eigen::MatrixXd>&>(elem.vectorPtr_);
-          for (int k=0; k<var.cols(); k++) {
-            for (int h=0; h<var.rows(); h++) {
-              msg->data.push_back((double)(var)(h,k));
-            }
-          }
-          elem.pub_.publish(std_msgs::Float64MultiArrayConstPtr(msg));
+//          signal_logger_msgs::EigenMatrixDoublePtr msg(new signal_logger_msgs::EigenMatrixDouble);
+//          const Eigen::Ref<Eigen::MatrixXd>& var = boost::any_cast<const Eigen::Ref<Eigen::MatrixXd>&>(elem.vectorPtr_);
+//          msg->header.stamp = stamp;
+//          for (int k=0; k<var.cols(); k++) {
+//            for (int h=0; h<var.rows(); h++) {
+//              msg->matrix.push_back((double)(var)(h,k));
+//            }
+//          }
+
+//          if (elem.rtPub_.trylock()){
+//            elem.rtPub_.msg_.header.stamp = stamp;
+//            for (int k=0; k<var.cols(); k++) {
+//              for (int h=0; h<var.rows(); h++) {
+//                elem.rtPub_.msg.matrix.push_back((double)(var)(h,k));
+//              }
+//            }
+//            elem.rtPub_.unlockAndPublish();
+//           }
+
+//          elem.pub_.publish(signal_logger_msgs::EigenMatrixDoubleConstPtr(msg));
         } break;
 
         case(MatrixFloat): {
@@ -481,7 +498,8 @@ void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var
     collectedIterator->vectorPtr_ = var;
   } else {
     LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Float64MultiArray>(topicName, 100);
+    varInfo.pub_ = nodeHandle_.advertise<signal_logger_msgs::EigenMatrixDouble>(topicName, 100);
+//    varInfo.rtPub_ = realtime_tools::RealtimePublisher<signal_logger_msgs::EigenMatrixDouble>(n, topicName, 4);
     varInfo.type_ = LoggerRos::VarType::MatrixDouble;
     varInfo.vectorPtr_ = var;
     collectedVars_.push_back(varInfo);
