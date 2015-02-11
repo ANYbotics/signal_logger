@@ -48,7 +48,7 @@ set(SRCS
 )
 
 add_library(signal_logger_ros SHARED ${SRCS})
-add_dependencies(signal_logger_ros std_msgs_gencpp geometry_msgs_gencpp kindr_msgs_gencpp signal_logger_msgs_gencpp)
+add_dependencies(signal_logger_ros std_msgs_generate_messages_cpp geometry_msgs_generate_messages_cpp kindr_msgs_generate_messages_cpp signal_logger_msgs_generate_messages_cpp)
 target_link_libraries(signal_logger_ros
     ${catkin_LIBRARIES}
 )
