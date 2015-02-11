@@ -106,7 +106,30 @@ void LoggerNone::addDoubleKindrAngularAccelerationToLog(const KindrAngularAccele
 void LoggerNone::addDoubleKindrForceToLog(const KindrForceD& force,                               const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 void LoggerNone::addDoubleKindrTorqueToLog(const KindrTorqueD& torque,                            const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 void LoggerNone::addDoubleKindrVectorToLog(const KindrVectorD& vector,                            const std::string& name, const std::string& group, const std::string& unit, bool update) { }
-void LoggerNone::addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector, const KindrPositionD& position, const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerNone::addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector,
+                                                     const KindrPositionD& position,
+                                                     const std::string& name,
+                                                     const std::string& vectorFrame,
+                                                     const std::string& positionFrame,
+                                                     const std::string& group,
+                                                     const std::string& unit,
+                                                     bool update) { }
+void LoggerNone::addDoubleKindrForceAtPositionToLog( const KindrForceD& force,
+                                                     const KindrPositionD& position,
+                                                     const std::string& name,
+                                                     const std::string& forceFrame,
+                                                     const std::string& positionFrame,
+                                                     const std::string& group,
+                                                     const std::string& unit,
+                                                     bool update) { }
+void LoggerNone::addDoubleKindrTorqueAtPositionToLog(const KindrTorqueD& torque,
+                                                     const KindrPositionD& position,
+                                                     const std::string& name,
+                                                     const std::string& torqueFrame,
+                                                     const std::string& positionFrame,
+                                                     const std::string& group,
+                                                     const std::string& unit,
+                                                     bool update) { }
 /******************/
 
 

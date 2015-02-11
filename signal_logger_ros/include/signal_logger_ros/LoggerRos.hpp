@@ -50,6 +50,8 @@
 #include "geometry_msgs/Vector3Stamped.h"
 #include "kindr_msgs/VectorAtPosition.h"
 
+#include <realtime_tools/realtime_publisher.h>
+
 namespace signal_logger_ros {
 
 class LoggerRos : public signal_logger::LoggerBase {
@@ -86,6 +88,8 @@ class LoggerRos : public signal_logger::LoggerBase {
     MatrixUnsignedChar = 34,
     MatrixBool = 32,
     EigenVector = 33,
+    KindrForceAtPositionType = 34,
+    KindrTorqueAtPositionType = 35,
     KindrTypeNone = -1
   };
 
@@ -98,6 +102,9 @@ class LoggerRos : public signal_logger::LoggerBase {
   struct LoggerVarInfo {
     std::string topicName_ = "";
     ros::Publisher pub_;
+
+//    realtime_tools::RealtimePublisher rtPub_;
+
     Frames frame_ = Base;
 
     VarType type_ = KindrTypeNone;
@@ -183,7 +190,31 @@ class LoggerRos : public signal_logger::LoggerBase {
   virtual void addDoubleKindrForceToLog(const KindrForceD& force,                               const std::string& name, const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, bool update = LOGGER_DEFAULT_UPDATE);
   virtual void addDoubleKindrTorqueToLog(const KindrTorqueD& torque,                            const std::string& name, const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, bool update = LOGGER_DEFAULT_UPDATE);
   virtual void addDoubleKindrVectorToLog(const KindrVectorD& vector,                            const std::string& name, const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, bool update = LOGGER_DEFAULT_UPDATE);
-  virtual void addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector, const KindrPositionD& position, const std::string& name, const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, bool update = LOGGER_DEFAULT_UPDATE);
+  virtual void addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector,
+                                                   const KindrPositionD& position,
+                                                   const std::string& name,
+                                                   const std::string& vectorFrame = "world",
+                                                   const std::string& positionFrame = "world",
+                                                   const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME},
+                                                   const std::string& unit = std::string{LOGGER_DEFAULT_UNIT},
+                                                   bool update = LOGGER_DEFAULT_UPDATE);
+  virtual void addDoubleKindrForceAtPositionToLog( const KindrForceD& force,
+                                                   const KindrPositionD& position,
+                                                   const std::string& name,
+                                                   const std::string& forceFrame = "world",
+                                                   const std::string& positionFrame = "world",
+                                                   const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME},
+                                                   const std::string& unit = std::string{LOGGER_DEFAULT_UNIT},
+                                                   bool update = LOGGER_DEFAULT_UPDATE);
+  virtual void addDoubleKindrTorqueAtPositionToLog(const KindrTorqueD& torque,
+                                                   const KindrPositionD& position,
+                                                   const std::string& name,
+                                                   const std::string& torqueFrame = "world",
+                                                   const std::string& positionFrame = "world",
+                                                   const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME},
+                                                   const std::string& unit = std::string{LOGGER_DEFAULT_UNIT},
+                                                   bool update = LOGGER_DEFAULT_UPDATE);
+
   /******************/
 
  protected:
@@ -216,7 +247,21 @@ class LoggerRos : public signal_logger::LoggerBase {
     } else {
       LoggerVarInfo varInfo(topicName);
       varInfo.pub_ = nodeHandle_.advertise<kindr_msgs::VectorAtPosition>(topicName, 100);
+
       varInfo.type_ = LoggerRos::VarType::KindrVectorAtPositionType;
+
+//      switch(kindrMsg.type) {
+//        case(kindr_msgs::VectorAtPosition::TYPE_TYPELESS): {
+//          varInfo.type_ = LoggerRos::VarType::KindrVectorAtPositionType;
+//        } break;
+//        case(kindr_msgs::VectorAtPosition::TYPE_FORCE): {
+//          varInfo.type_ = LoggerRos::VarType::KindrForceAtPositionType;
+//        } break;
+//        case(kindr_msgs::VectorAtPosition::TYPE_TORQUE): {
+//          varInfo.type_ = LoggerRos::VarType::KindrTorqueAtPositionType;
+//        } break;
+//      }
+
       varInfo.kindrMsg_ = kindrMsg;
       varInfo.vectorPtr_ = varRef;
       varInfo.positionPtr_ = position;
