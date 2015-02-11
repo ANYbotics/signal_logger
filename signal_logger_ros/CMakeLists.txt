@@ -47,6 +47,12 @@ set(SRCS
 )
 
 add_library(signal_logger_ros SHARED ${SRCS})
+
+# Specify dependencies on automatically generated service files
+add_dependencies(signal_logger_ros
+  kindr_msgs_generate_messages_cpp
+)
+
 target_link_libraries(signal_logger_ros
     ${catkin_LIBRARIES}
 )
