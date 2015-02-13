@@ -3,13 +3,14 @@ project(signal_logger)
 
 # Find Catkin
 find_package(catkin REQUIRED COMPONENTS
+    kindr
 )
 
 # Declare this project as a catkin package
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES signal_logger
-# CATKIN_DEPENDS
+ CATKIN_DEPENDS kindr
 # DEPENDS system_lib
 )
 
@@ -18,12 +19,12 @@ add_definitions(--std=c++11)
 
 
 find_package(Eigen3)
-find_package(Kindr)
+
 
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
 include_directories(${EIGEN3_INCLUDE_DIR})
-include_directories(${Kindr_INCLUDE_DIRS})
+
 
 set(SRCS
     src/logger.cpp
