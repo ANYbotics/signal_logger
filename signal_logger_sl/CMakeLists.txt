@@ -5,7 +5,10 @@ project(signal_logger_sl)
 find_package(catkin REQUIRED COMPONENTS 
     signal_logger
     roco
+    kindr
 )
+
+find_package(Eigen3 REQUIRED)
 
 # Declare this project as a catkin package
 catkin_package(
@@ -15,35 +18,17 @@ catkin_package(
 # DEPENDS system_lib
 )
 
-set(EXECUTABLE_OUTPUT_PATH 	${CMAKE_BINARY_DIR})
-set(LIBRARY_OUTPUT_PATH 	${PROJECT_SOURCE_DIR}/lib)
-
-# Noisily default to Release build
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  	message(STATUS "Setting build type to 'Release' as none was specified.")
-  	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
-  	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-	"Debug" "Release" "MinSizeRel" "RelWithDebInfo")
-endif()
-
-
 set(CMAKE_CXX_FLAGS "-fPIC")
 add_definitions(--std=c++11)
-
-
-find_package(Eigen3)
-find_package(Kindr)
 
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
 include_directories(${EIGEN3_INCLUDE_DIR})
-include_directories(${Kindr_INCLUDE_DIRS})
 
-set(SRCS
-    src/LoggerSl.cpp
+
+add_library(signal_logger_sl  
+ src/LoggerSl.cpp
 )
-
-add_library(signal_logger_sl SHARED ${SRCS})
 target_link_libraries(signal_logger_sl
     ${catkin_LIBRARIES}
 )
