@@ -20,6 +20,7 @@ set(CMAKE_CXX_FLAGS "-fPIC")
 add_definitions(--std=c++11)
 
 include_directories(include)
+include_directories(${EIGEN3_INCLUDE_DIR})
 include_directories(${catkin_INCLUDE_DIRS})
 
 set(SRCS
