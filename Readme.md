@@ -9,4 +9,4 @@ Author(s): Christian Gehring, Dario Bellicoso
 DEPENDENCIES
 -----------------------------------------------------------------
 signal_logger_ros:
-* realtime_tools - ROS tools that can be used from a hard realtime thread (http://github.com/ros-controls/realtime_tools)
+* [realtime_tools](http://github.com/ros-controls/realtime_tools) - ROS tools that can be used from a hard realtime thread 
