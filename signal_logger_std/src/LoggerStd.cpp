@@ -169,7 +169,6 @@ void LoggerStd::setVerboseLevel(VerboseLevel level) {
 
 
 void LoggerStd::initLogger(int updateFrequency, int samplingFrequency, double samplingTime, const std::string& logScriptFileName) {
-	printf("djfpiewajfpijdsafjdsafjijf'pdsafjpodsajf'po''''''a'dsdofjodsaj");
 	ROCO_INFO("LoggerStd::initLogger");
   setFileName(logScriptFileName);
   init(updateFrequency, samplingFrequency, samplingTime);
