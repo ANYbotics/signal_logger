@@ -108,31 +108,47 @@ void LoggerRos::collectLoggerData() {
          * Core types *
          **************/
         case(Double): {
-          std_msgs::Float64Ptr msg(new std_msgs::Float64);
+          std_msgs::Float64 msg;
           double* var = boost::any_cast<double*>(elem.vectorPtr_);
-          msg->data = *var;
-          elem.pub_.publish(std_msgs::Float64ConstPtr(msg));
+          realtime_tools::RealtimePublisher<std_msgs::Float64>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<std_msgs::Float64>*>(elem.rtPub_);
+          msg.data = *var;
+          if (rtPub->trylock()) {
+            rtPub->msg_ = msg;
+            rtPub->unlockAndPublish();
+          }
         } break;
 
         case(Float): {
-          std_msgs::Float32Ptr msg(new std_msgs::Float32);
+          std_msgs::Float32 msg;
           float* var = boost::any_cast<float*>(elem.vectorPtr_);
-          msg->data = *var;
-          elem.pub_.publish(std_msgs::Float32ConstPtr(msg));
+          realtime_tools::RealtimePublisher<std_msgs::Float32>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<std_msgs::Float32>*>(elem.rtPub_);
+          msg.data = *var;
+          if (rtPub->trylock()) {
+            rtPub->msg_ = msg;
+            rtPub->unlockAndPublish();
+          }
         } break;
 
         case(Int): {
-          std_msgs::Int32Ptr msg(new std_msgs::Int32);
-          int* var = boost::any_cast<int*>(elem.vectorPtr_);
-          msg->data = *var;
-          elem.pub_.publish(std_msgs::Int32ConstPtr(msg));
+//          std_msgs::Int32 msg;
+//          int* var = boost::any_cast<int*>(elem.vectorPtr_);
+//          realtime_tools::RealtimePublisher<std_msgs::Int32>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<std_msgs::Int32>*>(elem.rtPub_);
+//          msg.data = *var;
+//          if (rtPub->trylock()) {
+//            rtPub->msg_ = msg;
+//            rtPub->unlockAndPublish();
+//          }
         } break;
 
         case(Short): {
-          std_msgs::Int8Ptr msg(new std_msgs::Int8);
-          int* var = boost::any_cast<int*>(elem.vectorPtr_);
-          msg->data = *var;
-          elem.pub_.publish(std_msgs::Int8ConstPtr(msg));
+//          std_msgs::Int8 msg;
+//          short* var = boost::any_cast<short*>(elem.vectorPtr_);
+//          realtime_tools::RealtimePublisher<std_msgs::Int8>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<std_msgs::Int8>*>(elem.rtPub_);
+//          msg.data = *var;
+//          if (rtPub->trylock()) {
+//            rtPub->msg_ = msg;
+//            rtPub->unlockAndPublish();
+//          }
         } break;
 
         case(Long): {
@@ -482,60 +498,20 @@ void LoggerRos::stopAndSaveLoggerData() { }
 
 
 void LoggerRos::addFloatToLog(float* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Float32>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::Float;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+//  addScalarToCollectedVariables<float, std_msgs::Float32>(group+name, LoggerRos::VarType::Float, var);
 }
 
 void LoggerRos::addDoubleToLog(double* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Float64>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::Double;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+//  addScalarToCollectedVariables<double, std_msgs::Float64>(group+name, LoggerRos::VarType::Double, var);
 }
 
 void LoggerRos::addIntToLog(int* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int32>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::Int;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+//  addScalarToCollectedVariables<int, std_msgs::Int32>(group+name, LoggerRos::VarType::Int, var);
 }
 
 
 void LoggerRos::addShortToLog(short* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int8>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::Int;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+//  addScalarToCollectedVariables<short, std_msgs::Int8>(group+name, LoggerRos::VarType::Short, var);
 }
 
 

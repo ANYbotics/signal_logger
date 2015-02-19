@@ -256,6 +256,20 @@ class LoggerRos : public signal_logger::LoggerBase {
     }
   }
 
+  template <typename ScalarType_, typename MsgType_>
+  void addScalarToCollectedVariables(const std::string& topicName, const LoggerRos::VarType& varType, ScalarType_* varPtr) {
+    std::vector<LoggerVarInfo>::iterator collectedIterator;
+    if (checkIfVarCollected(topicName, collectedIterator)) {
+      collectedIterator->vectorPtr_ = varPtr;
+    } else {
+      LoggerVarInfo varInfo(topicName);
+      varInfo.pub_ = nodeHandle_.advertise<MsgType_>(topicName, 100);
+      varInfo.type_ = varType;
+      varInfo.vectorPtr_ = varPtr;
+      collectedVars_.push_back(varInfo);
+    }
+  }
+
 };
 
 } /* namespace signal_logger_ros */
