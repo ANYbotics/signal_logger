@@ -102,7 +102,7 @@ void LoggerRos::collectLoggerData() {
 
   for (auto elem : collectedVars_) {
 
-    if (elem.pub_.getNumSubscribers() > 0u) {
+//    if (elem.pub_.getNumSubscribers() > 0u) {
       switch (elem.type_) {
         /**************
          * Core types *
@@ -234,44 +234,67 @@ void LoggerRos::collectLoggerData() {
          * Kindr types *
          ***************/
         case(KindrPositionType) : {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
+          geometry_msgs::Vector3Stamped msg;
           const KindrPositionD* vec = boost::any_cast<const KindrPositionD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
+          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
+
+          msg.header.stamp = stamp;
+          msg.vector.x = vec->x();
+          msg.vector.y = vec->y();
+          msg.vector.z = vec->z();
+
+          if (rtPub->trylock()) {
+            rtPub->msg_ = msg;
+            rtPub->unlockAndPublish();
+          }
+
         } break;
 
         case(KindrRotationQuaternionType) : {
-          geometry_msgs::QuaternionStampedPtr msg(new geometry_msgs::QuaternionStamped);
+          geometry_msgs::QuaternionStamped msg;
+          realtime_tools::RealtimePublisher<geometry_msgs::QuaternionStamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::QuaternionStamped>*>(elem.rtPub_);
           const KindrRotationQuaternionD* vec = boost::any_cast<const KindrRotationQuaternionD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->quaternion.x = vec->x();
-          msg->quaternion.y = vec->y();
-          msg->quaternion.z = vec->z();
-          msg->quaternion.w = vec->w();
-          elem.pub_.publish(geometry_msgs::QuaternionStampedConstPtr(msg));
+          msg.header.stamp = stamp;
+          msg.quaternion.x = vec->x();
+          msg.quaternion.y = vec->y();
+          msg.quaternion.z = vec->z();
+          msg.quaternion.w = vec->w();
+
+          if (rtPub->trylock()) {
+            rtPub->msg_ = msg;
+            rtPub->unlockAndPublish();
+          }
         } break;
 
         case(KindrEulerAnglesZyxType) : {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
+          geometry_msgs::Vector3Stamped msg;
           const KindrEulerAnglesZyxD* vec = boost::any_cast<const KindrEulerAnglesZyxD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
+          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
+          msg.header.stamp = stamp;
+          msg.vector.x = vec->x();
+          msg.vector.y = vec->y();
+          msg.vector.z = vec->z();
+
+          if (rtPub->trylock()) {
+            rtPub->msg_ = msg;
+            rtPub->unlockAndPublish();
+          }
         } break;
 
         case(KindrLocalAngularVelocityType) : {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
+          geometry_msgs::Vector3Stamped msg;
+          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
           const KindrAngularVelocityD* vec = boost::any_cast<const KindrAngularVelocityD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
+
+          msg.header.stamp = stamp;
+          msg.vector.x = vec->x();
+          msg.vector.y = vec->y();
+          msg.vector.z = vec->z();
+
+          if (rtPub->trylock()) {
+            rtPub->msg_ = msg;
+            rtPub->unlockAndPublish();
+          }
         } break;
 
         case(KindrAngleAxis) : {
@@ -283,98 +306,141 @@ void LoggerRos::collectLoggerData() {
         } break;
 
         case(KindrRotationVectorType) : {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
+          geometry_msgs::Vector3Stamped msg;
+          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
           const KindrRotationVectorD* vec = boost::any_cast<const KindrRotationVectorD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
+
+          msg.header.stamp = stamp;
+          msg.vector.x = vec->x();
+          msg.vector.y = vec->y();
+          msg.vector.z = vec->z();
+
+          if (rtPub->trylock()) {
+            rtPub->msg_ = msg;
+            rtPub->unlockAndPublish();
+          }
         } break;
 
         case(KindrLinearVelocityType) : {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
+          geometry_msgs::Vector3Stamped msg;
+          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
           const KindrLinearVelocityD* vec = boost::any_cast<const KindrLinearVelocityD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
+
+          msg.header.stamp = stamp;
+          msg.vector.x = vec->x();
+          msg.vector.y = vec->y();
+          msg.vector.z = vec->z();
+
+          if (rtPub->trylock()) {
+            rtPub->msg_ = msg;
+            rtPub->unlockAndPublish();
+          }
         } break;
 
         case(KindrLinearAccelerationType) : {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
+          geometry_msgs::Vector3Stamped msg;
+          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
           const KindrLinearAccelerationD* vec = boost::any_cast<const KindrLinearAccelerationD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
+
+          msg.header.stamp = stamp;
+          msg.vector.x = vec->x();
+          msg.vector.y = vec->y();
+          msg.vector.z = vec->z();
+
+          if (rtPub->trylock()) {
+            rtPub->msg_ = msg;
+            rtPub->unlockAndPublish();
+          }
         } break;
 
         case(KindrAngularAccelerationType) : {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
+          geometry_msgs::Vector3Stamped msg;
+          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
           const KindrAngularAccelerationD* vec = boost::any_cast<const KindrAngularAccelerationD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
+
+          msg.header.stamp = stamp;
+          msg.vector.x = vec->x();
+          msg.vector.y = vec->y();
+          msg.vector.z = vec->z();
+
+          if (rtPub->trylock()) {
+            rtPub->msg_ = msg;
+            rtPub->unlockAndPublish();
+          }
         } break;
 
         case(KindrForceType): {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
+          geometry_msgs::Vector3Stamped msg;
           const KindrForceD* vec = boost::any_cast<const KindrForceD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
+          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
+
+          msg.header.stamp = stamp;
+          msg.vector.x = vec->x();
+          msg.vector.y = vec->y();
+          msg.vector.z = vec->z();
+
+          if (rtPub->trylock()) {
+            rtPub->msg_ = msg;
+            rtPub->unlockAndPublish();
+          }
         } break;
 
         case(KindrTorqueType): {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
+          geometry_msgs::Vector3Stamped msg;
           const KindrTorqueD* vec = boost::any_cast<const KindrTorqueD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
+          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
+
+          msg.header.stamp = stamp;
+          msg.vector.x = vec->x();
+          msg.vector.y = vec->y();
+          msg.vector.z = vec->z();
+
+          if (rtPub->trylock()) {
+            rtPub->msg_ = msg;
+            rtPub->unlockAndPublish();
+          }
         } break;
 
         case(KindrVectorType): {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
+          geometry_msgs::Vector3Stamped msg;
           const KindrVectorD* vec = boost::any_cast<const KindrVectorD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
+          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
+
+          msg.header.stamp = stamp;
+          msg.vector.x = vec->x();
+          msg.vector.y = vec->y();
+          msg.vector.z = vec->z();
+
+          if (rtPub->trylock()) {
+            rtPub->msg_ = msg;
+            rtPub->unlockAndPublish();
+          }
         } break;
 
         case(KindrVectorAtPositionType): {
-          kindr_msgs::VectorAtPositionPtr msg(new kindr_msgs::VectorAtPosition);
+          kindr_msgs::VectorAtPosition msg;
+          realtime_tools::RealtimePublisher<kindr_msgs::VectorAtPosition>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<kindr_msgs::VectorAtPosition>*>(elem.rtPub_);
 
           switch(elem.kindrMsg_.type) {
             case(kindr_msgs::VectorAtPosition::TYPE_TYPELESS): {
               const KindrVectorD* vec = boost::any_cast<const KindrVectorD*>(elem.vectorPtr_);
-              msg->vector.x = vec->x();
-              msg->vector.y = vec->y();
-              msg->vector.z = vec->z();
+              msg.vector.x = vec->x();
+              msg.vector.y = vec->y();
+              msg.vector.z = vec->z();
             } break;
 
             case(kindr_msgs::VectorAtPosition::TYPE_FORCE): {
               const KindrForceD* vec = boost::any_cast<const KindrForceD*>(elem.vectorPtr_);
-              msg->vector.x = vec->x();
-              msg->vector.y = vec->y();
-              msg->vector.z = vec->z();
+              msg.vector.x = vec->x();
+              msg.vector.y = vec->y();
+              msg.vector.z = vec->z();
             } break;
 
             case(kindr_msgs::VectorAtPosition::TYPE_TORQUE): {
               const KindrTorqueD* vec = boost::any_cast<const KindrTorqueD*>(elem.vectorPtr_);
-              msg->vector.x = vec->x();
-              msg->vector.y = vec->y();
-              msg->vector.z = vec->z();
+              msg.vector.x = vec->x();
+              msg.vector.y = vec->y();
+              msg.vector.z = vec->z();
             } break;
 
             default: {
@@ -382,15 +448,18 @@ void LoggerRos::collectLoggerData() {
             } break;
           }
 
-          msg->header.stamp = stamp;
-          msg->header.frame_id = elem.kindrMsg_.header.frame_id;
-          msg->position_frame_id = elem.kindrMsg_.position_frame_id;
+          msg.header.stamp = stamp;
+          msg.header.frame_id = elem.kindrMsg_.header.frame_id;
+          msg.position_frame_id = elem.kindrMsg_.position_frame_id;
+          msg.position.x = elem.positionPtr_->x();
+          msg.position.y = elem.positionPtr_->y();
+          msg.position.z = elem.positionPtr_->z();
+          msg.type = elem.kindrMsg_.type;
 
-          msg->position.x = elem.positionPtr_->x();
-          msg->position.y = elem.positionPtr_->y();
-          msg->position.z = elem.positionPtr_->z();
-          msg->type = elem.kindrMsg_.type;
-          elem.pub_.publish(kindr_msgs::VectorAtPositionConstPtr(msg));
+          if (rtPub->trylock()) {
+            rtPub->msg_ = msg;
+            rtPub->unlockAndPublish();
+          }
         } break;
         /***************/
 
@@ -401,7 +470,7 @@ void LoggerRos::collectLoggerData() {
         default: ROCO_ERROR("[LoggerRos::collectLoggerData] Unhandled collected variable type.") break;
       } // switch
 
-    } // if subscribers > 0
+//    } // if subscribers > 0
 
   }
 
@@ -690,50 +759,50 @@ void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& va
  * Kindr wrappers *
  ******************/
 void LoggerRos::addDoubleKindrPositionToLog(const KindrPositionD& position, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrPositionType, &position);
+  addKindr3DToCollectedVariables<KindrPositionD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrPositionType, &position);
 }
 
 void LoggerRos::addDoubleKindrRotationQuaternionToLog(const KindrRotationQuaternionD& rotation,  const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrRotationQuaternionType, &rotation);
+  addKindr3DToCollectedVariables<KindrRotationQuaternionD, geometry_msgs::QuaternionStamped>(group+name, LoggerRos::VarType::KindrRotationQuaternionType, &rotation);
 }
 
 void LoggerRos::addDoubleKindrEulerAnglesZyxToLog(const KindrEulerAnglesZyxD& rotation, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrEulerAnglesZyxType, &rotation);
+  addKindr3DToCollectedVariables<KindrEulerAnglesZyxD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrEulerAnglesZyxType, &rotation);
 }
 
 void LoggerRos::addDoubleKindrLocalAngularVelocityToLog(const KindrAngularVelocityD& angVel, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrLocalAngularVelocityType, &angVel);
+  addKindr3DToCollectedVariables<KindrAngularVelocityD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrLocalAngularVelocityType, &angVel);
 }
 
 void LoggerRos::addDoubleKindrAngleAxisToLog(const KindrAngleAxisD& angleAxis,                   const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 void LoggerRos::addDoubleKindrRotationMatrixToLog(const KindrRotationMatrixD& rotMat,            const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 
 void LoggerRos::addDoubleKindrRotationVectorToLog(const KindrRotationVectorD& rotVec, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrRotationVectorType, &rotVec);
+  addKindr3DToCollectedVariables<KindrRotationVectorD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrRotationVectorType, &rotVec);
 }
 
 void LoggerRos::addDoubleKindrLinearVelocityToLog(const KindrLinearVelocityD& linVel, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrLinearVelocityType, &linVel);
+  addKindr3DToCollectedVariables<KindrLinearVelocityD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrLinearVelocityType, &linVel);
 }
 
 void LoggerRos::addDoubleKindrLinearAccelerationToLog(const KindrLinearAccelerationD& linAcc, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrLinearAccelerationType, &linAcc);
+  addKindr3DToCollectedVariables<KindrLinearAccelerationD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrLinearAccelerationType, &linAcc);
 }
 
 void LoggerRos::addDoubleKindrAngularAccelerationToLog(const KindrAngularAccelerationD& angAcc, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrAngularAccelerationType, &angAcc);
+  addKindr3DToCollectedVariables<KindrAngularAccelerationD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrAngularAccelerationType, &angAcc);
 }
 
 void LoggerRos::addDoubleKindrForceToLog(const KindrForceD& force, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrForceType, &force);
+  addKindr3DToCollectedVariables<KindrForceD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrForceType, &force);
 }
 
 void LoggerRos::addDoubleKindrTorqueToLog(const KindrTorqueD& torque, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrTorqueType, &torque);
+  addKindr3DToCollectedVariables<KindrTorqueD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrTorqueType, &torque);
 }
 
 void LoggerRos::addDoubleKindrVectorToLog(const KindrVectorD& vector, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrVectorType, &vector);
+  addKindr3DToCollectedVariables<KindrVectorD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrVectorType, &vector);
 }
 
 void LoggerRos::addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector,
