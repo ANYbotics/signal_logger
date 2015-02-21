@@ -51,72 +51,113 @@
 #include "kindr_msgs/VectorAtPosition.h"
 
 #include <realtime_tools/realtime_publisher.h>
+#include "signal_logger_ros/signal_logger_ros_traits.hpp"
 
 namespace signal_logger_ros {
+
+class LogElementBase {
+ public:
+  LogElementBase() {};
+  virtual ~LogElementBase() {};
+
+  virtual const std::string& getTopicName() = 0;
+  virtual void publish() = 0;
+};
+
+
+template <typename LogType_>
+class LogElement : public LogElementBase {
+ public:
+
+  typedef traits::slr_traits<LogType_> Traits;
+
+  LogElement() :
+    topicName_(""),
+    type_(Traits::varType),
+    vectorPtr_(nullptr),
+    positionPtr_(nullptr),
+    rtPub_(nullptr)
+  {
+
+  }
+
+  LogElement(const ros::NodeHandle& nodeHandle,
+             const std::string& name,
+             LogType_* varPtr) :
+    topicName_(name),
+    type_(Traits::varType),
+    vectorPtr_(varPtr),
+    positionPtr_(nullptr)
+  {
+    rtPub_ = new realtime_tools::RealtimePublisher<typename Traits::msgtype>(nodeHandle, name, 100);
+  }
+
+  LogElement(const ros::NodeHandle& nodeHandle,
+             const std::string& name,
+             LogType_* varPtr,
+             signal_logger::LoggerBase::KindrPositionD* positionPtr) :
+    topicName_(name),
+    type_(Traits::varType),
+    vectorPtr_(varPtr),
+    positionPtr_(positionPtr)
+  {
+    rtPub_ = new realtime_tools::RealtimePublisher<kindr_msgs::VectorAtPosition>(nodeHandle, name, 100);
+  }
+
+  ~LogElement() {
+  }
+
+  virtual void setLogVarPointer(LogType_* varPtr) {
+    vectorPtr_ = varPtr;
+  }
+
+  virtual void setLogVarAtPositionPointer(LogType_* varPtr, signal_logger::LoggerBase::KindrPositionD* pos) {
+    vectorPtr_ = varPtr;
+    positionPtr_ = pos;
+  }
+
+  virtual const std::string& getTopicName() {
+    return topicName_;
+  }
+
+  virtual void publish(const ros::Time& timeStamp) {
+    typename Traits::msgtype msg;
+    Traits::updateMsg(vectorPtr_, msg);
+
+    if (rtPub_->trylock()) {
+      rtPub_->msg_ = msg;
+      rtPub_->unlockAndPublish();
+    }
+  }
+
+ private:
+  std::string topicName_;
+//  traits::Frames frame_;
+  traits::VarType type_;
+  kindr_msgs::VectorAtPosition::Type kindrMsgType_;
+  LogType_* vectorPtr_;
+  signal_logger::LoggerBase::KindrPositionD* positionPtr_;
+  realtime_tools::RealtimePublisher<typename Traits::msgtype>* rtPub_;
+};
+
 
 class LoggerRos : public signal_logger::LoggerBase {
  public:
 
-  enum VarType {
-    Double = 5,
-    Float = 6,
-    Int = 7,
-    Short = 8,
-    Long = 9,
-    Char = 10,
-    Bool = 11,
-    KindrPositionType = 12,
-    KindrRotationQuaternionType = 13,
-    KindrEulerAnglesZyxType = 14,
-    KindrLocalAngularVelocityType = 15,
-    KindrAngleAxis = 16,
-    KindrRotationMatrixType = 17,
-    KindrRotationVectorType = 18,
-    KindrLinearVelocityType = 19,
-    KindrLinearAccelerationType = 20,
-    KindrAngularAccelerationType = 21,
-    KindrForceType = 22,
-    KindrTorqueType = 23,
-    KindrVectorType = 24,
-    KindrVectorAtPositionType = 25,
-    MatrixDouble = 26,
-    MatrixFloat =27,
-    MatrixInt = 28,
-    MatrixShort = 29,
-    MatrixLong = 30,
-    MatrixChar = 31,
-    MatrixUnsignedChar = 34,
-    MatrixBool = 32,
-    EigenVector = 33,
-    KindrForceAtPositionType = 34,
-    KindrTorqueAtPositionType = 35,
-    KindrTypeNone = -1
-  };
-
-  enum Frames {
-    Base = 0,
-    Map = 1
-  };
-
-
-  struct LoggerVarInfo {
-    std::string topicName_ = "";
-    ros::Publisher pub_;
-
-    Frames frame_ = Base;
-
-    VarType type_ = KindrTypeNone;
-    kindr_msgs::VectorAtPosition kindrMsg_;
-
-    boost::any vectorPtr_;
-    const KindrPositionD* positionPtr_ = nullptr;
-
-    boost::any rtPub_;
-
-    LoggerVarInfo() { }
-    LoggerVarInfo(const std::string& name) : topicName_(name) { }
-    LoggerVarInfo(const std::string& name, ros::Publisher& publ) : topicName_(name), pub_(publ) { }
-  };
+//  struct LoggerVarInfo {
+//    std::string topicName_ = "";
+//    ros::Publisher pub_;
+//    Frames frame_ = Base;
+//    VarType type_ = KindrTypeNone;
+//    kindr_msgs::VectorAtPosition kindrMsg_;
+//    boost::any vectorPtr_;
+//    const KindrPositionD* positionPtr_ = nullptr;
+//    boost::any rtPub_;
+//
+//    LoggerVarInfo() { }
+//    LoggerVarInfo(const std::string& name) : topicName_(name) { }
+//    LoggerVarInfo(const std::string& name, ros::Publisher& publ) : topicName_(name), pub_(publ) { }
+//  };
 
  public:
   LoggerRos(ros::NodeHandle& nodeHandle);
@@ -219,56 +260,57 @@ class LoggerRos : public signal_logger::LoggerBase {
 
  protected:
 
-  virtual bool checkIfVarCollected(const std::string& topicName, std::vector<LoggerVarInfo>::iterator& it);
+  virtual bool checkIfVarCollected(const std::string& topicName, std::vector<LogElementBase*>::iterator& it);
 
   ros::NodeHandle& nodeHandle_;
-  std::vector<LoggerVarInfo> collectedVars_;
+  std::vector<LogElementBase*> collectedVars_;
 
-  template <typename KindrType_, typename MsgType_>
-  void addKindr3DToCollectedVariables(const std::string& topicName, const LoggerRos::VarType& varType, const KindrType_* varPtr) {
-    std::vector<LoggerVarInfo>::iterator collectedIterator;
-    if (checkIfVarCollected(topicName, collectedIterator)) {
-      collectedIterator->vectorPtr_ = varPtr;
-    } else {
-      LoggerVarInfo varInfo(topicName);
-      varInfo.type_ = varType;
-      varInfo.vectorPtr_ = varPtr;
-      varInfo.rtPub_ = new realtime_tools::RealtimePublisher<MsgType_>(nodeHandle_, topicName, 100);
-      collectedVars_.push_back(varInfo);
-    }
-  }
-
-  template <typename VectorType_>
-  void addKindr3DVectorAtPositionToCollectedVariables(const std::string& topicName, const kindr_msgs::VectorAtPosition& kindrMsg, const VectorType_* varPtr, const KindrPositionD* position) {
-    std::vector<LoggerVarInfo>::iterator collectedIterator;
-    if (checkIfVarCollected(topicName, collectedIterator)) {
-      collectedIterator->vectorPtr_ = varPtr;
-      collectedIterator->positionPtr_ = position;
-    } else {
-      LoggerVarInfo varInfo(topicName);
-      varInfo.rtPub_ = new realtime_tools::RealtimePublisher<kindr_msgs::VectorAtPosition>(nodeHandle_, topicName, 100);
-      varInfo.type_ = LoggerRos::VarType::KindrVectorAtPositionType;
-
-      varInfo.kindrMsg_ = kindrMsg;
-      varInfo.vectorPtr_ = varPtr;
-      varInfo.positionPtr_ = position;
-      collectedVars_.push_back(varInfo);
-    }
-  }
-
-  template <typename ScalarType_, typename MsgType_>
-  void addScalarToCollectedVariables(const std::string& topicName, const LoggerRos::VarType& varType, ScalarType_* varPtr) {
-    std::vector<LoggerVarInfo>::iterator collectedIterator;
-    if (checkIfVarCollected(topicName, collectedIterator)) {
-      collectedIterator->vectorPtr_ = varPtr;
-    } else {
-      LoggerVarInfo varInfo(topicName);
-      varInfo.pub_ = nodeHandle_.advertise<MsgType_>(topicName, 100);
-      varInfo.type_ = varType;
-      varInfo.vectorPtr_ = varPtr;
-      collectedVars_.push_back(varInfo);
-    }
-  }
+//  template <typename KindrType_, typename MsgType_>
+//  void addKindr3DToCollectedVariables(const std::string& topicName, const LoggerRos::VarType& varType, const KindrType_* varPtr) {
+//    std::vector<LoggerVarInfo>::iterator collectedIterator;
+//    if (checkIfVarCollected(topicName, collectedIterator)) {
+//      collectedIterator->vectorPtr_ = varPtr;
+//    } else {
+//      LoggerVarInfo varInfo(topicName);
+//      varInfo.type_ = varType;
+//      varInfo.vectorPtr_ = varPtr;
+//      varInfo.rtPub_ = new realtime_tools::RealtimePublisher<MsgType_>(nodeHandle_, topicName, 100);
+//      collectedVars_.push_back(varInfo);
+//    }
+//  }
+//
+//  template <typename VectorType_>
+//  void addKindr3DVectorAtPositionToCollectedVariables(const std::string& topicName, const kindr_msgs::VectorAtPosition& kindrMsg, const VectorType_* varPtr, const KindrPositionD* position) {
+//    std::vector<LoggerVarInfo>::iterator collectedIterator;
+//    if (checkIfVarCollected(topicName, collectedIterator)) {
+//      collectedIterator->vectorPtr_ = varPtr;
+//      collectedIterator->positionPtr_ = position;
+//    } else {
+//      LoggerVarInfo varInfo(topicName);
+//      varInfo.rtPub_ = new realtime_tools::RealtimePublisher<kindr_msgs::VectorAtPosition>(nodeHandle_, topicName, 100);
+//      varInfo.type_ = LoggerRos::VarType::KindrVectorAtPositionType;
+//
+//      varInfo.kindrMsg_ = kindrMsg;
+//      varInfo.vectorPtr_ = varPtr;
+//      varInfo.positionPtr_ = position;
+//      collectedVars_.push_back(varInfo);
+//    }
+//  }
+//
+//  template <typename ScalarType_, typename MsgType_>
+//  void addScalarToCollectedVariables(const std::string& topicName, const LoggerRos::VarType& varType, ScalarType_* varPtr) {
+//    std::vector<LoggerVarInfo>::iterator collectedIterator;
+//    if (checkIfVarCollected(topicName, collectedIterator)) {
+//      collectedIterator->vectorPtr_ = varPtr;
+//    } else {
+//      LoggerVarInfo varInfo(topicName);
+////      varInfo.pub_ = nodeHandle_.advertise<traits::slr_traits<varType>::msgtype>(topicName, 100);
+//      varInfo.pub_ = nodeHandle_.advertise<MsgType_>(topicName, 100);
+//      varInfo.type_ = varType;
+//      varInfo.vectorPtr_ = varPtr;
+//      collectedVars_.push_back(varInfo);
+//    }
+//  }
 
 };
 
