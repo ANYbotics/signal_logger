@@ -83,9 +83,9 @@ template<typename LogType_> struct slr_traits;
 
 typedef signal_logger::LoggerBase base_type;
 
-/*******************
- * specializations *
- *******************/
+/*******************************
+ * Specializations: core types *
+ *******************************/
 template<>
 struct slr_traits<double> {
   typedef std_msgs::Float32 msgtype;
@@ -148,9 +148,12 @@ struct slr_traits<bool> {
     msg.data = *vectorPtr_;
   }
 };
+/*******************************/
 
 
-
+/*******************************
+ * Specializations: eigen types *
+ *******************************/
 template<>
 struct slr_traits<Eigen::Ref<Eigen::Vector3d>> {
   typedef geometry_msgs::Vector3Stamped msgtype;
@@ -162,9 +165,12 @@ struct slr_traits<Eigen::Ref<Eigen::Vector3d>> {
     msg.vector.z = vectorPtr_->z();
   }
 };
+/*******************************/
 
 
-
+/*******************************
+ * Specializations: kindr types *
+ *******************************/
 template<>
 struct slr_traits<base_type::KindrPositionD> {
   typedef geometry_msgs::Vector3Stamped msgtype;
@@ -285,170 +291,7 @@ struct slr_traits<base_type::KindrVectorD> {
     msg.vector.z = vectorPtr_->z();
   }
 };
-
-
-//template<>
-//struct slr_traits<VarType::Double> {
-//  typedef std_msgs::Float64 msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::Float> {
-//  typedef std_msgs::Float32 msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::Int> {
-//  typedef std_msgs::Int32 msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::Short> {
-//  typedef std_msgs::Int8 msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::Long> {
-//  typedef std_msgs::Int64 msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::Char> {
-//  typedef std_msgs::Char msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::Bool> {
-//  typedef std_msgs::Bool msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::KindrPositionType> {
-//  typedef geometry_msgs::Vector3Stamped msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::KindrRotationQuaternionType> {
-//  typedef geometry_msgs::QuaternionStamped msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::KindrEulerAnglesZyxType> {
-//  typedef geometry_msgs::Vector3Stamped msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::KindrLocalAngularVelocityType> {
-//  typedef geometry_msgs::Vector3Stamped msgtype;
-//};
-//
-//// todo: define message type
-//template<>
-//struct slr_traits<VarType::KindrAngleAxis> {
-//
-//};
-//
-//// todo: define message type
-//template<>
-//struct slr_traits<VarType::KindrRotationMatrixType> {
-//  typedef geometry_msgs::Vector3Stamped msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::KindrRotationVectorType> {
-//  typedef geometry_msgs::Vector3Stamped msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::KindrLinearVelocityType> {
-//  typedef geometry_msgs::Vector3Stamped msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::KindrLinearAccelerationType> {
-//  typedef geometry_msgs::Vector3Stamped msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::KindrAngularAccelerationType> {
-//  typedef geometry_msgs::Vector3Stamped msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::KindrForceType> {
-//  typedef geometry_msgs::Vector3Stamped msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::KindrTorqueType> {
-//  typedef geometry_msgs::Vector3Stamped msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::KindrVectorType> {
-//  typedef geometry_msgs::Vector3Stamped msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::KindrVectorAtPositionType> {
-//  typedef kindr_msgs::VectorAtPosition msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::KindrForceAtPositionType> {
-//  typedef kindr_msgs::VectorAtPosition msgtype;
-//};
-//
-//template<>
-//struct slr_traits<VarType::KindrTorqueAtPositionType> {
-//  typedef kindr_msgs::VectorAtPosition msgtype;
-//};
-//
-//// todo: define message type
-//template<>
-//struct slr_traits<VarType::MatrixDouble> {
-//};
-//
-//// todo: define message type
-//template<>
-//struct slr_traits<VarType::MatrixFloat> {
-//};
-//
-//// todo: define message type
-//template<>
-//struct slr_traits<VarType::MatrixInt> {
-//};
-//
-//// todo: define message type
-//template<>
-//struct slr_traits<VarType::MatrixShort> {
-//};
-//
-//// todo: define message type
-//template<>
-//struct slr_traits<VarType::MatrixLong> {
-//};
-//
-//// todo: define message type
-//template<>
-//struct slr_traits<VarType::MatrixChar> {
-//};
-//
-//// todo: define message type
-//template<>
-//struct slr_traits<VarType::MatrixUnsignedChar> {
-//};
-//
-//// todo: define message type
-//template<>
-//struct slr_traits<VarType::MatrixBool> {
-//};
-//
-//// todo: define message type
-//template<>
-//struct slr_traits<VarType::EigenVector> {
-//};
-/*******************/
+/*******************************/
 
 } /* namespace traits */
 
