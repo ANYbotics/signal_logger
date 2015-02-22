@@ -76,7 +76,7 @@ void LoggerRos::updateLogger(bool updateScript) {
 
 void LoggerRos::collectLoggerData() {
   for (const auto& elem : collectedVars_) {
-    if (elem->getNumSubscribers() > 0u) {
+    if (elem.get()->getNumSubscribers() > 0u) {
       ros::Time stamp = ros::Time::now();
       elem->publish(stamp);
     }
@@ -378,9 +378,10 @@ void LoggerRos::addDoubleKindrTorqueAtPositionToLog(const KindrTorqueD& torque,
 }
 /******************/
 
-bool LoggerRos::checkIfVarCollected(const std::string& topicName, std::vector<LogElementBase*>::iterator& it) {
+//bool LoggerRos::checkIfVarCollected(const std::string& topicName, std::vector<LogElementBase*>::iterator& it) {
+bool LoggerRos::checkIfVarCollected(const std::string& topicName, std::vector<std::shared_ptr<LogElementBase>>::iterator& it) {
   for (it = collectedVars_.begin(); it != collectedVars_.end(); it++) {
-    if ((*it)->getTopicName().compare(topicName) == 0) {
+    if ((*it).get()->getTopicName().compare(topicName) == 0) {
       ROCO_WARN_STREAM("[LoggerRos::checkIfVarCollected] Topic '" << topicName << "' was already being published.");
       return true;
     }

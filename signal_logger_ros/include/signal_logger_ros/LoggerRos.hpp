@@ -150,19 +150,21 @@ class LoggerRos : public signal_logger::LoggerBase {
 
  protected:
   ros::NodeHandle& nodeHandle_;
-  std::vector<LogElementBase*> collectedVars_;
+//  std::vector<LogElementBase*> collectedVars_;
+  std::vector<std::shared_ptr<LogElementBase>> collectedVars_;
 
-  virtual bool checkIfVarCollected(const std::string& topicName, std::vector<LogElementBase*>::iterator& it);
+//  virtual bool checkIfVarCollected(const std::string& topicName, std::vector<LogElementBase*>::iterator& it);
+  virtual bool checkIfVarCollected(const std::string& topicName, std::vector<std::shared_ptr<LogElementBase>>::iterator& it);
 
   template<typename LogType_, bool atPosition = false>
   void addVarToCollection(const std::string& topicName,
                           const LogType_* varPtr)
   {
-    std::vector<LogElementBase*>::iterator collectedIterator;
+    std::vector<std::shared_ptr<LogElementBase>>::iterator collectedIterator;
     if (checkIfVarCollected(topicName, collectedIterator)) {
-      dynamic_cast<LogElement<LogType_>*>(*collectedIterator)->setLogVarPointer(varPtr);
+      dynamic_cast<LogElement<LogType_>*>((*collectedIterator).get())->setLogVarPointer(varPtr);
     } else {
-      collectedVars_.push_back(new LogElement<LogType_, atPosition>(nodeHandle_, topicName, varPtr));
+      collectedVars_.push_back(std::shared_ptr<LogElement<LogType_, atPosition>>(new LogElement<LogType_, atPosition>(nodeHandle_, topicName, varPtr)));
     }
   }
 
@@ -174,21 +176,23 @@ class LoggerRos : public signal_logger::LoggerBase {
                           const std::string& vectorFrame,
                           const std::string& positionFrame)
   {
-    std::vector<LogElementBase*>::iterator collectedIterator;
+    std::vector<std::shared_ptr<LogElementBase>>::iterator collectedIterator;
     if (checkIfVarCollected(topicName, collectedIterator)) {
-      dynamic_cast<LogElement<LogType_, atPosition>*>(*collectedIterator)->setLogVarAtPositionPointer(varPtr,
+      dynamic_cast<LogElement<LogType_, atPosition>*>((*collectedIterator).get())->setLogVarAtPositionPointer(varPtr,
                                                                                                       positionPtr,
                                                                                                       vectorFrame,
                                                                                                       positionFrame,
                                                                                                       name);
     } else {
-      collectedVars_.push_back(new LogElement<LogType_, atPosition>(nodeHandle_,
+      collectedVars_.push_back(std::shared_ptr<LogElement<LogType_, atPosition>>(
+          new LogElement<LogType_, atPosition>(nodeHandle_,
                                                                     topicName,
                                                                     varPtr,
                                                                     positionPtr,
                                                                     vectorFrame,
                                                                     positionFrame,
-                                                                    name));
+                                                                    name))
+                                                                        );
     }
   }
 
