@@ -8,7 +8,6 @@
 #ifndef SIGNAL_LOGGER_ROS_TRAITS_HPP_
 #define SIGNAL_LOGGER_ROS_TRAITS_HPP_
 
-
 #include "signal_logger/LoggerBase.hpp"
 
 #include "geometry_msgs/WrenchStamped.h"
@@ -30,6 +29,9 @@
 
 #include <signal_logger_msgs/EigenMatrixDouble.h>
 #include <signal_logger_msgs/EigenMatrixFloat.h>
+
+#include "geometry_msgs/Vector3Stamped.h"
+#include "kindr_msgs/VectorAtPosition.h"
 
 namespace signal_logger_ros {
 
@@ -78,7 +80,8 @@ enum Frames {
 
 // generic interface
 template<typename LogType_> struct slr_traits;
-//template<typename LogType_> struct slr_traits_type;
+
+typedef signal_logger::LoggerBase base_type;
 
 /*******************
  * specializations *
@@ -87,7 +90,7 @@ template<>
 struct slr_traits<double> {
   typedef std_msgs::Float32 msgtype;
   static const VarType varType = VarType::Double;
-  static void updateMsg(double* vectorPtr_, msgtype& msg) {
+  static void updateMsg(const double* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
       msg.data = *vectorPtr_;
     }
 };
@@ -96,21 +99,104 @@ template<>
 struct slr_traits<float> {
   typedef std_msgs::Float32 msgtype;
   static const VarType varType = VarType::Float;
-  static void updateMsg(float* vectorPtr_, msgtype& msg) {
+  static void updateMsg(const float* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
     msg.data = *vectorPtr_;
   }
 };
 
 template<>
-struct slr_traits<signal_logger::LoggerBase::KindrForceD> {
-  typedef geometry_msgs::Vector3Stamped msgtype;
-  static const VarType varType = VarType::KindrForceType;
+struct slr_traits<int> {
+  typedef std_msgs::Int32 msgtype;
+  static const VarType varType = VarType::Int;
+  static void updateMsg(const int* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.data = *vectorPtr_;
+  }
 };
 
 template<>
-struct slr_traits<signal_logger::LoggerBase::KindrPositionD> {
+struct slr_traits<short> {
+  typedef std_msgs::Int8 msgtype;
+  static const VarType varType = VarType::Int;
+  static void updateMsg(const short* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.data = *vectorPtr_;
+  }
+};
+
+template<>
+struct slr_traits<long> {
+  typedef std_msgs::Int64 msgtype;
+  static const VarType varType = VarType::Long;
+  static void updateMsg(const long* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.data = *vectorPtr_;
+  }
+};
+
+template<>
+struct slr_traits<char> {
+  typedef std_msgs::Int8 msgtype;
+  static const VarType varType = VarType::Char;
+  static void updateMsg(const char* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.data = *vectorPtr_;
+  }
+};
+
+template<>
+struct slr_traits<bool> {
+  typedef std_msgs::Bool msgtype;
+  static const VarType varType = VarType::Bool;
+  static void updateMsg(const bool* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.data = *vectorPtr_;
+  }
+};
+
+
+
+template<>
+struct slr_traits<base_type::KindrForceD> {
+  typedef geometry_msgs::Vector3Stamped msgtype;
+  static const VarType varType = VarType::KindrForceType;
+  static void updateMsg(const base_type::KindrForceD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.header.stamp = timeStamp;
+    msg.vector.x = vectorPtr_->x();
+    msg.vector.y = vectorPtr_->y();
+    msg.vector.z = vectorPtr_->z();
+  }
+};
+
+template<>
+struct slr_traits<base_type::KindrTorqueD> {
+  typedef geometry_msgs::Vector3Stamped msgtype;
+  static const VarType varType = VarType::KindrForceType;
+  static void updateMsg(const base_type::KindrTorqueD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.header.stamp = timeStamp;
+    msg.vector.x = vectorPtr_->x();
+    msg.vector.y = vectorPtr_->y();
+    msg.vector.z = vectorPtr_->z();
+  }
+};
+
+template<>
+struct slr_traits<base_type::KindrPositionD> {
   typedef geometry_msgs::Vector3Stamped msgtype;
   static const VarType varType = VarType::KindrPositionType;
+  static void updateMsg(const base_type::KindrPositionD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.header.stamp = timeStamp;
+    msg.vector.x = vectorPtr_->x();
+    msg.vector.y = vectorPtr_->y();
+    msg.vector.z = vectorPtr_->z();
+  }
+};
+
+template<>
+struct slr_traits<base_type::KindrVectorD> {
+  typedef geometry_msgs::Vector3Stamped msgtype;
+  static const VarType varType = VarType::KindrVectorType;
+  static void updateMsg(const base_type::KindrVectorD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.header.stamp = timeStamp;
+    msg.vector.x = vectorPtr_->x();
+    msg.vector.y = vectorPtr_->y();
+    msg.vector.z = vectorPtr_->z();
+  }
 };
 
 

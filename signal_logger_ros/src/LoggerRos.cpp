@@ -79,7 +79,7 @@ void LoggerRos::collectLoggerData() {
   ros::Time stamp = ros::Time::now();
 
   for (auto& elem : collectedVars_) {
-    elem->publish();
+    elem->publish(stamp);
 
 //    if (elem.pub_.getNumSubscribers() > 0u) {
 //      switch (elem.type_) {
@@ -484,61 +484,29 @@ void LoggerRos::addFloatToLog(float* var, const std::string& name, const std::st
 }
 
 void LoggerRos::addDoubleToLog(double* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  collectedVars_.push_back(new LogElement<double>(nodeHandle_, group+name, var));
-//  addScalarToCollectedVariables<double, std_msgs::Float64>(group+name, LoggerRos::VarType::Double, var);
+  addVarToCollection<double>(group+name, var);
 }
 
 void LoggerRos::addIntToLog(int* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  addScalarToCollectedVariables<int, std_msgs::Int32>(group+name, LoggerRos::VarType::Int, var);
+  addVarToCollection<int>(group+name, var);
 }
 
-
 void LoggerRos::addShortToLog(short* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  addScalarToCollectedVariables<short, std_msgs::Int8>(group+name, LoggerRos::VarType::Short, var);
+  addVarToCollection<short>(group+name, var);
 }
 
 
 void LoggerRos::addLongToLog(long* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  const std::string& topicName = group + name;
-//  std::vector<LoggerVarInfo>::iterator collectedIterator;
-//  if (checkIfVarCollected(topicName, collectedIterator)) {
-//    collectedIterator->vectorPtr_ = var;
-//  } else {
-//    LoggerVarInfo varInfo(topicName);
-//    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int64>(topicName, 100);
-//    varInfo.type_ = LoggerRos::VarType::Int;
-//    varInfo.vectorPtr_ = var;
-//    collectedVars_.push_back(varInfo);
-//  }
+  addVarToCollection<long>(group+name, var);
 }
 
 
 void LoggerRos::addCharToLog(char* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  const std::string& topicName = group + name;
-//  std::vector<LoggerVarInfo>::iterator collectedIterator;
-//  if (checkIfVarCollected(topicName, collectedIterator)) {
-//    collectedIterator->vectorPtr_ = var;
-//  } else {
-//    LoggerVarInfo varInfo(topicName);
-//    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Char>(topicName, 100);
-//    varInfo.type_ = LoggerRos::VarType::Char;
-//    varInfo.vectorPtr_ = var;
-//    collectedVars_.push_back(varInfo);
-//  }
+  addVarToCollection<char>(group+name, var);
 }
 
 void LoggerRos::addBoolToLog(bool* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  const std::string& topicName = group + name;
-//  std::vector<LoggerVarInfo>::iterator collectedIterator;
-//  if (checkIfVarCollected(topicName, collectedIterator)) {
-//    collectedIterator->vectorPtr_ = var;
-//  } else {
-//    LoggerVarInfo varInfo(topicName);
-//    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Bool>(topicName, 100);
-//    varInfo.type_ = LoggerRos::VarType::Bool;
-//    varInfo.vectorPtr_ = var;
-//    collectedVars_.push_back(varInfo);
-//  }
+  addVarToCollection<bool>(group+name, var);
 }
 
 
@@ -750,18 +718,19 @@ void LoggerRos::addDoubleKindrLinearAccelerationToLog(const KindrLinearAccelerat
 
 void LoggerRos::addDoubleKindrAngularAccelerationToLog(const KindrAngularAccelerationD& angAcc, const std::string& name, const std::string& group, const std::string& unit, bool update) {
 //  addKindr3DToCollectedVariables<KindrAngularAccelerationD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrAngularAccelerationType, &angAcc);
+//  addVarToCollection<KindrAngularAccelerationD>(group+name, &angAcc);
 }
 
 void LoggerRos::addDoubleKindrForceToLog(const KindrForceD& force, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  addKindr3DToCollectedVariables<KindrForceD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrForceType, &force);
+  addVarToCollection<KindrForceD>(group+name, &force);
 }
 
 void LoggerRos::addDoubleKindrTorqueToLog(const KindrTorqueD& torque, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  addKindr3DToCollectedVariables<KindrTorqueD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrTorqueType, &torque);
+  addVarToCollection<KindrTorqueD>(group+name, &torque);
 }
 
 void LoggerRos::addDoubleKindrVectorToLog(const KindrVectorD& vector, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  addKindr3DToCollectedVariables<KindrVectorD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrVectorType, &vector);
+  addVarToCollection<KindrVectorD>(group+name, &vector);
 }
 
 void LoggerRos::addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector,
@@ -772,15 +741,16 @@ void LoggerRos::addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector,
                                                  const std::string& group,
                                                  const std::string& unit,
                                                  bool update) {
-//  kindr_msgs::VectorAtPosition msg;
-//  msg.type = kindr_msgs::VectorAtPosition::TYPE_TYPELESS;
-//  msg.header.frame_id = vectorFrame;
-//  msg.position_frame_id = positionFrame;
-//  msg.name = name;
-//  addKindr3DVectorAtPositionToCollectedVariables(group+name,
-//                                                 msg,
-//                                                 &vector,
-//                                                 &position);
+//  std::vector<LogElementBase*>::iterator collectedIterator;
+//  if (checkIfVarCollected(group+name, collectedIterator)) {
+//    dynamic_cast<LogElement<KindrVectorD>*>(*collectedIterator)->setLogVarAtPositionPointer(&vector,
+//                                                                                            &position,
+//                                                                                            vectorFrame,
+//                                                                                            positionFrame,
+//                                                                                            name);
+//  } else {
+//    collectedVars_.push_back(new LogElement<KindrVectorD>(nodeHandle_, group+name, &vector));
+//  }
 }
 
 void LoggerRos::addDoubleKindrForceAtPositionToLog( const KindrForceD& force,
@@ -823,12 +793,12 @@ void LoggerRos::addDoubleKindrTorqueAtPositionToLog(const KindrTorqueD& torque,
 /******************/
 
 bool LoggerRos::checkIfVarCollected(const std::string& topicName, std::vector<LogElementBase*>::iterator& it) {
-//  for (it = collectedVars_.begin(); it != collectedVars_.end(); it++) {
-//    if (it->topicName_.compare(topicName) == 0) {
-//      ROCO_WARN_STREAM("[LoggerRos::checkIfVarCollected] Topic '" << topicName << "' was already published.");
-//      return true;
-//    }
-//  }
+  for (it = collectedVars_.begin(); it != collectedVars_.end(); it++) {
+    if ((*it)->getTopicName().compare(topicName) == 0) {
+      ROCO_WARN_STREAM("[LoggerRos::checkIfVarCollected] Topic '" << topicName << "' was already being published.");
+      return true;
+    }
+  }
   return false;
 }
 

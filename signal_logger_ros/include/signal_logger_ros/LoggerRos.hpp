@@ -44,121 +44,11 @@
 #ifndef LOGGERROS_HPP_
 #define LOGGERROS_HPP_
 
-#include <ros/ros.h>
-#include <boost/any.hpp>
-#include "signal_logger/LoggerBase.hpp"
-#include "geometry_msgs/Vector3Stamped.h"
-#include "kindr_msgs/VectorAtPosition.h"
-
-#include <realtime_tools/realtime_publisher.h>
-#include "signal_logger_ros/signal_logger_ros_traits.hpp"
+#include "signal_logger_ros/LogElement.hpp"
 
 namespace signal_logger_ros {
 
-class LogElementBase {
- public:
-  LogElementBase() {};
-  virtual ~LogElementBase() {};
-
-  virtual const std::string& getTopicName() = 0;
-  virtual void publish() = 0;
-};
-
-
-template <typename LogType_>
-class LogElement : public LogElementBase {
- public:
-
-  typedef traits::slr_traits<LogType_> Traits;
-
-  LogElement() :
-    topicName_(""),
-    type_(Traits::varType),
-    vectorPtr_(nullptr),
-    positionPtr_(nullptr),
-    rtPub_(nullptr)
-  {
-
-  }
-
-  LogElement(const ros::NodeHandle& nodeHandle,
-             const std::string& name,
-             LogType_* varPtr) :
-    topicName_(name),
-    type_(Traits::varType),
-    vectorPtr_(varPtr),
-    positionPtr_(nullptr)
-  {
-    rtPub_ = new realtime_tools::RealtimePublisher<typename Traits::msgtype>(nodeHandle, name, 100);
-  }
-
-  LogElement(const ros::NodeHandle& nodeHandle,
-             const std::string& name,
-             LogType_* varPtr,
-             signal_logger::LoggerBase::KindrPositionD* positionPtr) :
-    topicName_(name),
-    type_(Traits::varType),
-    vectorPtr_(varPtr),
-    positionPtr_(positionPtr)
-  {
-    rtPub_ = new realtime_tools::RealtimePublisher<kindr_msgs::VectorAtPosition>(nodeHandle, name, 100);
-  }
-
-  ~LogElement() {
-  }
-
-  virtual void setLogVarPointer(LogType_* varPtr) {
-    vectorPtr_ = varPtr;
-  }
-
-  virtual void setLogVarAtPositionPointer(LogType_* varPtr, signal_logger::LoggerBase::KindrPositionD* pos) {
-    vectorPtr_ = varPtr;
-    positionPtr_ = pos;
-  }
-
-  virtual const std::string& getTopicName() {
-    return topicName_;
-  }
-
-  virtual void publish(const ros::Time& timeStamp) {
-    typename Traits::msgtype msg;
-    Traits::updateMsg(vectorPtr_, msg);
-
-    if (rtPub_->trylock()) {
-      rtPub_->msg_ = msg;
-      rtPub_->unlockAndPublish();
-    }
-  }
-
- private:
-  std::string topicName_;
-//  traits::Frames frame_;
-  traits::VarType type_;
-  kindr_msgs::VectorAtPosition::Type kindrMsgType_;
-  LogType_* vectorPtr_;
-  signal_logger::LoggerBase::KindrPositionD* positionPtr_;
-  realtime_tools::RealtimePublisher<typename Traits::msgtype>* rtPub_;
-};
-
-
 class LoggerRos : public signal_logger::LoggerBase {
- public:
-
-//  struct LoggerVarInfo {
-//    std::string topicName_ = "";
-//    ros::Publisher pub_;
-//    Frames frame_ = Base;
-//    VarType type_ = KindrTypeNone;
-//    kindr_msgs::VectorAtPosition kindrMsg_;
-//    boost::any vectorPtr_;
-//    const KindrPositionD* positionPtr_ = nullptr;
-//    boost::any rtPub_;
-//
-//    LoggerVarInfo() { }
-//    LoggerVarInfo(const std::string& name) : topicName_(name) { }
-//    LoggerVarInfo(const std::string& name, ros::Publisher& publ) : topicName_(name), pub_(publ) { }
-//  };
-
  public:
   LoggerRos(ros::NodeHandle& nodeHandle);
   virtual ~LoggerRos();
@@ -264,6 +154,16 @@ class LoggerRos : public signal_logger::LoggerBase {
 
   ros::NodeHandle& nodeHandle_;
   std::vector<LogElementBase*> collectedVars_;
+
+  template<typename LogType_>
+  void addVarToCollection(const std::string& topicName, const LogType_* varPtr) {
+    std::vector<LogElementBase*>::iterator collectedIterator;
+    if (checkIfVarCollected(topicName, collectedIterator)) {
+      dynamic_cast<LogElement<LogType_>*>(*collectedIterator)->setLogVarPointer(varPtr);
+    } else {
+      collectedVars_.push_back(new LogElement<LogType_>(nodeHandle_, topicName, varPtr));
+    }
+  }
 
 //  template <typename KindrType_, typename MsgType_>
 //  void addKindr3DToCollectedVariables(const std::string& topicName, const LoggerRos::VarType& varType, const KindrType_* varPtr) {
