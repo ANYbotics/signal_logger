@@ -57,7 +57,9 @@ LoggerRos::LoggerRos(ros::NodeHandle& nodeHandle) :
 
 LoggerRos::~LoggerRos()
 {
-
+  for (auto& elem : collectedVars_) {
+    delete elem;
+  }
 }
 
 
