@@ -149,11 +149,10 @@ class LoggerRos : public signal_logger::LoggerBase {
   /******************/
 
  protected:
-
-  virtual bool checkIfVarCollected(const std::string& topicName, std::vector<LogElementBase*>::iterator& it);
-
   ros::NodeHandle& nodeHandle_;
   std::vector<LogElementBase*> collectedVars_;
+
+  virtual bool checkIfVarCollected(const std::string& topicName, std::vector<LogElementBase*>::iterator& it);
 
   template<typename LogType_>
   void addVarToCollection(const std::string& topicName, const LogType_* varPtr) {
@@ -165,20 +164,6 @@ class LoggerRos : public signal_logger::LoggerBase {
     }
   }
 
-//  template <typename KindrType_, typename MsgType_>
-//  void addKindr3DToCollectedVariables(const std::string& topicName, const LoggerRos::VarType& varType, const KindrType_* varPtr) {
-//    std::vector<LoggerVarInfo>::iterator collectedIterator;
-//    if (checkIfVarCollected(topicName, collectedIterator)) {
-//      collectedIterator->vectorPtr_ = varPtr;
-//    } else {
-//      LoggerVarInfo varInfo(topicName);
-//      varInfo.type_ = varType;
-//      varInfo.vectorPtr_ = varPtr;
-//      varInfo.rtPub_ = new realtime_tools::RealtimePublisher<MsgType_>(nodeHandle_, topicName, 100);
-//      collectedVars_.push_back(varInfo);
-//    }
-//  }
-//
 //  template <typename VectorType_>
 //  void addKindr3DVectorAtPositionToCollectedVariables(const std::string& topicName, const kindr_msgs::VectorAtPosition& kindrMsg, const VectorType_* varPtr, const KindrPositionD* position) {
 //    std::vector<LoggerVarInfo>::iterator collectedIterator;
@@ -193,21 +178,6 @@ class LoggerRos : public signal_logger::LoggerBase {
 //      varInfo.kindrMsg_ = kindrMsg;
 //      varInfo.vectorPtr_ = varPtr;
 //      varInfo.positionPtr_ = position;
-//      collectedVars_.push_back(varInfo);
-//    }
-//  }
-//
-//  template <typename ScalarType_, typename MsgType_>
-//  void addScalarToCollectedVariables(const std::string& topicName, const LoggerRos::VarType& varType, ScalarType_* varPtr) {
-//    std::vector<LoggerVarInfo>::iterator collectedIterator;
-//    if (checkIfVarCollected(topicName, collectedIterator)) {
-//      collectedIterator->vectorPtr_ = varPtr;
-//    } else {
-//      LoggerVarInfo varInfo(topicName);
-////      varInfo.pub_ = nodeHandle_.advertise<traits::slr_traits<varType>::msgtype>(topicName, 100);
-//      varInfo.pub_ = nodeHandle_.advertise<MsgType_>(topicName, 100);
-//      varInfo.type_ = varType;
-//      varInfo.vectorPtr_ = varPtr;
 //      collectedVars_.push_back(varInfo);
 //    }
 //  }

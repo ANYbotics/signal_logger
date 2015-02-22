@@ -611,59 +611,59 @@ void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& va
 }
 
 void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-//  for (int r=0; r<var.rows(); r++)  {
-//    for (int c=0; c<var.cols(); c++)  {
-//      addDoubleToLog((double *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
-//    }
-//  }
+  for (int r=0; r<var.rows(); r++)  {
+    for (int c=0; c<var.cols(); c++)  {
+      addDoubleToLog((double *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+    }
+  }
 }
 
 void LoggerRos::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-//  for (int r=0; r<var.rows(); r++)  {
-//    for (int c=0; c<var.cols(); c++)  {
-//      addFloatToLog((float *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
-//    }
-//  }
+  for (int r=0; r<var.rows(); r++)  {
+    for (int c=0; c<var.cols(); c++)  {
+      addFloatToLog((float *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+    }
+  }
 }
 
 void LoggerRos::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-//  for (int r=0; r<var.rows(); r++)  {
-//    for (int c=0; c<var.cols(); c++)  {
-//      addIntToLog((int *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
-//    }
-//  }
+  for (int r=0; r<var.rows(); r++)  {
+    for (int c=0; c<var.cols(); c++)  {
+      addIntToLog((int *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+    }
+  }
 }
 
 void LoggerRos::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-//  for (int r=0; r<var.rows(); r++)  {
-//    for (int c=0; c<var.cols(); c++)  {
-//      addShortToLog((short *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
-//    }
-//  }
+  for (int r=0; r<var.rows(); r++)  {
+    for (int c=0; c<var.cols(); c++)  {
+      addShortToLog((short *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+    }
+  }
 }
 
 void LoggerRos::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-//  for (int r=0; r<var.rows(); r++)  {
-//    for (int c=0; c<var.cols(); c++)  {
-//      addLongToLog((long *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
-//    }
-//  }
+  for (int r=0; r<var.rows(); r++)  {
+    for (int c=0; c<var.cols(); c++)  {
+      addLongToLog((long *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+    }
+  }
 }
 
 void LoggerRos::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-//  for (int r=0; r<var.rows(); r++)  {
-//    for (int c=0; c<var.cols(); c++)  {
-//      addCharToLog((char *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
-//    }
-//  }
+  for (int r=0; r<var.rows(); r++)  {
+    for (int c=0; c<var.cols(); c++)  {
+      addCharToLog((char *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+    }
+  }
 }
 
 void LoggerRos::addUnsignedCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXUc>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-//  for (int r=0; r<var.rows(); r++)  {
-//    for (int c=0; c<var.cols(); c++)  {
-//      addCharToLog((char *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
-//    }
-//  }
+  for (int r=0; r<var.rows(); r++)  {
+    for (int c=0; c<var.cols(); c++)  {
+      addCharToLog((char *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+    }
+  }
 }
 
 void LoggerRos::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
@@ -686,19 +686,19 @@ void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& va
  * Kindr wrappers *
  ******************/
 void LoggerRos::addDoubleKindrPositionToLog(const KindrPositionD& position, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  addKindr3DToCollectedVariables<KindrPositionD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrPositionType, &position);
+  addVarToCollection<KindrPositionD>(group+name, &position);
 }
 
 void LoggerRos::addDoubleKindrRotationQuaternionToLog(const KindrRotationQuaternionD& rotation,  const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  addKindr3DToCollectedVariables<KindrRotationQuaternionD, geometry_msgs::QuaternionStamped>(group+name, LoggerRos::VarType::KindrRotationQuaternionType, &rotation);
+  addVarToCollection<KindrRotationQuaternionD>(group+name, &rotation);
 }
 
 void LoggerRos::addDoubleKindrEulerAnglesZyxToLog(const KindrEulerAnglesZyxD& rotation, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  addKindr3DToCollectedVariables<KindrEulerAnglesZyxD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrEulerAnglesZyxType, &rotation);
+  addVarToCollection<KindrEulerAnglesZyxD>(group+name, &rotation);
 }
 
 void LoggerRos::addDoubleKindrLocalAngularVelocityToLog(const KindrAngularVelocityD& angVel, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  addKindr3DToCollectedVariables<KindrAngularVelocityD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrLocalAngularVelocityType, &angVel);
+  addVarToCollection<KindrAngularVelocityD>(group+name, &angVel);
 }
 
 void LoggerRos::addDoubleKindrAngleAxisToLog(const KindrAngleAxisD& angleAxis,                   const std::string& name, const std::string& group, const std::string& unit, bool update) { }
@@ -709,16 +709,15 @@ void LoggerRos::addDoubleKindrRotationVectorToLog(const KindrRotationVectorD& ro
 }
 
 void LoggerRos::addDoubleKindrLinearVelocityToLog(const KindrLinearVelocityD& linVel, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  addKindr3DToCollectedVariables<KindrLinearVelocityD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrLinearVelocityType, &linVel);
+  addVarToCollection<KindrLinearVelocityD>(group+name, &linVel);
 }
 
 void LoggerRos::addDoubleKindrLinearAccelerationToLog(const KindrLinearAccelerationD& linAcc, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  addKindr3DToCollectedVariables<KindrLinearAccelerationD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrLinearAccelerationType, &linAcc);
+  addVarToCollection<KindrLinearAccelerationD>(group+name, &linAcc);
 }
 
 void LoggerRos::addDoubleKindrAngularAccelerationToLog(const KindrAngularAccelerationD& angAcc, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  addKindr3DToCollectedVariables<KindrAngularAccelerationD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrAngularAccelerationType, &angAcc);
-//  addVarToCollection<KindrAngularAccelerationD>(group+name, &angAcc);
+  addVarToCollection<KindrAngularAccelerationD>(group+name, &angAcc);
 }
 
 void LoggerRos::addDoubleKindrForceToLog(const KindrForceD& force, const std::string& name, const std::string& group, const std::string& unit, bool update) {

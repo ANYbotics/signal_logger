@@ -149,7 +149,90 @@ struct slr_traits<bool> {
   }
 };
 
+template<>
+struct slr_traits<base_type::KindrPositionD> {
+  typedef geometry_msgs::Vector3Stamped msgtype;
+  static const VarType varType = VarType::KindrPositionType;
+  static void updateMsg(const base_type::KindrPositionD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.header.stamp = timeStamp;
+    msg.vector.x = vectorPtr_->x();
+    msg.vector.y = vectorPtr_->y();
+    msg.vector.z = vectorPtr_->z();
+  }
+};
 
+template<>
+struct slr_traits<base_type::KindrRotationQuaternionD> {
+  typedef geometry_msgs::QuaternionStamped msgtype;
+  static const VarType varType = VarType::KindrRotationQuaternionType;
+  static void updateMsg(const base_type::KindrRotationQuaternionD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.header.stamp = timeStamp;
+    msg.quaternion.w = vectorPtr_->w();
+    msg.quaternion.x = vectorPtr_->x();
+    msg.quaternion.y = vectorPtr_->y();
+    msg.quaternion.z = vectorPtr_->z();
+  }
+};
+
+template<>
+struct slr_traits<base_type::KindrEulerAnglesZyxD> {
+  typedef geometry_msgs::Vector3Stamped msgtype;
+  static const VarType varType = VarType::KindrEulerAnglesZyxType;
+  static void updateMsg(const base_type::KindrEulerAnglesZyxD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.header.stamp = timeStamp;
+    msg.vector.x = vectorPtr_->x();
+    msg.vector.y = vectorPtr_->y();
+    msg.vector.z = vectorPtr_->z();
+  }
+};
+
+template<>
+struct slr_traits<base_type::KindrAngularVelocityD> {
+  typedef geometry_msgs::Vector3Stamped msgtype;
+  static const VarType varType = VarType::KindrLocalAngularVelocityType;
+  static void updateMsg(const base_type::KindrAngularVelocityD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.header.stamp = timeStamp;
+    msg.vector.x = vectorPtr_->x();
+    msg.vector.y = vectorPtr_->y();
+    msg.vector.z = vectorPtr_->z();
+  }
+};
+
+template<>
+struct slr_traits<base_type::KindrLinearVelocityD> {
+  typedef geometry_msgs::Vector3Stamped msgtype;
+  static const VarType varType = VarType::KindrLinearVelocityType;
+  static void updateMsg(const base_type::KindrLinearVelocityD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.header.stamp = timeStamp;
+    msg.vector.x = vectorPtr_->x();
+    msg.vector.y = vectorPtr_->y();
+    msg.vector.z = vectorPtr_->z();
+  }
+};
+
+template<>
+struct slr_traits<base_type::KindrLinearAccelerationD> {
+  typedef geometry_msgs::Vector3Stamped msgtype;
+  static const VarType varType = VarType::KindrLinearAccelerationType;
+  static void updateMsg(const base_type::KindrLinearAccelerationD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.header.stamp = timeStamp;
+    msg.vector.x = vectorPtr_->x();
+    msg.vector.y = vectorPtr_->y();
+    msg.vector.z = vectorPtr_->z();
+  }
+};
+
+template<>
+struct slr_traits<base_type::KindrAngularAccelerationD> {
+  typedef geometry_msgs::Vector3Stamped msgtype;
+  static const VarType varType = VarType::KindrAngularAccelerationType;
+  static void updateMsg(const base_type::KindrAngularAccelerationD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.header.stamp = timeStamp;
+    msg.vector.x = vectorPtr_->x();
+    msg.vector.y = vectorPtr_->y();
+    msg.vector.z = vectorPtr_->z();
+  }
+};
 
 template<>
 struct slr_traits<base_type::KindrForceD> {
@@ -168,18 +251,6 @@ struct slr_traits<base_type::KindrTorqueD> {
   typedef geometry_msgs::Vector3Stamped msgtype;
   static const VarType varType = VarType::KindrForceType;
   static void updateMsg(const base_type::KindrTorqueD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.header.stamp = timeStamp;
-    msg.vector.x = vectorPtr_->x();
-    msg.vector.y = vectorPtr_->y();
-    msg.vector.z = vectorPtr_->z();
-  }
-};
-
-template<>
-struct slr_traits<base_type::KindrPositionD> {
-  typedef geometry_msgs::Vector3Stamped msgtype;
-  static const VarType varType = VarType::KindrPositionType;
-  static void updateMsg(const base_type::KindrPositionD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
     msg.header.stamp = timeStamp;
     msg.vector.x = vectorPtr_->x();
     msg.vector.y = vectorPtr_->y();
