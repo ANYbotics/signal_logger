@@ -14,7 +14,7 @@
 #include <ros/ros.h>
 #include <boost/any.hpp>
 
-#include <realtime_tools/realtime_publisher.h>
+#include "realtime_tools/realtime_publisher.h"
 
 namespace signal_logger_ros {
 
@@ -74,10 +74,14 @@ class LogElement<LogType_, false> : public LogElementBase {
   virtual void publish(const ros::Time& timeStamp) {
     typename Traits::msgtype msg;
     Traits::updateMsg(vectorPtr_, msg, timeStamp);
-    if (rtPub_->trylock()) {
-      rtPub_->msg_ = msg;
-      rtPub_->unlockAndPublish();
+
+    if (rtPub_->getNumSubscribers() > 0u) {
+      if (rtPub_->trylock()) {
+        rtPub_->msg_ = msg;
+        rtPub_->unlockAndPublish();
+      }
     }
+
   }
 
  private:
@@ -156,9 +160,11 @@ class LogElement<LogType_, true> : public LogElementBase {
                       labelName_,
                       msg,
                       timeStamp);
-    if (rtPub_->trylock()) {
-      rtPub_->msg_ = msg;
-      rtPub_->unlockAndPublish();
+    if (rtPub_->getNumSubscribers() > 0u) {
+      if (rtPub_->trylock()) {
+        rtPub_->msg_ = msg;
+        rtPub_->unlockAndPublish();
+      }
     }
   }
 
