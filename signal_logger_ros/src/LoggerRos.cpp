@@ -57,9 +57,9 @@ LoggerRos::LoggerRos(ros::NodeHandle& nodeHandle) :
 
 LoggerRos::~LoggerRos()
 {
-  for (auto& elem : collectedVars_) {
-    delete elem;
-  }
+//  for (auto& elem : collectedVars_) {
+//    delete elem;
+//  }
 }
 
 
@@ -75,9 +75,8 @@ void LoggerRos::updateLogger(bool updateScript) {
 
 
 void LoggerRos::collectLoggerData() {
-  for (auto& elem : collectedVars_) {
+  for (const auto& elem : collectedVars_) {
     if (elem->getNumSubscribers() > 0u) {
-      std::cout << "publishing topic: " << elem->getTopicName() << std::endl;
       ros::Time stamp = ros::Time::now();
       elem->publish(stamp);
     }
@@ -105,11 +104,9 @@ void LoggerRos::addShortToLog(short* var, const std::string& name, const std::st
   addVarToCollection<short>(group+name, var);
 }
 
-
 void LoggerRos::addLongToLog(long* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
   addVarToCollection<long>(group+name, var);
 }
-
 
 void LoggerRos::addCharToLog(char* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
   addVarToCollection<char>(group+name, var);
@@ -340,12 +337,12 @@ void LoggerRos::addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector,
                                                     const std::string& group,
                                                     const std::string& unit,
                                                     bool update) {
-//  addVarToCollection<KindrVectorD, true>(group+name,
-//                                         &vector,
-//                                         &position,
-//                                         name,
-//                                         vectorFrame,
-//                                         positionFrame);
+  addVarToCollection<KindrVectorD, true>(group+name,
+                                         &vector,
+                                         &position,
+                                         name,
+                                         vectorFrame,
+                                         positionFrame);
 }
 
 void LoggerRos::addDoubleKindrForceAtPositionToLog(const KindrForceD& force,
@@ -390,16 +387,6 @@ bool LoggerRos::checkIfVarCollected(const std::string& topicName, std::vector<Lo
   }
   return false;
 }
-
-//bool LoggerRos::checkIfVarCollected(const std::string& topicName, std::vector<LoggerVarInfo>::iterator& it) {
-//  for (it = collectedVars_.begin(); it != collectedVars_.end(); it++) {
-//    if (it->topicName_.compare(topicName) == 0) {
-//      ROCO_WARN_STREAM("[LoggerRos::checkIfVarCollected] Topic '" << topicName << "' was already published.");
-//      return true;
-//    }
-//  }
-//  return false;
-//}
 
 
 } /* namespace signal_logger_ros */

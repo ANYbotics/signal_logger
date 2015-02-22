@@ -18,7 +18,8 @@
 
 namespace signal_logger_ros {
 
-const int DEFAULT_QUEUE_SIZE = 1;
+
+const int DEFAULT_QUEUE_SIZE = 0;
 
 // generic declaration
 template <typename LogType_, bool vectorAtPosition = false>
@@ -31,29 +32,24 @@ class LogElement<LogType_, false> : public LogElementBase {
 
   typedef traits::slr_traits<LogType_> Traits;
 
-  LogElement() :
-    topicName_(""),
-    vectorPtr_(nullptr),
-    rtPub_(nullptr)
-  {
-
-  }
-
-  LogElement(const ros::NodeHandle& nodeHandle,
+  LogElement(ros::NodeHandle& nodeHandle,
              const std::string& name,
              const LogType_* varPtr) :
     topicName_(name),
     vectorPtr_(varPtr)
   {
-    rtPub_ = new realtime_tools::RealtimePublisher<typename Traits::msgtype>(nodeHandle, name, DEFAULT_QUEUE_SIZE);
+//    rtPub_ = new realtime_tools::RealtimePublisher<typename Traits::msgtype>(nodeHandle, name, DEFAULT_QUEUE_SIZE);
+    pub_ = nodeHandle.advertise<typename Traits::msgtype>(topicName_, DEFAULT_QUEUE_SIZE);
   }
 
   ~LogElement() {
+    pub_.shutdown();
 //    delete rtPub_;
   }
 
-  const uint32_t getNumSubscribers() const {
-    return rtPub_->getNumSubscribers();
+  virtual const uint32_t getNumSubscribers() const {
+//    return rtPub_->getNumSubscribers();
+    return pub_.getNumSubscribers();
   }
 
   virtual void setLogVarPointer(const LogType_* varPtr) {
@@ -67,16 +63,18 @@ class LogElement<LogType_, false> : public LogElementBase {
   virtual void publish(const ros::Time& timeStamp) {
     typename Traits::msgtype msg;
     Traits::updateMsg(vectorPtr_, msg, timeStamp);
-    if (rtPub_->trylock()) {
-      rtPub_->msg_ = msg;
-      rtPub_->unlockAndPublish();
-    }
+//    if (rtPub_->trylock()) {
+//      rtPub_->msg_ = msg;
+//      rtPub_->unlockAndPublish();
+//    }
+    pub_.publish(msg);
   }
 
  private:
   std::string topicName_;
   const LogType_* vectorPtr_;
-  realtime_tools::RealtimePublisher<typename Traits::msgtype>* rtPub_;
+//  realtime_tools::RealtimePublisher<typename Traits::msgtype>* rtPub_;
+  ros::Publisher pub_;
 };
 
 
@@ -87,15 +85,7 @@ class LogElement<LogType_, true> : public LogElementBase {
 
   typedef traits::slr_traits<LogType_, true> Traits;
 
-  LogElement() :
-    vectorPtr_(nullptr),
-    positionPtr_(nullptr),
-    rtPub_(nullptr)
-  {
-
-  }
-
-  LogElement(const ros::NodeHandle& nodeHandle,
+  LogElement(ros::NodeHandle& nodeHandle,
              const std::string& topic,
              const LogType_* varPtr,
              const signal_logger::LoggerBase::KindrPositionD* positionPtr,
@@ -110,15 +100,18 @@ class LogElement<LogType_, true> : public LogElementBase {
     positionFrameId_(positionFrame),
     labelName_(name)
   {
-    rtPub_ = new realtime_tools::RealtimePublisher<kindr_msgs::VectorAtPosition>(nodeHandle, topic, DEFAULT_QUEUE_SIZE);
+//    rtPub_ = new realtime_tools::RealtimePublisher<kindr_msgs::VectorAtPosition>(nodeHandle, topic, DEFAULT_QUEUE_SIZE);
+    pub_ = nodeHandle.advertise<typename Traits::msgtype>(topicName_, DEFAULT_QUEUE_SIZE);
   }
 
   ~LogElement() {
+    pub_.shutdown();
 //    delete rtPub_;
   }
 
-  const uint32_t getNumSubscribers() const {
-    return rtPub_->getNumSubscribers();
+  virtual const uint32_t getNumSubscribers() const {
+//    return rtPub_->getNumSubscribers();
+    return pub_.getNumSubscribers();
   }
 
   virtual void setLogVarPointer(const LogType_* varPtr) {
@@ -150,10 +143,11 @@ class LogElement<LogType_, true> : public LogElementBase {
                       labelName_,
                       msg,
                       timeStamp);
-    if (rtPub_->trylock()) {
-      rtPub_->msg_ = msg;
-      rtPub_->unlockAndPublish();
-    }
+//    if (rtPub_->trylock()) {
+//      rtPub_->msg_ = msg;
+//      rtPub_->unlockAndPublish();
+//    }
+    pub_.publish(msg);
   }
 
  private:
@@ -167,7 +161,8 @@ class LogElement<LogType_, true> : public LogElementBase {
   const LogType_* vectorPtr_;
   const signal_logger::LoggerBase::KindrPositionD* positionPtr_;
 
-  realtime_tools::RealtimePublisher<typename Traits::msgtype>* rtPub_;
+//  realtime_tools::RealtimePublisher<typename Traits::msgtype>* rtPub_;
+  ros::Publisher pub_;
 };
 
 
