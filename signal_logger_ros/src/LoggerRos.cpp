@@ -76,8 +76,11 @@ void LoggerRos::updateLogger(bool updateScript) {
 
 void LoggerRos::collectLoggerData() {
   for (auto& elem : collectedVars_) {
-    ros::Time stamp = ros::Time::now();
-    elem->publish(stamp);
+    if (elem->getNumSubscribers() > 0u) {
+      std::cout << "publishing topic: " << elem->getTopicName() << std::endl;
+      ros::Time stamp = ros::Time::now();
+      elem->publish(stamp);
+    }
   }
 }
 

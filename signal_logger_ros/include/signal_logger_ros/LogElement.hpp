@@ -33,7 +33,6 @@ class LogElement<LogType_, false> : public LogElementBase {
 
   LogElement() :
     topicName_(""),
-    type_(Traits::varType),
     vectorPtr_(nullptr),
     rtPub_(nullptr)
   {
@@ -44,7 +43,6 @@ class LogElement<LogType_, false> : public LogElementBase {
              const std::string& name,
              const LogType_* varPtr) :
     topicName_(name),
-    type_(Traits::varType),
     vectorPtr_(varPtr)
   {
     rtPub_ = new realtime_tools::RealtimePublisher<typename Traits::msgtype>(nodeHandle, name, DEFAULT_QUEUE_SIZE);
@@ -52,6 +50,10 @@ class LogElement<LogType_, false> : public LogElementBase {
 
   ~LogElement() {
 //    delete rtPub_;
+  }
+
+  const uint32_t getNumSubscribers() const {
+    return rtPub_->getNumSubscribers();
   }
 
   virtual void setLogVarPointer(const LogType_* varPtr) {
@@ -65,19 +67,14 @@ class LogElement<LogType_, false> : public LogElementBase {
   virtual void publish(const ros::Time& timeStamp) {
     typename Traits::msgtype msg;
     Traits::updateMsg(vectorPtr_, msg, timeStamp);
-
-    if (rtPub_->getNumSubscribers() > 0u) {
-      if (rtPub_->trylock()) {
-        rtPub_->msg_ = msg;
-        rtPub_->unlockAndPublish();
-      }
+    if (rtPub_->trylock()) {
+      rtPub_->msg_ = msg;
+      rtPub_->unlockAndPublish();
     }
-
   }
 
  private:
   std::string topicName_;
-  traits::VarType type_;
   const LogType_* vectorPtr_;
   realtime_tools::RealtimePublisher<typename Traits::msgtype>* rtPub_;
 };
@@ -91,7 +88,6 @@ class LogElement<LogType_, true> : public LogElementBase {
   typedef traits::slr_traits<LogType_, true> Traits;
 
   LogElement() :
-    type_(Traits::varType),
     vectorPtr_(nullptr),
     positionPtr_(nullptr),
     rtPub_(nullptr)
@@ -108,7 +104,6 @@ class LogElement<LogType_, true> : public LogElementBase {
              const std::string& name
              ) :
     topicName_(topic),
-    type_(Traits::varType),
     vectorPtr_(varPtr),
     positionPtr_(positionPtr),
     vectorFrameId_(vectorFrame),
@@ -120,6 +115,10 @@ class LogElement<LogType_, true> : public LogElementBase {
 
   ~LogElement() {
 //    delete rtPub_;
+  }
+
+  const uint32_t getNumSubscribers() const {
+    return rtPub_->getNumSubscribers();
   }
 
   virtual void setLogVarPointer(const LogType_* varPtr) {
@@ -151,11 +150,9 @@ class LogElement<LogType_, true> : public LogElementBase {
                       labelName_,
                       msg,
                       timeStamp);
-    if (rtPub_->getNumSubscribers() > 0u) {
-      if (rtPub_->trylock()) {
-        rtPub_->msg_ = msg;
-        rtPub_->unlockAndPublish();
-      }
+    if (rtPub_->trylock()) {
+      rtPub_->msg_ = msg;
+      rtPub_->unlockAndPublish();
     }
   }
 
@@ -165,7 +162,6 @@ class LogElement<LogType_, true> : public LogElementBase {
   std::string vectorFrameId_;
   std::string positionFrameId_;
 
-  traits::VarType type_;
   kindr_msgs::VectorAtPosition::Type kindrMsgType_;
 
   const LogType_* vectorPtr_;

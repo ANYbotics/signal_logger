@@ -20,6 +20,7 @@ class LogElementBase {
 
   virtual const std::string& getTopicName() = 0;
   virtual void publish(const ros::Time& timeStamp) = 0;
+  virtual const uint32_t getNumSubscribers() const = 0;
 };
 
 } /* namespace signal_logger_ros */
