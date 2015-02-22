@@ -18,6 +18,8 @@
 
 namespace signal_logger_ros {
 
+const int DEFAULT_QUEUE_SIZE = 1;
+
 // generic declaration
 template <typename LogType_, bool vectorAtPosition = false>
 class LogElement;
@@ -45,18 +47,7 @@ class LogElement<LogType_, false> : public LogElementBase {
     type_(Traits::varType),
     vectorPtr_(varPtr)
   {
-    rtPub_ = new realtime_tools::RealtimePublisher<typename Traits::msgtype>(nodeHandle, name, 100);
-  }
-
-  LogElement(const ros::NodeHandle& nodeHandle,
-             const std::string& name,
-             LogType_* varPtr,
-             signal_logger::LoggerBase::KindrPositionD* positionPtr) :
-    topicName_(name),
-    type_(Traits::varType),
-    vectorPtr_(varPtr)
-  {
-    rtPub_ = new realtime_tools::RealtimePublisher<kindr_msgs::VectorAtPosition>(nodeHandle, name, 100);
+    rtPub_ = new realtime_tools::RealtimePublisher<typename Traits::msgtype>(nodeHandle, name, DEFAULT_QUEUE_SIZE);
   }
 
   ~LogElement() {
@@ -124,7 +115,7 @@ class LogElement<LogType_, true> : public LogElementBase {
     positionFrameId_(positionFrame),
     labelName_(name)
   {
-    rtPub_ = new realtime_tools::RealtimePublisher<kindr_msgs::VectorAtPosition>(nodeHandle, topic, 100);
+    rtPub_ = new realtime_tools::RealtimePublisher<kindr_msgs::VectorAtPosition>(nodeHandle, topic, DEFAULT_QUEUE_SIZE);
   }
 
   ~LogElement() {

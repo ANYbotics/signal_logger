@@ -317,6 +317,32 @@ struct slr_traits<base_type::KindrForceD, true> {
     msg.position.z = positionPtr_->z();
     msg.position_frame_id = positionFrameId;
     msg.name = name;
+    msg.type = kindr_msgs::VectorAtPosition::TYPE_FORCE;
+  }
+};
+
+template<>
+struct slr_traits<base_type::KindrTorqueD, true> {
+  typedef kindr_msgs::VectorAtPosition msgtype;
+  static const VarType varType = VarType::KindrVectorAtPositionType;
+  static void updateMsg(const base_type::KindrTorqueD* vectorPtr_,
+                        const base_type::KindrPositionD* positionPtr_,
+                        const std::string& vectorFrameId,
+                        const std::string& positionFrameId,
+                        const std::string& name,
+                        msgtype& msg,
+                        const ros::Time& timeStamp) {
+    msg.header.stamp = timeStamp;
+    msg.header.frame_id = vectorFrameId;
+    msg.vector.x = vectorPtr_->x();
+    msg.vector.y = vectorPtr_->y();
+    msg.vector.z = vectorPtr_->z();
+    msg.position.x = positionPtr_->x();
+    msg.position.y = positionPtr_->y();
+    msg.position.z = positionPtr_->z();
+    msg.position_frame_id = positionFrameId;
+    msg.name = name;
+    msg.type = kindr_msgs::VectorAtPosition::TYPE_TORQUE;
   }
 };
 /***************************************************/

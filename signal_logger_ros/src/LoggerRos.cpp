@@ -75,12 +75,10 @@ void LoggerRos::updateLogger(bool updateScript) {
 
 
 void LoggerRos::collectLoggerData() {
-
   for (auto& elem : collectedVars_) {
     ros::Time stamp = ros::Time::now();
     elem->publish(stamp);
   }
-
 }
 
 
@@ -371,15 +369,12 @@ void LoggerRos::addDoubleKindrTorqueAtPositionToLog(const KindrTorqueD& torque,
                                                  const std::string& group,
                                                  const std::string& unit,
                                                  bool update) {
-//  kindr_msgs::VectorAtPosition msg;
-//  msg.type = kindr_msgs::VectorAtPosition::TYPE_TORQUE;
-//  msg.header.frame_id = torqueFrame;
-//  msg.position_frame_id = positionFrame;
-//  msg.name = name;
-//  addKindr3DVectorAtPositionToCollectedVariables(group+name,
-//                                                 msg,
-//                                                 &torque,
-//                                                 &position);
+  addVarToCollection<KindrTorqueD, true>(group+name,
+                                         &torque,
+                                         &position,
+                                         name,
+                                         torqueFrame,
+                                         positionFrame);
 }
 /******************/
 
