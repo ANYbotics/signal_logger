@@ -57,9 +57,7 @@ LoggerRos::LoggerRos(ros::NodeHandle& nodeHandle) :
 
 LoggerRos::~LoggerRos()
 {
-//  for (auto& elem : collectedVars_) {
-//    elem.pub_.shutdown();
-//  }
+
 }
 
 
@@ -76,84 +74,13 @@ void LoggerRos::updateLogger(bool updateScript) {
 
 void LoggerRos::collectLoggerData() {
 
-  ros::Time stamp = ros::Time::now();
-
   for (auto& elem : collectedVars_) {
+    ros::Time stamp = ros::Time::now();
     elem->publish(stamp);
 
 //    if (elem.pub_.getNumSubscribers() > 0u) {
 //      switch (elem.type_) {
-//        /**************
-//         * Core types *
-//         **************/
-//        case(Double): {
-////          traits::slr_traits<Double>::msgtype msg;
-//////          traits::slr_traits_type<double>::msgtype msg;
-//////          std_msgs::Float64 msg;
-////          double* var = boost::any_cast<double*>(elem.vectorPtr_);
-////          realtime_tools::RealtimePublisher<std_msgs::Float64>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<std_msgs::Float64>*>(elem.rtPub_);
-////          msg.data = *var;
-////          if (rtPub->trylock()) {
-////            rtPub->msg_ = msg;
-////            rtPub->unlockAndPublish();
-////          }
-//        } break;
-//
-//        case(Float): {
-////          traits::slr_traits<Float>::msgtype msg;
-////          std_msgs::Float32 msg;
-////          float* var = boost::any_cast<float*>(elem.vectorPtr_);
-////          realtime_tools::RealtimePublisher<std_msgs::Float32>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<std_msgs::Float32>*>(elem.rtPub_);
-////          msg.data = *var;
-////          if (rtPub->trylock()) {
-////            rtPub->msg_ = msg;
-////            rtPub->unlockAndPublish();
-////          }
-//        } break;
-//
-//        case(Int): {
-////          std_msgs::Int32 msg;
-////          int* var = boost::any_cast<int*>(elem.vectorPtr_);
-////          realtime_tools::RealtimePublisher<std_msgs::Int32>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<std_msgs::Int32>*>(elem.rtPub_);
-////          msg.data = *var;
-////          if (rtPub->trylock()) {
-////            rtPub->msg_ = msg;
-////            rtPub->unlockAndPublish();
-////          }
-//        } break;
-//
-//        case(Short): {
-////          std_msgs::Int8 msg;
-////          short* var = boost::any_cast<short*>(elem.vectorPtr_);
-////          realtime_tools::RealtimePublisher<std_msgs::Int8>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<std_msgs::Int8>*>(elem.rtPub_);
-////          msg.data = *var;
-////          if (rtPub->trylock()) {
-////            rtPub->msg_ = msg;
-////            rtPub->unlockAndPublish();
-////          }
-//        } break;
-//
-//        case(Long): {
-//          std_msgs::Int64Ptr msg(new std_msgs::Int64);
-//          int* var = boost::any_cast<int*>(elem.vectorPtr_);
-//          msg->data = *var;
-//          elem.pub_.publish(std_msgs::Int64ConstPtr(msg));
-//        } break;
-//
-//        case(Char): {
-//          std_msgs::CharPtr msg(new std_msgs::Char);
-//          char* var = boost::any_cast<char*>(elem.vectorPtr_);
-//          msg->data = *var;
-//          elem.pub_.publish(std_msgs::CharConstPtr(msg));
-//        } break;
-//
-//        case(Bool): {
-//          std_msgs::BoolPtr msg(new std_msgs::Bool);
-//          bool* var = boost::any_cast<bool*>(elem.vectorPtr_);
-//          msg->data = *var;
-//          elem.pub_.publish(std_msgs::BoolConstPtr(msg));
-//        } break;
-//        /**************/
+
 //
 //        /****************
 //         * Matrix types *
@@ -192,229 +119,7 @@ void LoggerRos::collectLoggerData() {
 //          elem.pub_.publish(std_msgs::Float32MultiArrayConstPtr(msg));
 //
 //        } break;
-//
-//        case(MatrixInt): {
-//        // todo
-//        } break;
-//
-//        case(MatrixShort): {
-//        // todo
-//        } break;
-//
-//        case(MatrixLong): {
-//        // todo
-//        } break;
-//
-//        case(MatrixChar): {
-//          // todo
-//        } break;
-//
-//        case(MatrixUnsignedChar): {
-//           // todo
-//        } break;
-//
-//        case(MatrixBool): {
-//          // todo
-//        } break;
-//
-//        case(EigenVector): {
-//          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
-//          const Eigen::Ref<Eigen::Vector3d>& var = boost::any_cast<const Eigen::Ref<Eigen::Vector3d>&>(elem.vectorPtr_);
-//          msg->header.stamp = stamp;
-//          msg->vector.x = var.x();
-//          msg->vector.y = var.y();
-//          msg->vector.z = var.z();
-//          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
-//        } break;
-//        /****************/
-//
-//        /***************
-//         * Kindr types *
-//         ***************/
-//        case(KindrPositionType) : {
-//          geometry_msgs::Vector3Stamped msg;
-//          const KindrPositionD* vec = boost::any_cast<const KindrPositionD*>(elem.vectorPtr_);
-//          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
-//
-//          msg.header.stamp = stamp;
-//          msg.vector.x = vec->x();
-//          msg.vector.y = vec->y();
-//          msg.vector.z = vec->z();
-//
-//          if (rtPub->trylock()) {
-//            rtPub->msg_ = msg;
-//            rtPub->unlockAndPublish();
-//          }
-//
-//        } break;
-//
-//        case(KindrRotationQuaternionType) : {
-//          geometry_msgs::QuaternionStamped msg;
-//          realtime_tools::RealtimePublisher<geometry_msgs::QuaternionStamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::QuaternionStamped>*>(elem.rtPub_);
-//          const KindrRotationQuaternionD* vec = boost::any_cast<const KindrRotationQuaternionD*>(elem.vectorPtr_);
-//          msg.header.stamp = stamp;
-//          msg.quaternion.x = vec->x();
-//          msg.quaternion.y = vec->y();
-//          msg.quaternion.z = vec->z();
-//          msg.quaternion.w = vec->w();
-//
-//          if (rtPub->trylock()) {
-//            rtPub->msg_ = msg;
-//            rtPub->unlockAndPublish();
-//          }
-//        } break;
-//
-//        case(KindrEulerAnglesZyxType) : {
-//          geometry_msgs::Vector3Stamped msg;
-//          const KindrEulerAnglesZyxD* vec = boost::any_cast<const KindrEulerAnglesZyxD*>(elem.vectorPtr_);
-//          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
-//          msg.header.stamp = stamp;
-//          msg.vector.x = vec->x();
-//          msg.vector.y = vec->y();
-//          msg.vector.z = vec->z();
-//
-//          if (rtPub->trylock()) {
-//            rtPub->msg_ = msg;
-//            rtPub->unlockAndPublish();
-//          }
-//        } break;
-//
-//        case(KindrLocalAngularVelocityType) : {
-//          geometry_msgs::Vector3Stamped msg;
-//          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
-//          const KindrAngularVelocityD* vec = boost::any_cast<const KindrAngularVelocityD*>(elem.vectorPtr_);
-//
-//          msg.header.stamp = stamp;
-//          msg.vector.x = vec->x();
-//          msg.vector.y = vec->y();
-//          msg.vector.z = vec->z();
-//
-//          if (rtPub->trylock()) {
-//            rtPub->msg_ = msg;
-//            rtPub->unlockAndPublish();
-//          }
-//        } break;
-//
-//        case(KindrAngleAxis) : {
-//        // todo
-//        } break;
-//
-//        case(KindrRotationMatrixType) : {
-//        // todo
-//        } break;
-//
-//        case(KindrRotationVectorType) : {
-//          geometry_msgs::Vector3Stamped msg;
-//          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
-//          const KindrRotationVectorD* vec = boost::any_cast<const KindrRotationVectorD*>(elem.vectorPtr_);
-//
-//          msg.header.stamp = stamp;
-//          msg.vector.x = vec->x();
-//          msg.vector.y = vec->y();
-//          msg.vector.z = vec->z();
-//
-//          if (rtPub->trylock()) {
-//            rtPub->msg_ = msg;
-//            rtPub->unlockAndPublish();
-//          }
-//        } break;
-//
-//        case(KindrLinearVelocityType) : {
-//          geometry_msgs::Vector3Stamped msg;
-//          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
-//          const KindrLinearVelocityD* vec = boost::any_cast<const KindrLinearVelocityD*>(elem.vectorPtr_);
-//
-//          msg.header.stamp = stamp;
-//          msg.vector.x = vec->x();
-//          msg.vector.y = vec->y();
-//          msg.vector.z = vec->z();
-//
-//          if (rtPub->trylock()) {
-//            rtPub->msg_ = msg;
-//            rtPub->unlockAndPublish();
-//          }
-//        } break;
-//
-//        case(KindrLinearAccelerationType) : {
-//          geometry_msgs::Vector3Stamped msg;
-//          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
-//          const KindrLinearAccelerationD* vec = boost::any_cast<const KindrLinearAccelerationD*>(elem.vectorPtr_);
-//
-//          msg.header.stamp = stamp;
-//          msg.vector.x = vec->x();
-//          msg.vector.y = vec->y();
-//          msg.vector.z = vec->z();
-//
-//          if (rtPub->trylock()) {
-//            rtPub->msg_ = msg;
-//            rtPub->unlockAndPublish();
-//          }
-//        } break;
-//
-//        case(KindrAngularAccelerationType) : {
-//          geometry_msgs::Vector3Stamped msg;
-//          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
-//          const KindrAngularAccelerationD* vec = boost::any_cast<const KindrAngularAccelerationD*>(elem.vectorPtr_);
-//
-//          msg.header.stamp = stamp;
-//          msg.vector.x = vec->x();
-//          msg.vector.y = vec->y();
-//          msg.vector.z = vec->z();
-//
-//          if (rtPub->trylock()) {
-//            rtPub->msg_ = msg;
-//            rtPub->unlockAndPublish();
-//          }
-//        } break;
-//
-//        case(KindrForceType): {
-//          traits::slr_traits<KindrForceType>::msgtype msg;
-//          const KindrForceD* vec = boost::any_cast<const KindrForceD*>(elem.vectorPtr_);
-//          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
-//
-//          msg.header.stamp = stamp;
-//          msg.vector.x = vec->x();
-//          msg.vector.y = vec->y();
-//          msg.vector.z = vec->z();
-//
-//          if (rtPub->trylock()) {
-//            rtPub->msg_ = msg;
-//            rtPub->unlockAndPublish();
-//          }
-//        } break;
-//
-//        case(KindrTorqueType): {
-//          geometry_msgs::Vector3Stamped msg;
-//          const KindrTorqueD* vec = boost::any_cast<const KindrTorqueD*>(elem.vectorPtr_);
-//          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
-//
-//          msg.header.stamp = stamp;
-//          msg.vector.x = vec->x();
-//          msg.vector.y = vec->y();
-//          msg.vector.z = vec->z();
-//
-//          if (rtPub->trylock()) {
-//            rtPub->msg_ = msg;
-//            rtPub->unlockAndPublish();
-//          }
-//        } break;
-//
-//        case(KindrVectorType): {
-//          geometry_msgs::Vector3Stamped msg;
-//          const KindrVectorD* vec = boost::any_cast<const KindrVectorD*>(elem.vectorPtr_);
-//          realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<geometry_msgs::Vector3Stamped>*>(elem.rtPub_);
-//
-//          msg.header.stamp = stamp;
-//          msg.vector.x = vec->x();
-//          msg.vector.y = vec->y();
-//          msg.vector.z = vec->z();
-//
-//          if (rtPub->trylock()) {
-//            rtPub->msg_ = msg;
-//            rtPub->unlockAndPublish();
-//          }
-//        } break;
-//
+
 //        case(KindrVectorAtPositionType): {
 //          kindr_msgs::VectorAtPosition msg;
 //          realtime_tools::RealtimePublisher<kindr_msgs::VectorAtPosition>* rtPub = boost::any_cast<realtime_tools::RealtimePublisher<kindr_msgs::VectorAtPosition>*>(elem.rtPub_);
@@ -480,7 +185,7 @@ void LoggerRos::stopAndSaveLoggerData() { }
 
 
 void LoggerRos::addFloatToLog(float* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  addScalarToCollectedVariables<float, std_msgs::Float32>(group+name, LoggerRos::VarType::Float, var);
+  addVarToCollection<float>(group+name, var);
 }
 
 void LoggerRos::addDoubleToLog(double* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
@@ -597,17 +302,7 @@ void LoggerRos::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& 
 }
 
 void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-//  const std::string& topicName = group + name;
-//  std::vector<LoggerVarInfo>::iterator collectedIterator;
-//  if (checkIfVarCollected(topicName, collectedIterator)) {
-//    collectedIterator->vectorPtr_ = var;
-//  } else {
-//    LoggerVarInfo varInfo(topicName);
-//    varInfo.pub_ = nodeHandle_.advertise<geometry_msgs::Vector3Stamped>(topicName, 100);
-//    varInfo.type_ = LoggerRos::VarType::EigenVector;
-//    varInfo.vectorPtr_ = var;
-//    collectedVars_.push_back(varInfo);
-//  }
+  addVarToCollection<Eigen::Ref<Eigen::Vector3d>>(group+name, &var);
 }
 
 void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {

@@ -149,6 +149,22 @@ struct slr_traits<bool> {
   }
 };
 
+
+
+template<>
+struct slr_traits<Eigen::Ref<Eigen::Vector3d>> {
+  typedef geometry_msgs::Vector3Stamped msgtype;
+  static const VarType varType = VarType::EigenVector;
+  static void updateMsg(const Eigen::Ref<Eigen::Vector3d>* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
+    msg.header.stamp = timeStamp;
+    msg.vector.x = vectorPtr_->x();
+    msg.vector.y = vectorPtr_->y();
+    msg.vector.z = vectorPtr_->z();
+  }
+};
+
+
+
 template<>
 struct slr_traits<base_type::KindrPositionD> {
   typedef geometry_msgs::Vector3Stamped msgtype;
