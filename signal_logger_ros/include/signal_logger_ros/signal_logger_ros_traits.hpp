@@ -79,7 +79,7 @@ enum Frames {
 };
 
 // generic interface
-template<typename LogType_> struct slr_traits;
+template<typename LogType_, bool VectorAtPosition_ = false> struct slr_traits;
 
 typedef signal_logger::LoggerBase base_type;
 
@@ -148,12 +148,12 @@ struct slr_traits<bool> {
     msg.data = *vectorPtr_;
   }
 };
-/*******************************/
+/********************************/
 
 
-/*******************************
+/********************************
  * Specializations: eigen types *
- *******************************/
+ ********************************/
 template<>
 struct slr_traits<Eigen::Ref<Eigen::Vector3d>> {
   typedef geometry_msgs::Vector3Stamped msgtype;
@@ -165,12 +165,12 @@ struct slr_traits<Eigen::Ref<Eigen::Vector3d>> {
     msg.vector.z = vectorPtr_->z();
   }
 };
-/*******************************/
+/********************************/
 
 
-/*******************************
+/********************************
  * Specializations: kindr types *
- *******************************/
+ ********************************/
 template<>
 struct slr_traits<base_type::KindrPositionD> {
   typedef geometry_msgs::Vector3Stamped msgtype;
@@ -291,7 +291,35 @@ struct slr_traits<base_type::KindrVectorD> {
     msg.vector.z = vectorPtr_->z();
   }
 };
-/*******************************/
+/********************************/
+
+/***************************************************
+ * Specializations: kindr vector at position types *
+ ***************************************************/
+template<>
+struct slr_traits<base_type::KindrForceD, true> {
+  typedef kindr_msgs::VectorAtPosition msgtype;
+  static const VarType varType = VarType::KindrVectorAtPositionType;
+  static void updateMsg(const base_type::KindrForceD* vectorPtr_,
+                        const base_type::KindrPositionD* positionPtr_,
+                        const std::string& vectorFrameId,
+                        const std::string& positionFrameId,
+                        const std::string& name,
+                        msgtype& msg,
+                        const ros::Time& timeStamp) {
+    msg.header.stamp = timeStamp;
+    msg.header.frame_id = vectorFrameId;
+    msg.vector.x = vectorPtr_->x();
+    msg.vector.y = vectorPtr_->y();
+    msg.vector.z = vectorPtr_->z();
+    msg.position.x = positionPtr_->x();
+    msg.position.y = positionPtr_->y();
+    msg.position.z = positionPtr_->z();
+    msg.position_frame_id = positionFrameId;
+    msg.name = name;
+  }
+};
+/***************************************************/
 
 } /* namespace traits */
 

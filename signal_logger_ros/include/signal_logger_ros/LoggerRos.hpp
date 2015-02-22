@@ -154,33 +154,43 @@ class LoggerRos : public signal_logger::LoggerBase {
 
   virtual bool checkIfVarCollected(const std::string& topicName, std::vector<LogElementBase*>::iterator& it);
 
-  template<typename LogType_>
-  void addVarToCollection(const std::string& topicName, const LogType_* varPtr) {
+  template<typename LogType_, bool atPosition = false>
+  void addVarToCollection(const std::string& topicName,
+                          const LogType_* varPtr)
+  {
     std::vector<LogElementBase*>::iterator collectedIterator;
     if (checkIfVarCollected(topicName, collectedIterator)) {
       dynamic_cast<LogElement<LogType_>*>(*collectedIterator)->setLogVarPointer(varPtr);
     } else {
-      collectedVars_.push_back(new LogElement<LogType_>(nodeHandle_, topicName, varPtr));
+      collectedVars_.push_back(new LogElement<LogType_, atPosition>(nodeHandle_, topicName, varPtr));
     }
   }
 
-//  template <typename VectorType_>
-//  void addKindr3DVectorAtPositionToCollectedVariables(const std::string& topicName, const kindr_msgs::VectorAtPosition& kindrMsg, const VectorType_* varPtr, const KindrPositionD* position) {
-//    std::vector<LoggerVarInfo>::iterator collectedIterator;
-//    if (checkIfVarCollected(topicName, collectedIterator)) {
-//      collectedIterator->vectorPtr_ = varPtr;
-//      collectedIterator->positionPtr_ = position;
-//    } else {
-//      LoggerVarInfo varInfo(topicName);
-//      varInfo.rtPub_ = new realtime_tools::RealtimePublisher<kindr_msgs::VectorAtPosition>(nodeHandle_, topicName, 100);
-//      varInfo.type_ = LoggerRos::VarType::KindrVectorAtPositionType;
-//
-//      varInfo.kindrMsg_ = kindrMsg;
-//      varInfo.vectorPtr_ = varPtr;
-//      varInfo.positionPtr_ = position;
-//      collectedVars_.push_back(varInfo);
-//    }
-//  }
+  template<typename LogType_, bool atPosition = true>
+  void addVarToCollection(const std::string& topicName,
+                          const LogType_* varPtr,
+                          const KindrPositionD* positionPtr,
+                          const std::string& name,
+                          const std::string& vectorFrame,
+                          const std::string& positionFrame)
+  {
+    std::vector<LogElementBase*>::iterator collectedIterator;
+    if (checkIfVarCollected(topicName, collectedIterator)) {
+      dynamic_cast<LogElement<LogType_, atPosition>*>(*collectedIterator)->setLogVarAtPositionPointer(varPtr,
+                                                                                                      positionPtr,
+                                                                                                      vectorFrame,
+                                                                                                      positionFrame,
+                                                                                                      name);
+    } else {
+      collectedVars_.push_back(new LogElement<LogType_, atPosition>(nodeHandle_,
+                                                                    topicName,
+                                                                    varPtr,
+                                                                    positionPtr,
+                                                                    vectorFrame,
+                                                                    positionFrame,
+                                                                    name));
+    }
+  }
 
 };
 
