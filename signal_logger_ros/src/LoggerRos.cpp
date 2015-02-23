@@ -74,7 +74,8 @@ void LoggerRos::updateLogger(bool updateScript) {
 }
 
 
-void LoggerRos::collectLoggerData() {
+void LoggerRos::collectLoggerData()
+{
   for (const auto& elem : collectedVars_) {
     if (elem.get()->getNumSubscribers() > 0u) {
       ros::Time stamp = ros::Time::now();
@@ -87,34 +88,58 @@ void LoggerRos::collectLoggerData() {
 void LoggerRos::lockUpdate() { }
 void LoggerRos::stopAndSaveLoggerData() { }
 
-
-void LoggerRos::addFloatToLog(float* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<float>(group+name, var);
+/**************
+ * Core types *
+ **************/
+void LoggerRos::addFloatToLog(float* var, const std::string& name,
+                              const std::string& group, const std::string& unit,
+                              bool update)
+{
+  addVarToCollection<float>(group + name, var);
 }
 
-void LoggerRos::addDoubleToLog(double* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<double>(group+name, var);
+void LoggerRos::addDoubleToLog(double* var, const std::string& name,
+                               const std::string& group,
+                               const std::string& unit, bool update)
+{
+  addVarToCollection<double>(group + name, var);
 }
 
-void LoggerRos::addIntToLog(int* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<int>(group+name, var);
+void LoggerRos::addIntToLog(int* var, const std::string& name,
+                            const std::string& group, const std::string& unit,
+                            bool update)
+{
+  addVarToCollection<int>(group + name, var);
 }
 
-void LoggerRos::addShortToLog(short* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<short>(group+name, var);
+void LoggerRos::addShortToLog(short* var, const std::string& name,
+                              const std::string& group, const std::string& unit,
+                              bool update)
+{
+  addVarToCollection<short>(group + name, var);
 }
 
-void LoggerRos::addLongToLog(long* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<long>(group+name, var);
+void LoggerRos::addLongToLog(long* var, const std::string& name,
+                             const std::string& group, const std::string& unit,
+                             bool update)
+{
+  addVarToCollection<long>(group + name, var);
 }
 
-void LoggerRos::addCharToLog(char* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<char>(group+name, var);
+void LoggerRos::addCharToLog(char* var, const std::string& name,
+                             const std::string& group, const std::string& unit,
+                             bool update)
+{
+  addVarToCollection<char>(group + name, var);
 }
 
-void LoggerRos::addBoolToLog(bool* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<bool>(group+name, var);
+void LoggerRos::addBoolToLog(bool* var, const std::string& name,
+                             const std::string& group, const std::string& unit,
+                             bool update)
+{
+  addVarToCollection<bool>(group + name, var);
 }
+/**************/
 
 
 /******************
@@ -378,11 +403,14 @@ void LoggerRos::addDoubleKindrTorqueAtPositionToLog(const KindrTorqueD& torque,
 }
 /******************/
 
-//bool LoggerRos::checkIfVarCollected(const std::string& topicName, std::vector<LogElementBase*>::iterator& it) {
-bool LoggerRos::checkIfVarCollected(const std::string& topicName, std::vector<std::shared_ptr<LogElementBase>>::iterator& it) {
+bool LoggerRos::checkIfVarCollected(
+    const std::string& topicName,
+    std::vector<std::shared_ptr<LogElementBase>>::iterator& it)
+{
   for (it = collectedVars_.begin(); it != collectedVars_.end(); it++) {
     if ((*it).get()->getTopicName().compare(topicName) == 0) {
-      ROCO_WARN_STREAM("[LoggerRos::checkIfVarCollected] Topic '" << topicName << "' was already being published.");
+      ROCO_WARN_STREAM(
+          "[LoggerRos::checkIfVarCollected] Topic '" << topicName << "' was already being published.");
       return true;
     }
   }
