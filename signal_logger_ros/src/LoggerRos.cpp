@@ -43,15 +43,19 @@
 
 #include "signal_logger_ros/LoggerRos.hpp"
 #include "roco/log/log_messages.hpp"
-#include <chrono>
+
+
+const int DEFAULT_UPDATE_FREQUENCY = 1; // Hz
 
 namespace signal_logger_ros {
 
 LoggerRos::LoggerRos(ros::NodeHandle& nodeHandle) :
-    collectedVars_(0)
+    nodeHandle_ (nodeHandle),
+    collectedVars_(0),
+    updateFrequency_(DEFAULT_UPDATE_FREQUENCY),
+    lastPublishTime_(Clock::now())
 {
-  nodeHandle_ = &nodeHandle;
-  pubTime_ = (*nodeHandle_).advertise<std_msgs::Float32>("/slr/publish_duration",0);
+  pubTime_ = nodeHandle_.advertise<std_msgs::Float32>("/slr/publish_duration",0);
 }
 
 
@@ -76,15 +80,20 @@ void LoggerRos::updateLogger(bool updateScript) {
 
 void LoggerRos::collectLoggerData()
 {
-  typedef std::chrono::steady_clock Clock;
-  typedef std::chrono::microseconds microseconds;
   Clock::time_point start = Clock::now();
 
-  for (const auto& elem : collectedVars_) {
-    if (elem.get()->getNumSubscribers() > 0u) {
-      ros::Time stamp = ros::Time::now();
-      elem->publish(stamp);
+  double updatePeriod = 1.0/static_cast<double>(updateFrequency_)*1000*1000;
+  double timeSinceLastUpdate = std::chrono::duration_cast<microseconds>(Clock::now()-lastPublishTime_).count();
+
+  if (timeSinceLastUpdate > updatePeriod) {
+    for (const auto& elem : collectedVars_) {
+      if (elem.get()->getNumSubscribers() > 0u) {
+        ros::Time stamp = ros::Time::now();
+        elem->publish(stamp);
+      }
     }
+
+    lastPublishTime_ = Clock::now();
   }
 
   Clock::time_point end = Clock::now();
@@ -93,7 +102,6 @@ void LoggerRos::collectLoggerData()
   std_msgs::Float32 msg;
   msg.data = us.count();
   pubTime_.publish(msg);
-
 }
 
 
