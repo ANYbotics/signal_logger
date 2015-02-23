@@ -43,15 +43,15 @@
 
 #include "signal_logger_ros/LoggerRos.hpp"
 #include "roco/log/log_messages.hpp"
-
+#include <chrono>
 
 namespace signal_logger_ros {
 
 LoggerRos::LoggerRos(ros::NodeHandle& nodeHandle) :
-    nodeHandle_(nodeHandle),
     collectedVars_(0)
 {
-
+  nodeHandle_ = &nodeHandle;
+  pubTime_ = (*nodeHandle_).advertise<std_msgs::Float32>("/slr/publish_duration",0);
 }
 
 
@@ -76,12 +76,24 @@ void LoggerRos::updateLogger(bool updateScript) {
 
 void LoggerRos::collectLoggerData()
 {
+  typedef std::chrono::steady_clock Clock;
+  typedef std::chrono::microseconds microseconds;
+  Clock::time_point start = Clock::now();
+
   for (const auto& elem : collectedVars_) {
     if (elem.get()->getNumSubscribers() > 0u) {
       ros::Time stamp = ros::Time::now();
       elem->publish(stamp);
     }
   }
+
+  Clock::time_point end = Clock::now();
+  microseconds us = std::chrono::duration_cast<microseconds>(end - start);
+
+  std_msgs::Float32 msg;
+  msg.data = us.count();
+  pubTime_.publish(msg);
+
 }
 
 

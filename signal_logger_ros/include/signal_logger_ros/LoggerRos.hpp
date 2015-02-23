@@ -149,8 +149,10 @@ class LoggerRos : public signal_logger::LoggerBase {
   /******************/
 
  protected:
-  ros::NodeHandle& nodeHandle_;
+  ros::NodeHandle* nodeHandle_;
   std::vector<std::shared_ptr<LogElementBase>> collectedVars_;
+
+  ros::Publisher pubTime_;
 
   virtual bool checkIfVarCollected(const std::string& topicName, std::vector<std::shared_ptr<LogElementBase>>::iterator& it);
 
@@ -164,7 +166,7 @@ class LoggerRos : public signal_logger::LoggerBase {
     } else {
       collectedVars_.push_back(
           std::shared_ptr<LogElement<LogType_, atPosition>>(
-              new LogElement<LogType_, atPosition>(nodeHandle_, topicName,
+              new LogElement<LogType_, atPosition>(*nodeHandle_, topicName,
                                                    varPtr)));
     }
   }
@@ -184,7 +186,7 @@ class LoggerRos : public signal_logger::LoggerBase {
     } else {
       collectedVars_.push_back(
           std::shared_ptr<LogElement<LogType_, atPosition>>(
-              new LogElement<LogType_, atPosition>(nodeHandle_, topicName,
+              new LogElement<LogType_, atPosition>(*nodeHandle_, topicName,
                                                    varPtr, positionPtr,
                                                    vectorFrame, positionFrame,
                                                    name)));
