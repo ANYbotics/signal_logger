@@ -28,6 +28,7 @@ include_directories(${catkin_INCLUDE_DIRS})
 
 add_library(signal_logger_ros SHARED 
     src/LoggerRos.cpp
+    src/LogElementBase.cpp
 )
 add_dependencies(signal_logger_ros 
 				std_msgs_generate_messages_cpp 

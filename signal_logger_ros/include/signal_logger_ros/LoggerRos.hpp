@@ -44,80 +44,12 @@
 #ifndef LOGGERROS_HPP_
 #define LOGGERROS_HPP_
 
-#include <ros/ros.h>
-#include <boost/any.hpp>
-#include "signal_logger/LoggerBase.hpp"
-#include "geometry_msgs/Vector3Stamped.h"
-#include "kindr_msgs/VectorAtPosition.h"
-
-#include <realtime_tools/realtime_publisher.h>
+#include "signal_logger_ros/LogElement.hpp"
+#include <chrono>
 
 namespace signal_logger_ros {
 
 class LoggerRos : public signal_logger::LoggerBase {
- public:
-
-  enum VarType {
-    Double = 5,
-    Float = 6,
-    Int = 7,
-    Short = 8,
-    Long = 9,
-    Char = 10,
-    Bool = 11,
-    KindrPositionType = 12,
-    KindrRotationQuaternionType = 13,
-    KindrEulerAnglesZyxType = 14,
-    KindrLocalAngularVelocityType = 15,
-    KindrAngleAxis = 16,
-    KindrRotationMatrixType = 17,
-    KindrRotationVectorType = 18,
-    KindrLinearVelocityType = 19,
-    KindrLinearAccelerationType = 20,
-    KindrAngularAccelerationType = 21,
-    KindrForceType = 22,
-    KindrTorqueType = 23,
-    KindrVectorType = 24,
-    KindrVectorAtPositionType = 25,
-    MatrixDouble = 26,
-    MatrixFloat =27,
-    MatrixInt = 28,
-    MatrixShort = 29,
-    MatrixLong = 30,
-    MatrixChar = 31,
-    MatrixUnsignedChar = 34,
-    MatrixBool = 32,
-    EigenVector = 33,
-    KindrForceAtPositionType = 34,
-    KindrTorqueAtPositionType = 35,
-    KindrTypeNone = -1
-  };
-
-  enum Frames {
-    Base = 0,
-    Map = 1
-  };
-
-
-  struct LoggerVarInfo {
-    std::string topicName_ = "";
-    ros::Publisher pub_;
-
-//    realtime_tools::RealtimePublisher rtPub_;
-
-    Frames frame_ = Base;
-
-    VarType type_ = KindrTypeNone;
-    kindr_msgs::VectorAtPosition kindrMsg_;
-
-    boost::any vectorPtr_;
-    const KindrPositionD* positionPtr_ = nullptr;
-
-    LoggerVarInfo() { }
-    LoggerVarInfo(const std::string& name) : topicName_(name) { }
-    LoggerVarInfo(const std::string& name, ros::Publisher& publ) : topicName_(name), pub_(publ) { }
-  };
-
  public:
   LoggerRos(ros::NodeHandle& nodeHandle);
   virtual ~LoggerRos();
@@ -133,6 +65,9 @@ class LoggerRos : public signal_logger::LoggerBase {
   virtual void collectLoggerData();
   virtual void lockUpdate();
   virtual void stopAndSaveLoggerData();
+
+  virtual void setPublishFrequency(int frequency);
+  virtual void clearCollectedVariables();
   /****************/
 
 
@@ -218,54 +153,52 @@ class LoggerRos : public signal_logger::LoggerBase {
   /******************/
 
  protected:
-
-  virtual bool checkIfVarCollected(const std::string& topicName, std::vector<LoggerVarInfo>::iterator& it);
+  typedef std::chrono::steady_clock Clock;
+  typedef std::chrono::microseconds microseconds;
 
   ros::NodeHandle& nodeHandle_;
-  std::vector<LoggerVarInfo> collectedVars_;
+  std::vector<std::shared_ptr<LogElementBase>> collectedVars_;
+  int updateFrequency_;
 
-  template <class T>
-  void addKindr3DToCollectedVariables(const std::string& topicName, const LoggerRos::VarType& varType, const T* varRef) {
-    std::vector<LoggerVarInfo>::iterator collectedIterator;
+  Clock::time_point lastPublishTime_;
+  ros::Publisher pubTime_;
+
+  virtual bool checkIfVarCollected(const std::string& topicName, std::vector<std::shared_ptr<LogElementBase>>::iterator& it);
+
+  template<typename LogType_, bool atPosition = false>
+  void addVarToCollection(const std::string& topicName, const LogType_* varPtr)
+  {
+    std::vector<std::shared_ptr<LogElementBase>>::iterator collectedIterator;
     if (checkIfVarCollected(topicName, collectedIterator)) {
-      collectedIterator->vectorPtr_ = varRef;
+      dynamic_cast<LogElement<LogType_>*>((*collectedIterator).get())
+          ->setLogVarPointer(varPtr);
     } else {
-      LoggerVarInfo varInfo(topicName);
-      varInfo.pub_ = nodeHandle_.advertise<geometry_msgs::Vector3Stamped>(topicName, 100);
-      varInfo.type_ = varType;
-      varInfo.vectorPtr_ = varRef;
-      collectedVars_.push_back(varInfo);
+      collectedVars_.push_back(
+          std::shared_ptr<LogElement<LogType_, atPosition>>(
+              new LogElement<LogType_, atPosition>(nodeHandle_, topicName,
+                                                   varPtr)));
     }
   }
 
-  template <class VectorType_>
-  void addKindr3DVectorAtPositionToCollectedVariables(const std::string& topicName, const kindr_msgs::VectorAtPosition& kindrMsg, const VectorType_* varRef, const KindrPositionD* position) {
-    std::vector<LoggerVarInfo>::iterator collectedIterator;
+  template<typename LogType_, bool atPosition = true>
+  void addVarToCollection(const std::string& topicName, const LogType_* varPtr,
+                          const KindrPositionD* positionPtr,
+                          const std::string& name,
+                          const std::string& vectorFrame,
+                          const std::string& positionFrame)
+  {
+    std::vector<std::shared_ptr<LogElementBase>>::iterator collectedIterator;
     if (checkIfVarCollected(topicName, collectedIterator)) {
-      collectedIterator->vectorPtr_ = varRef;
-      collectedIterator->positionPtr_ = position;
+      dynamic_cast<LogElement<LogType_, atPosition>*>((*collectedIterator).get())
+          ->setLogVarAtPositionPointer(varPtr, positionPtr, vectorFrame,
+                                       positionFrame, name);
     } else {
-      LoggerVarInfo varInfo(topicName);
-      varInfo.pub_ = nodeHandle_.advertise<kindr_msgs::VectorAtPosition>(topicName, 100);
-
-      varInfo.type_ = LoggerRos::VarType::KindrVectorAtPositionType;
-
-//      switch(kindrMsg.type) {
-//        case(kindr_msgs::VectorAtPosition::TYPE_TYPELESS): {
-//          varInfo.type_ = LoggerRos::VarType::KindrVectorAtPositionType;
-//        } break;
-//        case(kindr_msgs::VectorAtPosition::TYPE_FORCE): {
-//          varInfo.type_ = LoggerRos::VarType::KindrForceAtPositionType;
-//        } break;
-//        case(kindr_msgs::VectorAtPosition::TYPE_TORQUE): {
-//          varInfo.type_ = LoggerRos::VarType::KindrTorqueAtPositionType;
-//        } break;
-//      }
-
-      varInfo.kindrMsg_ = kindrMsg;
-      varInfo.vectorPtr_ = varRef;
-      varInfo.positionPtr_ = position;
-      collectedVars_.push_back(varInfo);
+      collectedVars_.push_back(
+          std::shared_ptr<LogElement<LogType_, atPosition>>(
+              new LogElement<LogType_, atPosition>(nodeHandle_, topicName,
+                                                   varPtr, positionPtr,
+                                                   vectorFrame, positionFrame,
+                                                   name)));
     }
   }
 

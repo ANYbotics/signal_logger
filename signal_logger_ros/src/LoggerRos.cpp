@@ -44,44 +44,26 @@
 #include "signal_logger_ros/LoggerRos.hpp"
 #include "roco/log/log_messages.hpp"
 
-#include "geometry_msgs/WrenchStamped.h"
-#include "geometry_msgs/QuaternionStamped.h"
 
-#include <std_msgs/Float32.h>
-#include <std_msgs/Float64.h>
-#include <std_msgs/Int64.h>
-#include <std_msgs/Int32.h>
-#include <std_msgs/Int8.h>
-#include <std_msgs/Bool.h>
-#include <std_msgs/Char.h>
-
-#include <std_msgs/Float32MultiArray.h>
-#include <std_msgs/Float64MultiArray.h>
-#include <std_msgs/Int64MultiArray.h>
-#include <std_msgs/Int32MultiArray.h>
-#include <std_msgs/Int8MultiArray.h>
-
-#include <signal_logger_msgs/EigenMatrixDouble.h>
-#include <signal_logger_msgs/EigenMatrixFloat.h>
-
+const int DEFAULT_UPDATE_FREQUENCY = 1; // Hz
 
 namespace signal_logger_ros {
 
 LoggerRos::LoggerRos(ros::NodeHandle& nodeHandle) :
-    nodeHandle_(nodeHandle),
-    collectedVars_(0)
+    nodeHandle_ (nodeHandle),
+    collectedVars_(0),
+    updateFrequency_(DEFAULT_UPDATE_FREQUENCY),
+    lastPublishTime_(Clock::now())
 {
-
-//  realtime_tools::RealtimePublisher rtPub = ;
-
+  pubTime_ = nodeHandle_.advertise<std_msgs::Float32>("/slr/publish_duration",0);
 }
 
 
 LoggerRos::~LoggerRos()
 {
-  for (auto& elem : collectedVars_) {
-    elem.pub_.shutdown();
-  }
+//  for (auto& elem : collectedVars_) {
+//    delete elem;
+//  }
 }
 
 
@@ -89,503 +71,175 @@ void LoggerRos::initLogger(int updateFrequency, int samplingFrequency, double sa
 void LoggerRos::startLogger() { }
 void LoggerRos::stopLogger() { }
 void LoggerRos::saveLoggerData() { }
+void LoggerRos::updateLogger(bool updateScript) { }
 
 
-void LoggerRos::updateLogger(bool updateScript) {
-
+void LoggerRos::setPublishFrequency(int frequency) {
+  updateFrequency_ = frequency;
 }
 
 
-void LoggerRos::collectLoggerData() {
+void LoggerRos::clearCollectedVariables() {
+    collectedVars_.clear();
+}
 
-  ros::Time stamp = ros::Time::now();
 
-  for (auto elem : collectedVars_) {
+void LoggerRos::collectLoggerData()
+{
+  Clock::time_point start = Clock::now();
 
-    if (elem.pub_.getNumSubscribers() > 0u) {
-      switch (elem.type_) {
-        /**************
-         * Core types *
-         **************/
-        case(Double): {
-          std_msgs::Float64Ptr msg(new std_msgs::Float64);
-          double* var = boost::any_cast<double*>(elem.vectorPtr_);
-          msg->data = *var;
-          elem.pub_.publish(std_msgs::Float64ConstPtr(msg));
-        } break;
+  double updatePeriod = 1.0/static_cast<double>(updateFrequency_)*1000*1000;
+  double timeSinceLastUpdate = std::chrono::duration_cast<microseconds>(Clock::now()-lastPublishTime_).count();
 
-        case(Float): {
-          std_msgs::Float32Ptr msg(new std_msgs::Float32);
-          float* var = boost::any_cast<float*>(elem.vectorPtr_);
-          msg->data = *var;
-          elem.pub_.publish(std_msgs::Float32ConstPtr(msg));
-        } break;
+  if (timeSinceLastUpdate > updatePeriod) {
+    for (const auto& elem : collectedVars_) {
+      if (elem.get()->getNumSubscribers() > 0u) {
+        ros::Time stamp = ros::Time::now();
+        elem->publish(stamp);
+      }
+    }
 
-        case(Int): {
-          std_msgs::Int32Ptr msg(new std_msgs::Int32);
-          int* var = boost::any_cast<int*>(elem.vectorPtr_);
-          msg->data = *var;
-          elem.pub_.publish(std_msgs::Int32ConstPtr(msg));
-        } break;
-
-        case(Short): {
-          std_msgs::Int8Ptr msg(new std_msgs::Int8);
-          int* var = boost::any_cast<int*>(elem.vectorPtr_);
-          msg->data = *var;
-          elem.pub_.publish(std_msgs::Int8ConstPtr(msg));
-        } break;
-
-        case(Long): {
-          std_msgs::Int64Ptr msg(new std_msgs::Int64);
-          int* var = boost::any_cast<int*>(elem.vectorPtr_);
-          msg->data = *var;
-          elem.pub_.publish(std_msgs::Int64ConstPtr(msg));
-        } break;
-
-        case(Char): {
-          std_msgs::CharPtr msg(new std_msgs::Char);
-          char* var = boost::any_cast<char*>(elem.vectorPtr_);
-          msg->data = *var;
-          elem.pub_.publish(std_msgs::CharConstPtr(msg));
-        } break;
-
-        case(Bool): {
-          std_msgs::BoolPtr msg(new std_msgs::Bool);
-          bool* var = boost::any_cast<bool*>(elem.vectorPtr_);
-          msg->data = *var;
-          elem.pub_.publish(std_msgs::BoolConstPtr(msg));
-        } break;
-        /**************/
-
-        /****************
-         * Matrix types *
-         ****************/
-        case(MatrixDouble): {
-//          signal_logger_msgs::EigenMatrixDoublePtr msg(new signal_logger_msgs::EigenMatrixDouble);
-//          const Eigen::Ref<Eigen::MatrixXd>& var = boost::any_cast<const Eigen::Ref<Eigen::MatrixXd>&>(elem.vectorPtr_);
-//          msg->header.stamp = stamp;
-//          for (int k=0; k<var.cols(); k++) {
-//            for (int h=0; h<var.rows(); h++) {
-//              msg->matrix.push_back((double)(var)(h,k));
-//            }
-//          }
-
-//          if (elem.rtPub_.trylock()){
-//            elem.rtPub_.msg_.header.stamp = stamp;
-//            for (int k=0; k<var.cols(); k++) {
-//              for (int h=0; h<var.rows(); h++) {
-//                elem.rtPub_.msg.matrix.push_back((double)(var)(h,k));
-//              }
-//            }
-//            elem.rtPub_.unlockAndPublish();
-//           }
-
-//          elem.pub_.publish(signal_logger_msgs::EigenMatrixDoubleConstPtr(msg));
-        } break;
-
-        case(MatrixFloat): {
-          std_msgs::Float32MultiArrayPtr msg(new std_msgs::Float32MultiArray);
-          const Eigen::Ref<Eigen::MatrixXf>& var = boost::any_cast<const Eigen::Ref<Eigen::MatrixXf>&>(elem.vectorPtr_);
-          for (int k=0; k<var.cols(); k++) {
-            for (int h=0; h<var.rows(); h++) {
-              msg->data.push_back((float)(var)(h,k));
-            }
-          }
-          elem.pub_.publish(std_msgs::Float32MultiArrayConstPtr(msg));
-
-        } break;
-
-        case(MatrixInt): {
-        // todo
-        } break;
-
-        case(MatrixShort): {
-        // todo
-        } break;
-
-        case(MatrixLong): {
-        // todo
-        } break;
-
-        case(MatrixChar): {
-          // todo
-        } break;
-
-        case(MatrixUnsignedChar): {
-           // todo
-        } break;
-
-        case(MatrixBool): {
-          // todo
-        } break;
-
-        case(EigenVector): {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
-          const Eigen::Ref<Eigen::Vector3d>& var = boost::any_cast<const Eigen::Ref<Eigen::Vector3d>&>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = var.x();
-          msg->vector.y = var.y();
-          msg->vector.z = var.z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
-        } break;
-        /****************/
-
-        /***************
-         * Kindr types *
-         ***************/
-        case(KindrPositionType) : {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
-          const KindrPositionD* vec = boost::any_cast<const KindrPositionD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
-        } break;
-
-        case(KindrRotationQuaternionType) : {
-          geometry_msgs::QuaternionStampedPtr msg(new geometry_msgs::QuaternionStamped);
-          const KindrRotationQuaternionD* vec = boost::any_cast<const KindrRotationQuaternionD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->quaternion.x = vec->x();
-          msg->quaternion.y = vec->y();
-          msg->quaternion.z = vec->z();
-          msg->quaternion.w = vec->w();
-          elem.pub_.publish(geometry_msgs::QuaternionStampedConstPtr(msg));
-        } break;
-
-        case(KindrEulerAnglesZyxType) : {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
-          const KindrEulerAnglesZyxD* vec = boost::any_cast<const KindrEulerAnglesZyxD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
-        } break;
-
-        case(KindrLocalAngularVelocityType) : {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
-          const KindrAngularVelocityD* vec = boost::any_cast<const KindrAngularVelocityD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
-        } break;
-
-        case(KindrAngleAxis) : {
-        // todo
-        } break;
-
-        case(KindrRotationMatrixType) : {
-        // todo
-        } break;
-
-        case(KindrRotationVectorType) : {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
-          const KindrRotationVectorD* vec = boost::any_cast<const KindrRotationVectorD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
-        } break;
-
-        case(KindrLinearVelocityType) : {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
-          const KindrLinearVelocityD* vec = boost::any_cast<const KindrLinearVelocityD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
-        } break;
-
-        case(KindrLinearAccelerationType) : {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
-          const KindrLinearAccelerationD* vec = boost::any_cast<const KindrLinearAccelerationD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
-        } break;
-
-        case(KindrAngularAccelerationType) : {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
-          const KindrAngularAccelerationD* vec = boost::any_cast<const KindrAngularAccelerationD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
-        } break;
-
-        case(KindrForceType): {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
-          const KindrForceD* vec = boost::any_cast<const KindrForceD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
-        } break;
-
-        case(KindrTorqueType): {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
-          const KindrTorqueD* vec = boost::any_cast<const KindrTorqueD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
-        } break;
-
-        case(KindrVectorType): {
-          geometry_msgs::Vector3StampedPtr msg(new geometry_msgs::Vector3Stamped);
-          const KindrVectorD* vec = boost::any_cast<const KindrVectorD*>(elem.vectorPtr_);
-          msg->header.stamp = stamp;
-          msg->vector.x = vec->x();
-          msg->vector.y = vec->y();
-          msg->vector.z = vec->z();
-          elem.pub_.publish(geometry_msgs::Vector3StampedConstPtr(msg));
-        } break;
-
-        case(KindrVectorAtPositionType): {
-          kindr_msgs::VectorAtPositionPtr msg(new kindr_msgs::VectorAtPosition);
-
-          switch(elem.kindrMsg_.type) {
-            case(kindr_msgs::VectorAtPosition::TYPE_TYPELESS): {
-              const KindrVectorD* vec = boost::any_cast<const KindrVectorD*>(elem.vectorPtr_);
-              msg->vector.x = vec->x();
-              msg->vector.y = vec->y();
-              msg->vector.z = vec->z();
-            } break;
-
-            case(kindr_msgs::VectorAtPosition::TYPE_FORCE): {
-              const KindrForceD* vec = boost::any_cast<const KindrForceD*>(elem.vectorPtr_);
-              msg->vector.x = vec->x();
-              msg->vector.y = vec->y();
-              msg->vector.z = vec->z();
-            } break;
-
-            case(kindr_msgs::VectorAtPosition::TYPE_TORQUE): {
-              const KindrTorqueD* vec = boost::any_cast<const KindrTorqueD*>(elem.vectorPtr_);
-              msg->vector.x = vec->x();
-              msg->vector.y = vec->y();
-              msg->vector.z = vec->z();
-            } break;
-
-            default: {
-              ROCO_WARN_STREAM("[LoggerRos::collectLoggerData] Unhandled kindr vector at position type.");
-            } break;
-          }
-
-          msg->header.stamp = stamp;
-          msg->header.frame_id = elem.kindrMsg_.header.frame_id;
-          msg->position_frame_id = elem.kindrMsg_.position_frame_id;
-
-          msg->position.x = elem.positionPtr_->x();
-          msg->position.y = elem.positionPtr_->y();
-          msg->position.z = elem.positionPtr_->z();
-          msg->type = elem.kindrMsg_.type;
-          elem.pub_.publish(kindr_msgs::VectorAtPositionConstPtr(msg));
-        } break;
-        /***************/
-
-        case(KindrTypeNone) : {
-
-        } break;
-
-        default: ROCO_ERROR("[LoggerRos::collectLoggerData] Unhandled collected variable type.") break;
-      } // switch
-
-    } // if subscribers > 0
-
+    lastPublishTime_ = Clock::now();
   }
 
+  Clock::time_point end = Clock::now();
+  microseconds us = std::chrono::duration_cast<microseconds>(end - start);
+
+  std_msgs::Float32 msg;
+  msg.data = us.count();
+  pubTime_.publish(msg);
 }
 
 
 void LoggerRos::lockUpdate() { }
 void LoggerRos::stopAndSaveLoggerData() { }
 
-
-void LoggerRos::addFloatToLog(float* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Float32>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::Float;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+/**************
+ * Core types *
+ **************/
+void LoggerRos::addFloatToLog(float* var, const std::string& name,
+                              const std::string& group, const std::string& unit,
+                              bool update)
+{
+  addVarToCollection<float>(group + name, var);
 }
 
-void LoggerRos::addDoubleToLog(double* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Float64>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::Double;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+void LoggerRos::addDoubleToLog(double* var, const std::string& name,
+                               const std::string& group,
+                               const std::string& unit, bool update)
+{
+  addVarToCollection<double>(group + name, var);
 }
 
-void LoggerRos::addIntToLog(int* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int32>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::Int;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+void LoggerRos::addIntToLog(int* var, const std::string& name,
+                            const std::string& group, const std::string& unit,
+                            bool update)
+{
+  addVarToCollection<int>(group + name, var);
 }
 
-
-void LoggerRos::addShortToLog(short* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int8>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::Int;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+void LoggerRos::addShortToLog(short* var, const std::string& name,
+                              const std::string& group, const std::string& unit,
+                              bool update)
+{
+  addVarToCollection<short>(group + name, var);
 }
 
-
-void LoggerRos::addLongToLog(long* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int64>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::Int;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+void LoggerRos::addLongToLog(long* var, const std::string& name,
+                             const std::string& group, const std::string& unit,
+                             bool update)
+{
+  addVarToCollection<long>(group + name, var);
 }
 
-
-void LoggerRos::addCharToLog(char* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Char>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::Char;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+void LoggerRos::addCharToLog(char* var, const std::string& name,
+                             const std::string& group, const std::string& unit,
+                             bool update)
+{
+  addVarToCollection<char>(group + name, var);
 }
 
-void LoggerRos::addBoolToLog(bool* var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Bool>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::Bool;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+void LoggerRos::addBoolToLog(bool* var, const std::string& name,
+                             const std::string& group, const std::string& unit,
+                             bool update)
+{
+  addVarToCollection<bool>(group + name, var);
 }
+/**************/
 
 
 /******************
  * Eigen wrappers *
  ******************/
 void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<signal_logger_msgs::EigenMatrixDouble>(topicName, 100);
-//    varInfo.rtPub_ = realtime_tools::RealtimePublisher<signal_logger_msgs::EigenMatrixDouble>(n, topicName, 4);
-    varInfo.type_ = LoggerRos::VarType::MatrixDouble;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+//  const std::string& topicName = group + name;
+//  std::vector<LoggerVarInfo>::iterator collectedIterator;
+//  if (checkIfVarCollected(topicName, collectedIterator)) {
+//    collectedIterator->vectorPtr_ = var;
+//  } else {
+//    LoggerVarInfo varInfo(topicName);
+//    varInfo.pub_ = nodeHandle_.advertise<signal_logger_msgs::EigenMatrixDouble>(topicName, 100);
+////    varInfo.rtPub_ = realtime_tools::RealtimePublisher<signal_logger_msgs::EigenMatrixDouble>(n, topicName, 4);
+//    varInfo.type_ = LoggerRos::VarType::MatrixDouble;
+//    varInfo.vectorPtr_ = var;
+//    collectedVars_.push_back(varInfo);
+//  }
 }
 
 void LoggerRos::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Float32MultiArray>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::MatrixFloat;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+//  const std::string& topicName = group + name;
+//  std::vector<LoggerVarInfo>::iterator collectedIterator;
+//  if (checkIfVarCollected(topicName, collectedIterator)) {
+//    collectedIterator->vectorPtr_ = var;
+//  } else {
+//    LoggerVarInfo varInfo(topicName);
+//    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Float32MultiArray>(topicName, 100);
+//    varInfo.type_ = LoggerRos::VarType::MatrixFloat;
+//    varInfo.vectorPtr_ = var;
+//    collectedVars_.push_back(varInfo);
+//  }
 }
 
 void LoggerRos::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int32MultiArray>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::MatrixInt;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+//  const std::string& topicName = group + name;
+//  std::vector<LoggerVarInfo>::iterator collectedIterator;
+//  if (checkIfVarCollected(topicName, collectedIterator)) {
+//    collectedIterator->vectorPtr_ = var;
+//  } else {
+//    LoggerVarInfo varInfo(topicName);
+//    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int32MultiArray>(topicName, 100);
+//    varInfo.type_ = LoggerRos::VarType::MatrixInt;
+//    varInfo.vectorPtr_ = var;
+//    collectedVars_.push_back(varInfo);
+//  }
 }
 
 void LoggerRos::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int8MultiArray>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::MatrixShort;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+//  const std::string& topicName = group + name;
+//  std::vector<LoggerVarInfo>::iterator collectedIterator;
+//  if (checkIfVarCollected(topicName, collectedIterator)) {
+//    collectedIterator->vectorPtr_ = var;
+//  } else {
+//    LoggerVarInfo varInfo(topicName);
+//    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int8MultiArray>(topicName, 100);
+//    varInfo.type_ = LoggerRos::VarType::MatrixShort;
+//    varInfo.vectorPtr_ = var;
+//    collectedVars_.push_back(varInfo);
+//  }
 }
 
 void LoggerRos::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int64MultiArray>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::MatrixDouble;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+//  const std::string& topicName = group + name;
+//  std::vector<LoggerVarInfo>::iterator collectedIterator;
+//  if (checkIfVarCollected(topicName, collectedIterator)) {
+//    collectedIterator->vectorPtr_ = var;
+//  } else {
+//    LoggerVarInfo varInfo(topicName);
+//    varInfo.pub_ = nodeHandle_.advertise<std_msgs::Int64MultiArray>(topicName, 100);
+//    varInfo.type_ = LoggerRos::VarType::MatrixDouble;
+//    varInfo.vectorPtr_ = var;
+//    collectedVars_.push_back(varInfo);
+//  }
 }
 
 void LoggerRos::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
@@ -601,17 +255,7 @@ void LoggerRos::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& 
 }
 
 void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  const std::string& topicName = group + name;
-  std::vector<LoggerVarInfo>::iterator collectedIterator;
-  if (checkIfVarCollected(topicName, collectedIterator)) {
-    collectedIterator->vectorPtr_ = var;
-  } else {
-    LoggerVarInfo varInfo(topicName);
-    varInfo.pub_ = nodeHandle_.advertise<geometry_msgs::Vector3Stamped>(topicName, 100);
-    varInfo.type_ = LoggerRos::VarType::EigenVector;
-    varInfo.vectorPtr_ = var;
-    collectedVars_.push_back(varInfo);
-  }
+  addVarToCollection<Eigen::Ref<Eigen::Vector3d>>(group+name, &var);
 }
 
 void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
@@ -690,88 +334,82 @@ void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& va
  * Kindr wrappers *
  ******************/
 void LoggerRos::addDoubleKindrPositionToLog(const KindrPositionD& position, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrPositionType, &position);
+  addVarToCollection<KindrPositionD>(group+name, &position);
 }
 
 void LoggerRos::addDoubleKindrRotationQuaternionToLog(const KindrRotationQuaternionD& rotation,  const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrRotationQuaternionType, &rotation);
+  addVarToCollection<KindrRotationQuaternionD>(group+name, &rotation);
 }
 
 void LoggerRos::addDoubleKindrEulerAnglesZyxToLog(const KindrEulerAnglesZyxD& rotation, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrEulerAnglesZyxType, &rotation);
+  addVarToCollection<KindrEulerAnglesZyxD>(group+name, &rotation);
 }
 
 void LoggerRos::addDoubleKindrLocalAngularVelocityToLog(const KindrAngularVelocityD& angVel, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrLocalAngularVelocityType, &angVel);
+  addVarToCollection<KindrAngularVelocityD>(group+name, &angVel);
 }
 
 void LoggerRos::addDoubleKindrAngleAxisToLog(const KindrAngleAxisD& angleAxis,                   const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 void LoggerRos::addDoubleKindrRotationMatrixToLog(const KindrRotationMatrixD& rotMat,            const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 
 void LoggerRos::addDoubleKindrRotationVectorToLog(const KindrRotationVectorD& rotVec, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrRotationVectorType, &rotVec);
+//  addKindr3DToCollectedVariables<KindrRotationVectorD, geometry_msgs::Vector3Stamped>(group+name, LoggerRos::VarType::KindrRotationVectorType, &rotVec);
 }
 
 void LoggerRos::addDoubleKindrLinearVelocityToLog(const KindrLinearVelocityD& linVel, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrLinearVelocityType, &linVel);
+  addVarToCollection<KindrLinearVelocityD>(group+name, &linVel);
 }
 
 void LoggerRos::addDoubleKindrLinearAccelerationToLog(const KindrLinearAccelerationD& linAcc, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrLinearAccelerationType, &linAcc);
+  addVarToCollection<KindrLinearAccelerationD>(group+name, &linAcc);
 }
 
 void LoggerRos::addDoubleKindrAngularAccelerationToLog(const KindrAngularAccelerationD& angAcc, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrAngularAccelerationType, &angAcc);
+  addVarToCollection<KindrAngularAccelerationD>(group+name, &angAcc);
 }
 
 void LoggerRos::addDoubleKindrForceToLog(const KindrForceD& force, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrForceType, &force);
+  addVarToCollection<KindrForceD>(group+name, &force);
 }
 
 void LoggerRos::addDoubleKindrTorqueToLog(const KindrTorqueD& torque, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrTorqueType, &torque);
+  addVarToCollection<KindrTorqueD>(group+name, &torque);
 }
 
 void LoggerRos::addDoubleKindrVectorToLog(const KindrVectorD& vector, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addKindr3DToCollectedVariables(group+name, LoggerRos::VarType::KindrVectorType, &vector);
+  addVarToCollection<KindrVectorD>(group+name, &vector);
 }
 
 void LoggerRos::addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector,
-                                                 const KindrPositionD& position,
-                                                 const std::string& name,
-                                                 const std::string& vectorFrame,
-                                                 const std::string& positionFrame,
-                                                 const std::string& group,
-                                                 const std::string& unit,
-                                                 bool update) {
-  kindr_msgs::VectorAtPosition msg;
-  msg.type = kindr_msgs::VectorAtPosition::TYPE_TYPELESS;
-  msg.header.frame_id = vectorFrame;
-  msg.position_frame_id = positionFrame;
-  msg.name = name;
-  addKindr3DVectorAtPositionToCollectedVariables(group+name,
-                                                 msg,
-                                                 &vector,
-                                                 &position);
+                                                    const KindrPositionD& position,
+                                                    const std::string& name,
+                                                    const std::string& vectorFrame,
+                                                    const std::string& positionFrame,
+                                                    const std::string& group,
+                                                    const std::string& unit,
+                                                    bool update) {
+  addVarToCollection<KindrVectorD, true>(group+name,
+                                         &vector,
+                                         &position,
+                                         name,
+                                         vectorFrame,
+                                         positionFrame);
 }
 
-void LoggerRos::addDoubleKindrForceAtPositionToLog( const KindrForceD& force,
-                                                 const KindrPositionD& position,
-                                                 const std::string& name,
-                                                 const std::string& forceFrame,
-                                                 const std::string& positionFrame,
-                                                 const std::string& group,
-                                                 const std::string& unit,
-                                                 bool update) {
-  kindr_msgs::VectorAtPosition msg;
-  msg.type = kindr_msgs::VectorAtPosition::TYPE_FORCE;
-  msg.header.frame_id = forceFrame;
-  msg.position_frame_id = positionFrame;
-  msg.name = name;
-  addKindr3DVectorAtPositionToCollectedVariables(group+name,
-                                                 msg,
-                                                 &force,
-                                                 &position);
+void LoggerRos::addDoubleKindrForceAtPositionToLog(const KindrForceD& force,
+                                                   const KindrPositionD& position,
+                                                   const std::string& name,
+                                                   const std::string& forceFrame,
+                                                   const std::string& positionFrame,
+                                                   const std::string& group,
+                                                   const std::string& unit,
+                                                   bool update) {
+  addVarToCollection<KindrForceD, true>(group+name,
+                                        &force,
+                                        &position,
+                                        name,
+                                        forceFrame,
+                                        positionFrame);
 }
 
 void LoggerRos::addDoubleKindrTorqueAtPositionToLog(const KindrTorqueD& torque,
@@ -782,23 +420,23 @@ void LoggerRos::addDoubleKindrTorqueAtPositionToLog(const KindrTorqueD& torque,
                                                  const std::string& group,
                                                  const std::string& unit,
                                                  bool update) {
-  kindr_msgs::VectorAtPosition msg;
-  msg.type = kindr_msgs::VectorAtPosition::TYPE_TORQUE;
-  msg.header.frame_id = torqueFrame;
-  msg.position_frame_id = positionFrame;
-  msg.name = name;
-  addKindr3DVectorAtPositionToCollectedVariables(group+name,
-                                                 msg,
-                                                 &torque,
-                                                 &position);
+  addVarToCollection<KindrTorqueD, true>(group+name,
+                                         &torque,
+                                         &position,
+                                         name,
+                                         torqueFrame,
+                                         positionFrame);
 }
 /******************/
 
-
-bool LoggerRos::checkIfVarCollected(const std::string& topicName, std::vector<LoggerVarInfo>::iterator& it) {
+bool LoggerRos::checkIfVarCollected(
+    const std::string& topicName,
+    std::vector<std::shared_ptr<LogElementBase>>::iterator& it)
+{
   for (it = collectedVars_.begin(); it != collectedVars_.end(); it++) {
-    if (it->topicName_.compare(topicName) == 0) {
-      ROCO_WARN_STREAM("[LoggerRos::checkIfVarCollected] Topic '" << topicName << "' was already published.");
+    if ((*it).get()->getTopicName().compare(topicName) == 0) {
+      ROCO_WARN_STREAM(
+          "[LoggerRos::checkIfVarCollected] Topic '" << topicName << "' was already being published.");
       return true;
     }
   }
