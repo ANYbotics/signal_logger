@@ -78,6 +78,12 @@ void LoggerRos::setPublishFrequency(int frequency) {
   updateFrequency_ = frequency;
 }
 
+
+void LoggerRos::clearCollectedVariables() {
+    collectedVars_.clear();
+}
+
+
 void LoggerRos::collectLoggerData()
 {
   Clock::time_point start = Clock::now();

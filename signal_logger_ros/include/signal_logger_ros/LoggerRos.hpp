@@ -67,6 +67,7 @@ class LoggerRos : public signal_logger::LoggerBase {
   virtual void stopAndSaveLoggerData();
 
   virtual void setPublishFrequency(int frequency);
+  virtual void clearCollectedVariables();
   /****************/
 
 
