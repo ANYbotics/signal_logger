@@ -56,6 +56,7 @@ class LoggerSl : public signal_logger::LoggerBase {
     virtual void saveLoggerData();
     virtual void stopAndSaveLoggerData();
     virtual void lockUpdate();
+    virtual const LoggerBase::LoggerType getLoggerType() const;
 
     virtual void addFloatToLog(float* var,    const std::string& name, const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, bool update = LOGGER_DEFAULT_UPDATE);
     virtual void addDoubleToLog(double* var,  const std::string& name, const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, bool update = LOGGER_DEFAULT_UPDATE);

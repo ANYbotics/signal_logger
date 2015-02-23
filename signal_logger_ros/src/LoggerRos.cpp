@@ -83,6 +83,9 @@ void LoggerRos::clearCollectedVariables() {
     collectedVars_.clear();
 }
 
+const signal_logger::LoggerBase::LoggerType LoggerRos::getLoggerType() const {
+  return signal_logger::LoggerBase::LoggerType::TypeRos;
+}
 
 void LoggerRos::collectLoggerData()
 {
