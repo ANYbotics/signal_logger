@@ -71,12 +71,12 @@ void LoggerRos::initLogger(int updateFrequency, int samplingFrequency, double sa
 void LoggerRos::startLogger() { }
 void LoggerRos::stopLogger() { }
 void LoggerRos::saveLoggerData() { }
+void LoggerRos::updateLogger(bool updateScript) { }
 
 
-void LoggerRos::updateLogger(bool updateScript) {
-
+void LoggerRos::setPublishFrequency(int frequency) {
+  updateFrequency_ = frequency;
 }
-
 
 void LoggerRos::collectLoggerData()
 {
