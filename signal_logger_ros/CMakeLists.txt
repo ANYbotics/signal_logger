@@ -9,14 +9,13 @@ find_package(catkin REQUIRED COMPONENTS
     geometry_msgs
     kindr_msgs
     signal_logger_msgs
-    realtime_tools
 )
 
 # Declare this project as a catkin package
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES signal_logger_ros
- CATKIN_DEPENDS signal_logger roco std_msgs geometry_msgs kindr_msgs signal_logger_msgs realtime_tools
+ CATKIN_DEPENDS signal_logger roco std_msgs geometry_msgs kindr_msgs signal_logger_msgs
 # DEPENDS system_lib
 )
 
@@ -35,7 +34,6 @@ add_dependencies(signal_logger_ros
 				geometry_msgs_generate_messages_cpp 
 				kindr_msgs_generate_messages_cpp 
 				signal_logger_msgs_generate_messages_cpp
-				realtime_tools
 				)
 				
 target_link_libraries(signal_logger_ros

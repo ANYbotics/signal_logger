@@ -21,14 +21,13 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Char.h>
 
-#include <std_msgs/Float32MultiArray.h>
-#include <std_msgs/Float64MultiArray.h>
-#include <std_msgs/Int64MultiArray.h>
-#include <std_msgs/Int32MultiArray.h>
-#include <std_msgs/Int8MultiArray.h>
-
-#include <signal_logger_msgs/EigenMatrixDouble.h>
-#include <signal_logger_msgs/EigenMatrixFloat.h>
+#include <signal_logger_msgs/BoolMultiArrayStamped.h>
+#include <signal_logger_msgs/Float32MultiArrayStamped.h>
+#include <signal_logger_msgs/Float64MultiArrayStamped.h>
+#include <signal_logger_msgs/Int8MultiArrayStamped.h>
+#include <signal_logger_msgs/Int16MultiArrayStamped.h>
+#include <signal_logger_msgs/Int32MultiArrayStamped.h>
+#include <signal_logger_msgs/Int64MultiArrayStamped.h>
 
 #include "geometry_msgs/Vector3Stamped.h"
 #include "kindr_msgs/VectorAtPosition.h"
@@ -127,6 +126,145 @@ struct slr_traits<bool> {
 /********************************
  * Specializations: eigen types *
  ********************************/
+template<>
+struct slr_traits<Eigen::Ref<Eigen::MatrixXd>> {
+  typedef signal_logger_msgs::Float64MultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::Float64MultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Float64MultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<Eigen::MatrixXd>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<Eigen::MatrixXd>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<Eigen::MatrixXd>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+template<>
+struct slr_traits<Eigen::Ref<Eigen::MatrixXf>> {
+  typedef signal_logger_msgs::Float32MultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::Float32MultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Float32MultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<Eigen::MatrixXf>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<Eigen::MatrixXf>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<Eigen::MatrixXf>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+template<>
+struct slr_traits<Eigen::Ref<Eigen::MatrixXi>> {
+  typedef signal_logger_msgs::Int32MultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::Int32MultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int32MultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<Eigen::MatrixXi>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<Eigen::MatrixXi>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<Eigen::MatrixXi>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+template<>
+struct slr_traits<Eigen::Ref<signal_logger::LoggerBase::MatrixXs>> {
+  typedef signal_logger_msgs::Int16MultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::Int16MultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int16MultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<signal_logger::LoggerBase::MatrixXs>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<signal_logger::LoggerBase::MatrixXs>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<signal_logger::LoggerBase::MatrixXs>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+template<>
+struct slr_traits<Eigen::Ref<signal_logger::LoggerBase::MatrixXl>> {
+  typedef signal_logger_msgs::Int64MultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::Int64MultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int64MultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<signal_logger::LoggerBase::MatrixXl>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<signal_logger::LoggerBase::MatrixXl>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<signal_logger::LoggerBase::MatrixXl>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+template<>
+struct slr_traits<Eigen::Ref<signal_logger::LoggerBase::MatrixXc>> {
+  typedef signal_logger_msgs::Int8MultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::Int8MultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int8MultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<signal_logger::LoggerBase::MatrixXc>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<signal_logger::LoggerBase::MatrixXc>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<signal_logger::LoggerBase::MatrixXc>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+template<>
+struct slr_traits<Eigen::Ref<signal_logger::LoggerBase::MatrixXUc>> {
+  typedef signal_logger_msgs::Int8MultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::Int8MultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int8MultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<signal_logger::LoggerBase::MatrixXUc>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<signal_logger::LoggerBase::MatrixXUc>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<signal_logger::LoggerBase::MatrixXUc>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+template<>
+struct slr_traits<Eigen::Ref<signal_logger::LoggerBase::MatrixXb>> {
+  typedef signal_logger_msgs::BoolMultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::BoolMultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::BoolMultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<signal_logger::LoggerBase::MatrixXb>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<signal_logger::LoggerBase::MatrixXb>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<signal_logger::LoggerBase::MatrixXb>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+
+
+
 template<>
 struct slr_traits<Eigen::Ref<Eigen::Vector3d>> {
   typedef geometry_msgs::Vector3Stamped         msgtype;
