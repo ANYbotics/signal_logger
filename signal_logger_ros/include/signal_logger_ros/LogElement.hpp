@@ -14,7 +14,6 @@
 #include <ros/ros.h>
 #include <boost/any.hpp>
 
-#include "realtime_tools/realtime_publisher.h"
 
 namespace signal_logger_ros {
 
@@ -38,17 +37,14 @@ class LogElement<LogType_, false> : public LogElementBase {
     topicName_(name),
     vectorPtr_(varPtr)
   {
-//    rtPub_ = new realtime_tools::RealtimePublisher<typename Traits::msgtype>(nodeHandle, name, DEFAULT_QUEUE_SIZE);
     pub_ = nodeHandle.advertise<typename Traits::msgtype>(topicName_, DEFAULT_QUEUE_SIZE);
   }
 
   ~LogElement() {
-//    pub_.shutdown();
-//    delete rtPub_;
+
   }
 
   virtual const uint32_t getNumSubscribers() const {
-//    return rtPub_->getNumSubscribers();
     return pub_.getNumSubscribers();
   }
 
@@ -63,17 +59,13 @@ class LogElement<LogType_, false> : public LogElementBase {
   virtual void publish(const ros::Time& timeStamp) {
     typename Traits::msgtype msg;
     Traits::updateMsg(vectorPtr_, msg, timeStamp);
-//    if (rtPub_->trylock()) {
-//      rtPub_->msg_ = msg;
-//      rtPub_->unlockAndPublish();
-//    }
+
     pub_.publish(msg);
   }
 
  private:
   std::string topicName_;
   const LogType_* vectorPtr_;
-//  realtime_tools::RealtimePublisher<typename Traits::msgtype>* rtPub_;
   ros::Publisher pub_;
 };
 
@@ -100,7 +92,6 @@ class LogElement<LogType_, true> : public LogElementBase {
     positionFrameId_(positionFrame),
     labelName_(name)
   {
-//    rtPub_ = new realtime_tools::RealtimePublisher<kindr_msgs::VectorAtPosition>(nodeHandle, topic, DEFAULT_QUEUE_SIZE);
     pub_ = nodeHandle.advertise<typename Traits::msgtype>(topicName_, DEFAULT_QUEUE_SIZE);
   }
 
@@ -110,7 +101,6 @@ class LogElement<LogType_, true> : public LogElementBase {
   }
 
   virtual const uint32_t getNumSubscribers() const {
-//    return rtPub_->getNumSubscribers();
     return pub_.getNumSubscribers();
   }
 
@@ -143,10 +133,6 @@ class LogElement<LogType_, true> : public LogElementBase {
                       labelName_,
                       msg,
                       timeStamp);
-//    if (rtPub_->trylock()) {
-//      rtPub_->msg_ = msg;
-//      rtPub_->unlockAndPublish();
-//    }
     pub_.publish(msg);
   }
 
@@ -161,7 +147,6 @@ class LogElement<LogType_, true> : public LogElementBase {
   const LogType_* vectorPtr_;
   const signal_logger::LoggerBase::KindrPositionD* positionPtr_;
 
-//  realtime_tools::RealtimePublisher<typename Traits::msgtype>* rtPub_;
   ros::Publisher pub_;
 };
 

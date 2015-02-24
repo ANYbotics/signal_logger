@@ -61,9 +61,7 @@ LoggerRos::LoggerRos(ros::NodeHandle& nodeHandle) :
 
 LoggerRos::~LoggerRos()
 {
-//  for (auto& elem : collectedVars_) {
-//    delete elem;
-//  }
+
 }
 
 
@@ -108,9 +106,12 @@ void LoggerRos::collectLoggerData()
   Clock::time_point end = Clock::now();
   microseconds us = std::chrono::duration_cast<microseconds>(end - start);
 
-  std_msgs::Float32 msg;
-  msg.data = us.count();
-  pubTime_.publish(msg);
+  if (pubTime_.getNumSubscribers() > 0u) {
+    std_msgs::Float32Ptr msg(new std_msgs::Float32);
+    msg->data = us.count();
+    pubTime_.publish(std_msgs::Float32ConstPtr(msg));
+  }
+
 }
 
 
