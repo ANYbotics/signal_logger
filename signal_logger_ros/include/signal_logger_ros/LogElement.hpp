@@ -57,10 +57,9 @@ class LogElement<LogType_, false> : public LogElementBase {
   }
 
   virtual void publish(const ros::Time& timeStamp) {
-    typename Traits::msgtype msg;
+    typename Traits::msgtypePtr msg(new typename Traits::msgtype);
     Traits::updateMsg(vectorPtr_, msg, timeStamp);
-
-    pub_.publish(msg);
+    pub_.publish(typename Traits::msgtypeConstPtr(msg));
   }
 
  private:
@@ -125,7 +124,7 @@ class LogElement<LogType_, true> : public LogElementBase {
   }
 
   virtual void publish(const ros::Time& timeStamp) {
-    typename Traits::msgtype msg;
+    typename Traits::msgtypePtr msg(new typename Traits::msgtype);
     Traits::updateMsg(vectorPtr_,
                       positionPtr_,
                       vectorFrameId_,
@@ -133,7 +132,7 @@ class LogElement<LogType_, true> : public LogElementBase {
                       labelName_,
                       msg,
                       timeStamp);
-    pub_.publish(msg);
+    pub_.publish(typename Traits::msgtypeConstPtr(msg));
   }
 
  private:
