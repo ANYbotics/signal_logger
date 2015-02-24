@@ -50,7 +50,7 @@ const int DEFAULT_UPDATE_FREQUENCY = 1; // Hz
 namespace signal_logger_ros {
 
 LoggerRos::LoggerRos(ros::NodeHandle& nodeHandle) :
-    nodeHandle_ (nodeHandle),
+    nodeHandle_(nodeHandle),
     collectedVars_(0),
     updateFrequency_(DEFAULT_UPDATE_FREQUENCY),
     lastPublishTime_(Clock::now())
@@ -262,64 +262,64 @@ void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& va
 }
 
 void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-  for (int r=0; r<var.rows(); r++)  {
-    for (int c=0; c<var.cols(); c++)  {
+  for (int r=0; r<static_cast<Eigen::MatrixXd>(var).rows(); r++)  {
+    for (int c=0; c<static_cast<Eigen::MatrixXd>(var).cols(); c++)  {
       addDoubleToLog((double *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
 }
 
 void LoggerRos::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-  for (int r=0; r<var.rows(); r++)  {
-    for (int c=0; c<var.cols(); c++)  {
+  for (int r=0; r<static_cast<Eigen::MatrixXf>(var).rows(); r++)  {
+    for (int c=0; c<static_cast<Eigen::MatrixXf>(var).cols(); c++)  {
       addFloatToLog((float *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
 }
 
 void LoggerRos::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-  for (int r=0; r<var.rows(); r++)  {
-    for (int c=0; c<var.cols(); c++)  {
+  for (int r=0; r<static_cast<Eigen::MatrixXi>(var).rows(); r++)  {
+    for (int c=0; c<static_cast<Eigen::MatrixXi>(var).cols(); c++)  {
       addIntToLog((int *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
 }
 
 void LoggerRos::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-  for (int r=0; r<var.rows(); r++)  {
-    for (int c=0; c<var.cols(); c++)  {
+  for (int r=0; r<static_cast<LoggerBase::MatrixXs>(var).rows(); r++)  {
+    for (int c=0; c<static_cast<LoggerBase::MatrixXs>(var).cols(); c++)  {
       addShortToLog((short *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
 }
 
 void LoggerRos::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-  for (int r=0; r<var.rows(); r++)  {
-    for (int c=0; c<var.cols(); c++)  {
+  for (int r=0; r<static_cast<LoggerBase::MatrixXl>(var).rows(); r++)  {
+    for (int c=0; c<static_cast<LoggerBase::MatrixXl>(var).cols(); c++)  {
       addLongToLog((long *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
 }
 
 void LoggerRos::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-  for (int r=0; r<var.rows(); r++)  {
-    for (int c=0; c<var.cols(); c++)  {
+  for (int r=0; r<static_cast<LoggerBase::MatrixXc>(var).rows(); r++)  {
+    for (int c=0; c<static_cast<LoggerBase::MatrixXc>(var).cols(); c++)  {
       addCharToLog((char *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
 }
 
 void LoggerRos::addUnsignedCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXUc>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-  for (int r=0; r<var.rows(); r++)  {
-    for (int c=0; c<var.cols(); c++)  {
+  for (int r=0; r<static_cast<LoggerBase::MatrixXUc>(var).rows(); r++)  {
+    for (int c=0; c<static_cast<LoggerBase::MatrixXUc>(var).cols(); c++)  {
       addCharToLog((char *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
 }
 
 void LoggerRos::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-  for (int r=0; r<var.rows(); r++)  {
-    for (int c=0; c<var.cols(); c++)  {
+  for (int r=0; r<static_cast<LoggerBase::MatrixXb>(var).rows(); r++)  {
+    for (int c=0; c<static_cast<LoggerBase::MatrixXb>(var).cols(); c++)  {
       addBoolToLog((bool *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
