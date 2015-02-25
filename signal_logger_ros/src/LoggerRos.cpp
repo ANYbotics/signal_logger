@@ -56,7 +56,7 @@ LoggerRos::LoggerRos(ros::NodeHandle& nodeHandle) :
     updateFrequency_(DEFAULT_UPDATE_FREQUENCY),
     lastPublishTime_(Clock::now())
 {
-  pubTime_ = nodeHandle_.advertise<std_msgs::Float32>("/slr/publish_duration",0);
+  pubTime_ = nodeHandle_.advertise<std_msgs::Float32>(LOGGER_PREFIX+"/slr/publish_duration",0);
 }
 
 
