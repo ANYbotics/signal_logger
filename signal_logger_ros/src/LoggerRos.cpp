@@ -46,6 +46,7 @@
 
 
 const int DEFAULT_UPDATE_FREQUENCY = 1; // Hz
+const std::string LOGGER_PREFIX = "/log";
 
 namespace signal_logger_ros {
 
@@ -125,49 +126,49 @@ void LoggerRos::addFloatToLog(float* var, const std::string& name,
                               const std::string& group, const std::string& unit,
                               bool update)
 {
-  addVarToCollection<float>(group + name, var);
+  addVarToCollection<float>(LOGGER_PREFIX + group + name, var);
 }
 
 void LoggerRos::addDoubleToLog(double* var, const std::string& name,
                                const std::string& group,
                                const std::string& unit, bool update)
 {
-  addVarToCollection<double>(group + name, var);
+  addVarToCollection<double>(LOGGER_PREFIX + group + name, var);
 }
 
 void LoggerRos::addIntToLog(int* var, const std::string& name,
                             const std::string& group, const std::string& unit,
                             bool update)
 {
-  addVarToCollection<int>(group + name, var);
+  addVarToCollection<int>(LOGGER_PREFIX + group + name, var);
 }
 
 void LoggerRos::addShortToLog(short* var, const std::string& name,
                               const std::string& group, const std::string& unit,
                               bool update)
 {
-  addVarToCollection<short>(group + name, var);
+  addVarToCollection<short>(LOGGER_PREFIX + group + name, var);
 }
 
 void LoggerRos::addLongToLog(long* var, const std::string& name,
                              const std::string& group, const std::string& unit,
                              bool update)
 {
-  addVarToCollection<long>(group + name, var);
+  addVarToCollection<long>(LOGGER_PREFIX + group + name, var);
 }
 
 void LoggerRos::addCharToLog(char* var, const std::string& name,
                              const std::string& group, const std::string& unit,
                              bool update)
 {
-  addVarToCollection<char>(group + name, var);
+  addVarToCollection<char>(LOGGER_PREFIX + group + name, var);
 }
 
 void LoggerRos::addBoolToLog(bool* var, const std::string& name,
                              const std::string& group, const std::string& unit,
                              bool update)
 {
-  addVarToCollection<bool>(group + name, var);
+  addVarToCollection<bool>(LOGGER_PREFIX + group + name, var);
 }
 /**************/
 
@@ -177,22 +178,22 @@ void LoggerRos::addBoolToLog(bool* var, const std::string& name,
  ******************/
 void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
   std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
-  addVarToCollection<Eigen::Ref<Eigen::MatrixXd>>(group + name, &var);
+  addVarToCollection<Eigen::Ref<Eigen::MatrixXd>>(LOGGER_PREFIX + group + name, &var);
 }
 
 void LoggerRos::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
   std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
-  addVarToCollection<Eigen::Ref<Eigen::MatrixXf>>(group + name, &var);
+  addVarToCollection<Eigen::Ref<Eigen::MatrixXf>>(LOGGER_PREFIX + group + name, &var);
 }
 
 void LoggerRos::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
   std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
-  addVarToCollection<Eigen::Ref<Eigen::MatrixXi>>(group + name, &var);
+  addVarToCollection<Eigen::Ref<Eigen::MatrixXi>>(LOGGER_PREFIX + group + name, &var);
 }
 
 void LoggerRos::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
   std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
-  addVarToCollection<Eigen::Ref<LoggerBase::MatrixXs>>(group + name, &var);
+  addVarToCollection<Eigen::Ref<LoggerBase::MatrixXs>>(LOGGER_PREFIX + group + name, &var);
 }
 
 void LoggerRos::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
@@ -202,22 +203,22 @@ void LoggerRos::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& 
 
 void LoggerRos::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
   std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
-  addVarToCollection<Eigen::Ref<LoggerBase::MatrixXc>>(group + name, &var);
+  addVarToCollection<Eigen::Ref<LoggerBase::MatrixXc>>(LOGGER_PREFIX + group + name, &var);
 }
 
 void LoggerRos::addUnsignedCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXUc>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
   std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
-  addVarToCollection<Eigen::Ref<LoggerBase::MatrixXUc>>(group + name, &var);
+  addVarToCollection<Eigen::Ref<LoggerBase::MatrixXUc>>(LOGGER_PREFIX + group + name, &var);
 }
 
 void LoggerRos::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
   std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
-  addVarToCollection<Eigen::Ref<LoggerBase::MatrixXb>>(group + name, &var);
+  addVarToCollection<Eigen::Ref<LoggerBase::MatrixXb>>(LOGGER_PREFIX + group + name, &var);
 }
 
 void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
   std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
-  addVarToCollection<Eigen::Ref<Eigen::Vector3d>>(group+name, &var);
+  addVarToCollection<Eigen::Ref<Eigen::Vector3d>>(LOGGER_PREFIX + group+name, &var);
 }
 
 void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
@@ -296,19 +297,19 @@ void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& va
  * Kindr wrappers *
  ******************/
 void LoggerRos::addDoubleKindrPositionToLog(const KindrPositionD& position, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<KindrPositionD>(group+name, &position);
+  addVarToCollection<KindrPositionD>(LOGGER_PREFIX + group+name, &position);
 }
 
 void LoggerRos::addDoubleKindrRotationQuaternionToLog(const KindrRotationQuaternionD& rotation,  const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<KindrRotationQuaternionD>(group+name, &rotation);
+  addVarToCollection<KindrRotationQuaternionD>(LOGGER_PREFIX + group+name, &rotation);
 }
 
 void LoggerRos::addDoubleKindrEulerAnglesZyxToLog(const KindrEulerAnglesZyxD& rotation, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<KindrEulerAnglesZyxD>(group+name, &rotation);
+  addVarToCollection<KindrEulerAnglesZyxD>(LOGGER_PREFIX + group+name, &rotation);
 }
 
 void LoggerRos::addDoubleKindrLocalAngularVelocityToLog(const KindrAngularVelocityD& angVel, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<KindrAngularVelocityD>(group+name, &angVel);
+  addVarToCollection<KindrAngularVelocityD>(LOGGER_PREFIX + group+name, &angVel);
 }
 
 void LoggerRos::addDoubleKindrAngleAxisToLog(const KindrAngleAxisD& angleAxis,                   const std::string& name, const std::string& group, const std::string& unit, bool update) { }
@@ -319,27 +320,27 @@ void LoggerRos::addDoubleKindrRotationVectorToLog(const KindrRotationVectorD& ro
 }
 
 void LoggerRos::addDoubleKindrLinearVelocityToLog(const KindrLinearVelocityD& linVel, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<KindrLinearVelocityD>(group+name, &linVel);
+  addVarToCollection<KindrLinearVelocityD>(LOGGER_PREFIX + group+name, &linVel);
 }
 
 void LoggerRos::addDoubleKindrLinearAccelerationToLog(const KindrLinearAccelerationD& linAcc, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<KindrLinearAccelerationD>(group+name, &linAcc);
+  addVarToCollection<KindrLinearAccelerationD>(LOGGER_PREFIX + group+name, &linAcc);
 }
 
 void LoggerRos::addDoubleKindrAngularAccelerationToLog(const KindrAngularAccelerationD& angAcc, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<KindrAngularAccelerationD>(group+name, &angAcc);
+  addVarToCollection<KindrAngularAccelerationD>(LOGGER_PREFIX + group+name, &angAcc);
 }
 
 void LoggerRos::addDoubleKindrForceToLog(const KindrForceD& force, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<KindrForceD>(group+name, &force);
+  addVarToCollection<KindrForceD>(LOGGER_PREFIX + group+name, &force);
 }
 
 void LoggerRos::addDoubleKindrTorqueToLog(const KindrTorqueD& torque, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<KindrTorqueD>(group+name, &torque);
+  addVarToCollection<KindrTorqueD>(LOGGER_PREFIX + group+name, &torque);
 }
 
 void LoggerRos::addDoubleKindrVectorToLog(const KindrVectorD& vector, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addVarToCollection<KindrVectorD>(group+name, &vector);
+  addVarToCollection<KindrVectorD>(LOGGER_PREFIX + group+name, &vector);
 }
 
 void LoggerRos::addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector,
@@ -350,7 +351,7 @@ void LoggerRos::addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector,
                                                     const std::string& group,
                                                     const std::string& unit,
                                                     bool update) {
-  addVarToCollection<KindrVectorD, true>(group+name,
+  addVarToCollection<KindrVectorD, true>(LOGGER_PREFIX + group+name,
                                          &vector,
                                          &position,
                                          name,
@@ -366,7 +367,7 @@ void LoggerRos::addDoubleKindrForceAtPositionToLog(const KindrForceD& force,
                                                    const std::string& group,
                                                    const std::string& unit,
                                                    bool update) {
-  addVarToCollection<KindrForceD, true>(group+name,
+  addVarToCollection<KindrForceD, true>(LOGGER_PREFIX + group+name,
                                         &force,
                                         &position,
                                         name,
@@ -382,7 +383,7 @@ void LoggerRos::addDoubleKindrTorqueAtPositionToLog(const KindrTorqueD& torque,
                                                  const std::string& group,
                                                  const std::string& unit,
                                                  bool update) {
-  addVarToCollection<KindrTorqueD, true>(group+name,
+  addVarToCollection<KindrTorqueD, true>(LOGGER_PREFIX + group+name,
                                          &torque,
                                          &position,
                                          name,
