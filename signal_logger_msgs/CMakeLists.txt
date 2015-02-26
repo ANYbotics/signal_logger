@@ -14,8 +14,15 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
    FILES
-   EigenMatrixDouble.msg
-   EigenMatrixFloat.msg
+   BoolMultiArray.msg
+   Float64MultiArrayStamped.msg
+   Int64MultiArrayStamped.msg
+   BoolMultiArrayStamped.msg
+   Int16MultiArrayStamped.msg
+   Int8MultiArray.msg
+   Float32MultiArrayStamped.msg
+   Int32MultiArrayStamped.msg
+   Int8MultiArrayStamped.msg
 )
 
 ## Generate added messages and services with any dependencies listed here

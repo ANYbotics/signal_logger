@@ -58,6 +58,9 @@ LoggerSl::~LoggerSl() {
 
 }
 
+const signal_logger::LoggerBase::LoggerType getLoggerType() const {
+  return signal_logger::LoggerBase::LoggerType::TypeSl;
+}
 
 void LoggerSl::initLogger(int updateFrequency, int samplingFrequency, double samplingTime, const std::string& logScriptFileName) {
 

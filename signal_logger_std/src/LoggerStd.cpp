@@ -147,6 +147,10 @@ LoggerStd::~LoggerStd() {
   }
 }
 
+const signal_logger::LoggerBase::LoggerType LoggerStd::getLoggerType() const {
+  return signal_logger::LoggerBase::LoggerType::TypeStd;
+}
+
 void LoggerStd::setFilenamePrefix(const std::string& prefix) {
   filenamePrefix = prefix;
 }

@@ -57,10 +57,12 @@
 #include <kindr/rotations/RotationDiffEigen.hpp>
 /*****************/
 
+
 const std::string LOGGER_DEFAULT_GROUP_NAME = "/log/";
 const std::string LOGGER_DEFAULT_UNIT       = "-";
 const bool LOGGER_DEFAULT_UPDATE            = false;
 const std::string LOGGER_DEFAULT_FILENAME   = "logger.script";
+
 
 namespace signal_logger {
 
@@ -94,6 +96,13 @@ class LoggerBase {
   typedef Eigen::Matrix< std::string ,Eigen::Dynamic, Eigen::Dynamic >  MatrixXstring;
   /************************/
 
+  enum LoggerType {
+    TypeNone = 0,
+    TypeStd,
+    TypeSl,
+    TypeRos
+  };
+
 	LoggerBase();
 	virtual ~LoggerBase();
 
@@ -109,6 +118,7 @@ class LoggerBase {
 	virtual void lockUpdate() = 0;
 	virtual void stopAndSaveLoggerData() = 0;
 	virtual void restartLogger();
+	virtual const LoggerType getLoggerType() const = 0;
 	/****************/
 
 	/****************

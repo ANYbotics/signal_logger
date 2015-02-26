@@ -21,14 +21,13 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Char.h>
 
-#include <std_msgs/Float32MultiArray.h>
-#include <std_msgs/Float64MultiArray.h>
-#include <std_msgs/Int64MultiArray.h>
-#include <std_msgs/Int32MultiArray.h>
-#include <std_msgs/Int8MultiArray.h>
-
-#include <signal_logger_msgs/EigenMatrixDouble.h>
-#include <signal_logger_msgs/EigenMatrixFloat.h>
+#include <signal_logger_msgs/BoolMultiArrayStamped.h>
+#include <signal_logger_msgs/Float32MultiArrayStamped.h>
+#include <signal_logger_msgs/Float64MultiArrayStamped.h>
+#include <signal_logger_msgs/Int8MultiArrayStamped.h>
+#include <signal_logger_msgs/Int16MultiArrayStamped.h>
+#include <signal_logger_msgs/Int32MultiArrayStamped.h>
+#include <signal_logger_msgs/Int64MultiArrayStamped.h>
 
 #include "geometry_msgs/Vector3Stamped.h"
 #include "kindr_msgs/VectorAtPosition.h"
@@ -47,57 +46,78 @@ typedef signal_logger::LoggerBase base_type;
  *******************************/
 template<>
 struct slr_traits<double> {
-  typedef std_msgs::Float32 msgtype;
-  static void updateMsg(const double* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-      msg.data = *vectorPtr_;
+  typedef std_msgs::Float64         msgtype;
+  typedef std_msgs::Float64Ptr      msgtypePtr;
+  typedef std_msgs::Float64ConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const double* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+      msg->data = *vectorPtr_;
     }
 };
 
 template<>
 struct slr_traits<float> {
-  typedef std_msgs::Float32 msgtype;
-  static void updateMsg(const float* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.data = *vectorPtr_;
+  typedef std_msgs::Float32         msgtype;
+  typedef std_msgs::Float32Ptr      msgtypePtr;
+  typedef std_msgs::Float32ConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const float* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->data = *vectorPtr_;
   }
 };
 
 template<>
 struct slr_traits<int> {
-  typedef std_msgs::Int32 msgtype;
-  static void updateMsg(const int* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.data = *vectorPtr_;
+  typedef std_msgs::Int32         msgtype;
+  typedef std_msgs::Int32Ptr      msgtypePtr;
+  typedef std_msgs::Int32ConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const int* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->data = *vectorPtr_;
   }
 };
 
 template<>
 struct slr_traits<short> {
-  typedef std_msgs::Int8 msgtype;
-  static void updateMsg(const short* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.data = *vectorPtr_;
+  typedef std_msgs::Int8         msgtype;
+  typedef std_msgs::Int8Ptr      msgtypePtr;
+  typedef std_msgs::Int8ConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const short* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->data = *vectorPtr_;
   }
 };
 
 template<>
 struct slr_traits<long> {
-  typedef std_msgs::Int64 msgtype;
-  static void updateMsg(const long* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.data = *vectorPtr_;
+  typedef std_msgs::Int64         msgtype;
+  typedef std_msgs::Int64Ptr      msgtypePtr;
+  typedef std_msgs::Int64ConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const long* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->data = *vectorPtr_;
   }
 };
 
 template<>
 struct slr_traits<char> {
-  typedef std_msgs::Int8 msgtype;
-  static void updateMsg(const char* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.data = *vectorPtr_;
+  typedef std_msgs::Int8          msgtype;
+  typedef std_msgs::Int8Ptr      msgtypePtr;
+  typedef std_msgs::Int8ConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const char* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->data = *vectorPtr_;
   }
 };
 
 template<>
 struct slr_traits<bool> {
   typedef std_msgs::Bool msgtype;
-  static void updateMsg(const bool* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.data = *vectorPtr_;
+  typedef std_msgs::BoolPtr      msgtypePtr;
+  typedef std_msgs::BoolConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const bool* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->data = *vectorPtr_;
   }
 };
 /********************************/
@@ -107,13 +127,155 @@ struct slr_traits<bool> {
  * Specializations: eigen types *
  ********************************/
 template<>
+struct slr_traits<Eigen::Ref<Eigen::MatrixXd>> {
+  typedef signal_logger_msgs::Float64MultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::Float64MultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Float64MultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<Eigen::MatrixXd>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<Eigen::MatrixXd>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<Eigen::MatrixXd>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+template<>
+struct slr_traits<Eigen::Ref<Eigen::MatrixXf>> {
+  typedef signal_logger_msgs::Float32MultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::Float32MultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Float32MultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<Eigen::MatrixXf>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<Eigen::MatrixXf>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<Eigen::MatrixXf>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+template<>
+struct slr_traits<Eigen::Ref<Eigen::MatrixXi>> {
+  typedef signal_logger_msgs::Int32MultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::Int32MultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int32MultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<Eigen::MatrixXi>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<Eigen::MatrixXi>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<Eigen::MatrixXi>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+template<>
+struct slr_traits<Eigen::Ref<signal_logger::LoggerBase::MatrixXs>> {
+  typedef signal_logger_msgs::Int16MultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::Int16MultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int16MultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<signal_logger::LoggerBase::MatrixXs>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<signal_logger::LoggerBase::MatrixXs>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<signal_logger::LoggerBase::MatrixXs>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+template<>
+struct slr_traits<Eigen::Ref<signal_logger::LoggerBase::MatrixXl>> {
+  typedef signal_logger_msgs::Int64MultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::Int64MultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int64MultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<signal_logger::LoggerBase::MatrixXl>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<signal_logger::LoggerBase::MatrixXl>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<signal_logger::LoggerBase::MatrixXl>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+template<>
+struct slr_traits<Eigen::Ref<signal_logger::LoggerBase::MatrixXc>> {
+  typedef signal_logger_msgs::Int8MultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::Int8MultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int8MultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<signal_logger::LoggerBase::MatrixXc>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<signal_logger::LoggerBase::MatrixXc>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<signal_logger::LoggerBase::MatrixXc>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+template<>
+struct slr_traits<Eigen::Ref<signal_logger::LoggerBase::MatrixXUc>> {
+  typedef signal_logger_msgs::Int8MultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::Int8MultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int8MultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<signal_logger::LoggerBase::MatrixXUc>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<signal_logger::LoggerBase::MatrixXUc>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<signal_logger::LoggerBase::MatrixXUc>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+template<>
+struct slr_traits<Eigen::Ref<signal_logger::LoggerBase::MatrixXb>> {
+  typedef signal_logger_msgs::BoolMultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::BoolMultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::BoolMultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<signal_logger::LoggerBase::MatrixXb>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+
+    for (int r=0; r<static_cast<signal_logger::LoggerBase::MatrixXb>(*vectorPtr_).rows(); r++)  {
+      for (int c=0; c<static_cast<signal_logger::LoggerBase::MatrixXb>(*vectorPtr_).cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+
+
+
+template<>
 struct slr_traits<Eigen::Ref<Eigen::Vector3d>> {
-  typedef geometry_msgs::Vector3Stamped msgtype;
-  static void updateMsg(const Eigen::Ref<Eigen::Vector3d>* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.header.stamp = timeStamp;
-    msg.vector.x = vectorPtr_->x();
-    msg.vector.y = vectorPtr_->y();
-    msg.vector.z = vectorPtr_->z();
+  typedef geometry_msgs::Vector3Stamped         msgtype;
+  typedef geometry_msgs::Vector3StampedPtr      msgtypePtr;
+  typedef geometry_msgs::Vector3StampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::Ref<Eigen::Vector3d>* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->vector.x = vectorPtr_->x();
+    msg->vector.y = vectorPtr_->y();
+    msg->vector.z = vectorPtr_->z();
   }
 };
 /********************************/
@@ -124,112 +286,142 @@ struct slr_traits<Eigen::Ref<Eigen::Vector3d>> {
  ********************************/
 template<>
 struct slr_traits<base_type::KindrPositionD> {
-  typedef geometry_msgs::Vector3Stamped msgtype;
-  static void updateMsg(const base_type::KindrPositionD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.header.stamp = timeStamp;
-    msg.vector.x = vectorPtr_->x();
-    msg.vector.y = vectorPtr_->y();
-    msg.vector.z = vectorPtr_->z();
+  typedef geometry_msgs::Vector3Stamped         msgtype;
+  typedef geometry_msgs::Vector3StampedPtr      msgtypePtr;
+  typedef geometry_msgs::Vector3StampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const base_type::KindrPositionD* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->vector.x = vectorPtr_->x();
+    msg->vector.y = vectorPtr_->y();
+    msg->vector.z = vectorPtr_->z();
   }
 };
 
 template<>
 struct slr_traits<base_type::KindrRotationQuaternionD> {
-  typedef geometry_msgs::QuaternionStamped msgtype;
-  static void updateMsg(const base_type::KindrRotationQuaternionD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.header.stamp = timeStamp;
-    msg.quaternion.w = vectorPtr_->w();
-    msg.quaternion.x = vectorPtr_->x();
-    msg.quaternion.y = vectorPtr_->y();
-    msg.quaternion.z = vectorPtr_->z();
+  typedef geometry_msgs::QuaternionStamped         msgtype;
+  typedef geometry_msgs::QuaternionStampedPtr      msgtypePtr;
+  typedef geometry_msgs::QuaternionStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const base_type::KindrRotationQuaternionD* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->quaternion.w = vectorPtr_->w();
+    msg->quaternion.x = vectorPtr_->x();
+    msg->quaternion.y = vectorPtr_->y();
+    msg->quaternion.z = vectorPtr_->z();
   }
 };
 
 template<>
 struct slr_traits<base_type::KindrEulerAnglesZyxD> {
-  typedef geometry_msgs::Vector3Stamped msgtype;
-  static void updateMsg(const base_type::KindrEulerAnglesZyxD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.header.stamp = timeStamp;
-    msg.vector.x = vectorPtr_->x();
-    msg.vector.y = vectorPtr_->y();
-    msg.vector.z = vectorPtr_->z();
+  typedef geometry_msgs::Vector3Stamped         msgtype;
+  typedef geometry_msgs::Vector3StampedPtr      msgtypePtr;
+  typedef geometry_msgs::Vector3StampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const base_type::KindrEulerAnglesZyxD* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->vector.x = vectorPtr_->x();
+    msg->vector.y = vectorPtr_->y();
+    msg->vector.z = vectorPtr_->z();
   }
 };
 
 template<>
 struct slr_traits<base_type::KindrAngularVelocityD> {
-  typedef geometry_msgs::Vector3Stamped msgtype;
-  static void updateMsg(const base_type::KindrAngularVelocityD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.header.stamp = timeStamp;
-    msg.vector.x = vectorPtr_->x();
-    msg.vector.y = vectorPtr_->y();
-    msg.vector.z = vectorPtr_->z();
+  typedef geometry_msgs::Vector3Stamped         msgtype;
+  typedef geometry_msgs::Vector3StampedPtr      msgtypePtr;
+  typedef geometry_msgs::Vector3StampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const base_type::KindrAngularVelocityD* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->vector.x = vectorPtr_->x();
+    msg->vector.y = vectorPtr_->y();
+    msg->vector.z = vectorPtr_->z();
   }
 };
 
 template<>
 struct slr_traits<base_type::KindrLinearVelocityD> {
-  typedef geometry_msgs::Vector3Stamped msgtype;
-  static void updateMsg(const base_type::KindrLinearVelocityD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.header.stamp = timeStamp;
-    msg.vector.x = vectorPtr_->x();
-    msg.vector.y = vectorPtr_->y();
-    msg.vector.z = vectorPtr_->z();
+  typedef geometry_msgs::Vector3Stamped         msgtype;
+  typedef geometry_msgs::Vector3StampedPtr      msgtypePtr;
+  typedef geometry_msgs::Vector3StampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const base_type::KindrLinearVelocityD* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->vector.x = vectorPtr_->x();
+    msg->vector.y = vectorPtr_->y();
+    msg->vector.z = vectorPtr_->z();
   }
 };
 
 template<>
 struct slr_traits<base_type::KindrLinearAccelerationD> {
-  typedef geometry_msgs::Vector3Stamped msgtype;
-  static void updateMsg(const base_type::KindrLinearAccelerationD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.header.stamp = timeStamp;
-    msg.vector.x = vectorPtr_->x();
-    msg.vector.y = vectorPtr_->y();
-    msg.vector.z = vectorPtr_->z();
+  typedef geometry_msgs::Vector3Stamped         msgtype;
+  typedef geometry_msgs::Vector3StampedPtr      msgtypePtr;
+  typedef geometry_msgs::Vector3StampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const base_type::KindrLinearAccelerationD* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->vector.x = vectorPtr_->x();
+    msg->vector.y = vectorPtr_->y();
+    msg->vector.z = vectorPtr_->z();
   }
 };
 
 template<>
 struct slr_traits<base_type::KindrAngularAccelerationD> {
-  typedef geometry_msgs::Vector3Stamped msgtype;
-  static void updateMsg(const base_type::KindrAngularAccelerationD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.header.stamp = timeStamp;
-    msg.vector.x = vectorPtr_->x();
-    msg.vector.y = vectorPtr_->y();
-    msg.vector.z = vectorPtr_->z();
+  typedef geometry_msgs::Vector3Stamped         msgtype;
+  typedef geometry_msgs::Vector3StampedPtr      msgtypePtr;
+  typedef geometry_msgs::Vector3StampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const base_type::KindrAngularAccelerationD* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->vector.x = vectorPtr_->x();
+    msg->vector.y = vectorPtr_->y();
+    msg->vector.z = vectorPtr_->z();
   }
 };
 
 template<>
 struct slr_traits<base_type::KindrForceD> {
-  typedef geometry_msgs::Vector3Stamped msgtype;
-  static void updateMsg(const base_type::KindrForceD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.header.stamp = timeStamp;
-    msg.vector.x = vectorPtr_->x();
-    msg.vector.y = vectorPtr_->y();
-    msg.vector.z = vectorPtr_->z();
+  typedef geometry_msgs::Vector3Stamped         msgtype;
+  typedef geometry_msgs::Vector3StampedPtr      msgtypePtr;
+  typedef geometry_msgs::Vector3StampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const base_type::KindrForceD* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->vector.x = vectorPtr_->x();
+    msg->vector.y = vectorPtr_->y();
+    msg->vector.z = vectorPtr_->z();
   }
 };
 
 template<>
 struct slr_traits<base_type::KindrTorqueD> {
-  typedef geometry_msgs::Vector3Stamped msgtype;
-  static void updateMsg(const base_type::KindrTorqueD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.header.stamp = timeStamp;
-    msg.vector.x = vectorPtr_->x();
-    msg.vector.y = vectorPtr_->y();
-    msg.vector.z = vectorPtr_->z();
+  typedef geometry_msgs::Vector3Stamped         msgtype;
+  typedef geometry_msgs::Vector3StampedPtr      msgtypePtr;
+  typedef geometry_msgs::Vector3StampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const base_type::KindrTorqueD* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->vector.x = vectorPtr_->x();
+    msg->vector.y = vectorPtr_->y();
+    msg->vector.z = vectorPtr_->z();
   }
 };
 
 template<>
 struct slr_traits<base_type::KindrVectorD> {
-  typedef geometry_msgs::Vector3Stamped msgtype;
-  static void updateMsg(const base_type::KindrVectorD* vectorPtr_, msgtype& msg, const ros::Time& timeStamp) {
-    msg.header.stamp = timeStamp;
-    msg.vector.x = vectorPtr_->x();
-    msg.vector.y = vectorPtr_->y();
-    msg.vector.z = vectorPtr_->z();
+  typedef geometry_msgs::Vector3Stamped         msgtype;
+  typedef geometry_msgs::Vector3StampedPtr      msgtypePtr;
+  typedef geometry_msgs::Vector3StampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const base_type::KindrVectorD* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->vector.x = vectorPtr_->x();
+    msg->vector.y = vectorPtr_->y();
+    msg->vector.z = vectorPtr_->z();
   }
 };
 /********************************/
@@ -239,73 +431,82 @@ struct slr_traits<base_type::KindrVectorD> {
  ***************************************************/
 template<>
 struct slr_traits<base_type::KindrForceD, true> {
-  typedef kindr_msgs::VectorAtPosition msgtype;
+  typedef kindr_msgs::VectorAtPosition         msgtype;
+  typedef kindr_msgs::VectorAtPositionPtr      msgtypePtr;
+  typedef kindr_msgs::VectorAtPositionConstPtr msgtypeConstPtr;
+
   static void updateMsg(const base_type::KindrForceD* vectorPtr_,
                         const base_type::KindrPositionD* positionPtr_,
                         const std::string& vectorFrameId,
                         const std::string& positionFrameId,
                         const std::string& name,
-                        msgtype& msg,
+                        msgtypePtr msg,
                         const ros::Time& timeStamp) {
-    msg.header.stamp = timeStamp;
-    msg.header.frame_id = vectorFrameId;
-    msg.vector.x = vectorPtr_->x();
-    msg.vector.y = vectorPtr_->y();
-    msg.vector.z = vectorPtr_->z();
-    msg.position.x = positionPtr_->x();
-    msg.position.y = positionPtr_->y();
-    msg.position.z = positionPtr_->z();
-    msg.position_frame_id = positionFrameId;
-    msg.name = name;
-    msg.type = kindr_msgs::VectorAtPosition::TYPE_FORCE;
+    msg->header.stamp = timeStamp;
+    msg->header.frame_id = vectorFrameId;
+    msg->vector.x = vectorPtr_->x();
+    msg->vector.y = vectorPtr_->y();
+    msg->vector.z = vectorPtr_->z();
+    msg->position.x = positionPtr_->x();
+    msg->position.y = positionPtr_->y();
+    msg->position.z = positionPtr_->z();
+    msg->position_frame_id = positionFrameId;
+    msg->name = name;
+    msg->type = kindr_msgs::VectorAtPosition::TYPE_FORCE;
   }
 };
 
 template<>
 struct slr_traits<base_type::KindrTorqueD, true> {
-  typedef kindr_msgs::VectorAtPosition msgtype;
+  typedef kindr_msgs::VectorAtPosition         msgtype;
+  typedef kindr_msgs::VectorAtPositionPtr      msgtypePtr;
+  typedef kindr_msgs::VectorAtPositionConstPtr msgtypeConstPtr;
+
   static void updateMsg(const base_type::KindrTorqueD* vectorPtr_,
                         const base_type::KindrPositionD* positionPtr_,
                         const std::string& vectorFrameId,
                         const std::string& positionFrameId,
                         const std::string& name,
-                        msgtype& msg,
+                        msgtypePtr msg,
                         const ros::Time& timeStamp) {
-    msg.header.stamp = timeStamp;
-    msg.header.frame_id = vectorFrameId;
-    msg.vector.x = vectorPtr_->x();
-    msg.vector.y = vectorPtr_->y();
-    msg.vector.z = vectorPtr_->z();
-    msg.position.x = positionPtr_->x();
-    msg.position.y = positionPtr_->y();
-    msg.position.z = positionPtr_->z();
-    msg.position_frame_id = positionFrameId;
-    msg.name = name;
-    msg.type = kindr_msgs::VectorAtPosition::TYPE_TORQUE;
+    msg->header.stamp = timeStamp;
+    msg->header.frame_id = vectorFrameId;
+    msg->vector.x = vectorPtr_->x();
+    msg->vector.y = vectorPtr_->y();
+    msg->vector.z = vectorPtr_->z();
+    msg->position.x = positionPtr_->x();
+    msg->position.y = positionPtr_->y();
+    msg->position.z = positionPtr_->z();
+    msg->position_frame_id = positionFrameId;
+    msg->name = name;
+    msg->type = kindr_msgs::VectorAtPosition::TYPE_TORQUE;
   }
 };
 
 template<>
 struct slr_traits<base_type::KindrVectorD, true> {
-  typedef kindr_msgs::VectorAtPosition msgtype;
+  typedef kindr_msgs::VectorAtPosition         msgtype;
+  typedef kindr_msgs::VectorAtPositionPtr      msgtypePtr;
+  typedef kindr_msgs::VectorAtPositionConstPtr msgtypeConstPtr;
+
   static void updateMsg(const base_type::KindrVectorD* vectorPtr_,
                         const base_type::KindrPositionD* positionPtr_,
                         const std::string& vectorFrameId,
                         const std::string& positionFrameId,
                         const std::string& name,
-                        msgtype& msg,
+                        msgtypePtr msg,
                         const ros::Time& timeStamp) {
-    msg.header.stamp = timeStamp;
-    msg.header.frame_id = vectorFrameId;
-    msg.vector.x = vectorPtr_->x();
-    msg.vector.y = vectorPtr_->y();
-    msg.vector.z = vectorPtr_->z();
-    msg.position.x = positionPtr_->x();
-    msg.position.y = positionPtr_->y();
-    msg.position.z = positionPtr_->z();
-    msg.position_frame_id = positionFrameId;
-    msg.name = name;
-    msg.type = kindr_msgs::VectorAtPosition::TYPE_TYPELESS;
+    msg->header.stamp = timeStamp;
+    msg->header.frame_id = vectorFrameId;
+    msg->vector.x = vectorPtr_->x();
+    msg->vector.y = vectorPtr_->y();
+    msg->vector.z = vectorPtr_->z();
+    msg->position.x = positionPtr_->x();
+    msg->position.y = positionPtr_->y();
+    msg->position.z = positionPtr_->z();
+    msg->position_frame_id = positionFrameId;
+    msg->name = name;
+    msg->type = kindr_msgs::VectorAtPosition::TYPE_TYPELESS;
   }
 };
 /***************************************************/
