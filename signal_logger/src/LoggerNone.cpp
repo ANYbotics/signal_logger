@@ -59,13 +59,13 @@ const LoggerNone::LoggerType LoggerNone::getLoggerType() const {
 }
 
 
-void LoggerNone::addFloatToLog(float* var,    const std::string& name, const std::string& group, const std::string& unit, bool update) { }
-void LoggerNone::addDoubleToLog(double* var,  const std::string& name, const std::string& group, const std::string& unit, bool update) { }
-void LoggerNone::addIntToLog(int* var,        const std::string& name, const std::string& group, const std::string& unit, bool update) { }
-void LoggerNone::addShortToLog(short* var,    const std::string& name, const std::string& group, const std::string& unit, bool update) { }
-void LoggerNone::addLongToLog(long* var,      const std::string& name, const std::string& group, const std::string& unit, bool update) { }
-void LoggerNone::addCharToLog(char* var,      const std::string& name, const std::string& group, const std::string& unit, bool update) { }
-void LoggerNone::addBoolToLog(bool* var,      const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerNone::addFloatToLog(const float& var,    const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerNone::addDoubleToLog(const double& var,  const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerNone::addIntToLog(const int& var,        const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerNone::addShortToLog(const short& var,    const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerNone::addLongToLog(const long& var,      const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerNone::addCharToLog(const char& var,      const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+void LoggerNone::addBoolToLog(const bool& var,      const std::string& name, const std::string& group, const std::string& unit, bool update) { }
 
 
 /******************

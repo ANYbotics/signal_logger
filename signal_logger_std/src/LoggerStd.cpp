@@ -557,68 +557,68 @@ void LoggerStd::saveLoggerData()
 	   }
 }
 
-void LoggerStd::addFloatToLog(float* var, const std::string& name, const std::string& group, const std::string& unit, bool update)
+void LoggerStd::addFloatToLog(const float& var, const std::string& name, const std::string& group, const std::string& unit, bool update)
 {
 	if (!isInitialized_) {
 		return;
 	}
 	std::string varName = group + name;
-	addVarToCollect((char*) var, (char*)varName.c_str(), (char*)unit.c_str(), VT_FLOAT, (int) update);
+	addVarToCollect((char*) &var, (char*)varName.c_str(), (char*)unit.c_str(), VT_FLOAT, (int) update);
 
 }
-void LoggerStd::addDoubleToLog(double* var, const std::string& name, const std::string& group, const std::string& unit, bool update)
+void LoggerStd::addDoubleToLog(const double& var, const std::string& name, const std::string& group, const std::string& unit, bool update)
 {
 	if (!isInitialized_) {
 		return;
 	}
 	std::string varName = group + name;
-	addVarToCollect((char*) var, (char*)varName.c_str(), (char*)unit.c_str(), VT_DOUBLE, (int) update);
+	addVarToCollect((char*) &var, (char*)varName.c_str(), (char*)unit.c_str(), VT_DOUBLE, (int) update);
 }
-void LoggerStd::addIntToLog(int* var, const std::string& name, const std::string& group, const std::string& unit, bool update)
+void LoggerStd::addIntToLog(const int& var, const std::string& name, const std::string& group, const std::string& unit, bool update)
 {
 	if (!isInitialized_) {
 		return;
 	}
 	std::string varName = group + name;
-	addVarToCollect((char*) var, (char*)varName.c_str(), (char*)unit.c_str(), VT_INT, (int) update);
+	addVarToCollect((char*) &var, (char*)varName.c_str(), (char*)unit.c_str(), VT_INT, (int) update);
 
 }
-void LoggerStd::addShortToLog(short* var, const std::string& name, const std::string& group, const std::string& unit, bool update)
+void LoggerStd::addShortToLog(const short& var, const std::string& name, const std::string& group, const std::string& unit, bool update)
 {
 	if (!isInitialized_) {
 		return;
 	}
 	std::string varName = group + name;
-	addVarToCollect((char*) var, (char*)varName.c_str(), (char*)unit.c_str(), VT_SHORT, (int) update);
+	addVarToCollect((char*) &var, (char*)varName.c_str(), (char*)unit.c_str(), VT_SHORT, (int) update);
 
 }
-void LoggerStd::addLongToLog(long* var, const std::string& name, const std::string& group, const std::string& unit, bool update)
+void LoggerStd::addLongToLog(const long& var, const std::string& name, const std::string& group, const std::string& unit, bool update)
 {
 	if (!isInitialized_) {
 		return;
 	}
 	std::string varName = group + name;
-	addVarToCollect((char*) var, (char*)varName.c_str(), (char*)unit.c_str(), VT_LONG, (int) update);
+	addVarToCollect((char*) &var, (char*)varName.c_str(), (char*)unit.c_str(), VT_LONG, (int) update);
 
 }
-void LoggerStd::addCharToLog(char* var, const std::string& name, const std::string& group, const std::string& unit, bool update)
+void LoggerStd::addCharToLog(const char& var, const std::string& name, const std::string& group, const std::string& unit, bool update)
 {
 	if (!isInitialized_) {
 		return;
 	}
 	std::string varName = group + name;
-	addVarToCollect((char*) var, (char*)varName.c_str(), (char*)unit.c_str(), VT_CHAR, (int) update);
+	addVarToCollect((char*) &var, (char*)varName.c_str(), (char*)unit.c_str(), VT_CHAR, (int) update);
 
 }
 
 
-void LoggerStd::addBoolToLog(bool* var, const std::string& name, const std::string& group, const std::string& unit, bool update)
+void LoggerStd::addBoolToLog(const bool& var, const std::string& name, const std::string& group, const std::string& unit, bool update)
 {
   if (!isInitialized_) {
     return;
   }
   std::string varName = group + name;
-  addVarToCollect((char*) var, (char*)varName.c_str(), (char*)unit.c_str(), VT_BOOL, (int) update);
+  addVarToCollect((char*) &var, (char*)varName.c_str(), (char*)unit.c_str(), VT_BOOL, (int) update);
 
 }
 
@@ -631,7 +631,7 @@ void LoggerStd::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
       std::string name_of_var = name + "_" + boost::lexical_cast<std::string>(r) + "_" + boost::lexical_cast<std::string>(c);
-      addDoubleToLog((double *)(&var(r,c)), name_of_var, group, unit, update);
+      addDoubleToLog((double)(var(r,c)), name_of_var, group, unit, update);
     }
   }
 }
@@ -640,7 +640,7 @@ void LoggerStd::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var,
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
       std::string name_of_var = name + "_" + boost::lexical_cast<std::string>(r) + "_" + boost::lexical_cast<std::string>(c);
-      addFloatToLog((float *)(&var(r,c)), name_of_var, group, unit, update);
+      addFloatToLog((float)(var(r,c)), name_of_var, group, unit, update);
     }
   }
 }
@@ -649,7 +649,7 @@ void LoggerStd::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var, c
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
       std::string name_of_var = name + "_" + boost::lexical_cast<std::string>(r) + "_" + boost::lexical_cast<std::string>(c);
-      addIntToLog((int *)(&var(r,c)), name_of_var, group, unit, update);
+      addIntToLog((int)(var(r,c)), name_of_var, group, unit, update);
     }
   }
 }
@@ -658,7 +658,7 @@ void LoggerStd::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>&
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
       std::string name_of_var = name + "_" + boost::lexical_cast<std::string>(r) + "_" + boost::lexical_cast<std::string>(c);
-      addShortToLog((short *)(&var(r,c)), name_of_var, group, unit, update);
+      addShortToLog((short)(var(r,c)), name_of_var, group, unit, update);
     }
   }
 }
@@ -667,7 +667,7 @@ void LoggerStd::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& 
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
       std::string name_of_var = name + "_" + boost::lexical_cast<std::string>(r) + "_" + boost::lexical_cast<std::string>(c);
-      addLongToLog((long *)(&var(r,c)), name_of_var, group, unit, update);
+      addLongToLog((long)(var(r,c)), name_of_var, group, unit, update);
     }
   }
 }
@@ -676,7 +676,7 @@ void LoggerStd::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& 
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
       std::string name_of_var = name + "_" + boost::lexical_cast<std::string>(r) + "_" + boost::lexical_cast<std::string>(c);
-      addCharToLog((char *)(&var(r,c)), name_of_var, group, unit, update);
+      addCharToLog((char)(var(r,c)), name_of_var, group, unit, update);
     }
   }
 }
@@ -685,7 +685,7 @@ void LoggerStd::addUnsignedCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::Mat
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
       std::string name_of_var = name + "_" + boost::lexical_cast<std::string>(r) + "_" + boost::lexical_cast<std::string>(c);
-      addCharToLog((char *)(&var(r,c)), name_of_var, group, unit, update);
+      addCharToLog((char)(var(r,c)), name_of_var, group, unit, update);
     }
   }
 }
@@ -694,22 +694,22 @@ void LoggerStd::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& 
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
       std::string name_of_var = name + "_" + boost::lexical_cast<std::string>(r) + "_" + boost::lexical_cast<std::string>(c);
-      addBoolToLog((bool *)(&var(r,c)), name_of_var, group, unit, update);
+      addBoolToLog((bool)(var(r,c)), name_of_var, group, unit, update);
     }
   }
 }
 
 void LoggerStd::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog((double *)(&var(0)), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog((double *)(&var(1)), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog((double *)(&var(2)), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog((double)(var(0)), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog((double)(var(1)), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog((double)(var(2)), std::string{name + "_z"}, group, unit, update);
 }
 
 
 void LoggerStd::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
-      addDoubleToLog((double *)(&var(r,c)), names(r,c), group, unit, update);
+      addDoubleToLog((double)(var(r,c)), names(r,c), group, unit, update);
     }
   }
 }
@@ -717,7 +717,7 @@ void LoggerStd::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var
 void LoggerStd::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
-      addFloatToLog((float *)(&var(r,c)), names(r,c), group, unit, update);
+      addFloatToLog((float)(var(r,c)), names(r,c), group, unit, update);
     }
   }
 }
@@ -725,7 +725,7 @@ void LoggerStd::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var,
 void LoggerStd::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
-      addIntToLog((int *)(&var(r,c)), names(r,c), group, unit, update);
+      addIntToLog((int)(var(r,c)), names(r,c), group, unit, update);
     }
   }
 }
@@ -733,7 +733,7 @@ void LoggerStd::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var, c
 void LoggerStd::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
-      addShortToLog((short *)(&var(r,c)), names(r,c), group, unit, update);
+      addShortToLog((short)(var(r,c)), names(r,c), group, unit, update);
     }
   }
 }
@@ -741,7 +741,7 @@ void LoggerStd::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>&
 void LoggerStd::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
-      addLongToLog((long *)(&var(r,c)), names(r,c), group, unit, update);
+      addLongToLog((long)(var(r,c)), names(r,c), group, unit, update);
     }
   }
 }
@@ -749,7 +749,7 @@ void LoggerStd::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& 
 void LoggerStd::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
-      addCharToLog((char *)(&var(r,c)), names(r,c), group, unit, update);
+      addCharToLog((char)(var(r,c)), names(r,c), group, unit, update);
     }
   }
 }
@@ -757,7 +757,7 @@ void LoggerStd::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& 
 void LoggerStd::addUnsignedCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXUc>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
-      addCharToLog((char *)(&var(r,c)), names(r,c), group, unit, update);
+      addCharToLog((char)(var(r,c)), names(r,c), group, unit, update);
     }
   }
 }
@@ -765,15 +765,15 @@ void LoggerStd::addUnsignedCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::Mat
 void LoggerStd::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<var.rows(); r++)  {
     for (int c=0; c<var.cols(); c++)  {
-      addBoolToLog((bool *)(&var(r,c)), names(r,c), group, unit, update);
+      addBoolToLog((bool)(var(r,c)), names(r,c), group, unit, update);
     }
   }
 }
 
 void LoggerStd::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog((double *)(&var(0)), names(0,0), group, unit, update);
-  addDoubleToLog((double *)(&var(1)), names(1,0), group, unit, update);
-  addDoubleToLog((double *)(&var(2)), names(2,0), group, unit, update);
+  addDoubleToLog((double)(var(0)), names(0,0), group, unit, update);
+  addDoubleToLog((double)(var(1)), names(1,0), group, unit, update);
+  addDoubleToLog((double)(var(2)), names(2,0), group, unit, update);
 }
 /*****************************/
 
@@ -782,35 +782,35 @@ void LoggerStd::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& va
  * Kindr wrappers *
  ******************/
 void LoggerStd::addDoubleKindrPositionToLog(const KindrPositionD& position, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog(&const_cast<KindrPositionD&>(position).toImplementation().x(), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrPositionD&>(position).toImplementation().y(), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrPositionD&>(position).toImplementation().z(), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog(position.toImplementation().x(), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog(position.toImplementation().y(), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog(position.toImplementation().z(), std::string{name + "_z"}, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrRotationQuaternionToLog(const KindrRotationQuaternionD& rotation, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog(&const_cast<KindrRotationQuaternionD&>(rotation).toImplementation().w(), std::string{name + "_w"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrRotationQuaternionD&>(rotation).toImplementation().x(), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrRotationQuaternionD&>(rotation).toImplementation().y(), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrRotationQuaternionD&>(rotation).toImplementation().x(), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog(rotation.toImplementation().w(), std::string{name + "_w"}, group, unit, update);
+  addDoubleToLog(rotation.toImplementation().x(), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog(rotation.toImplementation().y(), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog(rotation.toImplementation().x(), std::string{name + "_z"}, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrEulerAnglesZyxToLog(const KindrEulerAnglesZyxD& rotation,  const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog(&const_cast<KindrEulerAnglesZyxD&>(rotation).toImplementation().x(), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrEulerAnglesZyxD&>(rotation).toImplementation().y(), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrEulerAnglesZyxD&>(rotation).toImplementation().z(), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog(rotation.toImplementation().x(), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog(rotation.toImplementation().y(), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog(rotation.toImplementation().z(), std::string{name + "_z"}, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrLocalAngularVelocityToLog(const KindrAngularVelocityD& angVel, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog(&const_cast<KindrAngularVelocityD&>(angVel).toImplementation().x(), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrAngularVelocityD&>(angVel).toImplementation().y(), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrAngularVelocityD&>(angVel).toImplementation().z(), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog(angVel.toImplementation().x(), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog(angVel.toImplementation().y(), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog(angVel.toImplementation().z(), std::string{name + "_z"}, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrAngleAxisToLog(const KindrAngleAxisD& angleAxis, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog(&const_cast<KindrAngleAxisD&>(angleAxis).toImplementation().axis().x(), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrAngleAxisD&>(angleAxis).toImplementation().axis().y(), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrAngleAxisD&>(angleAxis).toImplementation().axis().z(), std::string{name + "_z"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrAngleAxisD&>(angleAxis).toImplementation().angle(),  std::string{name + "_angle"}, group, unit, update);
+  addDoubleToLog(angleAxis.toImplementation().axis().x(), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog(angleAxis.toImplementation().axis().y(), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog(angleAxis.toImplementation().axis().z(), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog(angleAxis.toImplementation().angle(), std::string{name + "_angle"}, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrRotationMatrixToLog(const KindrRotationMatrixD& rotMat, const std::string& name, const std::string& group, const std::string& unit, bool update) {
@@ -818,45 +818,45 @@ void LoggerStd::addDoubleKindrRotationMatrixToLog(const KindrRotationMatrixD& ro
 }
 
 void LoggerStd::addDoubleKindrRotationVectorToLog(const KindrRotationVectorD& rotVec, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog(&const_cast<KindrRotationVectorD&>(rotVec).toImplementation().x(), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrRotationVectorD&>(rotVec).toImplementation().y(), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrRotationVectorD&>(rotVec).toImplementation().z(), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog(rotVec.toImplementation().x(), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog(rotVec.toImplementation().y(), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog(rotVec.toImplementation().z(), std::string{name + "_z"}, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrLinearVelocityToLog(const KindrLinearVelocityD& linVel, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog(&const_cast<KindrLinearVelocityD&>(linVel).toImplementation().x(), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrLinearVelocityD&>(linVel).toImplementation().y(), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrLinearVelocityD&>(linVel).toImplementation().z(), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog(linVel.toImplementation().x(), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog(linVel.toImplementation().y(), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog(linVel.toImplementation().z(), std::string{name + "_z"}, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrLinearAccelerationToLog(const KindrLinearAccelerationD& linAcc, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog(&const_cast<KindrLinearAccelerationD&>(linAcc).toImplementation().x(), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrLinearAccelerationD&>(linAcc).toImplementation().y(), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrLinearAccelerationD&>(linAcc).toImplementation().z(), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog(linAcc.toImplementation().x(), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog(linAcc.toImplementation().y(), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog(linAcc.toImplementation().z(), std::string{name + "_z"}, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrAngularAccelerationToLog(const KindrAngularAccelerationD& angAcc, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog(&const_cast<KindrAngularAccelerationD&>(angAcc).toImplementation().x(), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrAngularAccelerationD&>(angAcc).toImplementation().y(), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrAngularAccelerationD&>(angAcc).toImplementation().z(), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog(angAcc.toImplementation().x(), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog(angAcc.toImplementation().y(), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog(angAcc.toImplementation().z(), std::string{name + "_z"}, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrForceToLog(const KindrForceD& force, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog(&const_cast<KindrForceD&>(force).toImplementation().x(), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrForceD&>(force).toImplementation().y(), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrForceD&>(force).toImplementation().z(), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog(force.toImplementation().x(), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog(force.toImplementation().y(), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog(force.toImplementation().z(), std::string{name + "_z"}, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrTorqueToLog(const KindrTorqueD& torque, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog(&const_cast<KindrTorqueD&>(torque).toImplementation().x(), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrTorqueD&>(torque).toImplementation().y(), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrTorqueD&>(torque).toImplementation().z(), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog(torque.toImplementation().x(), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog(torque.toImplementation().y(), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog(torque.toImplementation().z(), std::string{name + "_z"}, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrVectorToLog(const KindrVectorD& vector, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog(&const_cast<KindrVectorD&>(vector).toImplementation().x(), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrVectorD&>(vector).toImplementation().y(), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog(&const_cast<KindrVectorD&>(vector).toImplementation().z(), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog(vector.toImplementation().x(), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog(vector.toImplementation().y(), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog(vector.toImplementation().z(), std::string{name + "_z"}, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrVectorAtPositionToLog(const KindrVectorD& vector,

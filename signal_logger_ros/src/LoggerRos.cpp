@@ -122,53 +122,53 @@ void LoggerRos::stopAndSaveLoggerData() { }
 /**************
  * Core types *
  **************/
-void LoggerRos::addFloatToLog(float* var, const std::string& name,
+void LoggerRos::addFloatToLog(const float& var, const std::string& name,
                               const std::string& group, const std::string& unit,
                               bool update)
 {
-  addVarToCollection<float>(LOGGER_PREFIX + group + name, var);
+  addVarToCollection<float>(LOGGER_PREFIX + group + name, &var);
 }
 
-void LoggerRos::addDoubleToLog(double* var, const std::string& name,
+void LoggerRos::addDoubleToLog(const double& var, const std::string& name,
                                const std::string& group,
                                const std::string& unit, bool update)
 {
-  addVarToCollection<double>(LOGGER_PREFIX + group + name, var);
+  addVarToCollection<double>(LOGGER_PREFIX + group + name, &var);
 }
 
-void LoggerRos::addIntToLog(int* var, const std::string& name,
+void LoggerRos::addIntToLog(const int& var, const std::string& name,
                             const std::string& group, const std::string& unit,
                             bool update)
 {
-  addVarToCollection<int>(LOGGER_PREFIX + group + name, var);
+  addVarToCollection<int>(LOGGER_PREFIX + group + name, &var);
 }
 
-void LoggerRos::addShortToLog(short* var, const std::string& name,
+void LoggerRos::addShortToLog(const short& var, const std::string& name,
                               const std::string& group, const std::string& unit,
                               bool update)
 {
-  addVarToCollection<short>(LOGGER_PREFIX + group + name, var);
+  addVarToCollection<short>(LOGGER_PREFIX + group + name, &var);
 }
 
-void LoggerRos::addLongToLog(long* var, const std::string& name,
+void LoggerRos::addLongToLog(const long& var, const std::string& name,
                              const std::string& group, const std::string& unit,
                              bool update)
 {
-  addVarToCollection<long>(LOGGER_PREFIX + group + name, var);
+  addVarToCollection<long>(LOGGER_PREFIX + group + name, &var);
 }
 
-void LoggerRos::addCharToLog(char* var, const std::string& name,
+void LoggerRos::addCharToLog(const char& var, const std::string& name,
                              const std::string& group, const std::string& unit,
                              bool update)
 {
-  addVarToCollection<char>(LOGGER_PREFIX + group + name, var);
+  addVarToCollection<char>(LOGGER_PREFIX + group + name, &var);
 }
 
-void LoggerRos::addBoolToLog(bool* var, const std::string& name,
+void LoggerRos::addBoolToLog(const bool& var, const std::string& name,
                              const std::string& group, const std::string& unit,
                              bool update)
 {
-  addVarToCollection<bool>(LOGGER_PREFIX + group + name, var);
+  addVarToCollection<bool>(LOGGER_PREFIX + group + name, &var);
 }
 /**************/
 
@@ -224,7 +224,7 @@ void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& va
 void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<static_cast<Eigen::MatrixXd>(var).rows(); r++)  {
     for (int c=0; c<static_cast<Eigen::MatrixXd>(var).cols(); c++)  {
-      addDoubleToLog((double *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+      addDoubleToLog((double)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
 }
@@ -232,7 +232,7 @@ void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var
 void LoggerRos::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<static_cast<Eigen::MatrixXf>(var).rows(); r++)  {
     for (int c=0; c<static_cast<Eigen::MatrixXf>(var).cols(); c++)  {
-      addFloatToLog((float *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+      addFloatToLog((float)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
 }
@@ -240,7 +240,7 @@ void LoggerRos::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var,
 void LoggerRos::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<static_cast<Eigen::MatrixXi>(var).rows(); r++)  {
     for (int c=0; c<static_cast<Eigen::MatrixXi>(var).cols(); c++)  {
-      addIntToLog((int *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+      addIntToLog((int)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
 }
@@ -248,7 +248,7 @@ void LoggerRos::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var, c
 void LoggerRos::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<static_cast<LoggerBase::MatrixXs>(var).rows(); r++)  {
     for (int c=0; c<static_cast<LoggerBase::MatrixXs>(var).cols(); c++)  {
-      addShortToLog((short *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+      addShortToLog((short)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
 }
@@ -256,7 +256,7 @@ void LoggerRos::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>&
 void LoggerRos::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<static_cast<LoggerBase::MatrixXl>(var).rows(); r++)  {
     for (int c=0; c<static_cast<LoggerBase::MatrixXl>(var).cols(); c++)  {
-      addLongToLog((long *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+      addLongToLog((long)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
 }
@@ -264,7 +264,7 @@ void LoggerRos::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& 
 void LoggerRos::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<static_cast<LoggerBase::MatrixXc>(var).rows(); r++)  {
     for (int c=0; c<static_cast<LoggerBase::MatrixXc>(var).cols(); c++)  {
-      addCharToLog((char *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+      addCharToLog((char)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
 }
@@ -272,7 +272,7 @@ void LoggerRos::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& 
 void LoggerRos::addUnsignedCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXUc>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<static_cast<LoggerBase::MatrixXUc>(var).rows(); r++)  {
     for (int c=0; c<static_cast<LoggerBase::MatrixXUc>(var).cols(); c++)  {
-      addCharToLog((char *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+      addCharToLog((char)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
 }
@@ -280,15 +280,15 @@ void LoggerRos::addUnsignedCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::Mat
 void LoggerRos::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
   for (int r=0; r<static_cast<LoggerBase::MatrixXb>(var).rows(); r++)  {
     for (int c=0; c<static_cast<LoggerBase::MatrixXb>(var).cols(); c++)  {
-      addBoolToLog((bool *)(&var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
+      addBoolToLog((bool)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update);
     }
   }
 }
 
 void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var, const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog((double *)(&var(0)), static_cast<std::string>(names(0,0)), group, unit, update);
-  addDoubleToLog((double *)(&var(1)), static_cast<std::string>(names(1,0)), group, unit, update);
-  addDoubleToLog((double *)(&var(2)), static_cast<std::string>(names(2,0)), group, unit, update);
+  addDoubleToLog((double)(var(0)), static_cast<std::string>(names(0,0)), group, unit, update);
+  addDoubleToLog((double)(var(1)), static_cast<std::string>(names(1,0)), group, unit, update);
+  addDoubleToLog((double)(var(2)), static_cast<std::string>(names(2,0)), group, unit, update);
 }
 /******************/
 
