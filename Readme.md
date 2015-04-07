@@ -10,5 +10,7 @@ Author(s): Christian Gehring, Dario Bellicoso
 
 DEPENDENCIES
 -----------------------------------------------------------------
-signal_logger_ros:
-* [realtime_tools](http://github.com/ros-controls/realtime_tools) - ROS tools that can be used from a hard realtime thread 
+
+* [kindr](https://github.com/ethz-asl/kindr) - Kinematics and Dynamics for Robotics
+* [kindr_ros](https://github.com/ethz-asl/kindr_ros) - kindr ROS wrapper
+* [roco](https://bitbucket.org/ethz-asl-lr/roco) - common interface for robot controllers
