@@ -17,12 +17,12 @@ Dependencies
 
 Building
 ----------------------------------------------------------------------------
-To build the non-ROS implementation of the signal logger, link the following pacakges in your catkin workspace:
+To build the non-ROS implementation of the signal logger, link the following pacakges in your catkin workspace (adjusting the location of your git and catkin workspace folders):
 
      ln -s ~/git/signal_logger/signal_logger ~/catkin_ws/src
      ln -s ~/git/signal_logger/signal_logger_std ~/catkin_ws/src
 
-Additionally, if you wish to also build the ROS version of the signal logger, link the following pacakges in your catkin workspace:
+Additionally, if you wish to also build the ROS version of the signal logger, link the following pacakges in your catkin workspace (adjusting the location of your git and catkin workspace folders):
 
      ln -s ~/git/signal_logger/signal_logger_msgs ~/catkin_ws/src
      ln -s ~/git/signal_logger/signal_logger_ros ~/catkin_ws/src
