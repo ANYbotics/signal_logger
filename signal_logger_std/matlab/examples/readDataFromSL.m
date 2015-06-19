@@ -10,7 +10,7 @@ clc,  close all
 %% Configuration
 
 
-startNo = 137;       % number of first data file (filename will be generated based on this number
+startNo = 1646;       % number of first data file (filename will be generated based on this number
 endNo = startNo;      % number of last data file
 
 folder = '';       % name of folder where the data files are stored
@@ -36,7 +36,7 @@ plotJointPower =0;
 plotOptoforces =1;
 plotMainbodyPositionFromMocap = 0;
 
-plotModes = 1;
+plotModes = 0;
 plotContactFlags = 1;
 plotDeflections = 0;
 
@@ -2067,7 +2067,7 @@ end
 
 %%
 if (plotOptoforces) 
-    contactForceThreshold = 3000;
+    contactForceThreshold = 600;
     named_figure('Contact forces from optoforce sensors'), clf
     grid on
     subplot(4,4,1)
@@ -2254,18 +2254,21 @@ if (plotDesiredFootPositions)
     subplot(4,4,5)
     hold on
     plot(time, data(:,idx_loco_leftForeLeg_positionWorldToDesiredFootInWorldFrame_x),'r')
+    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToFootInWorldFrame_x),'b')
     grid on
     xlabel('time [s]')
     ylabel('x')
     subplot(4,4,9)
     hold on
     plot(time, data(:,idx_loco_leftForeLeg_positionWorldToDesiredFootInWorldFrame_y),'r')
+    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToFootInWorldFrame_y),'b')
     grid on
     xlabel('time [s]')
     ylabel('y')
     subplot(4,4,13)
     hold on
     plot(time, data(:,idx_loco_leftForeLeg_positionWorldToDesiredFootInWorldFrame_z),'r')
+    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToFootInWorldFrame_z),'b')
     grid on
     xlabel('time [s]')
     ylabel('z')
@@ -2291,18 +2294,21 @@ if (plotDesiredFootPositions)
     subplot(4,4,6)
     hold on
     plot(time, data(:,idx_loco_rightForeLeg_positionWorldToDesiredFootInWorldFrame_x),'r')
+    plot(time, data(:,idx_loco_rightForeLeg_positionWorldToFootInWorldFrame_x),'b')
     grid on
     xlabel('time [s]')
     ylabel('x')
     subplot(4,4,10)
     hold on
     plot(time, data(:,idx_loco_rightForeLeg_positionWorldToDesiredFootInWorldFrame_y),'r')
+    plot(time, data(:,idx_loco_rightForeLeg_positionWorldToFootInWorldFrame_y),'b')
     grid on
     xlabel('time [s]')
     ylabel('y]')
     subplot(4,4,14)
     hold on
     plot(time, data(:,idx_loco_rightForeLeg_positionWorldToDesiredFootInWorldFrame_z),'r')
+    plot(time, data(:,idx_loco_rightForeLeg_positionWorldToFootInWorldFrame_z),'b')
     grid on
     xlabel('time [s]')
     ylabel('z')
@@ -2326,18 +2332,21 @@ if (plotDesiredFootPositions)
     subplot(4,4,7)
     hold on
     plot(time, data(:,idx_loco_leftHindLeg_positionWorldToDesiredFootInWorldFrame_x),'r')
+    plot(time, data(:,idx_loco_leftHindLeg_positionWorldToFootInWorldFrame_x),'b')
     grid on
     xlabel('time [s]')
     ylabel('x')
     subplot(4,4,11)
     hold on
     plot(time, data(:,idx_loco_leftHindLeg_positionWorldToDesiredFootInWorldFrame_y),'r')
+    plot(time, data(:,idx_loco_leftHindLeg_positionWorldToFootInWorldFrame_y),'b')
     grid on
     xlabel('time [s]')
     ylabel('y')
     subplot(4,4,15)
     hold on
     plot(time, data(:,idx_loco_leftHindLeg_positionWorldToDesiredFootInWorldFrame_z),'r')
+    plot(time, data(:,idx_loco_leftHindLeg_positionWorldToFootInWorldFrame_z),'b')
     grid on
     xlabel('time [s]')
     ylabel('z')
@@ -2359,20 +2368,41 @@ if (plotDesiredFootPositions)
     subplot(4,4,8)
     hold on
     plot(time, data(:,idx_loco_rightHindLeg_positionWorldToDesiredFootInWorldFrame_x),'r')
+    plot(time, data(:,idx_loco_rightHindLeg_positionWorldToFootInWorldFrame_x),'b')
     grid on
     xlabel('time [s]')
     ylabel('x')
     subplot(4,4,12)
     hold on
     plot(time, data(:,idx_loco_rightHindLeg_positionWorldToDesiredFootInWorldFrame_y),'r')
+    plot(time, data(:,idx_loco_rightHindLeg_positionWorldToFootInWorldFrame_y),'b')
     grid on
     xlabel('time [s]')
     ylabel('y')
     subplot(4,4,16)
     hold on
     plot(time, data(:,idx_loco_rightHindLeg_positionWorldToDesiredFootInWorldFrame_z),'r')
+    plot(time, data(:,idx_loco_rightHindLeg_positionWorldToFootInWorldFrame_z),'b')
     grid on
     xlabel('time [s]')
     ylabel('z')
 end
+
+%%
+ figure
+ hold on
+plot(time, data(:,idx_loco_leftForeLeg_currentState),'r')
+plot(time, data(:,idx_loco_rightForeLeg_currentState),'b')
+plot(time, data(:,idx_loco_leftHindLeg_currentState),'m')
+plot(time, data(:,idx_loco_rightHindLeg_currentState),'c')
+
+plot(time, data(:,idx_loco_leftForeLeg_stancePhase),'r--')
+plot(time, data(:,idx_loco_rightForeLeg_stancePhase),'b--')
+plot(time, data(:,idx_loco_leftHindLeg_stancePhase),'m--')
+plot(time, data(:,idx_loco_rightHindLeg_stancePhase),'c--')
+
+    plot(time, data(:,idx_loco_leftHindLeg_shouldBeGrounded),'r*');
+
+grid on
+
 
