@@ -10,7 +10,7 @@ clc,  close all
 %% Configuration
 
 
-startNo = 1646;       % number of first data file (filename will be generated based on this number
+startNo = 2155;       % number of first data file (filename will be generated based on this number
 endNo = startNo;      % number of last data file
 
 folder = '';       % name of folder where the data files are stored
@@ -36,7 +36,6 @@ plotJointPower =0;
 plotOptoforces =1;
 plotMainbodyPositionFromMocap = 0;
 
-plotModes = 0;
 plotContactFlags = 1;
 plotDeflections = 0;
 
@@ -48,11 +47,13 @@ if (plotLoco)
     plotLocoLegState = 1;
     plotDesiredFootPositions = 1;
     plotTerrain = 1;
+    plotLocoControlModes = 1;
 else
     
     plotLocoVMCandCFD = 0;
     plotLocoCFD = 0;
     plotLocoLegState = 0;
+    plotLocoControlModes = 0;
 end
 
 plotPhases = 0;
@@ -770,85 +771,85 @@ if (plotJointTorques)
 
 end
 %% Mode
-if (plotModes)
-    named_figure('joint modes'),clf
+if (plotLocoControlModes)
+    named_figure('loco control modes'),clf
     grid on
     subplot(3,4,1)
     hold on
-    plot(time, data(:,idx_rm_actuators_LF_HAA_m),'b')
+    plot(time, data(:,idx_loco_leftForeLeg_desControlMode_HAA),'b')
     title('LF')
     grid on
     xlabel('time [s]')
     ylabel('HAA [Nm]')
     subplot(3,4,5)
     hold on
-    plot(time, data(:,idx_rm_actuators_LF_HFE_m),'b')
+    plot(time, data(:,idx_loco_leftForeLeg_desControlMode_HFE),'b')
     grid on
     xlabel('time [s]')
     ylabel('HFE [Nm]')
     subplot(3,4,9)
     hold on
-    plot(time, data(:,idx_rm_actuators_LF_KFE_m),'b')
+    plot(time, data(:,idx_loco_leftForeLeg_desControlMode_KFE),'b')
     grid on
     xlabel('time [s]')
     ylabel('KFE [Nm]')
 
     subplot(3,4,2)
     hold on
-    plot(time, data(:,idx_rm_actuators_RF_HAA_m),'b')
+    plot(time, data(:,idx_loco_rightForeLeg_desControlMode_HAA),'b')
     title('RF')
     grid on
     xlabel('time [s]')
     ylabel('HAA [Nm]')
     subplot(3,4,6)
     hold on
-    plot(time, data(:,idx_rm_actuators_RF_HFE_m),'b')
+    plot(time, data(:,idx_loco_rightForeLeg_desControlMode_HFE),'b')
     grid on
     xlabel('time [s]')
     ylabel('HFE [Nm]')
     subplot(3,4,10)
     hold on
-    plot(time, data(:,idx_rm_actuators_RF_KFE_m),'b')
+    plot(time, data(:,idx_loco_rightForeLeg_desControlMode_KFE),'b')
     grid on
     xlabel('time [s]')
     ylabel('KFE [Nm]')
 
     subplot(3,4,3)
     hold on
-    plot(time, data(:,idx_rm_actuators_LH_HAA_m),'b')
+    plot(time, data(:,idx_loco_leftHindLeg_desControlMode_HAA),'b')
     title('LH')
     grid on
     xlabel('time [s]')
     ylabel('HAA [Nm]')
     subplot(3,4,7)
     hold on
-    plot(time, data(:,idx_rm_actuators_LH_HFE_m),'b')
+    plot(time, data(:,idx_loco_leftHindLeg_desControlMode_HFE),'b')
     grid on
     xlabel('time [s]')
     ylabel('HFE [Nm]')
     subplot(3,4,11)
     hold on
-    plot(time, data(:,idx_rm_actuators_LH_KFE_m),'b')
+    plot(time, data(:,idx_loco_leftHindLeg_desControlMode_KFE),'b')
     grid on
     xlabel('time [s]')
     ylabel('KFE [Nm]')
 
     subplot(3,4,4)
     hold on
-    plot(time, data(:,idx_rm_actuators_RH_HAA_m),'b')
+    plot(time, data(:,idx_loco_rightHindLeg_desControlMode_HAA),'b')
     title('RH')
     grid on
     xlabel('time [s]')
     ylabel('HAA [Nm]')
     subplot(3,4,8)
     hold on
-    plot(time, data(:,idx_rm_actuators_RH_HFE_m),'b')
+    plot(time, data(:,idx_loco_rightHindLeg_desControlMode_HFE),'b')
     grid on
     xlabel('time [s]')
     ylabel('HFE [Nm]')
     subplot(3,4,12)
     hold on
-    plot(time, data(:,idx_rm_actuators_RH_KFE_m),'b')
+    plot(time, data(:,idx_loco_rightHindLeg_desControlMode_KFE),'b')
     grid on
     xlabel('time [s]')
     ylabel('KFE [Nm]')
