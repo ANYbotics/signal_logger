@@ -5,7 +5,7 @@
  *      Author: C. Dario Bellicoso
  */
 
-#include "../include/signal_logger_ros/LogElement.hpp"
+#include "signal_logger_ros/LogElement.hpp"
 
 namespace signal_logger_ros {
 
