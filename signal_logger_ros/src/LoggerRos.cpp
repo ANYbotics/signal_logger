@@ -45,7 +45,6 @@
 #include "roco/log/log_messages.hpp"
 
 
-const int DEFAULT_UPDATE_FREQUENCY = 1; // Hz
 const std::string LOGGER_PREFIX = "/log";
 
 namespace signal_logger_ros {
@@ -53,7 +52,6 @@ namespace signal_logger_ros {
 LoggerRos::LoggerRos(ros::NodeHandle& nodeHandle) :
     nodeHandle_(nodeHandle),
     collectedVars_(0),
-    updateFrequency_(DEFAULT_UPDATE_FREQUENCY),
     lastPublishTime_(Clock::now())
 {
   pubTime_ = nodeHandle_.advertise<std_msgs::Float32>(LOGGER_PREFIX+"/slr/publish_duration",0);
@@ -88,31 +86,12 @@ const signal_logger::LoggerBase::LoggerType LoggerRos::getLoggerType() const {
 
 void LoggerRos::collectLoggerData()
 {
-  Clock::time_point start = Clock::now();
-
-  double updatePeriod = 1.0/static_cast<double>(updateFrequency_)*1000*1000;
-  double timeSinceLastUpdate = std::chrono::duration_cast<microseconds>(Clock::now()-lastPublishTime_).count();
-
-  if (timeSinceLastUpdate > updatePeriod) {
-    for (const auto& elem : collectedVars_) {
-      if (elem.get()->getNumSubscribers() > 0u) {
-        ros::Time stamp = ros::Time::now();
-        elem->publish(stamp);
-      }
+  for (const auto& elem : collectedVars_) {
+    if (elem.get()->getNumSubscribers() > 0u) {
+      ros::Time stamp = ros::Time::now();
+      elem->publish(stamp);
     }
-
-    lastPublishTime_ = Clock::now();
   }
-
-  Clock::time_point end = Clock::now();
-  microseconds us = std::chrono::duration_cast<microseconds>(end - start);
-
-  if (pubTime_.getNumSubscribers() > 0u) {
-    std_msgs::Float32Ptr msg(new std_msgs::Float32);
-    msg->data = us.count();
-    pubTime_.publish(std_msgs::Float32ConstPtr(msg));
-  }
-
 }
 
 

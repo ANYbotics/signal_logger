@@ -159,7 +159,6 @@ class LoggerRos : public signal_logger::LoggerBase {
 
   ros::NodeHandle& nodeHandle_;
   std::vector<std::shared_ptr<LogElementBase>> collectedVars_;
-  int updateFrequency_;
 
   Clock::time_point lastPublishTime_;
   ros::Publisher pubTime_;
