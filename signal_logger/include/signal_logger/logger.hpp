@@ -48,11 +48,12 @@
 #endif
 
 #include "LoggerBase.hpp"
+#include <memory>
 
 namespace signal_logger {
 
 //! Reference to the logger
-extern boost::shared_ptr<signal_logger::LoggerBase> logger;
+extern std::shared_ptr<signal_logger::LoggerBase> logger;
 
 } // end namespace
 

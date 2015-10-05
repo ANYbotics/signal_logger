@@ -44,9 +44,11 @@
 #include "signal_logger/logger.hpp"
 #include "signal_logger/LoggerNone.hpp"
 
+#include <memory>
+
 namespace signal_logger {
 
 //! Initialize logger with standard logger.
-boost::shared_ptr<LoggerBase> logger(new LoggerNone);
+std::shared_ptr<LoggerBase> logger(new LoggerNone);
 
 } /* namespace signal_logger */
