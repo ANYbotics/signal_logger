@@ -3,14 +3,14 @@
 % Date:     6th Feb 2012
 % Function:
 
-clc,  close all
+clc, close all
 %clear all
 
 
 %% Configuration
 
 
-startNo = 2155;       % number of first data file (filename will be generated based on this number
+startNo = 1151;       % number of first data file (filename will be generated based on this number
 endNo = startNo;      % number of last data file
 
 folder = '';       % name of folder where the data files are stored
@@ -20,27 +20,31 @@ tEnd = 60;
 
 
 % Plotting (1=activated 0=deactivated)
-plotMainbodyPose = 1;
+plotMainbodyPoseMeas = 1;
+plotMainbodyPoseMeasAndDes = 1;
 plotMainbodyVel = 1;
 plotMainbodyOmega = 1;
 plotJointPositionsMeas = 0;
 plotJointPositionsMeasAndDes = 1;
-plotJointVelocitiesMeas = 1;
+plotJointVelocitiesMeas = 0;
 plotJointVelocitiesMeasAndDes = 1;
 plotJointTorques = 1;
 plotMotorVelocitiesMeas = 0;
 plotMotorVelocitiesMeasAnDes = 0;
 plotMotorPower = 0;
 plotMotorCurrent = 0;
-plotJointPower =0;
-plotOptoforces =1;
+plotJointPower = 0;
+plotOptoforces = 0;
 plotMainbodyPositionFromMocap = 0;
 
-plotContactFlags = 1;
+plotContactFlags = 0;
 plotDeflections = 0;
 
+plotTerrain = 0;
+plotDesiredFootPositions = 1;
+
 % Loco
-plotLoco = 1;
+plotLoco = 0;
 if (plotLoco)
     plotLocoVMCandCFD = 1;
     plotLocoCFD = 1;
@@ -105,38 +109,85 @@ end
 
 
 %% Mainbody pose
-if (plotMainbodyPose)
+if (plotMainbodyPoseMeas)
     named_figure('main body position')
     subplot(3,1,1)
-    plot(time, data(:,idx_rm_q_qX));
+    plot(time, data(:,idx_rm_q_positionWorldToBaseInWorldFrame_x));
     %plotVLines(time, [0.3 2 10], {'r','b','g'}, true);
     grid on
     xlabel('time [s]')
     ylabel('x')
     subplot(3,1,2)
-    plot(time, data(:,idx_rm_q_qY))
+    plot(time, data(:,idx_rm_q_positionWorldToBaseInWorldFrame_y))
     grid on
     xlabel('time [s]')
     ylabel('y')
     subplot(3,1,3)
-    plot(time, data(:,idx_rm_q_qZ))
+    plot(time, data(:,idx_rm_q_positionWorldToBaseInWorldFrame_z))
     grid on
     xlabel('time [s]')
     ylabel('z')
     
     named_figure('main body orientation')
     subplot(3,1,1)
-    plot(time, data(:,idx_rm_est_eulerZyxWorldToBase_z))
+    plot(time, data(:,idx_rm_q_qEulerZyx_z))
     grid on
     xlabel('time [s]')
     ylabel('yaw [rad]')
     subplot(3,1,2)
-    plot(time, data(:,idx_rm_est_eulerZyxWorldToBase_y))
+    plot(time, data(:,idx_rm_q_qEulerZyx_y))
     grid on
     xlabel('time [s]')
     ylabel('pitch [rad]')
     subplot(3,1,3)
-    plot(time, data(:,idx_rm_est_eulerZyxWorldToBase_x))
+    plot(time, data(:,idx_rm_q_qEulerZyx_x))
+    grid on
+    xlabel('time [s]')
+    ylabel('roll [rad]')
+
+end
+
+
+
+%% Mainbody measured and desired pose
+if (plotMainbodyPoseMeasAndDes)
+    named_figure('main body position')
+    subplot(3,1,1)
+	hold on
+    plot(time, data(:,idx_loco_torso_desiredPositionControlToBaseInControlFrame_x), 'r');
+    plot(time, data(:,idx_rm_q_positionWorldToBaseInWorldFrame_x), 'b');
+    %plotVLines(time, [0.3 2 10], {'r','b','g'}, true);
+    grid on
+    xlabel('time [s]')
+    ylabel('x')
+    subplot(3,1,2)
+    hold on
+    plot(time, data(:,idx_loco_torso_desiredPositionControlToBaseInControlFrame_y), 'r');
+    plot(time, data(:,idx_rm_q_positionWorldToBaseInWorldFrame_y), 'b');
+    grid on
+    xlabel('time [s]')
+    ylabel('y')
+    subplot(3,1,3)
+    hold on
+    plot(time, data(:,idx_loco_torso_desiredPositionControlToBaseInControlFrame_z), 'r');
+    plot(time, data(:,idx_rm_q_positionWorldToBaseInWorldFrame_z), 'b');
+    grid on
+    xlabel('time [s]')
+    ylabel('z')
+    
+    named_figure('main body orientation')
+    subplot(3,1,1)
+    plot(time, data(:,idx_rm_q_qEulerZyx_z))
+    grid on
+    xlabel('time [s]')
+    ylabel('yaw [rad]')
+    subplot(3,1,2)
+    plot(time, data(:,idx_rm_q_qEulerZyx_y))
+    grid on
+    xlabel('time [s]')
+    ylabel('pitch [rad]')
+    subplot(3,1,3)
+    plot(time, data(:,idx_rm_q_qEulerZyx_x))
     grid on
     xlabel('time [s]')
     ylabel('roll [rad]')
@@ -148,7 +199,7 @@ end
 if (plotMainbodyVel)
     named_figure('main body linear velocity')
     subplot(3,1,1)
-    plot(time, data(:,idx_rm_q_dqX))
+    plot(time, data(:,idx_rm_q_linearVelocityBaseInWorldFrame_x))
     if (plotModeSwitches)
         vline(time(idx_LF_m),'b')
         vline(time(idx_RF_m),'c')
@@ -160,28 +211,28 @@ if (plotMainbodyVel)
     ylabel('x [m/s]')
     title('linear velocity of torso expressed in world frame')
     subplot(3,1,2)
-    plot(time, data(:,idx_rm_q_dqY))
+    plot(time, data(:,idx_rm_q_linearVelocityBaseInWorldFrame_y))
     grid on
     xlabel('time [s]')
     ylabel('y [m/s]')
     subplot(3,1,3)
-    plot(time, data(:,idx_rm_q_dqZ))
+    plot(time, data(:,idx_rm_q_linearVelocityBaseInWorldFrame_z))
     grid on
     xlabel('time [s]')
     ylabel('z [m/s]')
     named_figure('main body angular velocity expressed in base frame')
     subplot(3,1,1)
-    plot(time, data(:,idx_rm_est_angVelBaseInBaseFrame_x))
+    plot(time, data(:,idx_rm_q_qAngVel_x))
     grid on
     xlabel('time [s]')
     ylabel('x [rad/s]')
     subplot(3,1,2)
-    plot(time, data(:,idx_rm_est_angVelBaseInBaseFrame_y))
+    plot(time, data(:,idx_rm_q_qAngVel_y))
     grid on
     xlabel('time [s]')
     ylabel('y [rad/s]')
     subplot(3,1,3)
-    plot(time, data(:,idx_rm_est_angVelBaseInBaseFrame_z))
+    plot(time, data(:,idx_rm_q_qAngVel_z))
     grid on
     xlabel('time [s]')
     ylabel('z [rad/s]')
@@ -2237,15 +2288,15 @@ if (plotDesiredFootPositions)
     grid on
     subplot(4,4,1)
     hold on
-    x = data(2:end,idx_rm_contacts_contactFlagLf);
-    y = data(1:end-1,idx_rm_contacts_contactFlagLf);
-    idx_contactSwitchLf = find((x(1:end)~=y(1:end)))+1;
-    if (~isempty(idx_contactSwitchLf))
-        vline(data(idx_contactSwitchLf),'k-')
-    end
-    plot(time, data(:,idx_loco_leftForeLeg_currentState),'m-');
-    plot(time, data(:,idx_loco_leftForeLeg_isGrounded),'r');
-    plot(time, data(:,idx_rm_contacts_contactFlagLf), 'b');
+%     x = data(2:end,idx_rm_contacts_contactFlagLf);
+%     y = data(1:end-1,idx_rm_contacts_contactFlagLf);
+%     idx_contactSwitchLf = find((x(1:end)~=y(1:end)))+1;
+%     if (~isempty(idx_contactSwitchLf))
+%         vline(data(idx_contactSwitchLf),'k-')
+%     end
+%     plot(time, data(:,idx_loco_leftForeLeg_currentState),'m-');
+%     plot(time, data(:,idx_loco_leftForeLeg_isGrounded),'r');
+%     plot(time, data(:,idx_rm_contacts_contactFlagLf), 'b');
     
     xlim([tStart time(end)])
     title('LF')
@@ -2316,15 +2367,15 @@ if (plotDesiredFootPositions)
 
     subplot(4,4,3)
     hold on
-    x = data(2:end,idx_rm_contacts_contactFlagLh);
-    y = data(1:end-1,idx_rm_contacts_contactFlagLh);
-    idx_contactSwitchLh = find((x(1:end)~=y(1:end)))+1;
-    if (~isempty(idx_contactSwitchLh))
-        vline(data(idx_contactSwitchLh),'k-')
-    end
-    plot(time, data(:,idx_loco_leftHindLeg_currentState),'m-');
-    plot(time, data(:,idx_loco_leftHindLeg_isGrounded),'r');
-    plot(time, data(:,idx_rm_contacts_contactFlagLh), 'b');
+%     x = data(2:end,idx_rm_contacts_contactFlagLh);
+%     y = data(1:end-1,idx_rm_contacts_contactFlagLh);
+%     idx_contactSwitchLh = find((x(1:end)~=y(1:end)))+1;
+%     if (~isempty(idx_contactSwitchLh))
+%         vline(data(idx_contactSwitchLh),'k-')
+%     end
+%     plot(time, data(:,idx_loco_leftHindLeg_currentState),'m-');
+%     plot(time, data(:,idx_loco_leftHindLeg_isGrounded),'r');
+%     plot(time, data(:,idx_rm_contacts_contactFlagLh), 'b');
     xlim([tStart time(end)])
     title('LH')
     grid on
@@ -2354,15 +2405,15 @@ if (plotDesiredFootPositions)
 
     subplot(4,4,4)
     hold on
-    x = data(2:end,idx_rm_contacts_contactFlagRh);
-    y = data(1:end-1,idx_rm_contacts_contactFlagRh);
-    idx_contactSwitchRh = find((x(1:end)~=y(1:end)))+1;
-    if (~isempty(idx_contactSwitchRh))
-        vline(data(idx_contactSwitchRh),'k-')
-    end
-    plot(time, data(:,idx_loco_rightHindLeg_currentState),'m-');
-    plot(time, data(:,idx_loco_rightHindLeg_isGrounded),'r');
-    plot(time, data(:,idx_rm_contacts_contactFlagRh), 'b');
+%     x = data(2:end,idx_rm_contacts_contactFlagRh);
+%     y = data(1:end-1,idx_rm_contacts_contactFlagRh);
+%     idx_contactSwitchRh = find((x(1:end)~=y(1:end)))+1;
+%     if (~isempty(idx_contactSwitchRh))
+%         vline(data(idx_contactSwitchRh),'k-')
+%     end
+%     plot(time, data(:,idx_loco_rightHindLeg_currentState),'m-');
+%     plot(time, data(:,idx_loco_rightHindLeg_isGrounded),'r');
+%     plot(time, data(:,idx_rm_contacts_contactFlagRh), 'b');
     xlim([tStart time(end)])
     title('RH')
     grid on
@@ -2407,3 +2458,55 @@ plot(time, data(:,idx_loco_rightHindLeg_stancePhase),'c--')
 grid on
 
 
+%% 
+figure
+subplot(4, 1, 1)
+hold on
+plot(time, data(:,idx_rm_contacts_LF_FOOT_state ))
+grid on
+subplot(4, 1, 2)
+hold on
+plot(time, data(:,idx_rm_contacts_RF_FOOT_state ))
+grid on
+subplot(4, 1, 3)
+hold on
+plot(time, data(:,idx_rm_contacts_LH_FOOT_state ))
+grid on
+subplot(4, 1, 4)
+hold on
+plot(time, data(:,idx_rm_contacts_RH_FOOT_state ))
+grid on
+
+%%
+figure
+subplot(4, 1, 1)
+hold on
+grid on
+plot(time, data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_x),'r')
+plot(time, data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_y),'g')
+plot(time, data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_z),'b')
+plot(time, sqrt((data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_x).^2+data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_y).^2+data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_z).^2)),'k')
+
+subplot(4, 1, 2)
+hold on
+grid on
+plot(time, data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_x),'r')
+plot(time, data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_y),'g')
+plot(time, data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_z),'b')
+plot(time, sqrt((data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_x).^2+data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_y).^2+data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_z).^2)),'k')
+
+subplot(4, 1, 3)
+hold on
+grid on
+plot(time, data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_x),'r')
+plot(time, data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_y),'g')
+plot(time, data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_z),'b')
+plot(time, sqrt((data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_x).^2+data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_y).^2+data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_z).^2)),'k')
+
+subplot(4, 1, 4)
+hold on
+grid on
+plot(time, data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_x),'r')
+plot(time, data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_y),'g')
+plot(time, data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_z),'b')
+plot(time, sqrt((data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_x).^2+data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_y).^2+data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_z).^2)),'k')
