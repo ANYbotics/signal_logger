@@ -119,6 +119,14 @@ class LoggerBase {
 	virtual void stopAndSaveLoggerData() = 0;
 	virtual void restartLogger();
 	virtual const LoggerType getLoggerType() const = 0;
+
+	virtual int getSamplingFrequency() const {
+	  return samplingFrequency_;
+	}
+
+	virtual int getUpdateFrequency() const {
+    return updateFrequency_;
+  }
 	/****************/
 
 	/****************
