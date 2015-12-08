@@ -64,7 +64,11 @@ LoggerRos::~LoggerRos()
 }
 
 
-void LoggerRos::initLogger(int updateFrequency, int samplingFrequency, double samplingTime, const std::string& logScriptFileName) { }
+void LoggerRos::initLogger(int updateFrequency, int samplingFrequency, double samplingTime, const std::string& logScriptFileName) {
+  updateFrequency_ = updateFrequency;
+  samplingFrequency_ = samplingFrequency;
+}
+
 void LoggerRos::startLogger() { }
 void LoggerRos::stopLogger() { }
 void LoggerRos::saveLoggerData() { }
