@@ -127,6 +127,10 @@ class LoggerBase {
 	virtual int getUpdateFrequency() const {
     return updateFrequency_;
   }
+
+	virtual double getSamplingWindow() const {
+    return samplingTime_;
+  }
 	/****************/
 
 	/****************
