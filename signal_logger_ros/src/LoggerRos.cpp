@@ -275,6 +275,9 @@ void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& va
 }
 /******************/
 
+void LoggerRos::addTimestampToLog(const TimestampPair& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  addVarToCollection<TimestampPair>(LOGGER_PREFIX + group+name, &var);
+}
 
 /******************
  * Kindr wrappers *
@@ -388,6 +391,8 @@ bool LoggerRos::checkIfVarCollected(
   }
   return false;
 }
+
+
 
 
 } /* namespace signal_logger_ros */

@@ -131,6 +131,9 @@ public:
   virtual void addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var,     const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, bool update = LOGGER_DEFAULT_UPDATE);
   /******************/
 
+  virtual void addTimestampToLog(const TimestampPair& var, const std::string& name, const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, bool update = LOGGER_DEFAULT_UPDATE);
+
+
   /******************
    * Kindr wrappers *
    ******************/
