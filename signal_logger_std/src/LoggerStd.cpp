@@ -1034,4 +1034,10 @@ void LoggerStd::stopAndSaveLoggerData() {
   LoggerStd::saveLoggerData();
 }
 
+void LoggerStd::addTimestampToLog(const TimestampPair& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  addLongToLog(var.first, name+std::string{"_sec"}, group, std::string{"sec"}, update);
+  addLongToLog(var.second, name+std::string{"_nsec"}, group, std::string{"nsec"}, update);
+}
+
+
 } /* namespace robotUtils */
