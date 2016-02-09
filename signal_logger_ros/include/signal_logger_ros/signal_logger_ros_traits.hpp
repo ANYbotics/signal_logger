@@ -20,6 +20,7 @@
 #include <std_msgs/Int8.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Char.h>
+#include <std_msgs/Time.h>
 
 #include <signal_logger_msgs/BoolMultiArrayStamped.h>
 #include <signal_logger_msgs/Float32MultiArrayStamped.h>
@@ -510,6 +511,20 @@ struct slr_traits<base_type::KindrVectorD, true> {
   }
 };
 /***************************************************/
+
+
+template<>
+struct slr_traits<base_type::TimestampPair> {
+  typedef std_msgs::Time         msgtype;
+  typedef std_msgs::TimePtr      msgtypePtr;
+  typedef std_msgs::TimeConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const base_type::TimestampPair* var, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->data.sec = var->first;
+    msg->data.nsec = var->second;
+  }
+};
+
 
 } /* namespace traits */
 

@@ -92,6 +92,8 @@ void LoggerNone::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>&
 void LoggerNone::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var,             const Eigen::Ref<LoggerBase::MatrixXstring>& names, const std::string& group, const std::string& unit, bool update) { }
 /******************/
 
+void LoggerNone::addTimestampToLog(const TimestampPair& var, const std::string& name, const std::string& group, const std::string& unit, bool update) { }
+
 
 /******************
  * Kindr wrappers *

@@ -94,6 +94,9 @@ class LoggerBase {
   typedef Eigen::Matrix< unsigned char ,Eigen::Dynamic, Eigen::Dynamic > MatrixXUc;
   typedef Eigen::Matrix< bool ,Eigen::Dynamic, Eigen::Dynamic >         MatrixXb;
   typedef Eigen::Matrix< std::string ,Eigen::Dynamic, Eigen::Dynamic >  MatrixXstring;
+
+  //! First variable is the time in seconds and the second variable is the remaining time in nanoseconds
+  typedef std::pair<int64_t, int64_t> TimestampPair;
   /************************/
 
   enum LoggerType {
@@ -144,6 +147,9 @@ class LoggerBase {
 	virtual void addCharToLog(const char& var,      const std::string& name, const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, bool update = LOGGER_DEFAULT_UPDATE) = 0;
   virtual void addBoolToLog(const bool& var,      const std::string& name, const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, bool update = LOGGER_DEFAULT_UPDATE) = 0;
   /****************/
+
+  virtual void addTimestampToLog(const TimestampPair& var, const std::string& name, const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, bool update = LOGGER_DEFAULT_UPDATE) = 0;
+
 
   /******************
    * Eigen wrappers *
