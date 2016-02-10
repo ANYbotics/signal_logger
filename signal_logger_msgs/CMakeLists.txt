@@ -23,6 +23,7 @@ add_message_files(
    Float32MultiArrayStamped.msg
    Int32MultiArrayStamped.msg
    Int8MultiArrayStamped.msg
+   Float64Stamped.msg
 )
 
 ## Generate added messages and services with any dependencies listed here

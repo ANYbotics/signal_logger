@@ -30,6 +30,8 @@
 #include <signal_logger_msgs/Int32MultiArrayStamped.h>
 #include <signal_logger_msgs/Int64MultiArrayStamped.h>
 
+#include <signal_logger_msgs/Float64Stamped.h>
+
 #include "geometry_msgs/Vector3Stamped.h"
 #include "kindr_msgs/VectorAtPosition.h"
 
@@ -47,13 +49,14 @@ typedef signal_logger::LoggerBase base_type;
  *******************************/
 template<>
 struct slr_traits<double> {
-  typedef std_msgs::Float64         msgtype;
-  typedef std_msgs::Float64Ptr      msgtypePtr;
-  typedef std_msgs::Float64ConstPtr msgtypeConstPtr;
+  typedef signal_logger_msgs::Float64Stamped         msgtype;
+  typedef signal_logger_msgs::Float64StampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Float64StampedConstPtr msgtypeConstPtr;
 
   static void updateMsg(const double* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
-      msg->data = *vectorPtr_;
-    }
+    msg->header.stamp = timeStamp;
+    msg->value = *vectorPtr_;
+  }
 };
 
 template<>

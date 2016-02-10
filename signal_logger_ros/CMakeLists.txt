@@ -29,12 +29,8 @@ add_library(signal_logger_ros SHARED
     src/LoggerRos.cpp
     src/LogElementBase.cpp
 )
-add_dependencies(signal_logger_ros 
-				std_msgs_generate_messages_cpp 
-				geometry_msgs_generate_messages_cpp 
-				kindr_msgs_generate_messages_cpp 
-				signal_logger_msgs_generate_messages_cpp
-				)
+
+add_dependencies(signal_logger_ros ${catkin_EXPORTED_TARGETS})
 				
 target_link_libraries(signal_logger_ros
     ${catkin_LIBRARIES}
