@@ -14,12 +14,6 @@
 #include "geometry_msgs/QuaternionStamped.h"
 
 #include <std_msgs/Float32.h>
-#include <std_msgs/Float64.h>
-#include <std_msgs/Int64.h>
-#include <std_msgs/Int32.h>
-#include <std_msgs/Int8.h>
-#include <std_msgs/Bool.h>
-#include <std_msgs/Char.h>
 #include <std_msgs/Time.h>
 
 #include <signal_logger_msgs/BoolMultiArrayStamped.h>
@@ -30,7 +24,13 @@
 #include <signal_logger_msgs/Int32MultiArrayStamped.h>
 #include <signal_logger_msgs/Int64MultiArrayStamped.h>
 
+#include <signal_logger_msgs/Float32Stamped.h>
 #include <signal_logger_msgs/Float64Stamped.h>
+#include <signal_logger_msgs/Int8Stamped.h>
+#include <signal_logger_msgs/Int32Stamped.h>
+#include <signal_logger_msgs/Int64Stamped.h>
+#include <signal_logger_msgs/BoolStamped.h>
+#include <signal_logger_msgs/CharStamped.h>
 
 #include "geometry_msgs/Vector3Stamped.h"
 #include "kindr_msgs/VectorAtPosition.h"
@@ -61,67 +61,73 @@ struct slr_traits<double> {
 
 template<>
 struct slr_traits<float> {
-  typedef std_msgs::Float32         msgtype;
-  typedef std_msgs::Float32Ptr      msgtypePtr;
-  typedef std_msgs::Float32ConstPtr msgtypeConstPtr;
+  typedef signal_logger_msgs::Float32Stamped         msgtype;
+  typedef signal_logger_msgs::Float32StampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Float32StampedConstPtr msgtypeConstPtr;
 
   static void updateMsg(const float* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
-    msg->data = *vectorPtr_;
+    msg->header.stamp = timeStamp;
+    msg->value = *vectorPtr_;
   }
 };
 
 template<>
 struct slr_traits<int> {
-  typedef std_msgs::Int32         msgtype;
-  typedef std_msgs::Int32Ptr      msgtypePtr;
-  typedef std_msgs::Int32ConstPtr msgtypeConstPtr;
+  typedef signal_logger_msgs::Int32Stamped         msgtype;
+  typedef signal_logger_msgs::Int32StampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int32StampedConstPtr msgtypeConstPtr;
 
   static void updateMsg(const int* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
-    msg->data = *vectorPtr_;
+    msg->header.stamp = timeStamp;
+    msg->value = *vectorPtr_;
   }
 };
 
 template<>
 struct slr_traits<short> {
-  typedef std_msgs::Int8         msgtype;
-  typedef std_msgs::Int8Ptr      msgtypePtr;
-  typedef std_msgs::Int8ConstPtr msgtypeConstPtr;
+  typedef signal_logger_msgs::Int8Stamped        msgtype;
+  typedef signal_logger_msgs::Int8StampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int8StampedConstPtr msgtypeConstPtr;
 
   static void updateMsg(const short* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
-    msg->data = *vectorPtr_;
+    msg->header.stamp = timeStamp;
+    msg->value = *vectorPtr_;
   }
 };
 
 template<>
 struct slr_traits<long> {
-  typedef std_msgs::Int64         msgtype;
-  typedef std_msgs::Int64Ptr      msgtypePtr;
-  typedef std_msgs::Int64ConstPtr msgtypeConstPtr;
+  typedef signal_logger_msgs::Int64Stamped         msgtype;
+  typedef signal_logger_msgs::Int64StampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int64StampedConstPtr msgtypeConstPtr;
 
   static void updateMsg(const long* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
-    msg->data = *vectorPtr_;
+    msg->header.stamp = timeStamp;
+    msg->value = *vectorPtr_;
   }
 };
 
 template<>
 struct slr_traits<char> {
-  typedef std_msgs::Int8          msgtype;
-  typedef std_msgs::Int8Ptr      msgtypePtr;
-  typedef std_msgs::Int8ConstPtr msgtypeConstPtr;
+  typedef signal_logger_msgs::CharStamped          msgtype;
+  typedef signal_logger_msgs::CharStampedPtr       msgtypePtr;
+  typedef signal_logger_msgs::CharStampedConstPtr  msgtypeConstPtr;
 
   static void updateMsg(const char* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
-    msg->data = *vectorPtr_;
+    msg->header.stamp = timeStamp;
+    msg->value = *vectorPtr_;
   }
 };
 
 template<>
 struct slr_traits<bool> {
-  typedef std_msgs::Bool msgtype;
-  typedef std_msgs::BoolPtr      msgtypePtr;
-  typedef std_msgs::BoolConstPtr msgtypeConstPtr;
+  typedef signal_logger_msgs::BoolStamped msgtype;
+  typedef signal_logger_msgs::BoolStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::BoolStampedConstPtr msgtypeConstPtr;
 
   static void updateMsg(const bool* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
-    msg->data = *vectorPtr_;
+    msg->header.stamp = timeStamp;
+    msg->value = *vectorPtr_;
   }
 };
 /********************************/
