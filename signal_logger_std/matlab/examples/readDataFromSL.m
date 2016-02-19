@@ -4,26 +4,26 @@
 % Function:
 
 clc, close all
-%clear all
+clear all
 
 
 %% Configuration
 
 
-startNo = 1151;       % number of first data file (filename will be generated based on this number
+startNo = 1930;       % number of first data file (filename will be generated based on this number
 endNo = startNo;      % number of last data file
 
 folder = '';       % name of folder where the data files are stored
 
 tStart = 0;         % show only measurements of time range [tStart tEnd]
-tEnd = 60;
+tEnd = 300;
 
 
 % Plotting (1=activated 0=deactivated)
-plotMainbodyPoseMeas = 1;
+plotMainbodyPoseMeas = 0;
 plotMainbodyPoseMeasAndDes = 1;
-plotMainbodyVel = 1;
-plotMainbodyOmega = 1;
+plotMainbodyVel = 0;
+plotMainbodyOmega = 0;
 plotJointPositionsMeas = 0;
 plotJointPositionsMeasAndDes = 1;
 plotJointVelocitiesMeas = 0;
@@ -42,6 +42,9 @@ plotDeflections = 0;
 
 plotTerrain = 0;
 plotDesiredFootPositions = 1;
+
+plotEstimatedContactForce = 1;
+plotTaskSpacePositionError = 1;
 
 % Loco
 plotLoco = 0;
@@ -335,8 +338,8 @@ if (plotJointPositionsMeasAndDes)
     grid on
     subplot(3,4,1)
     hold on
-    plot(time, data(:,idx_log_LF_HAA_des_th),'r')
-    plot(time, data(:,idx_log_LF_HAA_th),'b')
+    plot(time, data(:,idx_log_LF_HAA_des_th),'r.-')
+    plot(time, data(:,idx_log_LF_HAA_th),'b.-')
     if (plotModeSwitches)
         vline(time(idx_LF_m),'k')
     end
@@ -346,8 +349,8 @@ if (plotJointPositionsMeasAndDes)
     ylabel('HAA [rad]')
     subplot(3,4,5)
     hold on
-    plot(time, data(:,idx_log_LF_HFE_des_th),'r')
-    plot(time, data(:,idx_log_LF_HFE_th),'b')
+    plot(time, data(:,idx_log_LF_HFE_des_th),'r.-')
+    plot(time, data(:,idx_log_LF_HFE_th),'b.-')
     if (plotModeSwitches)
         vline(time(idx_LF_m),'k')
     end
@@ -356,8 +359,8 @@ if (plotJointPositionsMeasAndDes)
     ylabel('HFE [rad]')
     subplot(3,4,9)
     hold on
-    plot(time, data(:,idx_log_LF_KFE_des_th),'r')
-    plot(time, data(:,idx_log_LF_KFE_th),'b')
+    plot(time, data(:,idx_log_LF_KFE_des_th),'r.-')
+    plot(time, data(:,idx_log_LF_KFE_th),'b.-')
     if (plotModeSwitches)
         vline(time(idx_LF_m),'k')
     end
@@ -367,8 +370,8 @@ if (plotJointPositionsMeasAndDes)
 
     subplot(3,4,2)
     hold on
-    plot(time, data(:,idx_log_RF_HAA_des_th),'r')
-    plot(time, data(:,idx_log_RF_HAA_th),'b')
+    plot(time, data(:,idx_log_RF_HAA_des_th),'r.-')
+    plot(time, data(:,idx_log_RF_HAA_th),'b.-')
     if (plotModeSwitches)
         vline(time(idx_RF_m),'k')
     end
@@ -378,8 +381,8 @@ if (plotJointPositionsMeasAndDes)
     ylabel('HAA [rad]')
     subplot(3,4,6)
     hold on
-    plot(time, data(:,idx_log_RF_HFE_des_th),'r')
-    plot(time, data(:,idx_log_RF_HFE_th),'b')
+    plot(time, data(:,idx_log_RF_HFE_des_th),'r.-')
+    plot(time, data(:,idx_log_RF_HFE_th),'b.-')
     if (plotModeSwitches)
         vline(time(idx_RF_m),'k')
     end
@@ -388,8 +391,8 @@ if (plotJointPositionsMeasAndDes)
     ylabel('HFE [rad]')
     subplot(3,4,10)
     hold on
-    plot(time, data(:,idx_log_RF_KFE_des_th),'r')
-    plot(time, data(:,idx_log_RF_KFE_th),'b')
+    plot(time, data(:,idx_log_RF_KFE_des_th),'r.-')
+    plot(time, data(:,idx_log_RF_KFE_th),'b.-')
     if (plotModeSwitches)
         vline(time(idx_RF_m),'k')
     end
@@ -399,8 +402,8 @@ if (plotJointPositionsMeasAndDes)
 
     subplot(3,4,3)
     hold on
-    plot(time, data(:,idx_log_LH_HAA_des_th),'r')
-    plot(time, data(:,idx_log_LH_HAA_th),'b')
+    plot(time, data(:,idx_log_LH_HAA_des_th),'r.-')
+    plot(time, data(:,idx_log_LH_HAA_th),'b.-')
     if (plotModeSwitches)
         vline(time(idx_LH_m),'k')
     end
@@ -410,8 +413,8 @@ if (plotJointPositionsMeasAndDes)
     ylabel('HAA [rad]')
     subplot(3,4,7)
     hold on
-    plot(time, data(:,idx_log_LH_HFE_des_th),'r')
-    plot(time, data(:,idx_log_LH_HFE_th),'b')
+    plot(time, data(:,idx_log_LH_HFE_des_th),'r.-')
+    plot(time, data(:,idx_log_LH_HFE_th),'b.-')
     if (plotModeSwitches)
         vline(time(idx_LH_m),'k')
     end
@@ -420,8 +423,8 @@ if (plotJointPositionsMeasAndDes)
     ylabel('HFE [rad]')
     subplot(3,4,11)
     hold on
-    plot(time, data(:,idx_log_LH_KFE_des_th),'r')
-    plot(time, data(:,idx_log_LH_KFE_th),'b')
+    plot(time, data(:,idx_log_LH_KFE_des_th),'r.-')
+    plot(time, data(:,idx_log_LH_KFE_th),'b.-')
     if (plotModeSwitches)
         vline(time(idx_LH_m),'k')
     end
@@ -431,8 +434,8 @@ if (plotJointPositionsMeasAndDes)
 
     subplot(3,4,4)
     hold on
-    plot(time, data(:,idx_log_RH_HAA_des_th),'r')
-    plot(time, data(:,idx_log_RH_HAA_th),'b')
+    plot(time, data(:,idx_log_RH_HAA_des_th),'r.-')
+    plot(time, data(:,idx_log_RH_HAA_th),'b.-')
     if (plotModeSwitches)
         vline(time(idx_RH_m),'k')
     end
@@ -442,8 +445,8 @@ if (plotJointPositionsMeasAndDes)
     ylabel('HAA [rad]')
     subplot(3,4,8)
     hold on
-    plot(time, data(:,idx_log_RH_HFE_des_th),'r')
-    plot(time, data(:,idx_log_RH_HFE_th),'b')
+    plot(time, data(:,idx_log_RH_HFE_des_th),'r.-')
+    plot(time, data(:,idx_log_RH_HFE_th),'b.-')
     if (plotModeSwitches)
         vline(time(idx_RH_m),'k')
     end
@@ -452,8 +455,8 @@ if (plotJointPositionsMeasAndDes)
     ylabel('HFE [rad]')
     subplot(3,4,12)
     hold on
-    plot(time, data(:,idx_log_RH_KFE_des_th),'r')
-    plot(time, data(:,idx_log_RH_KFE_th),'b')
+    plot(time, data(:,idx_log_RH_KFE_des_th),'r.-')
+    plot(time, data(:,idx_log_RH_KFE_th),'b.-')
     if (plotModeSwitches)
         vline(time(idx_RH_m),'k')
     end
@@ -474,80 +477,80 @@ if (plotJointVelocitiesMeas)
     grid on
     subplot(3,4,1)
     hold on
-    plot(time, data(:,idx_log_LF_HAA_thd),'b')
+    plot(time, data(:,idx_log_LF_HAA_thd),'b.-')
     title('LF')
     grid on
     xlabel('time [s]')
     ylabel('HAA [rad]')
     subplot(3,4,5)
     hold on
-    plot(time, data(:,idx_log_LF_HFE_thd),'b')
+    plot(time, data(:,idx_log_LF_HFE_thd),'b.-')
     grid on
     xlabel('time [s]')
     ylabel('HFE [rad]')
     subplot(3,4,9)
     hold on
-    plot(time, data(:,idx_log_LF_KFE_thd),'b')
+    plot(time, data(:,idx_log_LF_KFE_thd),'b.-')
     grid on
     xlabel('time [s]')
     ylabel('KFE [rad]')
 
     subplot(3,4,2)
     hold on
-    plot(time, data(:,idx_log_RF_HAA_thd),'b')
+    plot(time, data(:,idx_log_RF_HAA_thd),'b.-')
     title('RF')
     grid on
     xlabel('time [s]')
     ylabel('HAA [rad]')
     subplot(3,4,6)
     hold on
-    plot(time, data(:,idx_log_RF_HFE_thd),'b')
+    plot(time, data(:,idx_log_RF_HFE_thd),'b.-')
     grid on
     xlabel('time [s]')
     ylabel('HFE [rad]')
     subplot(3,4,10)
     hold on
-    plot(time, data(:,idx_log_RF_KFE_thd),'b')
+    plot(time, data(:,idx_log_RF_KFE_thd),'b.-')
     grid on
     xlabel('time [s]')
     ylabel('KFE [rad]')
 
     subplot(3,4,3)
     hold on
-    plot(time, data(:,idx_log_LH_HAA_thd),'b')
+    plot(time, data(:,idx_log_LH_HAA_thd),'b.-')
     title('LH')
     grid on
     xlabel('time [s]')
     ylabel('HAA [rad]')
     subplot(3,4,7)
     hold on
-    plot(time, data(:,idx_log_LH_HFE_thd),'b')
+    plot(time, data(:,idx_log_LH_HFE_thd),'b.-')
     grid on
     xlabel('time [s]')
     ylabel('HFE [rad]')
     subplot(3,4,11)
     hold on
-    plot(time, data(:,idx_log_LH_KFE_thd),'b')
+    plot(time, data(:,idx_log_LH_KFE_thd),'b.-')
     grid on
     xlabel('time [s]')
     ylabel('KFE [rad]')
 
     subplot(3,4,4)
     hold on
-    plot(time, data(:,idx_log_RH_HAA_thd),'b')
+    plot(time, data(:,idx_log_RH_HAA_thd),'b.-')
     title('RH')
     grid on
     xlabel('time [s]')
     ylabel('HAA [rad]')
     subplot(3,4,8)
     hold on
-    plot(time, data(:,idx_log_RH_HFE_thd),'b')
+    plot(time, data(:,idx_log_RH_HFE_thd),'b.-')
     grid on
     xlabel('time [s]')
     ylabel('HFE [rad]')
     subplot(3,4,12)
     hold on
-    plot(time, data(:,idx_log_RH_KFE_thd),'b')
+    plot(time, data(:,idx_log_RH_KFE_thd),'b.-')
     grid on
     xlabel('time [s]')
     ylabel('KFE [rad]')
@@ -560,8 +563,8 @@ if (plotJointVelocitiesMeasAndDes)
     grid on
     subplot(3,4,1)
     hold on
-    plot(time, data(:,idx_log_LF_HAA_thd),'b')
-    plot(time, data(:,idx_log_LF_HAA_des_thd),'r')
+    plot(time, data(:,idx_rm_q_dqLFHAA),'b.-')
+    plot(time, data(:,idx_log_LF_HAA_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LF_m),'k')
     end
@@ -571,8 +574,8 @@ if (plotJointVelocitiesMeasAndDes)
     ylabel('HAA [rad/s]')
     subplot(3,4,5)
     hold on
-    plot(time, data(:,idx_log_LF_HFE_thd),'b')
-    plot(time, data(:,idx_log_LF_HFE_des_thd),'r')
+    plot(time, data(:,idx_log_LF_HFE_thd),'b.-')
+    plot(time, data(:,idx_log_LF_HFE_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LF_m),'k')
     end
@@ -581,8 +584,8 @@ if (plotJointVelocitiesMeasAndDes)
     ylabel('HFE [rad/s]')
     subplot(3,4,9)
     hold on
-    plot(time, data(:,idx_log_LF_KFE_thd),'b')
-    plot(time, data(:,idx_log_LF_KFE_des_thd),'r')
+    plot(time, data(:,idx_log_LF_KFE_thd),'b.-')
+    plot(time, data(:,idx_log_LF_KFE_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LF_m),'k')
     end
@@ -592,8 +595,8 @@ if (plotJointVelocitiesMeasAndDes)
 
     subplot(3,4,2)
     hold on
-    plot(time, data(:,idx_log_RF_HAA_thd),'b')
-    plot(time, data(:,idx_log_RF_HAA_des_thd),'r')
+    plot(time, data(:,idx_log_RF_HAA_thd),'b.-')
+    plot(time, data(:,idx_log_RF_HAA_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RF_m),'k')
     end
@@ -603,8 +606,8 @@ if (plotJointVelocitiesMeasAndDes)
     ylabel('HAA [rad/s]')
     subplot(3,4,6)
     hold on
-    plot(time, data(:,idx_log_RF_HFE_thd),'b')
-    plot(time, data(:,idx_log_RF_HFE_des_thd),'r')
+    plot(time, data(:,idx_log_RF_HFE_thd),'b.-')
+    plot(time, data(:,idx_log_RF_HFE_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RF_m),'k')
     end
@@ -613,8 +616,8 @@ if (plotJointVelocitiesMeasAndDes)
     ylabel('HFE [rad/s]')
     subplot(3,4,10)
     hold on
-    plot(time, data(:,idx_log_RF_KFE_thd),'b')
-    plot(time, data(:,idx_log_RF_KFE_des_thd),'r')
+    plot(time, data(:,idx_log_RF_KFE_thd),'b.-')
+    plot(time, data(:,idx_log_RF_KFE_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RF_m),'k')
     end
@@ -624,8 +627,8 @@ if (plotJointVelocitiesMeasAndDes)
 
     subplot(3,4,3)
     hold on
-    plot(time, data(:,idx_log_LH_HAA_thd),'b')
-    plot(time, data(:,idx_log_LH_HAA_des_thd),'r')
+    plot(time, data(:,idx_log_LH_HAA_thd),'b.-')
+    plot(time, data(:,idx_log_LH_HAA_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LH_m),'k')
     end
@@ -635,8 +638,8 @@ if (plotJointVelocitiesMeasAndDes)
     ylabel('HAA [rad/s]')
     subplot(3,4,7)
     hold on
-    plot(time, data(:,idx_log_LH_HFE_thd),'b')
-    plot(time, data(:,idx_log_LH_HFE_des_thd),'r')
+    plot(time, data(:,idx_log_LH_HFE_thd),'b.-')
+    plot(time, data(:,idx_log_LH_HFE_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LH_m),'k')
     end
@@ -645,8 +648,8 @@ if (plotJointVelocitiesMeasAndDes)
     ylabel('HFE [rad/s]')
     subplot(3,4,11)
     hold on
-    plot(time, data(:,idx_log_LH_KFE_thd),'b')
-    plot(time, data(:,idx_log_LH_HFE_des_thd),'r')
+    plot(time, data(:,idx_log_LH_KFE_thd),'b.-')
+    plot(time, data(:,idx_log_LH_HFE_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LH_m),'k')
     end
@@ -656,8 +659,8 @@ if (plotJointVelocitiesMeasAndDes)
 
     subplot(3,4,4)
     hold on
-    plot(time, data(:,idx_log_RH_HAA_thd),'b')
-    plot(time, data(:,idx_log_RH_HAA_des_thd),'r')
+    plot(time, data(:,idx_log_RH_HAA_thd),'b.-')
+    plot(time, data(:,idx_log_RH_HAA_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RH_m),'k')
     end
@@ -667,8 +670,8 @@ if (plotJointVelocitiesMeasAndDes)
     ylabel('HAA [rad/s]')
     subplot(3,4,8)
     hold on
-    plot(time, data(:,idx_log_RH_HFE_thd),'b')
-    plot(time, data(:,idx_log_RH_HFE_des_thd),'r')
+    plot(time, data(:,idx_log_RH_HFE_thd),'b.-')
+    plot(time, data(:,idx_log_RH_HFE_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RH_m),'k')
     end
@@ -677,8 +680,8 @@ if (plotJointVelocitiesMeasAndDes)
     ylabel('HFE [rad/s]')
     subplot(3,4,12)
     hold on
-    plot(time, data(:,idx_log_RH_KFE_thd),'b')
-    plot(time, data(:,idx_log_RH_HFE_des_thd),'r')
+    plot(time, data(:,idx_rm_q_dqRHKFE),'b.-')
+    plot(time, data(:,idx_log_RH_KFE_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RH_m),'k')
     end
@@ -694,8 +697,8 @@ if (plotJointTorques)
     grid on
     subplot(3,4,1)
     hold on
-    plot(time, data(:,idx_log_LF_HAA_load),'b')
-    plot(time, data(:,idx_log_LF_HAA_uff), 'r')
+    plot(time, data(:,idx_log_LF_HAA_load),'b.-')
+    plot(time, data(:,idx_log_LF_HAA_uff), 'r.-')
     if (plotModeSwitches)
         vline(time(idx_LF_m),'k')
     end
@@ -705,8 +708,8 @@ if (plotJointTorques)
     ylabel('HAA [Nm]')
     subplot(3,4,5)
     hold on
-    plot(time, data(:,idx_log_LF_HFE_load),'b')
-    plot(time, data(:,idx_log_LF_HFE_uff),'r')
+    plot(time, data(:,idx_log_LF_HFE_load),'b.-')
+    plot(time, data(:,idx_log_LF_HFE_uff),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LF_m),'k')
     end
@@ -715,8 +718,8 @@ if (plotJointTorques)
     ylabel('HFE [Nm]')
     subplot(3,4,9)
     hold on
-    plot(time, data(:,idx_log_LF_KFE_load),'b')
-    plot(time, data(:,idx_log_LF_KFE_uff),'r')
+    plot(time, data(:,idx_log_LF_KFE_load),'b.-')
+    plot(time, data(:,idx_log_LF_KFE_uff),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LF_m),'k')
     end
@@ -726,8 +729,8 @@ if (plotJointTorques)
 
     subplot(3,4,2)
     hold on
-    plot(time, data(:,idx_log_RF_HAA_load),'b')
-    plot(time, data(:,idx_log_RF_HAA_uff),'r')
+    plot(time, data(:,idx_log_RF_HAA_load),'b.-')
+    plot(time, data(:,idx_log_RF_HAA_uff),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RF_m),'k')
     end
@@ -737,8 +740,8 @@ if (plotJointTorques)
     ylabel('HAA [Nm]')
     subplot(3,4,6)
     hold on
-    plot(time, data(:,idx_log_RF_HFE_load),'b')
-    plot(time, data(:,idx_log_RF_HFE_uff),'r')
+    plot(time, data(:,idx_log_RF_HFE_load),'b.-')
+    plot(time, data(:,idx_log_RF_HFE_uff),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RF_m),'k')
     end
@@ -747,8 +750,8 @@ if (plotJointTorques)
     ylabel('HFE [Nm]')
     subplot(3,4,10)
     hold on
-    plot(time, data(:,idx_log_RF_KFE_load),'b')
-    plot(time, data(:,idx_log_RF_KFE_uff),'r')
+    plot(time, data(:,idx_log_RF_KFE_load),'b.-')
+    plot(time, data(:,idx_log_RF_KFE_uff),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RF_m),'k')
     end
@@ -758,8 +761,8 @@ if (plotJointTorques)
 
     subplot(3,4,3)
     hold on
-    plot(time, data(:,idx_log_LH_HAA_load),'b')
-    plot(time, data(:,idx_log_LH_HAA_uff),'r')
+    plot(time, data(:,idx_log_LH_HAA_load),'b.-')
+    plot(time, data(:,idx_log_LH_HAA_uff),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LH_m),'k')
     end
@@ -769,8 +772,8 @@ if (plotJointTorques)
     ylabel('HAA [Nm]')
     subplot(3,4,7)
     hold on
-    plot(time, data(:,idx_log_LH_HFE_load),'b')
-    plot(time, data(:,idx_log_LH_HFE_uff),'r')
+    plot(time, data(:,idx_log_LH_HFE_load),'b.-')
+    plot(time, data(:,idx_log_LH_HFE_uff),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LH_m),'k')
     end
@@ -779,8 +782,8 @@ if (plotJointTorques)
     ylabel('HFE [Nm]')
     subplot(3,4,11)
     hold on
-    plot(time, data(:,idx_log_LH_KFE_load),'b')
-    plot(time, data(:,idx_log_LH_KFE_uff),'r')
+    plot(time, data(:,idx_log_LH_KFE_load),'b.-')
+    plot(time, data(:,idx_log_LH_KFE_uff),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LH_m),'k')
     end
@@ -790,8 +793,8 @@ if (plotJointTorques)
 
     subplot(3,4,4)
     hold on
-    plot(time, data(:,idx_log_RH_HAA_load),'b')
-    plot(time, data(:,idx_log_RH_HAA_uff),'r')
+    plot(time, data(:,idx_log_RH_HAA_load),'b.-')
+    plot(time, data(:,idx_log_RH_HAA_uff),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RH_m),'k')
     end
@@ -801,8 +804,8 @@ if (plotJointTorques)
     ylabel('HAA [Nm]')
     subplot(3,4,8)
     hold on
-    plot(time, data(:,idx_log_RH_HFE_load),'b')
-    plot(time, data(:,idx_log_RH_HFE_uff),'r')
+    plot(time, data(:,idx_log_RH_HFE_load),'b.-')
+    plot(time, data(:,idx_log_RH_HFE_uff),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RH_m),'k')
     end
@@ -811,8 +814,8 @@ if (plotJointTorques)
     ylabel('HFE [Nm]')
     subplot(3,4,12)
     hold on
-    plot(time, data(:,idx_log_RH_KFE_load),'b')
-    plot(time, data(:,idx_log_RH_KFE_uff),'r')
+    plot(time, data(:,idx_log_RH_KFE_load),'b.-')
+    plot(time, data(:,idx_log_RH_KFE_uff),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RH_m),'k')
     end
@@ -2285,64 +2288,59 @@ end
 if (plotDesiredFootPositions) 
     contactForceThreshold = 3000;
     named_figure('Desired foot positions'), clf
-    grid on
-    subplot(4,4,1)
-    hold on
-%     x = data(2:end,idx_rm_contacts_contactFlagLf);
-%     y = data(1:end-1,idx_rm_contacts_contactFlagLf);
-%     idx_contactSwitchLf = find((x(1:end)~=y(1:end)))+1;
-%     if (~isempty(idx_contactSwitchLf))
-%         vline(data(idx_contactSwitchLf),'k-')
-%     end
-%     plot(time, data(:,idx_loco_leftForeLeg_currentState),'m-');
-%     plot(time, data(:,idx_loco_leftForeLeg_isGrounded),'r');
-%     plot(time, data(:,idx_rm_contacts_contactFlagLf), 'b');
     
-    xlim([tStart time(end)])
-    title('LF')
-    grid on
-    xlabel('time [s]')
-    ylabel('norm')  
-    subplot(4,4,5)
-    hold on
-    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToDesiredFootInWorldFrame_x),'r')
-    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToFootInWorldFrame_x),'b')
-    grid on
-    xlabel('time [s]')
-    ylabel('x')
-    subplot(4,4,9)
-    hold on
-    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToDesiredFootInWorldFrame_y),'r')
-    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToFootInWorldFrame_y),'b')
-    grid on
-    xlabel('time [s]')
-    ylabel('y')
-    subplot(4,4,13)
-    hold on
-    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToDesiredFootInWorldFrame_z),'r')
-    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToFootInWorldFrame_z),'b')
-    grid on
-    xlabel('time [s]')
-    ylabel('z')
-
+    % Left fore leg
+    subplot(4,4,1);
+    title('LF');
     
+    grid on; hold on;
     
-    subplot(4,4,2)
-    hold on
-    x = data(2:end,idx_rm_contacts_contactFlagRf);
-    y = data(1:end-1,idx_rm_contacts_contactFlagRf);
-    idx_contactSwitchRf = find((x(1:end)~=y(1:end)))+1;
-    if (~isempty(idx_contactSwitchRf))
-        vline(data(idx_contactSwitchRf),'k-')
+	x = data(2,idx_rm_contacts_LF_FOOT_state);
+    y = data(1:end-1,idx_rm_contacts_LF_FOOT_state);
+    idx_contactSwitchLf = find((x(1:end)~=y(1:end)))+1;
+    if (~isempty(idx_contactSwitchLf))
+        vline(data(idx_contactSwitchLf),'k-')
     end
-    plot(time, data(:,idx_loco_rightForeLeg_currentState),'m-');
-    plot(time, data(:,idx_loco_rightForeLeg_isGrounded),'r');
-    plot(time, data(:,idx_rm_contacts_contactFlagRf), 'b');
-    xlim([tStart time(end)])
+    plot(time, data(:,idx_loco_leftForeLeg_currentState),'m-');
+    plot(time, data(:,idx_loco_leftForeLeg_isGrounded),'r');
+    plot(time, data(:,idx_rm_contacts_LF_FOOT_state), 'b.-');
+    xlim([tStart time(end)]); xlabel('time [s]'); ylabel('norm');  
+    
+    subplot(4,4,5)
+    hold on; grid on;
+    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToDesiredFootInWorldFrame_x),'r.-');
+    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToFootInWorldFrame_x),'b.-');
+    xlim([tStart time(end)]); xlabel('time [s]'); ylabel('x');  
+    
+    subplot(4,4,9);
+    hold on; grid on;
+    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToDesiredFootInWorldFrame_y),'r.-');
+    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToFootInWorldFrame_y),'b.-');
+    xlim([tStart time(end)]); xlabel('time [s]'); ylabel('y');  
+    
+    subplot(4,4,13);
+    hold on; grid on;
+    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToDesiredFootInWorldFrame_z),'r.-');
+    plot(time, data(:,idx_loco_leftForeLeg_positionWorldToFootInWorldFrame_z),'b.-');
+    xlim([tStart time(end)]); xlabel('time [s]'); ylabel('z');  
+    
+    % Right fore leg
+    subplot(4,4,2)
     title('RF')
-    grid on
-    xlabel('time [s]')
-    ylabel('norm')   
+    hold on; grid on;
+%     x = data(2:end,idx_rm_contacts_contactFlagRf);
+%     y = data(1:end-1,idx_rm_contacts_contactFlagRf);
+%     idx_contactSwitchRf = find((x(1:end)~=y(1:end)))+1;
+%     if (~isempty(idx_contactSwitchRf))
+%         vline(data(idx_contactSwitchRf),'k-')
+%     end
+%     plot(time, data(:,idx_loco_rightForeLeg_currentState),'m-');
+%     plot(time, data(:,idx_loco_rightForeLeg_isGrounded),'r');
+%     plot(time, data(:,idx_rm_contacts_contactFlagRf), 'b');
+    xlim([tStart time(end)]);
+    
+    
+    xlabel('time [s]'); ylabel('norm');
     subplot(4,4,6)
     hold on
     plot(time, data(:,idx_loco_rightForeLeg_positionWorldToDesiredFootInWorldFrame_x),'r')
@@ -2366,7 +2364,7 @@ if (plotDesiredFootPositions)
     ylabel('z')
 
     subplot(4,4,3)
-    hold on
+    hold on; grid on;
 %     x = data(2:end,idx_rm_contacts_contactFlagLh);
 %     y = data(1:end-1,idx_rm_contacts_contactFlagLh);
 %     idx_contactSwitchLh = find((x(1:end)~=y(1:end)))+1;
@@ -2378,23 +2376,24 @@ if (plotDesiredFootPositions)
 %     plot(time, data(:,idx_rm_contacts_contactFlagLh), 'b');
     xlim([tStart time(end)])
     title('LH')
-    grid on
+
     xlabel('time [s]')
     ylabel('norm')   
+    
     subplot(4,4,7)
-    hold on
-    plot(time, data(:,idx_loco_leftHindLeg_positionWorldToDesiredFootInWorldFrame_x),'r')
-    plot(time, data(:,idx_loco_leftHindLeg_positionWorldToFootInWorldFrame_x),'b')
-    grid on
+    hold on; grid on;
+    plot(time, data(:,idx_loco_leftHindLeg_positionWorldToDesiredFootInWorldFrame_x),'r');
+    plot(time, data(:,idx_loco_leftHindLeg_positionWorldToFootInWorldFrame_x),'b');
     xlabel('time [s]')
     ylabel('x')
+    
     subplot(4,4,11)
-    hold on
-    plot(time, data(:,idx_loco_leftHindLeg_positionWorldToDesiredFootInWorldFrame_y),'r')
-    plot(time, data(:,idx_loco_leftHindLeg_positionWorldToFootInWorldFrame_y),'b')
-    grid on
+    hold on; grid on;
+    plot(time, data(:,idx_loco_leftHindLeg_positionWorldToDesiredFootInWorldFrame_y),'r');
+    plot(time, data(:,idx_loco_leftHindLeg_positionWorldToFootInWorldFrame_y),'b');
     xlabel('time [s]')
     ylabel('y')
+    
     subplot(4,4,15)
     hold on
     plot(time, data(:,idx_loco_leftHindLeg_positionWorldToDesiredFootInWorldFrame_z),'r')
@@ -2441,72 +2440,106 @@ if (plotDesiredFootPositions)
 end
 
 %%
- figure
- hold on
-plot(time, data(:,idx_loco_leftForeLeg_currentState),'r')
-plot(time, data(:,idx_loco_rightForeLeg_currentState),'b')
-plot(time, data(:,idx_loco_leftHindLeg_currentState),'m')
-plot(time, data(:,idx_loco_rightHindLeg_currentState),'c')
 
-plot(time, data(:,idx_loco_leftForeLeg_stancePhase),'r--')
+% legend for y axis:
+% 0: stance phase normal condition
+% 1: swing phase normal condition
+% 2: stance, but slipping
+% 3: stance, but lost contact / not yet touch-down
+% 4: swing, but late lift-off
+% 5: late swing, but early touch-down
+% 6: middle swing, but bumped into obstacle while swinging
+
+named_figure('Limb coordinator state'), clf
+
+subplot(4, 1, 1)
+title('LF'); hold on; grid on;
+plot(time, data(:,idx_loco_leftForeLeg_currentState),'r.-')
+plot(time, data(:,idx_loco_leftForeLeg_stancePhase),'b--')
+legend('current state', 'stance phase');
+xlabel('t [s]');
+
+subplot(4, 1, 2)
+title('RF'); hold on; grid on;
+plot(time, data(:,idx_loco_rightForeLeg_currentState),'r.-')
 plot(time, data(:,idx_loco_rightForeLeg_stancePhase),'b--')
-plot(time, data(:,idx_loco_leftHindLeg_stancePhase),'m--')
-plot(time, data(:,idx_loco_rightHindLeg_stancePhase),'c--')
+legend('current state', 'stance phase');
+xlabel('t [s]');
 
-    plot(time, data(:,idx_loco_leftHindLeg_shouldBeGrounded),'r*');
+subplot(4, 1, 3)
+title('LH'); hold on; grid on;
+plot(time, data(:,idx_loco_leftHindLeg_currentState),'r.-')
+plot(time, data(:,idx_loco_leftHindLeg_stancePhase),'b--')
+legend('current state', 'stance phase');
+xlabel('t [s]');
 
-grid on
+subplot(4, 1, 4)
+title('RH'); hold on; grid on;
+plot(time, data(:,idx_loco_rightHindLeg_currentState),'r.-')
+plot(time, data(:,idx_loco_rightHindLeg_stancePhase),'b.-')
+legend('current state', 'stance phase');
+xlabel('t [s]');
+
+%%
+
+named_figure('Limb coordinator state'), clf
+
+subplot(4, 1, 1)
+title('LF'); hold on; grid on; ylim([-0.2 1.2]);
+plot(time, data(:,idx_rm_contacts_LF_FOOT_state));
+xlabel('t [s]');
+
+subplot(4, 1, 2)
+title('RF'); hold on; grid on; ylim([-0.2 1.2]);
+plot(time, data(:,idx_rm_contacts_RF_FOOT_state));
+xlabel('t [s]');
+
+subplot(4, 1, 3)
+title('LH'); hold on; grid on; ylim([-0.2 1.2]);
+plot(time, data(:,idx_rm_contacts_LH_FOOT_state));
+xlabel('t [s]');
+
+subplot(4, 1, 4)
+title('RH'); hold on; grid on; ylim([-0.2 1.2]);
+plot(time, data(:,idx_rm_contacts_RH_FOOT_state));
+xlabel('t [s]');
 
 
 %% 
-figure
-subplot(4, 1, 1)
-hold on
-plot(time, data(:,idx_rm_contacts_LF_FOOT_state ))
-grid on
-subplot(4, 1, 2)
-hold on
-plot(time, data(:,idx_rm_contacts_RF_FOOT_state ))
-grid on
-subplot(4, 1, 3)
-hold on
-plot(time, data(:,idx_rm_contacts_LH_FOOT_state ))
-grid on
-subplot(4, 1, 4)
-hold on
-plot(time, data(:,idx_rm_contacts_RH_FOOT_state ))
-grid on
+named_figure('Contact forces'), clf
 
-%%
-figure
-subplot(4, 1, 1)
-hold on
-grid on
-plot(time, data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_x),'r')
-plot(time, data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_y),'g')
-plot(time, data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_z),'b')
-plot(time, sqrt((data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_x).^2+data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_y).^2+data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_z).^2)),'k')
+subplot(4, 1, 1);
+title('LF'); hold on; grid on;
+plot(time, data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_x),'r');
+plot(time, data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_y),'g');
+plot(time, data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_z),'b');
+plot(time, sqrt((data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_x).^2+data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_y).^2+data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_z).^2)),'k');
+legend('fx', 'fy', 'fz', 'norm(f)');
+xlabel('t [s]');
 
-subplot(4, 1, 2)
-hold on
-grid on
-plot(time, data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_x),'r')
-plot(time, data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_y),'g')
-plot(time, data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_z),'b')
-plot(time, sqrt((data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_x).^2+data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_y).^2+data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_z).^2)),'k')
+subplot(4, 1, 2);
+title('RF'); hold on; grid on;
+plot(time, data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_x),'r');
+plot(time, data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_y),'g');
+plot(time, data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_z),'b');
+plot(time, sqrt((data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_x).^2+data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_y).^2+data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_z).^2)),'k');
+legend('fx', 'fy', 'fz', 'norm(f)');
+xlabel('t [s]');
 
-subplot(4, 1, 3)
-hold on
-grid on
-plot(time, data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_x),'r')
-plot(time, data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_y),'g')
-plot(time, data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_z),'b')
-plot(time, sqrt((data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_x).^2+data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_y).^2+data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_z).^2)),'k')
+subplot(4, 1, 3);
+title('LH'); hold on; grid on;
+plot(time, data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_x),'r');
+plot(time, data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_y),'g');
+plot(time, data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_z),'b');
+plot(time, sqrt((data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_x).^2+data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_y).^2+data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_z).^2)),'k');
+legend('fx', 'fy', 'fz', 'norm(f)');
+xlabel('t [s]');
 
-subplot(4, 1, 4)
-hold on
-grid on
-plot(time, data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_x),'r')
-plot(time, data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_y),'g')
-plot(time, data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_z),'b')
-plot(time, sqrt((data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_x).^2+data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_y).^2+data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_z).^2)),'k')
+subplot(4, 1, 4);
+title('RH'); hold on; grid on;
+plot(time, data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_x),'r');
+plot(time, data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_y),'g');
+plot(time, data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_z),'b');
+plot(time, sqrt((data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_x).^2+data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_y).^2+data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_z).^2)),'k');
+legend('fx', 'fy', 'fz', 'norm(f)');
+xlabel('t [s]');

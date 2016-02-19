@@ -20,7 +20,7 @@ clear all
 % 376 0x04 with zero_offset=0.36
 % 377 0x04 with zero_offset=0.486
 % 442 1kHz 0.05/0.01
-startNo = 991;       % number of first data file (filename will be generated based on this number
+startNo = 1267;       % number of first data file (filename will be generated based on this number
 endNo = startNo;      % number of last data file
 
 folder = '';       % name of folder where the data files are stored
@@ -30,10 +30,10 @@ tEnd = 130;
 
 
 % Plotting (1=activated 0=deactivated)
-plotJointPositionsMeasAndDes = 1;
-plotJointVelocitiesMeasAndDes = 1;
-plotTorques = 1;
-plotCurrents = 1;
+plotJointPositionsMeasAndDes = 0;
+plotJointVelocitiesMeasAndDes = 0;
+plotTorques = 0;
+plotCurrents = 0;
 plotModes = 0;
 
 ANYDRIVE_LF_HAA = 1;
@@ -887,3 +887,197 @@ ylim([-3*pi 3*pi])
 %plot(diff(data(:,idx_sea_ANYDRIVE_LF_KFE_can_debug_torque)))
 %ylim([-4 4])
 grid on
+
+
+%%
+figure()
+title('RF_KFE joint position')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RF_KFE_state_jointPosition),'b.-')
+plot(time,data(:,idx_sea_RF_KFE_commanded_jointPosition),'r.-')
+grid on
+
+
+figure()
+title('RF_KFE joint position debug')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RF_KFE_can_debug_joint_position),'b.-')
+grid on
+
+
+figure()
+title('RF_KFE joint velocity')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RF_KFE_state_jointVelocity),'b.-')
+plot(time,data(:,idx_sea_RF_KFE_commanded_jointVelocity),'r.-')
+grid on
+
+figure()
+title('RF_KFE torque')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RF_KFE_state_torque),'b.-')
+plot(time,data(:,idx_sea_RF_KFE_commanded_torque),'r.-')
+grid on
+
+%%
+figure()
+title('RF_KFE actuator velocity')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RF_KFE_state_actuatorVelocity),'b.-')
+plot(time,data(:,idx_sea_RF_KFE_commanded_actuatorVelocity),'r.-')
+grid on
+
+
+%%
+figure()
+title('RH_KFE actuator velocity')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RH_KFE_state_actuatorVelocity),'b.-')
+plot(time,data(:,idx_sea_RH_KFE_commanded_actuatorVelocity),'r.-')
+grid on
+
+%%
+figure()
+title('RF_HFE joint position')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RF_HFE_state_jointPosition),'b.-')
+plot(time,data(:,idx_sea_RF_HFE_commanded_jointPosition),'r.-')
+grid on
+
+
+figure()
+title('RF_HFE joint position debug')
+hold on
+%plot(time(1:end),data(1:end,idx_sea_RF_HFE_can_debug_joint_position),'b.-')
+grid on
+
+
+figure()
+title('RF_HFE joint velocity')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RF_HFE_state_jointVelocity),'b.-')
+plot(time,data(:,idx_sea_RF_HFE_commanded_jointVelocity),'r.-')
+grid on
+
+figure()
+title('RF_HFE torque')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RF_HFE_state_torque),'b.-')
+plot(time,data(:,idx_sea_RF_HFE_commanded_torque),'r.-')
+grid on
+
+
+%%
+figure()
+title('RF_KFE joint position')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RH_KFE_state_jointPosition),'k.-')
+plot(time,data(:,idx_sea_RH_KFE_commanded_jointPosition),'c.-')
+grid on
+
+
+figure()
+title('RH_KFE joint position debug')
+hold on
+%plot(time(1:end),data(1:end,idx_sea_RH_KFE_can_debug_joint_position),'b.-')
+grid on
+
+
+figure()
+title('RH_KFE joint velocity')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RH_KFE_state_jointVelocity),'b.-')
+plot(time,data(:,idx_sea_RH_KFE_commanded_jointVelocity),'r.-')
+grid on
+
+figure()
+title('RH_KFE torque')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RH_KFE_state_torque),'b.-')
+plot(time,data(:,idx_sea_RH_KFE_commanded_torque),'r.-')
+grid on
+
+
+%%
+figure()
+title('RF_HFE joint position')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RH_HFE_state_jointPosition),'b.-')
+plot(time,data(:,idx_sea_RH_HFE_commanded_jointPosition),'r.-')
+grid on
+
+
+figure()
+title('RH_HFE joint position debug')
+hold on
+%plot(time(1:end),data(1:end,idx_sea_RH_HFE_can_debug_joint_position),'b.-')
+grid on
+
+
+figure()
+title('RH_HFE joint velocity')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RH_HFE_state_jointVelocity),'b.-')
+plot(time,data(:,idx_sea_RH_HFE_commanded_jointVelocity),'r.-')
+grid on
+
+figure()
+title('RH_HFE torque')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RH_HFE_state_torque),'b.-')
+plot(time,data(:,idx_sea_RH_HFE_commanded_torque),'r.-')
+grid on
+
+%%
+figure()
+title('RF_HAA joint position')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RH_HAA_state_jointPosition),'b.-')
+plot(time,data(:,idx_sea_RH_HAA_commanded_jointPosition),'r.-')
+grid on
+
+
+figure()
+title('RH_HAA joint position debug')
+hold on
+%plot(time(1:end),data(1:end,idx_sea_RH_HAA_can_debug_joint_position),'b.-')
+grid on
+
+
+figure()
+title('RH_HAA joint velocity')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RH_HAA_state_jointVelocity),'b.-')
+plot(time,data(:,idx_sea_RH_HAA_commanded_jointVelocity),'r.-')
+grid on
+
+figure()
+title('RH_HAA torque')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RH_HAA_state_torque),'b.-')
+plot(time,data(:,idx_sea_RH_HAA_commanded_torque),'r.-')
+grid on
+
+
+%%
+figure()
+title('RF_HAA joint position')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RF_HAA_state_jointPosition),'b.-')
+plot(time,data(:,idx_sea_RF_HAA_commanded_jointPosition),'r.-')
+grid on
+
+figure()
+title('RF_HAA joint velocity')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RF_HAA_state_jointVelocity),'b.-')
+plot(time,data(:,idx_sea_RF_HAA_commanded_jointVelocity),'r.-')
+grid on
+
+figure()
+title('RF_HAA torque')
+hold on
+plot(time(1:end),data(1:end,idx_sea_RF_HAA_state_torque),'b.-')
+plot(time,data(:,idx_sea_RF_HAA_commanded_torque),'r.-')
+grid on
+
