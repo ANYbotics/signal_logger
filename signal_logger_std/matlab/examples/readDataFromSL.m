@@ -8,9 +8,10 @@ clear all
 
 
 %% Configuration
+%1994 1Hz
+%1998 3Hz
 
-
-startNo = 1930;       % number of first data file (filename will be generated based on this number
+startNo = 1994;       % number of first data file (filename will be generated based on this number
 endNo = startNo;      % number of last data file
 
 folder = '';       % name of folder where the data files are stored
@@ -20,8 +21,8 @@ tEnd = 300;
 
 
 % Plotting (1=activated 0=deactivated)
-plotMainbodyPoseMeas = 0;
-plotMainbodyPoseMeasAndDes = 1;
+plotMainbodyPoseMeas = 1;
+plotMainbodyPoseMeasAndDes = 0;
 plotMainbodyVel = 0;
 plotMainbodyOmega = 0;
 plotJointPositionsMeas = 0;
@@ -2510,6 +2511,7 @@ named_figure('Contact forces'), clf
 
 subplot(4, 1, 1);
 title('LF'); hold on; grid on;
+plot(time, 6000*data(:,idx_loco_leftForeLeg_stancePhase),'m');
 plot(time, data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_x),'r');
 plot(time, data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_y),'g');
 plot(time, data(:,idx_loco_leftForeLeg_contactForceAtFootInWorldFrame_z),'b');
@@ -2519,6 +2521,7 @@ xlabel('t [s]');
 
 subplot(4, 1, 2);
 title('RF'); hold on; grid on;
+plot(time, 6000*data(:,idx_loco_rightForeLeg_stancePhase),'m');
 plot(time, data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_x),'r');
 plot(time, data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_y),'g');
 plot(time, data(:,idx_loco_rightForeLeg_contactForceAtFootInWorldFrame_z),'b');
@@ -2528,6 +2531,7 @@ xlabel('t [s]');
 
 subplot(4, 1, 3);
 title('LH'); hold on; grid on;
+plot(time, 6000*data(:,idx_loco_leftHindLeg_stancePhase),'m');
 plot(time, data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_x),'r');
 plot(time, data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_y),'g');
 plot(time, data(:,idx_loco_leftHindLeg_contactForceAtFootInWorldFrame_z),'b');
@@ -2537,9 +2541,35 @@ xlabel('t [s]');
 
 subplot(4, 1, 4);
 title('RH'); hold on; grid on;
+plot(time, 6000*data(:,idx_loco_rightHindLeg_stancePhase),'m');
 plot(time, data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_x),'r');
 plot(time, data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_y),'g');
 plot(time, data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_z),'b');
 plot(time, sqrt((data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_x).^2+data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_y).^2+data(:,idx_loco_rightHindLeg_contactForceAtFootInWorldFrame_z).^2)),'k');
 legend('fx', 'fy', 'fz', 'norm(f)');
 xlabel('t [s]');
+
+
+
+%% 
+named_figure('Roco Swing'), clf
+
+subplot(3, 1, 1);
+title('x'); hold on; grid on;
+plot(time, data(:,idx_roco_sea_test_taskSpacePositionsLf_x),'b');
+plot(time, data(:,idx_roco_sea_test_desTaskSpacePositionsLf_x),'r');
+xlabel('t [s]');
+
+subplot(3, 1, 2);
+title('y'); hold on; grid on;
+plot(time, data(:,idx_roco_sea_test_taskSpacePositionsLf_y),'b');
+plot(time, data(:,idx_roco_sea_test_desTaskSpacePositionsLf_y),'r');
+xlabel('t [s]');
+
+subplot(3, 1, 3);
+title('z'); hold on; grid on;
+plot(time, data(:,idx_roco_sea_test_taskSpacePositionsLf_z),'b');
+plot(time, data(:,idx_roco_sea_test_desTaskSpacePositionsLf_z),'r');
+xlabel('t [s]');
+
+
