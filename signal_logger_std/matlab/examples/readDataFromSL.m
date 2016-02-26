@@ -9,9 +9,11 @@ clear all
 
 %% Configuration
 %1994 1Hz
-%1998 3Hz
+%1998 3Hz startNo = 2049;
 
-startNo = 1994;       % number of first data file (filename will be generated based on this number
+% 2059 freegait square up with orientation
+
+startNo = 2059;       % number of first data file (filename will be generated based on this number
 endNo = startNo;      % number of last data file
 
 folder = '';       % name of folder where the data files are stored
@@ -21,8 +23,8 @@ tEnd = 300;
 
 
 % Plotting (1=activated 0=deactivated)
-plotMainbodyPoseMeas = 1;
-plotMainbodyPoseMeasAndDes = 0;
+plotMainbodyPoseMeas = 0;
+plotMainbodyPoseMeasAndDes = 1;
 plotMainbodyVel = 0;
 plotMainbodyOmega = 0;
 plotJointPositionsMeas = 0;
@@ -48,7 +50,7 @@ plotEstimatedContactForce = 1;
 plotTaskSpacePositionError = 1;
 
 % Loco
-plotLoco = 0;
+plotLoco = 1;
 if (plotLoco)
     plotLocoVMCandCFD = 1;
     plotLocoCFD = 1;
@@ -181,17 +183,23 @@ if (plotMainbodyPoseMeasAndDes)
     
     named_figure('main body orientation')
     subplot(3,1,1)
-    plot(time, data(:,idx_rm_q_qEulerZyx_z))
+    	hold on
+    plot(time, data(:,idx_loco_torso_desiredEulerAnglesZyxWorldToBase_z), 'r');
+    plot(time, data(:,idx_rm_q_qEulerZyx_z), 'b')
     grid on
     xlabel('time [s]')
     ylabel('yaw [rad]')
     subplot(3,1,2)
-    plot(time, data(:,idx_rm_q_qEulerZyx_y))
+    	hold on
+    plot(time, data(:,idx_loco_torso_desiredEulerAnglesZyxWorldToBase_y), 'r')
+    plot(time, data(:,idx_rm_q_qEulerZyx_y), 'b')
     grid on
     xlabel('time [s]')
     ylabel('pitch [rad]')
     subplot(3,1,3)
-    plot(time, data(:,idx_rm_q_qEulerZyx_x))
+    	hold on
+    plot(time, data(:,idx_loco_torso_desiredEulerAnglesZyxWorldToBase_x), 'r')
+    plot(time, data(:,idx_rm_q_qEulerZyx_x), 'b')
     grid on
     xlabel('time [s]')
     ylabel('roll [rad]')
@@ -1914,7 +1922,7 @@ if (plotLocoVMCandCFD)
     
     subplot(4,1,1)
     hold on
-    plot(time, data(:,idx_rm_contacts_contactFlagLf)+data(:,idx_rm_contacts_contactFlagRf)+data(:,idx_rm_contacts_contactFlagLh)+data(:,idx_rm_contacts_contactFlagRh),'r');
+   % plot(time, data(:,idx_rm_contacts_contactFlagLf)+data(:,idx_rm_contacts_contactFlagRf)+data(:,idx_rm_contacts_contactFlagLh)+data(:,idx_rm_contacts_contactFlagRh),'r');
     grid on
     xlabel('time [s]')
     ylabel('-')
