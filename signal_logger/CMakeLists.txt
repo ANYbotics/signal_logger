@@ -7,14 +7,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen3 REQUIRED)
 
-# Declare this project as a catkin package
-catkin_package(
- INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIR}
- LIBRARIES signal_logger
-# CATKIN_DEPENDS
-# DEPENDS system_lib
-)
-
 # Attempt to find catkinized kindr
 find_package(kindr QUIET)
 if(NOT kindr_FOUND)
@@ -23,7 +15,21 @@ if(NOT kindr_FOUND)
   pkg_check_modules(kindr kindr REQUIRED)
 endif()
 
-set(CMAKE_CXX_FLAGS "-fPIC")
+###################################
+## catkin specific configuration ##
+###################################
+catkin_package(
+ INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIR}
+ LIBRARIES signal_logger
+# CATKIN_DEPENDS
+ DEPENDS kindr
+)
+
+
+###########
+## Build ##
+###########
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 add_definitions(--std=c++11)
 
 include_directories(include)
@@ -40,4 +46,17 @@ set(SRCS
 add_library(signal_logger SHARED ${SRCS})
 target_link_libraries(signal_logger
     ${catkin_LIBRARIES}
+)
+
+#############
+## Install ##
+#############
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  PATTERN ".svn" EXCLUDE
+)
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

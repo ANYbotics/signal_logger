@@ -11,7 +11,9 @@ find_package(catkin REQUIRED COMPONENTS
     signal_logger_msgs
 )
 
-# Declare this project as a catkin package
+###################################
+## catkin specific configuration ##
+###################################
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES signal_logger_ros
@@ -19,6 +21,9 @@ catkin_package(
 # DEPENDS system_lib
 )
 
+###########
+## Build ##
+###########
 add_definitions(--std=c++11)
 
 include_directories(include)
@@ -34,4 +39,17 @@ add_dependencies(signal_logger_ros ${catkin_EXPORTED_TARGETS})
 				
 target_link_libraries(signal_logger_ros
     ${catkin_LIBRARIES}
+)
+
+#############
+## Install ##
+#############
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  PATTERN ".svn" EXCLUDE
+)
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
