@@ -367,6 +367,28 @@ void LoggerRos::addDoubleKindrTorqueAtPositionToLog(const KindrTorqueD& torque,
                                          torqueFrame,
                                          positionFrame);
 }
+void LoggerRos::addDoubleKindrLinearVelocityAtPositionToLog(const KindrLinearVelocityD& velocity,
+                                                         const KindrPositionD& position,
+                                                         const std::string& name,
+                                                         const std::string& torqueFrame,
+                                                         const std::string& positionFrame,
+                                                         const std::string& group,
+                                                         const std::string& unit,
+                                                         bool update) {
+  addVarToCollection<KindrLinearVelocityD, true>(LOGGER_PREFIX + group + name, &velocity, &position,
+                                                 name, torqueFrame, positionFrame);
+}
+void LoggerRos::addDoubleKindrLinearAccelerationAtPositionToLog(const KindrLinearAccelerationD& acceleration,
+                                                             const KindrPositionD& position,
+                                                             const std::string& name,
+                                                             const std::string& torqueFrame,
+                                                             const std::string& positionFrame,
+                                                             const std::string& group,
+                                                             const std::string& unit,
+                                                             bool update) {
+  addVarToCollection<KindrLinearAccelerationD, true>(LOGGER_PREFIX + group + name, &acceleration,
+                                                     &position, name, torqueFrame, positionFrame);
+}
 /******************/
 
 bool LoggerRos::checkIfVarCollected(

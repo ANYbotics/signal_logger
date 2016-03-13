@@ -886,6 +886,22 @@ void LoggerStd::addDoubleKindrTorqueAtPositionToLog(const KindrTorqueD& torque,
                                                  const std::string& group,
                                                  const std::string& unit,
                                                  bool update) { }
+void LoggerStd::addDoubleKindrLinearVelocityAtPositionToLog(const KindrLinearVelocityD& velocity,
+                                                            const KindrPositionD& position,
+                                                            const std::string& name,
+                                                            const std::string& torqueFrame,
+                                                            const std::string& positionFrame,
+                                                            const std::string& group,
+                                                            const std::string& unit,
+                                                            bool update) {}
+void LoggerStd::addDoubleKindrLinearAccelerationAtPositionToLog(const KindrLinearAccelerationD& acceleration,
+                                                                const KindrPositionD& position,
+                                                                const std::string& name,
+                                                                const std::string& torqueFrame,
+                                                                const std::string& positionFrame,
+                                                                const std::string& group,
+                                                                const std::string& unit,
+                                                                bool update) {}
 
 /******************/
 

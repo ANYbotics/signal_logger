@@ -519,6 +519,60 @@ struct slr_traits<base_type::KindrVectorD, true> {
     msg->type = kindr_msgs::VectorAtPosition::TYPE_TYPELESS;
   }
 };
+
+template<>
+struct slr_traits<base_type::KindrLinearVelocityD, true> {
+  typedef kindr_msgs::VectorAtPosition         msgtype;
+  typedef kindr_msgs::VectorAtPositionPtr      msgtypePtr;
+  typedef kindr_msgs::VectorAtPositionConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const base_type::KindrLinearVelocityD* vectorPtr_,
+                        const base_type::KindrPositionD* positionPtr_,
+                        const std::string& vectorFrameId,
+                        const std::string& positionFrameId,
+                        const std::string& name,
+                        msgtypePtr msg,
+                        const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->header.frame_id = vectorFrameId;
+    msg->vector.x = vectorPtr_->x();
+    msg->vector.y = vectorPtr_->y();
+    msg->vector.z = vectorPtr_->z();
+    msg->position.x = positionPtr_->x();
+    msg->position.y = positionPtr_->y();
+    msg->position.z = positionPtr_->z();
+    msg->position_frame_id = positionFrameId;
+    msg->name = name;
+    msg->type = kindr_msgs::VectorAtPosition::TYPE_VELOCITY;
+  }
+};
+
+template<>
+struct slr_traits<base_type::KindrLinearAccelerationD, true> {
+  typedef kindr_msgs::VectorAtPosition         msgtype;
+  typedef kindr_msgs::VectorAtPositionPtr      msgtypePtr;
+  typedef kindr_msgs::VectorAtPositionConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const base_type::KindrLinearAccelerationD* vectorPtr_,
+                        const base_type::KindrPositionD* positionPtr_,
+                        const std::string& vectorFrameId,
+                        const std::string& positionFrameId,
+                        const std::string& name,
+                        msgtypePtr msg,
+                        const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->header.frame_id = vectorFrameId;
+    msg->vector.x = vectorPtr_->x();
+    msg->vector.y = vectorPtr_->y();
+    msg->vector.z = vectorPtr_->z();
+    msg->position.x = positionPtr_->x();
+    msg->position.y = positionPtr_->y();
+    msg->position.z = positionPtr_->z();
+    msg->position_frame_id = positionFrameId;
+    msg->name = name;
+    msg->type = kindr_msgs::VectorAtPosition::TYPE_ACCELERATION;
+  }
+};
 /***************************************************/
 
 

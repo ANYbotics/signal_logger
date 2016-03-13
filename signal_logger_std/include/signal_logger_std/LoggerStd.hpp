@@ -174,6 +174,22 @@ public:
                                                    const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME},
                                                    const std::string& unit = std::string{LOGGER_DEFAULT_UNIT},
                                                    bool update = LOGGER_DEFAULT_UPDATE);
+  virtual void addDoubleKindrLinearVelocityAtPositionToLog(const KindrLinearVelocityD& velocity,
+                                                           const KindrPositionD& position,
+                                                           const std::string& name,
+                                                           const std::string& torqueFrame = "world",
+                                                           const std::string& positionFrame = "world",
+                                                           const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME},
+                                                           const std::string& unit = std::string{LOGGER_DEFAULT_UNIT},
+                                                           bool update = LOGGER_DEFAULT_UPDATE);
+  virtual void addDoubleKindrLinearAccelerationAtPositionToLog(const KindrLinearAccelerationD& acceleration,
+                                                               const KindrPositionD& position,
+                                                               const std::string& name,
+                                                               const std::string& torqueFrame = "world",
+                                                               const std::string& positionFrame = "world",
+                                                               const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME},
+                                                               const std::string& unit = std::string{LOGGER_DEFAULT_UNIT},
+                                                               bool update = LOGGER_DEFAULT_UPDATE);
 
   /******************/
 
