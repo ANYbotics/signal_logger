@@ -160,47 +160,38 @@ void LoggerRos::addBoolToLog(const bool& var, const std::string& name,
  * Eigen wrappers *
  ******************/
 void LoggerRos::addDoubleEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXd>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
   addVarToCollection<Eigen::Ref<Eigen::MatrixXd>>(LOGGER_PREFIX + group + name, &var);
 }
 
 void LoggerRos::addFloatEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXf>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
   addVarToCollection<Eigen::Ref<Eigen::MatrixXf>>(LOGGER_PREFIX + group + name, &var);
 }
 
 void LoggerRos::addIntEigenMatrixToLog(const Eigen::Ref<Eigen::MatrixXi>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
   addVarToCollection<Eigen::Ref<Eigen::MatrixXi>>(LOGGER_PREFIX + group + name, &var);
 }
 
 void LoggerRos::addShortEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXs>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
   addVarToCollection<Eigen::Ref<LoggerBase::MatrixXs>>(LOGGER_PREFIX + group + name, &var);
 }
 
 void LoggerRos::addLongEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXl>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
   addVarToCollection<Eigen::Ref<LoggerBase::MatrixXl>>(group + name, &var);
 }
 
 void LoggerRos::addCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXc>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
   addVarToCollection<Eigen::Ref<LoggerBase::MatrixXc>>(LOGGER_PREFIX + group + name, &var);
 }
 
 void LoggerRos::addUnsignedCharEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXUc>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
   addVarToCollection<Eigen::Ref<LoggerBase::MatrixXUc>>(LOGGER_PREFIX + group + name, &var);
 }
 
 void LoggerRos::addBoolEigenMatrixToLog(const Eigen::Ref<LoggerBase::MatrixXb>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
   addVarToCollection<Eigen::Ref<LoggerBase::MatrixXb>>(LOGGER_PREFIX + group + name, &var);
 }
 
 void LoggerRos::addDoubleEigenVector3ToLog(const Eigen::Ref<Eigen::Vector3d>& var, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  std::cout << "ADDINGDOUBLE EIGEN MAT: " << group+name << std::endl;
   addVarToCollection<Eigen::Ref<Eigen::Vector3d>>(LOGGER_PREFIX + group+name, &var);
 }
 
