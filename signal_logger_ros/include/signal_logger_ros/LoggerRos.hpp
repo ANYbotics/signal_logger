@@ -45,13 +45,12 @@
 #define LOGGERROS_HPP_
 
 #include "signal_logger_ros/LogElement.hpp"
-#include <chrono>
 
 namespace signal_logger_ros {
 
 class LoggerRos : public signal_logger::LoggerBase {
  public:
-  LoggerRos(ros::NodeHandle& nodeHandle);
+  explicit LoggerRos(ros::NodeHandle& nodeHandle);
   virtual ~LoggerRos();
 
   /****************
@@ -171,14 +170,9 @@ class LoggerRos : public signal_logger::LoggerBase {
   /******************/
 
  protected:
-  typedef std::chrono::steady_clock Clock;
-  typedef std::chrono::microseconds microseconds;
-
   ros::NodeHandle& nodeHandle_;
   std::vector<std::shared_ptr<LogElementBase>> collectedVars_;
 
-  Clock::time_point lastPublishTime_;
-  ros::Publisher pubTime_;
 
   virtual bool checkIfVarCollected(const std::string& topicName, std::vector<std::shared_ptr<LogElementBase>>::iterator& it);
 

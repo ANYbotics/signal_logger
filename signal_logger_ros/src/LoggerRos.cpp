@@ -51,10 +51,8 @@ namespace signal_logger_ros {
 
 LoggerRos::LoggerRos(ros::NodeHandle& nodeHandle) :
     nodeHandle_(nodeHandle),
-    collectedVars_(0),
-    lastPublishTime_(Clock::now())
+    collectedVars_(0)
 {
-  pubTime_ = nodeHandle_.advertise<std_msgs::Float32>(LOGGER_PREFIX+"/slr/publish_duration",0);
 }
 
 
@@ -393,7 +391,7 @@ void LoggerRos::addDoubleKindrLinearAccelerationAtPositionToLog(const KindrLinea
 
 bool LoggerRos::checkIfVarCollected(
     const std::string& topicName,
-    std::list<std::shared_ptr<LogElementBase>>::iterator& it)
+    std::vector<std::shared_ptr<LogElementBase>>::iterator& it)
 {
   for (it = collectedVars_.begin(); it != collectedVars_.end(); it++) {
     if ((*it).get()->getTopicName().compare(topicName) == 0) {
