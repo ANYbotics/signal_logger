@@ -8,17 +8,17 @@
 #ifndef LOGELEMENT_HPP_
 #define LOGELEMENT_HPP_
 
+// signal logger
 #include "signal_logger_ros/LogElementBase.hpp"
 #include "signal_logger_ros/signal_logger_ros_traits.hpp"
 
+// ros
 #include <ros/ros.h>
-#include <boost/any.hpp>
-
 
 namespace signal_logger_ros {
 
 
-const int DEFAULT_QUEUE_SIZE = 0;
+const int DEFAULT_QUEUE_SIZE = 1;
 
 // generic declaration
 template <typename LogType_, bool vectorAtPosition = false>

@@ -90,9 +90,9 @@ const signal_logger::LoggerBase::LoggerType LoggerRos::getLoggerType() const {
 
 void LoggerRos::collectLoggerData()
 {
+  const ros::Time stamp = ros::Time::now();
   for (const auto& elem : collectedVars_) {
     if (elem.get()->getNumSubscribers() > 0u) {
-      ros::Time stamp = ros::Time::now();
       elem->publish(stamp);
     }
   }
@@ -393,7 +393,7 @@ void LoggerRos::addDoubleKindrLinearAccelerationAtPositionToLog(const KindrLinea
 
 bool LoggerRos::checkIfVarCollected(
     const std::string& topicName,
-    std::vector<std::shared_ptr<LogElementBase>>::iterator& it)
+    std::list<std::shared_ptr<LogElementBase>>::iterator& it)
 {
   for (it = collectedVars_.begin(); it != collectedVars_.end(); it++) {
     if ((*it).get()->getTopicName().compare(topicName) == 0) {
