@@ -20,7 +20,7 @@ clear all
 % 376 0x04 with zero_offset=0.36
 % 377 0x04 with zero_offset=0.486
 % 442 1kHz 0.05/0.01
-startNo = 1267;       % number of first data file (filename will be generated based on this number
+startNo = 71;       % number of first data file (filename will be generated based on this number
 endNo = startNo;      % number of last data file
 
 folder = '';       % name of folder where the data files are stored
@@ -30,24 +30,24 @@ tEnd = 130;
 
 
 % Plotting (1=activated 0=deactivated)
-plotJointPositionsMeasAndDes = 0;
-plotJointVelocitiesMeasAndDes = 0;
-plotTorques = 0;
-plotCurrents = 0;
-plotModes = 0;
+plotJointPositionsMeasAndDes = 1;
+plotJointVelocitiesMeasAndDes = 1;
+plotTorques = 1;
+plotCurrents = 1;
+plotModes = 1;
 
-ANYDRIVE_LF_HAA = 1;
-ANYDRIVE_LF_HFE = 1;
-ANYDRIVE_LF_KFE = 1;
-ANYDRIVE_RF_HAA = 1;
-ANYDRIVE_RF_HFE = 1;
-ANYDRIVE_RF_KFE = 1;
-ANYDRIVE_LH_HAA = 1;
-ANYDRIVE_LH_HFE = 1;
-ANYDRIVE_LH_KFE = 1;
-ANYDRIVE_RH_HAA = 1;
-ANYDRIVE_RH_HFE = 1;
-ANYDRIVE_RH_KFE = 1;
+ANYDRIVE_LF_HAA = 0;
+ANYDRIVE_LF_HFE = 0;
+ANYDRIVE_LF_KFE = 0;
+ANYDRIVE_RF_HAA = 0;
+ANYDRIVE_RF_HFE = 0;
+ANYDRIVE_RF_KFE = 0;
+ANYDRIVE_LH_HAA = 0;
+ANYDRIVE_LH_HFE = 0;
+ANYDRIVE_LH_KFE = 0;
+ANYDRIVE_RH_HAA = 0;
+ANYDRIVE_RH_HFE = 0;
+ANYDRIVE_RH_KFE = 0;
 
 %% Read data from file
 

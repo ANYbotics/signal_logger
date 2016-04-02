@@ -12,11 +12,8 @@ clear all
 %1998 3Hz startNo = 2049;
 
 % 2059 freegait square up with orientation
-% failure: 123
-% 126: 2Hz swing test
-% 128: 3Hz swing test
 
-startNo = 285;       % number of first data file (filename will be generated based on this number
+startNo = 2347;       % number of first data file (filename will be generated based on this number
 endNo = startNo;      % number of last data file
 
 folder = '';       % name of folder where the data files are stored
@@ -27,7 +24,7 @@ tEnd = 300;
 
 % Plotting (1=activated 0=deactivated)
 plotMainbodyPoseMeas = 0;
-plotMainbodyPoseMeasAndDes = 1;
+plotMainbodyPoseMeasAndDes = 0;
 plotMainbodyVel = 0;
 plotMainbodyOmega = 0;
 plotJointPositionsMeas = 0;
@@ -38,7 +35,7 @@ plotJointTorques = 1;
 plotMotorVelocitiesMeas = 0;
 plotMotorVelocitiesMeasAnDes = 0;
 plotMotorPower = 0;
-plotCurrents = 1;
+plotSeaCurrent = 1;
 plotJointPower = 0;
 plotOptoforces = 0;
 plotMainbodyPositionFromMocap = 0;
@@ -60,7 +57,7 @@ if (plotLoco)
     plotLocoLegState = 1;
     plotDesiredFootPositions = 1;
     plotTerrain = 1;
-    plotLocoControlModes = 1;
+    plotLocoControlModes = 0;
 else
     
     plotLocoVMCandCFD = 0;
@@ -71,7 +68,7 @@ end
 
 plotPhases = 0;
 plotAPS = 0;
-
+plotForces = 0;
 
 plot3DPose = 0;
 plotFootholdEstimates = 0;
@@ -122,7 +119,7 @@ if (plotMainbodyPoseMeas)
     named_figure('main body position')
     subplot(3,1,1)
     plot(time, data(:,idx_rm_q_positionWorldToBaseInWorldFrame_x));
-    %plotVLines(time, [0.3 2 10], {'r','b','g'}, true);t
+    %plotVLines(time, [0.3 2 10], {'r','b','g'}, true);
     grid on
     xlabel('time [s]')
     ylabel('x')
@@ -212,12 +209,9 @@ end
 
 %% Mainbody velocities
 if (plotMainbodyVel)
-
     named_figure('main body linear velocity')
     subplot(3,1,1)
-    plot(time, data(:,idx_rm_q_linearVelocityBaseInWorldFrame_x), 'b')
-    plot(time, data(:,idx_loco_torso_desiredLinearVelocityBaseInControlFrame_x), 'r')
-    
+    plot(time, data(:,idx_rm_q_linearVelocityBaseInWorldFrame_x))
     if (plotModeSwitches)
         vline(time(idx_LF_m),'b')
         vline(time(idx_RF_m),'c')
@@ -238,28 +232,6 @@ if (plotMainbodyVel)
     grid on
     xlabel('time [s]')
     ylabel('z [m/s]')
-    
-    
-    named_figure('main body reference linear velocity in control frame')
-    subplot(3,1,1)
-    plot(time, data(:,idx_loco_torso_desiredLinearVelocityBaseInControlFrame_x), 'r')
-    grid on
-    xlabel('time [s]')
-    ylabel('x [m/s]')
-    title('linear velocity of torso expressed in control frame')
-    subplot(3,1,2)
-    plot(time, data(:,idx_loco_torso_desiredLinearVelocityBaseInControlFrame_y), 'r')
-    grid on
-    xlabel('time [s]')
-    ylabel('y [m/s]')
-    subplot(3,1,3)
-    plot(time, data(:,idx_loco_torso_desiredLinearVelocityBaseInControlFrame_z), 'r')
-    grid on
-    xlabel('time [s]')
-    ylabel('z [m/s]')
-    
-    
-    
     named_figure('main body angular velocity expressed in base frame')
     subplot(3,1,1)
     plot(time, data(:,idx_rm_q_qAngVel_x))
@@ -1204,121 +1176,85 @@ if (plotMotorVelocitiesMeas)
 
 end
 %% Measured motor current
-if (plotMotorCurrent)
-    named_figure('measured motor current'), clf
+if (plotSeaCurrent)
+    named_figure('measured current'), clf
     grid on
     subplot(3,4,1)
     hold on
-    plot(time, data(:,idx_log_LF_HAA_MOTOR_CURRENT),'b')
-    if (plotModeSwitches)
-        vline(time(idx_LF_m),'k')
-    end
+    plot(time, data(:,idx_sea_LF_HAA_state_current),'b')
     title('LF')
     grid on
     xlabel('time [s]')
     ylabel('HAA [rad/s]')
     subplot(3,4,5)
     hold on
-    plot(time, data(:,idx_log_LF_HFE_MOTOR_CURRENT),'b')
-    if (plotModeSwitches)
-        vline(time(idx_LF_m),'k')
-    end
+    plot(time, data(:,idx_sea_LF_HFE_state_current),'b')
     grid on
     xlabel('time [s]')
     ylabel('HFE [rad/s]')
     subplot(3,4,9)
     hold on
-    plot(time, data(:,idx_log_LF_KFE_MOTOR_CURRENT),'b')
-    if (plotModeSwitches)
-        vline(time(idx_LF_m),'k')
-    end
+    plot(time, data(:,idx_sea_LF_KFE_state_current),'b')
     grid on
     xlabel('time [s]')
     ylabel('KFE [rad/s]')
 
     subplot(3,4,2)
     hold on
-    plot(time, data(:,idx_log_RF_HAA_MOTOR_CURRENT),'b')
-    if (plotModeSwitches)
-        vline(time(idx_RF_m),'k')
-    end
+    plot(time, data(:,idx_sea_RF_HAA_state_current),'b')
     title('RF')
     grid on
     xlabel('time [s]')
     ylabel('HAA [rad/s]')
     subplot(3,4,6)
     hold on
-    plot(time, data(:,idx_log_RF_HFE_MOTOR_CURRENT),'b')
-    if (plotModeSwitches)
-        vline(time(idx_RF_m),'k')
-    end
+    plot(time, data(:,idx_sea_RF_HFE_state_current),'b')
     grid on
     xlabel('time [s]')
     ylabel('HFE [rad/s]')
     subplot(3,4,10)
     hold on
-    plot(time, data(:,idx_log_RF_KFE_MOTOR_CURRENT),'b')
-    if (plotModeSwitches)
-        vline(time(idx_RF_m),'k')
-    end
+    plot(time, data(:,idx_sea_RF_KFE_state_current),'b')
     grid on
     xlabel('time [s]')
     ylabel('KFE [rad/s]')
 
     subplot(3,4,3)
     hold on
-    plot(time, data(:,idx_log_LH_HAA_MOTOR_CURRENT),'b')
-    if (plotModeSwitches)
-        vline(time(idx_LH_m),'k')
-    end
+    plot(time, data(:,idx_sea_LH_HAA_state_current),'b')
     title('LH')
     grid on
     xlabel('time [s]')
     ylabel('HAA [rad]/s')
     subplot(3,4,7)
     hold on
-    plot(time, data(:,idx_log_LH_HFE_MOTOR_CURRENT),'b')
-    if (plotModeSwitches)
-        vline(time(idx_LH_m),'k')
-    end
+    plot(time, data(:,idx_sea_LH_HFE_state_current),'b')
     grid on
     xlabel('time [s]')
     ylabel('HFE [rad/s]')
     subplot(3,4,11)
     hold on
-    plot(time, data(:,idx_log_LH_KFE_MOTOR_CURRENT),'b')
-    if (plotModeSwitches)
-        vline(time(idx_LH_m),'k')
-    end
+    plot(time, data(:,idx_sea_LH_KFE_state_current),'b')
     grid on
     xlabel('time [s]')
     ylabel('KFE [rad/s]')
 
     subplot(3,4,4)
     hold on
-    plot(time, data(:,idx_log_RH_HAA_MOTOR_CURRENT),'b')
-    if (plotModeSwitches)
-        vline(time(idx_RH_m),'k')
-    end
+    plot(time, data(:,idx_sea_RH_HAA_state_current),'b')
     title('RH')
     grid on
     xlabel('time [s]')
     ylabel('HAA [rad/s]')
     subplot(3,4,8)
     hold on
-    plot(time, data(:,idx_log_RH_HFE_MOTOR_CURRENT),'b')
-    if (plotModeSwitches)
-        vline(time(idx_RH_m),'k')
-    end
+    plot(time, data(:,idx_sea_RH_HFE_state_current),'b')
     grid on
     xlabel('time [s]')
     ylabel('HFE [rad/s]')
     subplot(3,4,12)
     hold on
-    plot(time, data(:,idx_log_RH_KFE_MOTOR_CURRENT),'b')
-    if (plotModeSwitches)
-        vline(time(idx_RH_m),'k')
-    end
+    plot(time, data(:,idx_sea_RH_KFE_state_current),'b')
     grid on
     xlabel('time [s]')
     ylabel('KFE [rad/s]')
@@ -1950,7 +1886,7 @@ if (plotLocoVMCandCFD)
     
     subplot(4,1,1)
     hold on
-   % plot(time, data(:,idx_rm_contacts_LF_FOOT_state)+data(:,idx_rm_contacts_RF_FOOT_state)+data(:,idx_rm_contacts_LH_FOOT_state)+data(:,idx_rm_contacts_RH_FOOT_state),'r');
+   % plot(time, data(:,idx_rm_contacts_contactFlagLf)+data(:,idx_rm_contacts_contactFlagRf)+data(:,idx_rm_contacts_contactFlagLh)+data(:,idx_rm_contacts_contactFlagRh),'r');
     grid on
     xlabel('time [s]')
     ylabel('-')
@@ -2164,10 +2100,10 @@ if (plotOptoforces)
     grid on
     subplot(4,4,1)
     hold on
-    plot(time, sqrt((data(:,idx_rm_contacts_LF_FOOT_forceInWorlFrame_x).^2+data(:,idx_rm_contacts_LF_FOOT_forceInWorlFrame_y).^2+data(:,idx_rm_contacts_LF_FOOT_forceInWorlFrame_z).^2)),'r')
+    plot(time, sqrt((data(:,idx_rm_sensors_contact_force_lf_foot_x).^2+data(:,idx_rm_sensors_contact_force_lf_foot_y).^2+data(:,idx_rm_sensors_contact_force_lf_foot_z).^2)),'r')
     hline(contactForceThreshold,'-')
-    x = data(2:end,idx_rm_contacts_LF_FOOT_state);
-    y = data(1:end-1,idx_rm_contacts_LF_FOOT_state);
+    x = data(2:end,idx_rm_contacts_contactFlagLf);
+    y = data(1:end-1,idx_rm_contacts_contactFlagLf);
     idx_contactSwitchLf = find((x(1:end)~=y(1:end)))+1;
     if (~isempty(idx_contactSwitchLf))
         vline(data(idx_contactSwitchLf),'k-')
@@ -2179,19 +2115,19 @@ if (plotOptoforces)
     ylabel('norm')  
     subplot(4,4,5)
     hold on
-    plot(time, data(:,idx_rm_contacts_LF_FOOT_forceInWorlFrame_x),'r')
+    plot(time, data(:,idx_rm_sensors_contact_force_lf_foot_x),'r')
     grid on
     xlabel('time [s]')
     ylabel('x')
     subplot(4,4,9)
     hold on
-    plot(time, data(:,idx_rm_contacts_LF_FOOT_forceInWorlFrame_y),'r')
+    plot(time, data(:,idx_rm_sensors_contact_force_lf_foot_y),'r')
     grid on
     xlabel('time [s]')
     ylabel('y')
     subplot(4,4,13)
     hold on
-    plot(time, data(:,idx_rm_contacts_LF_FOOT_forceInWorlFrame_z),'r')
+    plot(time, data(:,idx_rm_sensors_contact_force_lf_foot_z),'r')
     grid on
     xlabel('time [s]')
     ylabel('z')
@@ -2200,10 +2136,10 @@ if (plotOptoforces)
     
     subplot(4,4,2)
     hold on
-    plot(time, sqrt((data(:,idx_rm_contacts_RF_FOOT_forceInWorlFrame_x).^2+data(:,idx_rm_contacts_RF_FOOT_forceInWorlFrame_y).^2+data(:,idx_rm_contacts_RF_FOOT_forceInWorlFrame_z).^2)),'r')
+    plot(time, sqrt((data(:,idx_rm_sensors_contact_force_rf_foot_x).^2+data(:,idx_rm_sensors_contact_force_rf_foot_y).^2+data(:,idx_rm_sensors_contact_force_rf_foot_z).^2)),'r')
     hline(contactForceThreshold,'-')
-    x = data(2:end,idx_rm_contacts_RF_FOOT_state);
-    y = data(1:end-1,idx_rm_contacts_RF_FOOT_state);
+    x = data(2:end,idx_rm_contacts_contactFlagRf);
+    y = data(1:end-1,idx_rm_contacts_contactFlagRf);
     idx_contactSwitchRf = find((x(1:end)~=y(1:end)))+1;
     if (~isempty(idx_contactSwitchRf))
         vline(data(idx_contactSwitchRf),'k-')
@@ -2215,29 +2151,29 @@ if (plotOptoforces)
     ylabel('norm')   
     subplot(4,4,6)
     hold on
-    plot(time, data(:,idx_rm_contacts_RF_FOOT_forceInWorlFrame_x),'r')
+    plot(time, data(:,idx_rm_sensors_contact_force_rf_foot_x),'r')
     grid on
     xlabel('time [s]')
     ylabel('x')
     subplot(4,4,10)
     hold on
-    plot(time, data(:,idx_rm_contacts_RF_FOOT_forceInWorlFrame_y),'r')
+    plot(time, data(:,idx_rm_sensors_contact_force_rf_foot_y),'r')
     grid on
     xlabel('time [s]')
     ylabel('y]')
     subplot(4,4,14)
     hold on
-    plot(time, data(:,idx_rm_contacts_RF_FOOT_forceInWorlFrame_z),'r')
+    plot(time, data(:,idx_rm_sensors_contact_force_rf_foot_z),'r')
     grid on
     xlabel('time [s]')
     ylabel('z')
 
     subplot(4,4,3)
     hold on
-    plot(time, sqrt((data(:,idx_rm_contacts_LH_FOOT_forceInWorlFrame_x).^2+data(:,idx_rm_contacts_LH_FOOT_forceInWorlFrame_y).^2+data(:,idx_rm_contacts_LH_FOOT_forceInWorlFrame_z).^2)),'r')
+    plot(time, sqrt((data(:,idx_rm_sensors_contact_force_lh_foot_x).^2+data(:,idx_rm_sensors_contact_force_lh_foot_y).^2+data(:,idx_rm_sensors_contact_force_lh_foot_z).^2)),'r')
     hline(contactForceThreshold,'-')
-    x = data(2:end,idx_rm_contacts_LH_FOOT_state);
-    y = data(1:end-1,idx_rm_contacts_LH_FOOT_state);
+    x = data(2:end,idx_rm_contacts_contactFlagLh);
+    y = data(1:end-1,idx_rm_contacts_contactFlagLh);
     idx_contactSwitchLh = find((x(1:end)~=y(1:end)))+1;
     if (~isempty(idx_contactSwitchLh))
         vline(data(idx_contactSwitchLh),'k-')
@@ -2249,29 +2185,29 @@ if (plotOptoforces)
     ylabel('norm')   
     subplot(4,4,7)
     hold on
-    plot(time, data(:,idx_rm_contacts_LH_FOOT_forceInWorlFrame_x),'r')
+    plot(time, data(:,idx_rm_sensors_contact_force_lh_foot_x),'r')
     grid on
     xlabel('time [s]')
     ylabel('x')
     subplot(4,4,11)
     hold on
-    plot(time, data(:,idx_rm_contacts_LH_FOOT_forceInWorlFrame_y),'r')
+    plot(time, data(:,idx_rm_sensors_contact_force_lh_foot_y),'r')
     grid on
     xlabel('time [s]')
     ylabel('y')
     subplot(4,4,15)
     hold on
-    plot(time, data(:,idx_rm_contacts_LH_FOOT_forceInWorlFrame_z),'r')
+    plot(time, data(:,idx_rm_sensors_contact_force_lh_foot_z),'r')
     grid on
     xlabel('time [s]')
     ylabel('z')
 
     subplot(4,4,4)
     hold on
-    plot(time, sqrt((data(:,idx_rm_contacts_RH_FOOT_forceInWorlFrame_x).^2+data(:,idx_rm_contacts_RH_FOOT_forceInWorlFrame_y).^2+data(:,idx_rm_contacts_RH_FOOT_forceInWorlFrame_z).^2)),'r')
+    plot(time, sqrt((data(:,idx_rm_sensors_contact_force_rh_foot_x).^2+data(:,idx_rm_sensors_contact_force_rh_foot_y).^2+data(:,idx_rm_sensors_contact_force_rh_foot_z).^2)),'r')
     hline(contactForceThreshold,'-')
-    x = data(2:end,idx_rm_contacts_RH_FOOT_state);
-    y = data(1:end-1,idx_rm_contacts_RH_FOOT_state);
+    x = data(2:end,idx_rm_contacts_contactFlagRh);
+    y = data(1:end-1,idx_rm_contacts_contactFlagRh);
     idx_contactSwitchRh = find((x(1:end)~=y(1:end)))+1;
     if (~isempty(idx_contactSwitchRh))
         vline(data(idx_contactSwitchRh),'k-')
@@ -2281,19 +2217,19 @@ if (plotOptoforces)
     grid on
     subplot(4,4,8)
     hold on
-    plot(time, data(:,idx_rm_contacts_RH_FOOT_forceInWorlFrame_x),'r')
+    plot(time, data(:,idx_rm_sensors_contact_force_rh_foot_x),'r')
     grid on
     xlabel('time [s]')
     ylabel('x')
     subplot(4,4,12)
     hold on
-    plot(time, data(:,idx_rm_contacts_RH_FOOT_forceInWorlFrame_y),'r')
+    plot(time, data(:,idx_rm_sensors_contact_force_rh_foot_y),'r')
     grid on
     xlabel('time [s]')
     ylabel('y')
     subplot(4,4,16)
     hold on
-    plot(time, data(:,idx_rm_contacts_RH_FOOT_forceInWorlFrame_z),'r')
+    plot(time, data(:,idx_rm_sensors_contact_force_rh_foot_z),'r')
     grid on
     xlabel('time [s]')
     ylabel('z')
@@ -2365,15 +2301,15 @@ if (plotDesiredFootPositions)
     subplot(4,4,2)
     title('RF')
     hold on; grid on;
-%     x = data(2:end,idx_rm_contacts_RF_FOOT_state);
-%     y = data(1:end-1,idx_rm_contacts_RF_FOOT_state);
+%     x = data(2:end,idx_rm_contacts_contactFlagRf);
+%     y = data(1:end-1,idx_rm_contacts_contactFlagRf);
 %     idx_contactSwitchRf = find((x(1:end)~=y(1:end)))+1;
 %     if (~isempty(idx_contactSwitchRf))
 %         vline(data(idx_contactSwitchRf),'k-')
 %     end
 %     plot(time, data(:,idx_loco_rightForeLeg_currentState),'m-');
 %     plot(time, data(:,idx_loco_rightForeLeg_isGrounded),'r');
-%     plot(time, data(:,idx_rm_contacts_RF_FOOT_state), 'b');
+%     plot(time, data(:,idx_rm_contacts_contactFlagRf), 'b');
     xlim([tStart time(end)]);
     
     
@@ -2402,15 +2338,15 @@ if (plotDesiredFootPositions)
 
     subplot(4,4,3)
     hold on; grid on;
-%     x = data(2:end,idx_rm_contacts_LH_FOOT_state);
-%     y = data(1:end-1,idx_rm_contacts_LH_FOOT_state);
+%     x = data(2:end,idx_rm_contacts_contactFlagLh);
+%     y = data(1:end-1,idx_rm_contacts_contactFlagLh);
 %     idx_contactSwitchLh = find((x(1:end)~=y(1:end)))+1;
 %     if (~isempty(idx_contactSwitchLh))
 %         vline(data(idx_contactSwitchLh),'k-')
 %     end
 %     plot(time, data(:,idx_loco_leftHindLeg_currentState),'m-');
 %     plot(time, data(:,idx_loco_leftHindLeg_isGrounded),'r');
-%     plot(time, data(:,idx_rm_contacts_LH_FOOT_state), 'b');
+%     plot(time, data(:,idx_rm_contacts_contactFlagLh), 'b');
     xlim([tStart time(end)])
     title('LH')
 
@@ -2441,15 +2377,15 @@ if (plotDesiredFootPositions)
 
     subplot(4,4,4)
     hold on
-%     x = data(2:end,idx_rm_contacts_RH_FOOT_state);
-%     y = data(1:end-1,idx_rm_contacts_RH_FOOT_state);
+%     x = data(2:end,idx_rm_contacts_contactFlagRh);
+%     y = data(1:end-1,idx_rm_contacts_contactFlagRh);
 %     idx_contactSwitchRh = find((x(1:end)~=y(1:end)))+1;
 %     if (~isempty(idx_contactSwitchRh))
 %         vline(data(idx_contactSwitchRh),'k-')
 %     end
 %     plot(time, data(:,idx_loco_rightHindLeg_currentState),'m-');
 %     plot(time, data(:,idx_loco_rightHindLeg_isGrounded),'r');
-%     plot(time, data(:,idx_rm_contacts_RH_FOOT_state), 'b');
+%     plot(time, data(:,idx_rm_contacts_contactFlagRh), 'b');
     xlim([tStart time(end)])
     title('RH')
     grid on
@@ -2592,228 +2528,37 @@ named_figure('Roco Swing'), clf
 
 subplot(3, 1, 1);
 title('x'); hold on; grid on;
-plot(time, data(:,idx_roco_sea_test_taskSpacePositionsLf_x),'b');
-plot(time, data(:,idx_roco_sea_test_desTaskSpacePositionsLf_x),'r');
+plot(time, data(:,idx_roco_sea_test_taskSpacePositionsLf_x),'r', 'LineWidth', 2);
+plot(time, data(:,idx_roco_sea_test_desTaskSpacePositionsLf_x),'b--', 'LineWidth', 2);
 xlabel('t [s]');
 
 subplot(3, 1, 2);
 title('y'); hold on; grid on;
-plot(time, data(:,idx_roco_sea_test_taskSpacePositionsLf_y),'b');
-plot(time, data(:,idx_roco_sea_test_desTaskSpacePositionsLf_y),'r');
+plot(time, data(:,idx_roco_sea_test_taskSpacePositionsLf_y),'r', 'LineWidth', 2);
+plot(time, data(:,idx_roco_sea_test_desTaskSpacePositionsLf_y),'b--', 'LineWidth', 2);
 xlabel('t [s]');
 
 subplot(3, 1, 3);
 title('z'); hold on; grid on;
-plot(time, data(:,idx_roco_sea_test_taskSpacePositionsLf_z),'b');
-plot(time, data(:,idx_roco_sea_test_desTaskSpacePositionsLf_z),'r');
+plot(time, data(:,idx_roco_sea_test_taskSpacePositionsLf_z),'r', 'LineWidth', 2);
+plot(time, data(:,idx_roco_sea_test_desTaskSpacePositionsLf_z),'b--', 'LineWidth', 2);
 xlabel('t [s]');
 
-%%
-if (plotCurrents)
-    named_figure('currents'),clf
-    grid on
-    subplot(3,4,1)
-    hold on
-    plot(time, data(:,idx_sea_LF_HAA_state_current),'b')
-    %plot(time, data(:,idx_sea_LF_HAA_commanded_current),'r')
-    title('LF')
-    grid on
-    xlabel('time [s]')
-    ylabel('HAA [A]')
-    subplot(3,4,5)
-    hold on
-    plot(time, data(:,idx_sea_LF_HFE_state_current),'b')
-   % plot(time, data(:,idx_sea_LF_HFE_commanded_current),'r')
-    grid on
-    xlabel('time [s]')
-    ylabel('HFE [A]')
-    subplot(3,4,9)
-    hold on
-    plot(time, data(:,idx_sea_LF_KFE_state_current),'b')
-    %plot(time, data(:,idx_sea_LF_KFE_commanded_current),'r')
-    grid on
-    xlabel('time [s]')
-    ylabel('KFE [A]')
 
-    subplot(3,4,2)
-    hold on
-    plot(time, data(:,idx_sea_RF_HAA_state_current),'b')
-   % plot(time, data(:,idx_sea_RF_HAA_commanded_current),'r')
-    title('RF')
-    grid on
-    xlabel('time [s]')
-    ylabel('HAA [A]')
-    subplot(3,4,6)
-    hold on
-    plot(time, data(:,idx_sea_RF_HFE_state_current),'b')
-   % plot(time, data(:,idx_sea_RF_HFE_commanded_current),'r')
-    grid on
-    xlabel('time [s]')
-    ylabel('HFE [A]')
-    subplot(3,4,10)
-    hold on
-    plot(time, data(:,idx_sea_RF_KFE_state_current),'b')
-   % plot(time, data(:,idx_sea_RF_KFE_commanded_current),'r')
-    grid on
-    xlabel('time [s]')
-    ylabel('KFE [A]')
+timeidx = time(find(time==4,1,'first'):find(time==9,1,'first'));
 
-    subplot(3,4,3)
-    hold on
-    plot(time, data(:,idx_sea_LH_HAA_state_current),'b')
-    %plot(time, data(:,idx_sea_LH_HAA_commanded_current),'r')
-    title('LH')
-    grid on
-    xlabel('time [s]')
-    ylabel('HAA [A]')
-    subplot(3,4,7)
-    hold on
-    plot(time, data(:,idx_sea_LH_HFE_state_current),'b')
-    %plot(time, data(:,idx_sea_LH_HFE_commanded_current),'r')
-    grid on
-    xlabel('time [s]')
-    ylabel('HFE [A]')
-    subplot(3,4,11)
-    hold on
-    plot(time, data(:,idx_sea_LH_KFE_state_current),'b')
-  %  plot(time, data(:,idx_sea_LH_KFE_commanded_current),'r')
-    grid on
-    xlabel('time [s]')
-    ylabel('KFE [A]')
-
-    subplot(3,4,4)
-    hold on
-    plot(time, data(:,idx_sea_RH_HAA_state_current),'b')
-  %  plot(time, data(:,idx_sea_RH_HAA_commanded_current),'r')
-    title('RH')
-    grid on
-    xlabel('time [s]')
-    ylabel('HAA [A]')
-    subplot(3,4,8)
-    hold on
-    plot(time, data(:,idx_sea_RH_HFE_state_current),'b')
-   % plot(time, data(:,idx_sea_RH_HFE_commanded_current),'r')
-    grid on
-    xlabel('time [s]')
-    ylabel('HFE [A]')
-    subplot(3,4,12)
-    hold on
-    plot(time, data(:,idx_sea_RH_KFE_state_current),'b')
-   % plot(time, data(:,idx_sea_RH_KFE_commanded_current),'r')
-    grid on
-    xlabel('time [s]')
-    ylabel('KFE [A]')
-
-end
-
-%% gear encoder
-if (plotGearPositions)
-    named_figure('measured gear positions'), clf
-    grid on
-    subplot(3,4,1)
-    hold on
-    plot(time, data(:,idx_log_LF_HAA_th),'k.-')
-    plot(time, data(:,idx_log_LF_HAA_th)+data(:,idx_log_LF_HAA_load).*(1/162.3),'b.-')
-    title('LF')
-    grid on
-    xlabel('time [s]')
-    ylabel('HAA [rad]')
-    subplot(3,4,5)
-    hold on
-    plot(time, data(:,idx_log_LF_HFE_th),'k.-')
-    plot(time, data(:,idx_log_LF_HFE_th)+data(:,idx_log_LF_HFE_load).*(1/162.3),'b.-')
-    grid on
-    xlabel('time [s]')
-    ylabel('HFE [rad]')
-    subplot(3,4,9)
-    hold on
-    plot(time, data(:,idx_log_LF_KFE_th),'k.-')
-    plot(time, data(:,idx_log_LF_KFE_th)+data(:,idx_log_LF_KFE_load).*(1/162.3),'b.-')
-    grid on
-    xlabel('time [s]')
-    ylabel('KFE [rad]')
-
-    subplot(3,4,2)
-    hold on
-    plot(time, data(:,idx_log_RF_HAA_th),'k.-')
-    plot(time, data(:,idx_log_RF_HAA_th)+data(:,idx_log_RF_HAA_load).*(1/162.3),'b.-')
-    title('RF')
-    grid on
-    xlabel('time [s]')
-    ylabel('HAA [rad]')
-    subplot(3,4,6)
-    hold on
-
-    plot(time, data(:,idx_log_RF_HFE_th),'k.-')
-    plot(time, data(:,idx_log_RF_HFE_th)+data(:,idx_log_RF_HFE_load).*(1/162.3),'b.-')
-    grid on
-    xlabel('time [s]')
-    ylabel('HFE [rad]')
-    subplot(3,4,10)
-    hold on
-    plot(time, data(:,idx_log_RF_KFE_th),'k.-')
-    plot(time, data(:,idx_log_RF_KFE_th)+data(:,idx_log_RF_KFE_load).*(1/162.3),'b.-')
-    grid on
-    xlabel('time [s]')
-    ylabel('KFE [rad]')
-
-    subplot(3,4,3)
-    hold on
-    plot(time, data(:,idx_log_LH_HAA_th),'k.-')
-    plot(time, data(:,idx_log_LH_HAA_th)+data(:,idx_log_LH_HAA_load).*(1/162.3),'b.-')
-    title('LH')
-    grid on
-    xlabel('time [s]')
-    ylabel('HAA [rad]')
-    subplot(3,4,7)
-    hold on
-    plot(time, data(:,idx_log_LH_HFE_th),'k.-')
-    plot(time, data(:,idx_log_LH_HFE_th)+data(:,idx_log_LH_HFE_load).*(1/162.3),'b.-')
-    grid on
-    xlabel('time [s]')
-    ylabel('HFE [rad]')
-    subplot(3,4,11)
-    hold on
-    plot(time, data(:,idx_log_LH_KFE_th),'k.-')
-    plot(time, data(:,idx_log_LH_KFE_th)+data(:,idx_log_LH_KFE_load).*(1/162.3),'b.-')
-    grid on
-    xlabel('time [s]')
-    ylabel('KFE [rad]')
-
-    subplot(3,4,4)
-    hold on
-    plot(time, data(:,idx_log_RH_HAA_des_th),'r.-')
-    plot(time, data(:,idx_log_RH_HAA_th),'b.-')
-    if (plotModeSwitches)
-        vline(time(idx_RH_m),'k')
-    end
-    title('RH')
-    grid on
-    xlabel('time [s]')
-    ylabel('HAA [rad]')
-    subplot(3,4,8)
-    hold on
-    plot(time, data(:,idx_log_RH_HFE_des_th),'r.-')
-    plot(time, data(:,idx_log_RH_HFE_th),'b.-')
-    if (plotModeSwitches)
-        vline(time(idx_RH_m),'k')
-    end
-    grid on
-    xlabel('time [s]')
-    ylabel('HFE [rad]')
-    subplot(3,4,12)
-    hold on
-    plot(time, data(:,idx_log_RH_KFE_des_th),'r.-')
-    plot(time, data(:,idx_log_RH_KFE_th),'b.-')
-    if (plotModeSwitches)
-        vline(time(idx_RH_m),'k')
-    end
-    grid on
-    xlabel('time [s]')
-    ylabel('KFE [rad]')
-
-end
+named_figure('Roco Swing tracking y-z'), clf
+hold on; grid on;
+plot(data(timeidx,idx_roco_sea_test_taskSpacePositionsLf_y), data(timeidx,idx_roco_sea_test_taskSpacePositionsLf_z),'r', 'LineWidth', 2);
+plot(data(timeidx,idx_roco_sea_test_desTaskSpacePositionsLf_y),data(timeidx,idx_roco_sea_test_desTaskSpacePositionsLf_z), 'b--', 'LineWidth', 2);
+xlabel('y')
+ylabel('z')
 
 
 
-
+named_figure('Roco Swing tracking x-z'), clf
+hold on; grid on;
+plot(data(:,idx_roco_sea_test_taskSpacePositionsLf_x), data(:,idx_roco_sea_test_taskSpacePositionsLf_z),'r', 'LineWidth', 2);
+plot(data(:,idx_roco_sea_test_desTaskSpacePositionsLf_x),data(:,idx_roco_sea_test_desTaskSpacePositionsLf_z), 'b--', 'LineWidth', 2);
+xlabel('x')
+ylabel('z')
