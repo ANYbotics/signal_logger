@@ -58,7 +58,7 @@ LoggerSl::~LoggerSl() {
 
 }
 
-const signal_logger::LoggerBase::LoggerType getLoggerType() const {
+signal_logger::LoggerBase::LoggerType getLoggerType() const {
   return signal_logger::LoggerBase::LoggerType::TypeSl;
 }
 

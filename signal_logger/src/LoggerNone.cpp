@@ -54,7 +54,7 @@ void LoggerNone::updateLogger(bool updateScript) { }
 void LoggerNone::collectLoggerData() { }
 void LoggerNone::lockUpdate() { }
 void LoggerNone::stopAndSaveLoggerData() { }
-const LoggerNone::LoggerType LoggerNone::getLoggerType() const {
+LoggerNone::LoggerType LoggerNone::getLoggerType() const {
   return LoggerBase::LoggerType::TypeNone;
 }
 

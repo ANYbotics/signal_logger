@@ -1,8 +1,8 @@
 /************************************************************************
  * Software License Agreement (BSD License)
  *
- * Copyright (c) 2014,  Christian Gehring, Michael Bloesch,
- * Peter Fankhauser, C. Dario Bellicoso
+ * Copyright (c) 2014, C. Dario Bellicoso, Christian Gehring, Michael Bloesch,
+ * Peter Fankhauser
  * All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,7 @@ void LoggerRos::clearCollectedVariables() {
     collectedVars_.clear();
 }
 
-const signal_logger::LoggerBase::LoggerType LoggerRos::getLoggerType() const {
+signal_logger::LoggerBase::LoggerType LoggerRos::getLoggerType() const {
   return signal_logger::LoggerBase::LoggerType::TypeRos;
 }
 
