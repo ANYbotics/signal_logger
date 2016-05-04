@@ -94,7 +94,7 @@ public:
 	virtual void updateLogger(bool updateScript=true);
 	virtual void collectLoggerData();
 	virtual void lockUpdate();
-	virtual const LoggerBase::LoggerType getLoggerType() const;
+	virtual LoggerBase::LoggerType getLoggerType() const;
 
 	virtual void stopAndSaveLoggerData();
   virtual void setFileName(const std::string& filename);

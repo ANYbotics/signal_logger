@@ -1,8 +1,8 @@
 /************************************************************************
  * Software License Agreement (BSD License)
  *
- * Copyright (c) 2014,  Christian Gehring, Michael Bloesch,
- * Peter Fankhauser, C. Dario Bellicoso
+ * Copyright (c) 2014, C. Dario Bellicoso, Christian Gehring, Michael Bloesch,
+ * Peter Fankhauser
  * All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -64,7 +64,7 @@ class LoggerRos : public signal_logger::LoggerBase {
   virtual void collectLoggerData();
   virtual void lockUpdate();
   virtual void stopAndSaveLoggerData();
-  virtual const LoggerBase::LoggerType getLoggerType() const;
+  virtual LoggerBase::LoggerType getLoggerType() const;
 
   virtual void setPublishFrequency(int frequency);
   virtual void clearCollectedVariables();
