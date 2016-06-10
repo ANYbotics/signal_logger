@@ -116,7 +116,6 @@ namespace signal_logger_std {
 
 LoggerStd::LoggerStd(const std::string& filename):
     signal_logger::LoggerBase(),
-    filename_(filename),
 		nMaxVariables_(1000),
 		store_in_buffer_rate(0),
 		n_save_data_points(1),
@@ -132,6 +131,7 @@ LoggerStd::LoggerStd(const std::string& filename):
 		isUpdateLocked_(false),
 		isUpdatingLoggingScript_(false),
 		filenamePrefix("d"),
+		filename_(filename),
 		isReadingFileNumberFromFile_(true),
 		outputLevel_(VerboseLevel::VL_INFO)
 {
@@ -216,7 +216,7 @@ bool LoggerStd::readDataCollectScript(std::string fname, bool flag )
 {
 
   FILE  *infile;
-  int    i,rc;
+  int    rc;
   char   string[100];
   Cinfo *ptr;
 
@@ -379,8 +379,8 @@ void LoggerStd::stopLogger()
 void LoggerStd::collectLoggerData()
 {
 
-	  int i,j,n;
-	  float temp;
+	  int i;
+//	  float temp;
 
 	if (!isInitialized_) {
 		return;
@@ -963,8 +963,8 @@ void LoggerStd::addVarToCollect(char *vptr,char *name,char *units, int type, int
 {
 
   Cinfo *ptr;
-  FILE  *outfile;
-  char   string[100];
+//  FILE  *outfile;
+//  char   string[100];
 
   if (!isInitialized_) {
     if (outputLevel_ != VerboseLevel::VL_NONE) {

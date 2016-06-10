@@ -85,11 +85,11 @@ class LogElement<LogType_, true> : public LogElementBase {
              const std::string& name
              ) :
     topicName_(topic),
-    vectorPtr_(varPtr),
-    positionPtr_(positionPtr),
+    labelName_(name),
     vectorFrameId_(vectorFrame),
     positionFrameId_(positionFrame),
-    labelName_(name)
+    vectorPtr_(varPtr),
+    positionPtr_(positionPtr)
   {
     pub_ = nodeHandle.advertise<typename Traits::msgtype>(topicName_, DEFAULT_QUEUE_SIZE);
   }
