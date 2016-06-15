@@ -4,7 +4,7 @@ project(signal_logger_std)
 # Find Catkin
 find_package(catkin REQUIRED COMPONENTS 
     signal_logger
-    roco
+    message_logger
 )
 
 ###################################
@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES signal_logger_std
- CATKIN_DEPENDS signal_logger roco
+ CATKIN_DEPENDS signal_logger message_logger
 # DEPENDS system_lib
 )
 
