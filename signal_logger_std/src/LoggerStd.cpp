@@ -43,7 +43,7 @@
 * @brief  Copied and adapted from SL.
 */
 #include "signal_logger_std/LoggerStd.hpp"
-#include <roco/log/log_messages.hpp>
+#include <message_logger/message_logger.hpp>
 #include <cassert>
 #include <stdio.h>
 #include <string.h>
@@ -173,7 +173,7 @@ void LoggerStd::setVerboseLevel(VerboseLevel level) {
 
 
 void LoggerStd::initLogger(int updateFrequency, int samplingFrequency, double samplingTime, const std::string& logScriptFileName) {
-	ROCO_INFO("LoggerStd::initLogger");
+	MELO_INFO("LoggerStd::initLogger");
   setFileName(logScriptFileName);
   init(updateFrequency, samplingFrequency, samplingTime);
 }
@@ -203,7 +203,7 @@ void LoggerStd::init(int updateFrequency, int samplingFrequency, double sampling
 	isInitialized_ = true;
 	isInitialized_ = readDataCollectScript(filename_, false);
 	if (!isInitialized_) {
-	  ROCO_WARN("LoggerStd: Could not initialize!");
+	  MELO_WARN("LoggerStd: Could not initialize!");
 	}
 
 }

@@ -52,9 +52,7 @@
 /*****************
  * Kindr headers *
  *****************/
-#include <kindr/phys_quant/PhysicalQuantitiesEigen.hpp>
-#include <kindr/rotations/RotationEigen.hpp>
-#include <kindr/rotations/RotationDiffEigen.hpp>
+#include <kindr/Core>
 /*****************/
 
 
@@ -74,19 +72,19 @@ class LoggerBase {
   /************************
    * Convenience typedefs *
    ************************/
-  typedef kindr::phys_quant::eigen_impl::Position3D             KindrPositionD;
-  typedef kindr::rotations::eigen_impl::RotationQuaternionPD    KindrRotationQuaternionD;
-  typedef kindr::rotations::eigen_impl::EulerAnglesZyxPD        KindrEulerAnglesZyxD;
-  typedef kindr::rotations::eigen_impl::LocalAngularVelocityPD  KindrAngularVelocityD;
-  typedef kindr::rotations::eigen_impl::AngleAxisPD             KindrAngleAxisD;
-  typedef kindr::rotations::eigen_impl::RotationMatrixPD        KindrRotationMatrixD;
-  typedef kindr::rotations::eigen_impl::RotationVectorPD        KindrRotationVectorD;
-  typedef kindr::phys_quant::eigen_impl::Velocity3D             KindrLinearVelocityD;
-  typedef kindr::phys_quant::eigen_impl::Acceleration3D         KindrLinearAccelerationD;
-  typedef kindr::phys_quant::eigen_impl::AngularAcceleration3D  KindrAngularAccelerationD;
-  typedef kindr::phys_quant::eigen_impl::Force3D                KindrForceD;
-  typedef kindr::phys_quant::eigen_impl::Torque3D               KindrTorqueD;
-  typedef kindr::phys_quant::eigen_impl::VectorTypeless3D       KindrVectorD;
+  typedef kindr::Position3D             KindrPositionD;
+  typedef kindr::RotationQuaternionPD    KindrRotationQuaternionD;
+  typedef kindr::EulerAnglesZyxPD        KindrEulerAnglesZyxD;
+  typedef kindr::LocalAngularVelocityPD  KindrAngularVelocityD;
+  typedef kindr::AngleAxisPD             KindrAngleAxisD;
+  typedef kindr::RotationMatrixPD        KindrRotationMatrixD;
+  typedef kindr::RotationVectorPD        KindrRotationVectorD;
+  typedef kindr::Velocity3D             KindrLinearVelocityD;
+  typedef kindr::Acceleration3D         KindrLinearAccelerationD;
+  typedef kindr::AngularAcceleration3D  KindrAngularAccelerationD;
+  typedef kindr::Force3D                KindrForceD;
+  typedef kindr::Torque3D               KindrTorqueD;
+  typedef kindr::VectorTypeless3D       KindrVectorD;
 
   typedef Eigen::Matrix< long ,Eigen::Dynamic, Eigen::Dynamic >         MatrixXl;
   typedef Eigen::Matrix< short ,Eigen::Dynamic, Eigen::Dynamic >        MatrixXs;
