@@ -817,7 +817,8 @@ void LoggerStd::addDoubleKindrAngleAxisToLog(const KindrAngleAxisD& angleAxis, c
 }
 
 void LoggerStd::addDoubleKindrRotationMatrixToLog(const KindrRotationMatrixD& rotMat, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleEigenMatrixToLog(rotMat.toImplementation(), name, group, unit, update);
+  // todo: remove const cast
+  addDoubleEigenMatrixToLog(const_cast<KindrRotationMatrixD&>(rotMat).toImplementation(), name, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrRotationVectorToLog(const KindrRotationVectorD& rotVec, const std::string& name, const std::string& group, const std::string& unit, bool update) {
