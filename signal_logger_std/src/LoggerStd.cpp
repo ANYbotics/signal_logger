@@ -791,10 +791,10 @@ void LoggerStd::addDoubleKindrPositionToLog(const KindrPositionD& position, cons
 }
 
 void LoggerStd::addDoubleKindrRotationQuaternionToLog(const KindrRotationQuaternionD& rotation, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog(rotation.toImplementation().w(), std::string{name + "_w"}, group, unit, update);
-  addDoubleToLog(rotation.toImplementation().x(), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog(rotation.toImplementation().y(), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog(rotation.toImplementation().x(), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog(rotation.toImplementation().coeffs().w(), std::string{name + "_w"}, group, unit, update);
+  addDoubleToLog(rotation.toImplementation().coeffs().x(), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog(rotation.toImplementation().coeffs().y(), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog(rotation.toImplementation().coeffs().z(), std::string{name + "_z"}, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrEulerAnglesZyxToLog(const KindrEulerAnglesZyxD& rotation,  const std::string& name, const std::string& group, const std::string& unit, bool update) {
@@ -817,6 +817,7 @@ void LoggerStd::addDoubleKindrAngleAxisToLog(const KindrAngleAxisD& angleAxis, c
 }
 
 void LoggerStd::addDoubleKindrRotationMatrixToLog(const KindrRotationMatrixD& rotMat, const std::string& name, const std::string& group, const std::string& unit, bool update) {
+  // todo: remove const cast
   addDoubleEigenMatrixToLog(const_cast<KindrRotationMatrixD&>(rotMat).toImplementation(), name, group, unit, update);
 }
 
