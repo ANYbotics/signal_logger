@@ -16,7 +16,7 @@ clear all
 % 126: 2Hz swing test
 % 128: 3Hz swing test
 
-startNo = 285;       % number of first data file (filename will be generated based on this number
+startNo = 70;       % number of first data file (filename will be generated based on this number
 endNo = startNo;      % number of last data file
 
 folder = '';       % name of folder where the data files are stored
@@ -611,7 +611,7 @@ if (plotJointVelocitiesMeasAndDes)
     ylabel('HAA [rad/s]')
     subplot(3,4,5)
     hold on
-    plot(time, data(:,idx_log_LF_HFE_thd),'b.-')
+    plot(time, data(:,idx_rm_q_dqLFHFE),'b.-')
     plot(time, data(:,idx_log_LF_HFE_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LF_m),'k')
@@ -621,7 +621,7 @@ if (plotJointVelocitiesMeasAndDes)
     ylabel('HFE [rad/s]')
     subplot(3,4,9)
     hold on
-    plot(time, data(:,idx_log_LF_KFE_thd),'b.-')
+    plot(time, data(:,idx_rm_q_dqLFKFE),'b.-')
     plot(time, data(:,idx_log_LF_KFE_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LF_m),'k')
@@ -632,7 +632,7 @@ if (plotJointVelocitiesMeasAndDes)
 
     subplot(3,4,2)
     hold on
-    plot(time, data(:,idx_log_RF_HAA_thd),'b.-')
+    plot(time, data(:,idx_rm_q_dqRFHAA),'b.-')
     plot(time, data(:,idx_log_RF_HAA_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RF_m),'k')
@@ -643,7 +643,7 @@ if (plotJointVelocitiesMeasAndDes)
     ylabel('HAA [rad/s]')
     subplot(3,4,6)
     hold on
-    plot(time, data(:,idx_log_RF_HFE_thd),'b.-')
+    plot(time, data(:,idx_rm_q_dqRFHFE),'b.-')
     plot(time, data(:,idx_log_RF_HFE_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RF_m),'k')
@@ -653,7 +653,7 @@ if (plotJointVelocitiesMeasAndDes)
     ylabel('HFE [rad/s]')
     subplot(3,4,10)
     hold on
-    plot(time, data(:,idx_log_RF_KFE_thd),'b.-')
+    plot(time, data(:,idx_rm_q_dqRFKFE),'b.-')
     plot(time, data(:,idx_log_RF_KFE_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RF_m),'k')
@@ -664,7 +664,7 @@ if (plotJointVelocitiesMeasAndDes)
 
     subplot(3,4,3)
     hold on
-    plot(time, data(:,idx_log_LH_HAA_thd),'b.-')
+    plot(time, data(:,idx_rm_q_dqLHHAA),'b.-')
     plot(time, data(:,idx_log_LH_HAA_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LH_m),'k')
@@ -675,7 +675,7 @@ if (plotJointVelocitiesMeasAndDes)
     ylabel('HAA [rad/s]')
     subplot(3,4,7)
     hold on
-    plot(time, data(:,idx_log_LH_HFE_thd),'b.-')
+    plot(time, data(:,idx_rm_q_dqLHHFE),'b.-')
     plot(time, data(:,idx_log_LH_HFE_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LH_m),'k')
@@ -685,7 +685,7 @@ if (plotJointVelocitiesMeasAndDes)
     ylabel('HFE [rad/s]')
     subplot(3,4,11)
     hold on
-    plot(time, data(:,idx_log_LH_KFE_thd),'b.-')
+    plot(time, data(:,idx_rm_q_dqLHKFE),'b.-')
     plot(time, data(:,idx_log_LH_KFE_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_LH_m),'k')
@@ -696,7 +696,7 @@ if (plotJointVelocitiesMeasAndDes)
 
     subplot(3,4,4)
     hold on
-    plot(time, data(:,idx_log_RH_HAA_thd),'b.-')
+    plot(time, data(:,idx_rm_q_dqRHHAA),'b.-')
     plot(time, data(:,idx_log_RH_HAA_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RH_m),'k')
@@ -707,7 +707,7 @@ if (plotJointVelocitiesMeasAndDes)
     ylabel('HAA [rad/s]')
     subplot(3,4,8)
     hold on
-    plot(time, data(:,idx_log_RH_HFE_thd),'b.-')
+    plot(time, data(:,idx_rm_q_dqRHHFE),'b.-')
     plot(time, data(:,idx_log_RH_HFE_des_thd),'r.-')
     if (plotModeSwitches)
         vline(time(idx_RH_m),'k')
@@ -2607,6 +2607,112 @@ title('z'); hold on; grid on;
 plot(time, data(:,idx_roco_sea_test_taskSpacePositionsLf_z),'b');
 plot(time, data(:,idx_roco_sea_test_desTaskSpacePositionsLf_z),'r');
 xlabel('t [s]');
+
+
+%%
+if (plotJointTorques)
+    
+    named_figure('Joint torques'),clf
+    
+    % LF HAA
+    grid on;
+    subplot(3,4,1);
+    hold on;
+    plot(time, data(:,idx_sea_LF_HAA_state_torque),'.-b')
+    plot(time, data(:,idx_sea_LF_HAA_commanded_torque),'.-r')
+    title('LF')
+    grid on;
+    xlabel('time [s]');
+    ylabel('HAA [A]');
+    
+    % LF HFE
+    subplot(3,4,5)
+    hold on
+    plot(time, data(:,idx_sea_LF_HFE_state_torque),'.-b')
+    plot(time, data(:,idx_sea_LF_HFE_commanded_torque),'.-r')
+    grid on
+    xlabel('time [s]')
+    ylabel('HFE [A]')
+    subplot(3,4,9)
+    hold on
+    plot(time, data(:,idx_sea_LF_KFE_state_current),'b')
+    %plot(time, data(:,idx_sea_LF_KFE_commanded_current),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('KFE [A]')
+
+    subplot(3,4,2)
+    hold on
+    plot(time, data(:,idx_sea_RF_HAA_state_current),'b')
+   % plot(time, data(:,idx_sea_RF_HAA_commanded_current),'r')
+    title('RF')
+    grid on
+    xlabel('time [s]')
+    ylabel('HAA [A]')
+    subplot(3,4,6)
+    hold on
+    plot(time, data(:,idx_sea_RF_HFE_state_current),'b')
+   % plot(time, data(:,idx_sea_RF_HFE_commanded_current),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('HFE [A]')
+    subplot(3,4,10)
+    hold on
+    plot(time, data(:,idx_sea_RF_KFE_state_current),'b')
+   % plot(time, data(:,idx_sea_RF_KFE_commanded_current),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('KFE [A]')
+
+    subplot(3,4,3)
+    hold on
+    plot(time, data(:,idx_sea_LH_HAA_state_current),'b')
+    %plot(time, data(:,idx_sea_LH_HAA_commanded_current),'r')
+    title('LH')
+    grid on
+    xlabel('time [s]')
+    ylabel('HAA [A]')
+    subplot(3,4,7)
+    hold on
+    plot(time, data(:,idx_sea_LH_HFE_state_current),'b')
+    %plot(time, data(:,idx_sea_LH_HFE_commanded_current),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('HFE [A]')
+    subplot(3,4,11)
+    hold on
+    plot(time, data(:,idx_sea_LH_KFE_state_current),'b')
+  %  plot(time, data(:,idx_sea_LH_KFE_commanded_current),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('KFE [A]')
+
+    subplot(3,4,4)
+    hold on
+    plot(time, data(:,idx_sea_RH_HAA_state_current),'b')
+  %  plot(time, data(:,idx_sea_RH_HAA_commanded_current),'r')
+    title('RH')
+    grid on
+    xlabel('time [s]')
+    ylabel('HAA [A]')
+    subplot(3,4,8)
+    hold on
+    plot(time, data(:,idx_sea_RH_HFE_state_current),'b')
+   % plot(time, data(:,idx_sea_RH_HFE_commanded_current),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('HFE [A]')
+    subplot(3,4,12)
+    hold on
+    plot(time, data(:,idx_sea_RH_KFE_state_current),'b')
+   % plot(time, data(:,idx_sea_RH_KFE_commanded_current),'r')
+    grid on
+    xlabel('time [s]')
+    ylabel('KFE [A]')
+
+end
+
+
 
 %%
 if (plotCurrents)

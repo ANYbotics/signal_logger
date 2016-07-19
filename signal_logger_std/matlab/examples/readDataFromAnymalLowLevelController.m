@@ -20,7 +20,7 @@ clear all
 % 376 0x04 with zero_offset=0.36
 % 377 0x04 with zero_offset=0.486
 % 442 1kHz 0.05/0.01
-startNo = 71;       % number of first data file (filename will be generated based on this number
+startNo = 68;       % number of first data file (filename will be generated based on this number
 endNo = startNo;      % number of last data file
 
 folder = '';       % name of folder where the data files are stored

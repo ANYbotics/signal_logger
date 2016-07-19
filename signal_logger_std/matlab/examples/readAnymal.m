@@ -16,7 +16,7 @@ clear all
 % 126: 2Hz swing test
 % 128: 3Hz swing test
 
-startNo = 121;      % number of first data file (filename will be generated based on this number
+startNo = 71;      % number of first data file (filename will be generated based on this number
 endNo = startNo;      % number of last data file
 
 folder = '';       % name of folder where the data files are stored
@@ -2278,7 +2278,7 @@ if (plotLocoLegState)
     plot(time, data(:,idx_loco_leftForeLeg_shouldBeGrounded),'r');
     plot(time, data(:,idx_loco_leftForeLeg_isSupportLeg),'k--');
     plot(time, data(:,idx_loco_leftForeLeg_desControlMode_HAA)-2,'g:');
-    plot(time, data(:,idx_loco_leftForeLeg_currentState),'m-');
+    plot(time, data(:,idx_loco_leftForeLeg_limbState),'m-');
     grid on
     xlabel('time [s]')
     ylabel('LF')
@@ -2292,7 +2292,7 @@ if (plotLocoLegState)
     plot(time, data(:,idx_loco_rightForeLeg_shouldBeGrounded),'r');
     plot(time, data(:,idx_loco_rightForeLeg_isSupportLeg),'k--');
     plot(time, data(:,idx_loco_rightForeLeg_desControlMode_HAA)-2,'g:');
-    plot(time, data(:,idx_loco_rightForeLeg_currentState),'m-');
+    plot(time, data(:,idx_loco_rightForeLeg_limbState),'m-');
     grid on
     xlabel('time [s]')
     ylabel('RF')
@@ -2304,7 +2304,7 @@ if (plotLocoLegState)
     plot(time, data(:,idx_loco_leftHindLeg_shouldBeGrounded),'r');
     plot(time, data(:,idx_loco_leftHindLeg_isSupportLeg),'k--');
     plot(time, data(:,idx_loco_leftHindLeg_desControlMode_HAA)-2,'g:');
-    plot(time, data(:,idx_loco_leftHindLeg_currentState),'m-');
+    plot(time, data(:,idx_loco_leftHindLeg_limbState),'m-');
     grid on
     xlabel('time [s]')
     ylabel('LH') 
@@ -2315,7 +2315,7 @@ if (plotLocoLegState)
     plot(time, data(:,idx_loco_rightHindLeg_shouldBeGrounded),'r');
     plot(time, data(:,idx_loco_rightHindLeg_isSupportLeg),'k--');
     plot(time, data(:,idx_loco_rightHindLeg_desControlMode_HAA)-2,'g:');
-    plot(time, data(:,idx_loco_rightHindLeg_currentState),'m-');
+    plot(time, data(:,idx_loco_rightHindLeg_limbState),'m-');
     grid on
     xlabel('time [s]')
     ylabel('RH') 
@@ -2981,5 +2981,52 @@ if (plotGearPositions)
 end
 
 
+%% Hip positions
 
+%% Mode
+if (plotLocoControlModes)
+    named_figure('Position foot to hip in world frame'),clf
+    grid on
+
+    subplot(2,2,1)
+    hold on
+    positionFootToHipInWorldFrame_x = data(:,idx_loco_leftForeLeg_positionWorldToHipInWorldFrame_z) ...
+                                    - data(:,idx_loco_leftForeLeg_positionWorldToFootInWorldFrame_z);
+    plot(time, positionFootToHipInWorldFrame_x,'b')
+    title('LF')
+    grid on
+    xlabel('time [s]')
+    ylabel('p [m]')
+    
+    subplot(2,2,2)
+    hold on
+    positionFootToHipInWorldFrame_x = data(:,idx_loco_rightForeLeg_positionWorldToHipInWorldFrame_z) ...
+                                    - data(:,idx_loco_rightForeLeg_positionWorldToFootInWorldFrame_z);
+    plot(time, positionFootToHipInWorldFrame_x,'b')
+    title('LF')
+    grid on
+    xlabel('time [s]')
+    ylabel('p [m]')
+    
+    subplot(2,2,3)
+    hold on
+    positionFootToHipInWorldFrame_x = data(:,idx_loco_leftHindLeg_positionWorldToHipInWorldFrame_z) ...
+                                    - data(:,idx_loco_leftHindLeg_positionWorldToFootInWorldFrame_z);
+    plot(time, positionFootToHipInWorldFrame_x,'b')
+    title('LF')
+    grid on
+    xlabel('time [s]')
+    ylabel('p [m]')
+    
+    subplot(2,2,4)
+    hold on
+    positionFootToHipInWorldFrame_x = data(:,idx_loco_rightHindLeg_positionWorldToHipInWorldFrame_z) ...
+                                    - data(:,idx_loco_rightHindLeg_positionWorldToFootInWorldFrame_z);
+    plot(time, positionFootToHipInWorldFrame_x,'b')
+    title('LF')
+    grid on
+    xlabel('time [s]')
+    ylabel('p [m]')
+    
+end
 
