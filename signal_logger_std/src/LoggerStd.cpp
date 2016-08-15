@@ -798,15 +798,15 @@ void LoggerStd::addDoubleKindrRotationQuaternionToLog(const KindrRotationQuatern
 }
 
 void LoggerStd::addDoubleKindrEulerAnglesZyxToLog(const KindrEulerAnglesZyxD& rotation,  const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog(rotation.toImplementation().x(), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog(rotation.toImplementation().y(), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog(rotation.toImplementation().z(), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog(rotation.toImplementation()(2), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog(rotation.toImplementation()(1), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog(rotation.toImplementation()(0), std::string{name + "_z"}, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrLocalAngularVelocityToLog(const KindrAngularVelocityD& angVel, const std::string& name, const std::string& group, const std::string& unit, bool update) {
-  addDoubleToLog(angVel.toImplementation().x(), std::string{name + "_x"}, group, unit, update);
-  addDoubleToLog(angVel.toImplementation().y(), std::string{name + "_y"}, group, unit, update);
-  addDoubleToLog(angVel.toImplementation().z(), std::string{name + "_z"}, group, unit, update);
+  addDoubleToLog(angVel.toImplementation()(0), std::string{name + "_x"}, group, unit, update);
+  addDoubleToLog(angVel.toImplementation()(1), std::string{name + "_y"}, group, unit, update);
+  addDoubleToLog(angVel.toImplementation()(2), std::string{name + "_z"}, group, unit, update);
 }
 
 void LoggerStd::addDoubleKindrAngleAxisToLog(const KindrAngleAxisD& angleAxis, const std::string& name, const std::string& group, const std::string& unit, bool update) {
