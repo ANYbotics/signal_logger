@@ -1057,4 +1057,4 @@ void LoggerStd::addTimestampToLog(const TimestampPair& var, const std::string& n
 }
 
 
-} /* namespace robotUtils */
+} /* namespace robot_utils */
