@@ -38,7 +38,7 @@
 * @author 	Christian Gehring, C. Dario Bellicoso
 * @date		June 26, 2013
 * @version 	1.0
-* @ingroup 	robotUtils
+* @ingroup 	robot_utils
 * @brief
 */
 #include "signal_logger/logger.hpp"
