@@ -22,7 +22,7 @@ namespace signal_logger {
 // http://www.boost.org/doc/libs/1_54_0/libs/circular_buffer/doc/circular_buffer.html#boundedbuffer
 
 template <class T>
-class Buffer : public internal::ValueBufferInterface {
+class Buffer : public internal::BufferInterface {
  public:
 
   typedef boost::circular_buffer<T> container_type;
@@ -65,12 +65,12 @@ class Buffer : public internal::ValueBufferInterface {
     *pItem = container_[--unread_];
   }
 
-  void set_window_size(size_type window_size) {
+  void set_capacity(size_type new_capacity) {
     // Lock the circular buffer
     boost::mutex::scoped_lock lock(mutex_);
 
     // Change capacity of the container
-    container_.set_capacity(window_size);
+    container_.set_capacity(new_capacity);
 
     // Clear the buffer and restart filling
     container_.clear();

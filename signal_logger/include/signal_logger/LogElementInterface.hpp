@@ -9,6 +9,7 @@
 
 // Signal logger
 #include <signal_logger/BufferInterface.hpp>
+#include <signal_logger/Buffer.hpp>
 
 namespace signal_logger {
 
@@ -34,7 +35,7 @@ class LogElementInterface
 
  public:
   template<typename ValueType_>
-  void push_front(boost::call_traits<ValueType_>::param_type item) {
+  void push_front(typename boost::call_traits<ValueType_>::param_type item) {
     if (type_ == typeid(ValueType_)) {
       return std::static_pointer_cast<Buffer<ValueType_> >(pBuffer_)->push_front(item);
     }
@@ -54,7 +55,6 @@ class LogElementInterface
   }
 
   virtual void collect() = 0;
-
 
  protected:
   std::type_index type_;

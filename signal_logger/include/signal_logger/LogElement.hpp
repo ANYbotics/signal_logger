@@ -10,9 +10,12 @@
 // Signal logger
 #include "signal_logger/LogElementInterface.hpp"
 
+// Eigen
+#include "Eigen/Core"
+
 namespace signal_logger {
 
-template <typename ValueType_>
+template <typename ValueType_, typename Enable_ = void>
 class LogElement: public LogElementInterface
 {
  public:
@@ -20,7 +23,7 @@ class LogElement: public LogElementInterface
     LogElementInterface(typeid(ValueType_), name),
     ptr_(ptr)
   {
-    pBuffer_ = new Buffer<ValueType_>(buffer_size);
+    pBuffer_.reset(new Buffer<ValueType_>(buffer_size));
   }
 
   virtual ~LogElement() {
@@ -28,11 +31,54 @@ class LogElement: public LogElementInterface
   }
 
   void collect() {
-    this->push_front(*ptr_);
+    push_front<ValueType_>(*ptr_);
   }
 
  protected:
   ValueType_ * ptr_;
+
+};
+
+template <typename ValueType_>
+class LogElement<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value>::type> : public LogElementInterface
+{
+ public:
+  LogElement(ValueType_ * ptr, std::string name, std::size_t buffer_size) :
+    LogElementInterface(typeid(typename ValueType_::Scalar), name),
+    ptr_(ptr),
+    no_rows_(ptr->rows()),
+    no_cols_(ptr->cols())
+  {
+    pBuffer_.reset(new Buffer<typename ValueType_::Scalar>(buffer_size*no_rows_*no_cols_));
+
+    std::cout<<"Log Element for Eigen Matrix with cols: "<<ptr->cols()<<" rows: "<<ptr->rows()<<std::endl;
+
+  }
+
+  virtual ~LogElement() {
+
+  }
+
+  void collect() {
+    for (int r=0; r<no_rows_; r++)  {
+      for (int c=0; c<no_cols_; c++)  {
+        push_front<typename ValueType_::Scalar>( (*ptr_)(r,c) );
+      }
+    }
+  }
+
+  void readBuffer(ValueType_ * ptr) {
+    for (int r=0; r<no_rows_; r++)  {
+      for (int c=0; c<no_cols_; c++)  {
+        pop_back<typename ValueType_::Scalar>(& ((*ptr_)(r,c)) );
+      }
+    }
+  }
+
+ protected:
+  ValueType_ * ptr_;
+  std::size_t no_rows_;
+  std::size_t no_cols_;
 
 };
 
