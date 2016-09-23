@@ -44,6 +44,10 @@ class LogElementBase: public LogElementInterface
     std::cout << "Getting data: " << *ptr << " from buffer. Could be processed now." << std ::endl;
   }
 
+  std::size_t getSize() {
+    return sizeof(ValueType_);
+  }
+
  protected:
   ValueType_ * ptr_;
 
@@ -104,6 +108,10 @@ class LogElementBase<ValueType_, typename std::enable_if<std::is_base_of<Eigen::
       std::cout<<std::endl;
     }
     std::cout << " from buffer. Could be processed now." << std ::endl;
+  }
+
+  std::size_t getSize() {
+    return sizeof(typename ValueType_::Scalar);
   }
 
  protected:
