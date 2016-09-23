@@ -54,7 +54,15 @@ class LogElementInterface
     }
   }
 
+  // Reads pointer and pushes the data into the buffer
   virtual void collect() = 0;
+
+  // Reads from the buffer an processes data
+  virtual void publish() = 0;
+
+  std::string getName() {
+    return name_;
+  }
 
  protected:
   std::type_index type_;

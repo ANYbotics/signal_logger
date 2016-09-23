@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "signal_logger/LogElement.hpp"
+#include <signal_logger/LogElementBase.hpp>
 #include "signal_logger/LogElementInterface.hpp"
 
 #include <unordered_map>
@@ -23,20 +23,20 @@ const std::string LOGGER_PREFIX = "/log";
 class Logger
 {
  public:
-  Logger();
-  virtual ~Logger();
+  Logger(std::size_t buffer_size): buffer_size_(buffer_size) {}
+  virtual ~Logger() {}
 
   template<typename ValueType_>
-  void addVariableToLog(const ValueType_& var,
+  void addVariableToLog(ValueType_ * var,
                         const std::string& name,
                         const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME},
                         const std::string& unit = std::string{LOGGER_DEFAULT_UNIT},
                         bool update = LOGGER_DEFAULT_UPDATE)
   {
     if(log_elements_.find(name) != log_elements_.end()) {
-      MELO_WARN("A signal with the same name %s is already logged. Overwrite.", name.c_str());
+      printf("A signal with the same name %s is already logged. Overwrite.", name.c_str());
     }
-    log_elements_[name] = new LogElement<ValueType_>(&var, LOGGER_PREFIX + group + name, buffer_size_);
+    log_elements_[name] = new LogElementBase<ValueType_>(var, LOGGER_PREFIX + "/" + group + "/" + name, buffer_size_);
   }
 
   void collectData()
@@ -44,9 +44,15 @@ class Logger
     for(auto & elem : log_elements_) elem.second->collect();
   }
 
-
+  void publishData()
+  {
+    for(auto & elem : log_elements_) {
+      std::cout << " Publish "<<elem.second->getName()<<std::endl;
+      elem.second->publish();
+    }
+  }
  private:
-  unsigned int buffer_size_;
+  std::size_t buffer_size_;
   std::unordered_map<std::string, LogElementInterface *> log_elements_;
 };
 

@@ -16,22 +16,28 @@
 namespace signal_logger {
 
 template <typename ValueType_, typename Enable_ = void>
-class LogElement: public LogElementInterface
+class LogElementBase: public LogElementInterface
 {
  public:
-  LogElement(ValueType_ * ptr, std::string name, std::size_t buffer_size) :
+  LogElementBase(ValueType_ * ptr, std::string name, std::size_t buffer_size) :
     LogElementInterface(typeid(ValueType_), name),
     ptr_(ptr)
   {
     pBuffer_.reset(new Buffer<ValueType_>(buffer_size));
   }
 
-  virtual ~LogElement() {
+  virtual ~LogElementBase() {
 
   }
 
   void collect() {
     push_front<ValueType_>(*ptr_);
+  }
+
+  void publish() {
+    ValueType_ * ptr = new ValueType_();
+    pop_back<ValueType_>(ptr);
+    std::cout << "Getting data: " << *ptr << " from buffer. Could be processed now." << std ::endl;
   }
 
   void readBuffer(ValueType_ * ptr) {
@@ -44,10 +50,10 @@ class LogElement: public LogElementInterface
 };
 
 template <typename ValueType_>
-class LogElement<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value>::type> : public LogElementInterface
+class LogElementBase<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value>::type> : public LogElementInterface
 {
  public:
-  LogElement(ValueType_ * ptr, std::string name, std::size_t buffer_size) :
+  LogElementBase(ValueType_ * ptr, std::string name, std::size_t buffer_size) :
     LogElementInterface(typeid(typename ValueType_::Scalar), name),
     ptr_(ptr),
     no_rows_(ptr->rows()),
@@ -59,7 +65,7 @@ class LogElement<ValueType_, typename std::enable_if<std::is_base_of<Eigen::Matr
 
   }
 
-  virtual ~LogElement() {
+  virtual ~LogElementBase() {
 
   }
 
@@ -71,12 +77,25 @@ class LogElement<ValueType_, typename std::enable_if<std::is_base_of<Eigen::Matr
     }
   }
 
-  void readBuffer(ValueType_ * ptr) {
+  void publish() {
+    ValueType_ * ptr = new ValueType_(no_rows_, no_cols_);
+
     for (int r=0; r<no_rows_; r++)  {
       for (int c=0; c<no_cols_; c++)  {
-        pop_back<typename ValueType_::Scalar>(& ((*ptr_)(r,c)) );
+        pop_back<typename ValueType_::Scalar>(& ((*ptr)(r,c)) );
       }
     }
+    std::cout << "Getting matrix: " << std::endl;
+    for (int r=0; r<no_rows_; r++)  {
+      for (int c=0; c<no_cols_; c++)  {
+        std::cout<< (*ptr)(r,c) << "\t";
+      }
+      std::cout<<std::endl;
+    }
+    std::cout << " from buffer. Could be processed now." << std ::endl;
+  }
+  void readBuffer(ValueType_ * ptr) {
+
   }
 
  protected:

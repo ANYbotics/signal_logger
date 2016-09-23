@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <memory>
+
 namespace signal_logger {
 
 namespace internal {
