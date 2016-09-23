@@ -137,6 +137,24 @@ struct slr_traits<bool> {
  * Specializations: eigen types *
  ********************************/
 template<>
+struct slr_traits<Eigen::MatrixXd> {
+  typedef signal_logger_msgs::Float64MultiArrayStamped         msgtype;
+  typedef signal_logger_msgs::Float64MultiArrayStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Float64MultiArrayStampedConstPtr msgtypeConstPtr;
+
+  static void updateMsg(const Eigen::MatrixXd* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->matrix.data.clear();
+
+    for (int r=0; r<vectorPtr_->rows(); r++)  {
+      for (int c=0; c<vectorPtr_->cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
+
+template<>
 struct slr_traits<Eigen::Ref<Eigen::MatrixXd>> {
   typedef signal_logger_msgs::Float64MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Float64MultiArrayStampedPtr      msgtypePtr;

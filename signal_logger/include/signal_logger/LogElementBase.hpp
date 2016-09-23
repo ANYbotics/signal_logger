@@ -34,14 +34,14 @@ class LogElementBase: public LogElementInterface
     push_front<ValueType_>(*ptr_);
   }
 
+  void readBuffer(ValueType_ * ptr) {
+    pop_back<ValueType_>(ptr);
+  }
+
   void publish() {
     ValueType_ * ptr = new ValueType_();
     pop_back<ValueType_>(ptr);
     std::cout << "Getting data: " << *ptr << " from buffer. Could be processed now." << std ::endl;
-  }
-
-  void readBuffer(ValueType_ * ptr) {
-    pop_back<ValueType_>(ptr);
   }
 
  protected:
@@ -77,6 +77,17 @@ class LogElementBase<ValueType_, typename std::enable_if<std::is_base_of<Eigen::
     }
   }
 
+  void readBuffer(ValueType_ * ptr)
+  {
+    ptr->resize(no_rows_, no_cols_);
+
+    for (int r=0; r<no_rows_; r++)  {
+      for (int c=0; c<no_cols_; c++)  {
+        pop_back<typename ValueType_::Scalar>(& ((*ptr)(r,c)) );
+      }
+    }
+  }
+
   void publish() {
     ValueType_ * ptr = new ValueType_(no_rows_, no_cols_);
 
@@ -93,9 +104,6 @@ class LogElementBase<ValueType_, typename std::enable_if<std::is_base_of<Eigen::
       std::cout<<std::endl;
     }
     std::cout << " from buffer. Could be processed now." << std ::endl;
-  }
-  void readBuffer(ValueType_ * ptr) {
-
   }
 
  protected:
