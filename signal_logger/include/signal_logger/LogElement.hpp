@@ -34,6 +34,10 @@ class LogElement: public LogElementInterface
     push_front<ValueType_>(*ptr_);
   }
 
+  void readBuffer(ValueType_ * ptr) {
+    pop_back<ValueType_>(ptr);
+  }
+
  protected:
   ValueType_ * ptr_;
 
