@@ -60,6 +60,9 @@ class LogElementInterface
   // Reads from the buffer an processes data
   virtual void publish() = 0;
 
+  // Reads from the buffer an processes data
+  virtual void prepareFile() { };
+
   // Get size
   virtual std::size_t getSize() = 0;
 

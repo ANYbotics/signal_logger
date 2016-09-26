@@ -52,6 +52,9 @@ class Logger
     std::string filename = "mydata3.txt";
     file_.open(filename, std::ios::out | std::ios::app);
     file_ << "Begin file";
+    for(auto & elem : log_elements_) {
+      elem.second->prepareFile();
+    }
     file_.close();
     file_.open(filename, std::ios::out | std::ios::app | std::ios::binary);
     for(auto & elem : log_elements_) {
