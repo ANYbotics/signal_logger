@@ -1,8 +1,8 @@
 /*
- * BufferInterface.hpp
+ * LogElementBase.hpp
  *
  *  Created on: Sep 22, 2016
- *      Author: gabrielhottiger
+ *      Author: Gabriel Hottiger
  */
 
 #pragma once
@@ -15,37 +15,44 @@
 
 namespace signal_logger {
 
-template <typename ValueType_, typename Enable_ = void>
+//! Implementation for all types except Eigen Matrices
+template <typename ValueType_, typename IsEigenType_ = void>
 class LogElementBase: public LogElementInterface
 {
  public:
-  LogElementBase(ValueType_ * ptr, std::string name, std::size_t buffer_size) :
-    LogElementInterface(typeid(ValueType_), name),
+  /** Constructor
+   * @param ptr     pointer to the data that shall be logged
+   * @param name    name of the log element
+   * @param unit    unit of the logged data
+   * @param buffer_size size of the buffer (old elements will always be overwritten)
+   * @return log element
+  */
+  LogElementBase(ValueType_ * ptr,
+                 const std::string & name,
+                 const std::string & unit,
+                 const std::size_t buffer_size) :
+    LogElementInterface(new Buffer<ValueType_>(buffer_size), typeid(ValueType_), name, unit),
     ptr_(ptr)
   {
-    pBuffer_.reset(new Buffer<ValueType_>(buffer_size));
-  }
-
-  virtual ~LogElementBase() {
 
   }
 
-  void collect() {
+  //! Destructor
+  virtual ~LogElementBase()
+  {
+
+  }
+
+  //! Push data to the buffer
+  void collectData()
+  {
     push_front<ValueType_>(*ptr_);
   }
 
-  void readBuffer(ValueType_ * ptr) {
-    pop_back<ValueType_>(ptr);
-  }
-
-  void publish() {
-    ValueType_ * ptr = new ValueType_();
-    pop_back<ValueType_>(ptr);
-    std::cout << "Getting data: " << *ptr << " from buffer. Could be processed now." << std ::endl;
-  }
-
-  std::size_t getSize() {
-    return sizeof(ValueType_);
+  //! Read value from Buffer
+  void readDataFromBuffer(ValueType_* pItem)
+  {
+    pop_back<ValueType_>(pItem);
   }
 
  protected:
@@ -53,69 +60,78 @@ class LogElementBase: public LogElementInterface
 
 };
 
+//! Implementation for Eigen Matrices
 template <typename ValueType_>
 class LogElementBase<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value>::type> : public LogElementInterface
 {
  public:
-  LogElementBase(ValueType_ * ptr, std::string name, std::size_t buffer_size) :
-    LogElementInterface(typeid(typename ValueType_::Scalar), name),
+  /** Constructor
+   * @param ptr     pointer to the data that shall be logged
+   * @param name    name of the log element
+   * @param unit    unit of the logged data
+   * @param buffer_size size of the buffer, since buffer is of type double this is
+   *                    multiplied by nr_rows and nr_cols (old elements will always be overwritten)
+   * @return log element
+  */
+  LogElementBase(ValueType_ * ptr,
+                 const std::string & name,
+                 const std::string & unit,
+                 const std::size_t buffer_size) :
+    LogElementInterface(new Buffer<typename ValueType_::Scalar>(buffer_size*ptr->rows()*ptr->cols()), typeid(typename ValueType_::Scalar), name, unit),
     ptr_(ptr),
     no_rows_(ptr->rows()),
     no_cols_(ptr->cols())
   {
-    pBuffer_.reset(new Buffer<typename ValueType_::Scalar>(buffer_size*no_rows_*no_cols_));
-
-    std::cout<<"Log Element for Eigen Matrix with cols: "<<ptr->cols()<<" rows: "<<ptr->rows()<<std::endl;
 
   }
 
-  virtual ~LogElementBase() {
+  //! Destructor
+  virtual ~LogElementBase()
+  {
 
   }
 
-  void collect() {
-    for (int r=0; r<no_rows_; r++)  {
-      for (int c=0; c<no_cols_; c++)  {
+  //! Loop through matrix and push data to the buffer
+  void collectData()
+  {
+    for (int r=0; r<no_rows_; r++)
+    {
+      for (int c=0; c<no_cols_; c++)
+      {
         push_front<typename ValueType_::Scalar>( (*ptr_)(r,c) );
       }
     }
   }
 
-  void readBuffer(ValueType_ * ptr)
+  //! Read value from Buffer
+  void readDataFromBuffer(ValueType_* pItem)
   {
-    ptr->resize(no_rows_, no_cols_);
+    // Resize data to proper size
+    pItem->resize(no_rows_, no_cols_);
 
-    for (int r=0; r<no_rows_; r++)  {
-      for (int c=0; c<no_cols_; c++)  {
-        pop_back<typename ValueType_::Scalar>(& ((*ptr)(r,c)) );
+    for (int r=0; r<no_rows_; r++)
+    {
+      for (int c=0; c<no_cols_; c++)
+      {
+        pop_back<typename ValueType_::Scalar>(&(*pItem)(r,c));
       }
     }
   }
 
-  void publish() {
-    ValueType_ * ptr = new ValueType_(no_rows_, no_cols_);
-
-    for (int r=0; r<no_rows_; r++)  {
-      for (int c=0; c<no_cols_; c++)  {
-        pop_back<typename ValueType_::Scalar>(& ((*ptr)(r,c)) );
-      }
-    }
-    std::cout << "Getting matrix: " << std::endl;
-    for (int r=0; r<no_rows_; r++)  {
-      for (int c=0; c<no_cols_; c++)  {
-        std::cout<< (*ptr)(r,c) << "\t";
-      }
-      std::cout<<std::endl;
-    }
-    std::cout << " from buffer. Could be processed now." << std ::endl;
+  std::size_t rows()
+  {
+    return no_rows_;
   }
 
-  std::size_t getSize() {
-    return sizeof(typename ValueType_::Scalar);
+  std::size_t cols()
+  {
+    return no_cols_;
   }
 
  protected:
   ValueType_ * ptr_;
+
+ private:
   std::size_t no_rows_;
   std::size_t no_cols_;
 

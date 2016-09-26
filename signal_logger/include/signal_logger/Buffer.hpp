@@ -65,7 +65,7 @@ class Buffer : public internal::BufferInterface {
     *pItem = container_[--unread_];
   }
 
-  void set_capacity(size_type new_capacity) {
+  void set_capacity(std::size_t new_capacity) {
     // Lock the circular buffer
     boost::mutex::scoped_lock lock(mutex_);
 

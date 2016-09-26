@@ -1,8 +1,8 @@
 /*
- * BufferInterface.hpp
+ * LogElementStd.hpp
  *
  *  Created on: Sep 22, 2016
- *      Author: gabrielhottiger
+ *      Author: Gabriel Hottiger
  */
 
 #pragma once
@@ -11,75 +11,77 @@
 #include "signal_logger/LogElementBase.hpp"
 #include "signal_logger_std/signal_logger_std_traits.hpp"
 
+// STL
 #include <fstream>
 
 namespace signal_logger_std {
 
-template <typename ValueType_, typename Enable_ = void>
+template <typename ValueType_>
 class LogElementStd: public signal_logger::LogElementBase<ValueType_>
 {
 
  public:
-  LogElementStd(ValueType_ * ptr, std::string name, std::size_t buffer_size, std::ofstream * file) :
-    signal_logger::LogElementBase<ValueType_>(ptr, name, buffer_size),
+  /** Constructor
+   * @param ptr     pointer to the data that shall be logged
+   * @param name    name of the log element
+   * @param unit    unit of the logged data
+   * @param buffer_size size of the buffer (old elements will always be overwritten)
+   * @param file    pointer to the log file
+   * @return log element
+  */
+  LogElementStd(ValueType_ * ptr,
+                const std::string & name,
+                const std::string & unit,
+                const std::size_t buffer_size,
+                std::ofstream * file) :
+    signal_logger::LogElementBase<ValueType_>(ptr, name, unit, buffer_size),
     file_(file)
   {
 
   }
 
-  virtual ~LogElementStd() {
+  //! Destructor
+  virtual ~LogElementStd()
+  {
 
   }
 
-  void prepareFile() {
-    signal_logger_std::traits::sls_traits<ValueType_>::writeHeader(file_, this->name_);
+  //! Write Header (name nrbytes \n)
+  void writeHeaderToLogFile()
+  {
+    this->generateHeader();
   }
 
-  void publish() {
+  // Version for not eigen matrices
+  template<typename V = ValueType_>
+  typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
+  generateHeader() {
+    signal_logger_std::traits::sls_traits<V>::writeHeader(file_, this->getName());
+  }
+
+  // Version for eigen matrices
+  template<typename V = ValueType_>
+  typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
+  generateHeader() {
+    signal_logger_std::traits::sls_traits<V>::writeHeader(file_, this->getName(), this->rows(), this->cols());
+  }
+
+  //! Write Data
+  void writeDataToLogFile() {
     ValueType_ * ptr = new ValueType_();
-    signal_logger::LogElementBase<ValueType_>::readBuffer(ptr);
+    signal_logger::LogElementBase<ValueType_>::readDataFromBuffer(ptr);
     signal_logger_std::traits::sls_traits<ValueType_>::writeToFile(file_, ptr);
   }
+
+
+  //! Publish no implementation
+  void publishData() { }
 
  protected:
   std::ofstream * file_;
 
 
 };
-
-
-template <typename ValueType_>
-class LogElementStd<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value>::type> : public signal_logger::LogElementBase<ValueType_>
-{
-
- public:
-  LogElementStd(ValueType_ * ptr, std::string name, std::size_t buffer_size, std::ofstream * file) :
-    signal_logger::LogElementBase<ValueType_>(ptr, name, buffer_size),
-    file_(file)
-  {
-
-  }
-
-  virtual ~LogElementStd() {
-
-  }
-
-  void prepareFile() {
-    signal_logger_std::traits::sls_traits<ValueType_>::writeHeader(file_, this->name_, this->no_rows_, this->no_cols_);
-  }
-
-  void publish() {
-    ValueType_ * ptr = new ValueType_();
-    signal_logger::LogElementBase<ValueType_>::readBuffer(ptr);
-    signal_logger_std::traits::sls_traits<ValueType_>::writeToFile(file_, ptr);
-  }
-
- protected:
-  std::ofstream * file_;
-
-
-};
-
 
 } /* namespace signal_logger */
 

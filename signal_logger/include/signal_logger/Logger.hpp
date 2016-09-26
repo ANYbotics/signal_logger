@@ -36,19 +36,19 @@ class Logger
     if(log_elements_.find(name) != log_elements_.end()) {
       printf("A signal with the same name %s is already logged. Overwrite.", name.c_str());
     }
-    log_elements_[name] = new LogElementBase<ValueType_>(var, LOGGER_PREFIX + "/" + group + "/" + name, buffer_size_);
+    log_elements_[name] = new LogElementBase<ValueType_>(var, LOGGER_PREFIX + "/" + group + "/" + name, unit, buffer_size_);
   }
 
   void collectData()
   {
-    for(auto & elem : log_elements_) elem.second->collect();
+    for(auto & elem : log_elements_) elem.second->collectData();
   }
 
   void publishData()
   {
     for(auto & elem : log_elements_) {
       std::cout << " Publish "<<elem.second->getName()<<std::endl;
-      elem.second->publish();
+      elem.second->publishData();
     }
   }
  private:

@@ -22,9 +22,13 @@ class BufferInterface {
   BufferInterface() {
 
   }
+
   virtual ~BufferInterface() {
 
   }
+
+  virtual void set_capacity(std::size_t new_capacity) = 0;
+
 };
 
 } // namespace internal

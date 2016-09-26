@@ -38,13 +38,13 @@ class Logger
     if(log_elements_.find(name) != log_elements_.end()) {
       printf("A signal with the same name %s is already logged. Overwrite.", name.c_str());
     }
-    log_elements_[name] = new LogElementStd<ValueType_>(var, LOGGER_PREFIX + "/" + group + "/" + name, buffer_size_, &file_);
+    log_elements_[name] = new LogElementStd<ValueType_>(var, LOGGER_PREFIX + "/" + group + "/" + name, unit, buffer_size_, &file_);
 
   }
 
   void collectData()
   {
-    for(auto & elem : log_elements_) elem.second->collect();
+    for(auto & elem : log_elements_) elem.second->collectData();
   }
 
   void publishData()
@@ -53,13 +53,13 @@ class Logger
     file_.open(filename, std::ios::out | std::ios::app);
     file_ << "Begin file";
     for(auto & elem : log_elements_) {
-      elem.second->prepareFile();
+      elem.second->writeHeaderToLogFile();
     }
     file_.close();
     file_.open(filename, std::ios::out | std::ios::app | std::ios::binary);
     for(auto & elem : log_elements_) {
       std::cout << " Publish "<<elem.second->getName()<<std::endl;
-      elem.second->publish();
+      elem.second->writeDataToLogFile();
     }
 
     file_.close();
