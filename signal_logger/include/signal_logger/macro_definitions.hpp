@@ -30,11 +30,11 @@
 
 #define ADD_VAR_TEMPLATE_SPECIFICATIONS(TYPE, NAME, ...) \
   template < > \
-  void SignalLoggerBase::addVariableToLog( const TYPE & var, \
-                    const std::string& name, \
-                    const std::string& group, \
-                    const std::string& unit, \
-                    bool update) \
+  void SignalLoggerBase::add( const TYPE & var, \
+                              const std::string& name, \
+                              const std::string& group, \
+                              const std::string& unit, \
+                              bool update) \
   { \
     if(log_elements_.find(name) != log_elements_.end()) { \
       printf("A signal with the same name %s is already logged. Overwrite.", name.c_str()); \

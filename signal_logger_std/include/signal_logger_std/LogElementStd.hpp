@@ -19,7 +19,6 @@ namespace signal_logger_std {
 template <typename ValueType_>
 class LogElementStd: public signal_logger::LogElementBase<ValueType_>
 {
-
  public:
   /** Constructor
    * @param ptr     pointer to the data that shall be logged
@@ -72,7 +71,6 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
     signal_logger::LogElementBase<ValueType_>::readDataFromBuffer(&data);
     signal_logger_std::traits::sls_traits<ValueType_>::writeToFile(file_, &data);
   }
-
 
   //! Publish no implementation
   void publishData() { }

@@ -8,6 +8,7 @@
 #pragma once
 
 #include "signal_logger/macro_definitions.hpp"
+#include "signal_logger/LogElementInterface.hpp"
 
 #include <Eigen/Dense>
 
@@ -98,11 +99,11 @@ class SignalLoggerBase {
   virtual double getSamplingWindow() const = 0;
 
   template<typename ValueType_>
-  void addVariableToLog(const ValueType_ & var,
-                        const std::string& name,
-                        const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME},
-                        const std::string& unit = std::string{LOGGER_DEFAULT_UNIT},
-                        bool update = LOGGER_DEFAULT_UPDATE)
+  void add( const ValueType_ & var,
+            const std::string& name,
+            const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME},
+            const std::string& unit = std::string{LOGGER_DEFAULT_UNIT},
+            bool update = LOGGER_DEFAULT_UPDATE)
   {
     printf("Type of signal with name %s is not supported.", name.c_str());
   }
@@ -115,7 +116,7 @@ class SignalLoggerBase {
 
  protected:
  std::size_t buffer_size_;
- std::unordered_map<std::string, signal_logger::LogElementInterface *> log_elements_;
+ std::map<std::string, signal_logger::LogElementInterface *> log_elements_;
 
 };
 

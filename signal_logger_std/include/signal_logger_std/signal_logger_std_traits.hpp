@@ -8,6 +8,7 @@
 #pragma once
 
 #include <fstream>
+#include "signal_logger/SignalLoggerBase.hpp"
 
 namespace signal_logger_std {
 
@@ -17,7 +18,9 @@ template <typename ValueType_, typename Enable_ = void>
 struct sls_traits
 {
   static void writeToFile(std::ofstream * file, ValueType_ * ptr) {
-    file->write(reinterpret_cast<char*>(ptr),sizeof(*ptr));
+//    # FIXME for binary
+//    file->write(reinterpret_cast<char*>(ptr),sizeof(*ptr));
+    (*file) << (*ptr) << " ";
   }
 
   static void writeHeader(std::ofstream * file, std::string name) {
@@ -28,12 +31,46 @@ struct sls_traits
 };
 
 template <typename ValueType_>
+struct sls_traits<ValueType_, typename std::enable_if<std::is_same<signal_logger::SignalLoggerBase::TimestampPair, ValueType_>::value>::type>
+{
+  static void writeToFile(std::ofstream * file, ValueType_ * ptr) {
+    //    # FIXME for binary
+    //    file->write(reinterpret_cast<char*>(&ptr->first),sizeof(ptr->first));
+    //    file->write(reinterpret_cast<char*>(&ptr->second),sizeof(ptr->second));
+    (*file) << ptr->first << ptr->second << " ";
+  }
+
+  static void writeHeader(std::ofstream * file, std::string name) {
+    (*file) << name << "_s " << sizeof(typename ValueType_::first_type) << std::endl;
+    (*file) << name << "_ns " << sizeof(typename ValueType_::second_type) << std::endl;
+  }
+};
+
+template <typename ValueType_>
+struct sls_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::VectorBase<ValueType_>, ValueType_>::value && ValueType_::Dimension == 3>::type>
+{
+  static void writeToFile(std::ofstream * file, ValueType_ * ptr) {
+    //    # FIXME for binary
+    //    file->write(reinterpret_cast<char*>(ptr),sizeof(*ptr));
+    (*file) << (*ptr) << " ";
+  }
+
+  static void writeHeader(std::ofstream * file, std::string name) {
+    (*file) << name << "_x " << sizeof(typename ValueType_::Scalar) << std::endl;
+    (*file) << name << "_y " << sizeof(typename ValueType_::Scalar) << std::endl;
+    (*file) << name << "_z " << sizeof(typename ValueType_::Scalar) << std::endl;
+  }
+};
+
+template <typename ValueType_>
 struct sls_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value>::type>
 {
   static void writeToFile(std::ofstream * file, ValueType_ * ptr) {
     for (int r=0; r<ptr->rows(); r++)  {
       for (int c=0; c<ptr->cols(); c++)  {
-        file->write(reinterpret_cast<char*>(&((*ptr)(r,c))),sizeof(((*ptr)(r,c))));
+//        # FIXME for binary
+//        file->write(reinterpret_cast<char*>(&((*ptr)(r,c))),sizeof(((*ptr)(r,c))));
+        (*file) << (*ptr)(r,c) << " ";
       }
     }
   }
@@ -49,4 +86,5 @@ struct sls_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::Mat
 };
 
 }
+
 }
