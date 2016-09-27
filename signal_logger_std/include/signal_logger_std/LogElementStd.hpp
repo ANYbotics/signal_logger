@@ -68,9 +68,9 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
 
   //! Write Data
   void writeDataToLogFile() {
-    ValueType_ * ptr = new ValueType_();
-    signal_logger::LogElementBase<ValueType_>::readDataFromBuffer(ptr);
-    signal_logger_std::traits::sls_traits<ValueType_>::writeToFile(file_, ptr);
+    ValueType_ data;
+    signal_logger::LogElementBase<ValueType_>::readDataFromBuffer(&data);
+    signal_logger_std::traits::sls_traits<ValueType_>::writeToFile(file_, &data);
   }
 
 

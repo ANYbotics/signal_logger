@@ -56,10 +56,10 @@ class LogElementRos: public signal_logger::LogElementBase<ValueType_>
   //! Reads buffer and publishes data via ros
   void publishData()
   {
-    ValueType_ * ptr = new ValueType_();
-    signal_logger::LogElementBase<ValueType_>::readDataFromBuffer(ptr);
+    ValueType_ data;
+    signal_logger::LogElementBase<ValueType_>::readDataFromBuffer(&data);
     ros::Time now = ros::Time::now();
-    traits::slr_traits<ValueType_>::updateMsg(ptr, msg_, now);
+    traits::slr_traits<ValueType_>::updateMsg(&data, msg_, now);
     pub_.publish(msg_);
   }
 
