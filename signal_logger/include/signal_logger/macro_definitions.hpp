@@ -36,7 +36,7 @@
                               const std::string& unit, \
                               bool update) \
   { \
-    if(log_elements_.find(name) != log_elements_.end()) { \
+    if(logElements_.find(name) != logElements_.end()) { \
       printf("A signal with the same name %s is already logged. Overwrite.", name.c_str()); \
     } \
     add##NAME(var, name, group, unit, update); \

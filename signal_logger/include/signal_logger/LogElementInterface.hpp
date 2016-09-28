@@ -21,23 +21,26 @@ class LogElementInterface
 {
  protected:
   /** Constructor
-   * @param pBuffer pointer to buffer that stores entries of ValueType_
+   * @param pBuffer pointer to buffer that stores entries of ValueType_ (Length is zero until not collected)
    * @param type    typeindex of ValueType_ / datatype id of the log element
    * @param name    name of the log element
    * @param unit    unit of the logged data
    * @return log element
-  */
+   */
   LogElementInterface(internal::BufferInterface * pBuffer,
+                      const std::size_t & bufferSize,
                       const std::type_index & type,
                       const std::string & name,
                       const std::string & unit) :
-    pBuffer_(pBuffer),
-    type_(type),
-    name_(name),
-    unit_(unit)
-  {
+                        pBuffer_(pBuffer),
+                        bufferSize_(bufferSize),
+                        type_(type),
+                        name_(name),
+                        unit_(unit),
+                        isCollected_(false)
+ {
 
-  }
+ }
 
  public:
   //! Destructor
@@ -63,7 +66,7 @@ class LogElementInterface
   /** Function to push an item to the buffer. If the type added mismatches the buffer type and error will be thrown.
    * @tparam ValueType_ Type of the value to add
    * @param  item       item of type ValueType_ that shall be added
-  */
+   */
   template<typename ValueType_>
   void push_front(typename boost::call_traits<ValueType_>::param_type item) {
     if (type_ == typeid(ValueType_)) {
@@ -77,7 +80,7 @@ class LogElementInterface
   /** Function to pop an item from the buffer. If the pop data type mismatches the buffer type and error will be thrown.
    * @tparam ValueType_ Type of the value to add
    * @param  pItem      pointer to the an object where the popped data shall be stored in
-  */
+   */
   template<typename ValueType_>
   void pop_back(ValueType_* pItem) {
     if (type_ == typeid(ValueType_)) {
@@ -94,20 +97,41 @@ class LogElementInterface
   }
 
   //! @return name of the log element
-  std::string getName() {
+  std::string getName() const {
     return name_;
   }
 
   //! @return unit of the log element
-  std::string getUnit() {
+  std::string getUnit() const {
     return unit_;
+  }
+
+  //! @return whether log element is collected
+  bool isCollected() const {
+    return isCollected_;
+  }
+
+  //! @return whether log element is collected
+  void setIsCollected(const bool isCollected) {
+    if(isCollected != isCollected_)
+    {
+      isCollected_ = isCollected;
+      if(isCollected_) {
+        pBuffer_->set_capacity(bufferSize_);
+      }
+      else {
+        pBuffer_->set_capacity(0);
+      }
+    }
   }
 
  private:
   internal::BufferInterfacePtr pBuffer_;
+  std::size_t bufferSize_;
   std::type_index type_;
   std::string name_;
   std::string unit_;
+  bool isCollected_;
 
 };
 

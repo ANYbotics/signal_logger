@@ -3,6 +3,7 @@ project(signal_logger)
 
 # Find Catkin
 find_package(catkin REQUIRED COMPONENTS
+	message_logger
 )
 
 find_package(Eigen3 REQUIRED)
@@ -21,7 +22,7 @@ endif()
 catkin_package(
  INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIR}
  LIBRARIES signal_logger
-# CATKIN_DEPENDS
+ CATKIN_DEPENDS message_logger
  DEPENDS kindr
 )
 
@@ -41,6 +42,7 @@ set(SRCS
     src/logger.cpp
     src/LoggerBase.cpp
     src/LoggerNone.cpp
+    src/SignalLoggerBase.cpp
 )
 
 add_library(signal_logger SHARED ${SRCS})

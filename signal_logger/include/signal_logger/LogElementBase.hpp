@@ -31,7 +31,7 @@ class LogElementBase: public LogElementInterface
                  const std::string & name,
                  const std::string & unit,
                  const std::size_t buffer_size) :
-    LogElementInterface(new Buffer<ValueType_>(buffer_size), typeid(ValueType_), name, unit),
+    LogElementInterface(new Buffer<ValueType_>(0), buffer_size, typeid(ValueType_), name, unit),
     ptr_(ptr)
   {
 
@@ -77,7 +77,7 @@ class LogElementBase<ValueType_, typename std::enable_if<std::is_base_of<Eigen::
                  const std::string & name,
                  const std::string & unit,
                  const std::size_t buffer_size) :
-    LogElementInterface(new Buffer<typename ValueType_::Scalar>(buffer_size*ptr->rows()*ptr->cols()), typeid(typename ValueType_::Scalar), name, unit),
+    LogElementInterface(new Buffer<typename ValueType_::Scalar>(0), buffer_size*ptr->rows()*ptr->cols(), typeid(typename ValueType_::Scalar), name, unit),
     ptr_(ptr),
     no_rows_(ptr->rows()),
     no_cols_(ptr->cols())

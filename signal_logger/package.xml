@@ -10,6 +10,7 @@
   <author email="gehrinch@ethz.ch">Christian Gehring</author>
   <author email="bellicoso@mavt.ethz.ch">Dario Bellicoso</author>
   <buildtool_depend>catkin</buildtool_depend>
+  <depend>message_logger</depend>
   <depend>kindr</depend>
   <build_export_depend>eigen</build_export_depend>
 </package>
