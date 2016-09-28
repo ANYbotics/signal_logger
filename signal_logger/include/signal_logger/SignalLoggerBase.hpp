@@ -126,6 +126,9 @@ class SignalLoggerBase {
    */
   bool readDataCollectScript(const std::string & scriptName);
 
+  virtual bool workerSaveData(const std::string & logFileName) = 0;
+
+
   // Add pure virtual add-functions for every single type
   FOR_ALL_TYPES(ADD_VAR_DEFINITION);
   FOR_EIGEN_TYPES(ADD_EIGEN_VAR_AS_UNDERLYING_TYPE_IMPLEMENTATION);

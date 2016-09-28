@@ -12,6 +12,9 @@
 #include "signal_logger/macro_definitions.hpp"
 
 #include "signal_logger/SignalLoggerBase.hpp"
+#include <ctime>
+#include <ratio>
+#include <chrono>
 
 namespace signal_logger_std {
 
@@ -31,24 +34,35 @@ class SignalLoggerStd : public signal_logger::SignalLoggerBase
   }
 
   //! Save all the buffered data into a log file
-  virtual void saveLoggerData() {
-    std::string filename = "mydata3.txt";
-    file_.open(filename, std::ios::out | std::ios::trunc);
-    file_ << "Begin file"<<std::endl;
+  virtual bool workerSaveData(const std::string & logFileName) {
+
+    // Open file
+    file_.open(logFileName, std::ios::out | std::ios::trunc);
     for(auto & elem : logElements_) {
-      elem.second->writeHeaderToLogFile();
+      if(elem.second->isCollected()) {
+        elem.second->writeHeaderToLogFile();
+      }
     }
     //    # FIXME for binary
     //    file_.close();
     //    file_.open(filename, std::ios::out | std::ios::app | std::ios::binary);
     for(auto & elem : logElements_) {
-      elem.second->writeDataToLogFile();
+      if(elem.second->isCollected()) {
+        elem.second->writeDataToLogFile();
+      }
     }
     file_<<std::endl;
     for(auto & elem : logElements_) {
-      elem.second->writeDataToLogFile();
+      if(elem.second->isCollected()) {
+        elem.second->writeDataToLogFile();
+      }
     }
+
     file_.close();
+
+    MELO_INFO( "All done, captain!" );
+
+    return true;
 
   }
 

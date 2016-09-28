@@ -11,6 +11,7 @@
 // stl
 #include "assert.h"
 #include <fstream>
+#include <thread>
 
 namespace signal_logger {
 
@@ -145,7 +146,8 @@ void SignalLoggerBase::collectLoggerData()
         elem.second->collectData();
       }
     }
-    ++noDataInBuffer_;
+    // There can not be more data in the buffer that the bufferSize is
+    noDataInBuffer_ = std::min(static_cast<unsigned int>(bufferSize_), ++noDataInBuffer_);
   }
 
   // #TODO handle overflow? -> is it a problem?
@@ -154,7 +156,23 @@ void SignalLoggerBase::collectLoggerData()
 
 void SignalLoggerBase::saveLoggerData()
 {
-  // Empty implementation
+  if(!isInitialized_)
+  {
+    MELO_WARN("Signal logger could not save data!");
+    return;
+  }
+
+  // Get local time
+  std::time_t now = std::chrono::system_clock::to_time_t ( std::chrono::system_clock::now() );
+  std::tm now_loc = *std::localtime(&now);
+
+  // Filename format (e.g. d_13Sep2016_12-13-49)
+  char filename[21];
+  strftime(filename, sizeof filename, "d_%d%b%Y_%H-%M-%S", &now_loc);
+
+  // Save data in different thread
+  std::thread t1(&SignalLoggerBase::workerSaveData, this,  std::string{filename});
+  t1.detach();
 }
 
 void SignalLoggerBase::stopAndSaveLoggerData()
@@ -197,6 +215,9 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
       {
         // Enable item collection
         logElements_.at(readName)->setIsCollected(true);
+      }
+      else {
+        MELO_WARN("Can not log data! Data with name %s was not added to the logger. ", readName.c_str());
       }
     }
   }
