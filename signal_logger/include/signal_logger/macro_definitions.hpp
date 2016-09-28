@@ -16,12 +16,12 @@
 
 #define ADD_EIGEN_VAR_AS_UNDERLYING_TYPE_IMPLEMENTATION(TYPE, NAME, UNDERLYING_TYPE, UNDERLYING_TYPE_NAME) \
     void add##NAME(const TYPE& var, \
-                   const SignalLoggerBase::MatrixXstring& names, \
+                   const signal_logger::MatrixXstring& names, \
                    const std::string& group, \
                    const std::string& unit, \
                    bool update) { \
-      for (int r=0; r<static_cast<SignalLoggerBase::MatrixXstring>(names).rows(); r++)  { \
-        for (int c=0; c<static_cast<SignalLoggerBase::MatrixXstring>(names).cols(); c++)  { \
+      for (int r=0; r<static_cast<signal_logger::MatrixXstring>(names).rows(); r++)  { \
+        for (int c=0; c<static_cast<signal_logger::MatrixXstring>(names).cols(); c++)  { \
           add##UNDERLYING_TYPE_NAME((UNDERLYING_TYPE)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update); \
         } \
       } \
@@ -50,33 +50,33 @@
     MACRO(long, Long)\
     MACRO(char, Char)\
     MACRO(bool, Bool)\
-    MACRO(SignalLoggerBase::TimestampPair, TimeStamp)\
+    MACRO(signal_logger::TimestampPair, TimeStamp)\
 
 #define FOR_EIGEN_TYPES(MACRO) \
-    MACRO(Eigen::Vector3d, DoubleEigenVector3, double, Double) \
-    MACRO(Eigen::MatrixXf, FloatEigenMatrix, float, Float)\
-    MACRO(Eigen::MatrixXd, DoubleEigenMatrix, double, Double)\
-    MACRO(Eigen::MatrixXi, IntegerEigenMatrix, int, Int)\
-    MACRO(SignalLoggerBase::MatrixXs, ShortEigenMatrix, short, Short)\
-    MACRO(SignalLoggerBase::MatrixXl, LongEigenMatrix, long, Long)\
-    MACRO(SignalLoggerBase::MatrixXc, CharEigenMatrix, char,Char)\
-    MACRO(SignalLoggerBase::MatrixXUc, UnsignedCharEigenMatrix, char,  Char)\
-    MACRO(SignalLoggerBase::MatrixXb, BoolEigenMatrix, bool, Bool)
+    MACRO(signal_logger::Vector3d, DoubleEigenVector3, double, Double) \
+    MACRO(signal_logger::MatrixXf, FloatEigenMatrix, float, Float)\
+    MACRO(signal_logger::MatrixXd, DoubleEigenMatrix, double, Double)\
+    MACRO(signal_logger::MatrixXi, IntegerEigenMatrix, int, Int)\
+    MACRO(signal_logger::MatrixXs, ShortEigenMatrix, short, Short)\
+    MACRO(signal_logger::MatrixXl, LongEigenMatrix, long, Long)\
+    MACRO(signal_logger::MatrixXc, CharEigenMatrix, char,Char)\
+    MACRO(signal_logger::MatrixXUc, UnsignedCharEigenMatrix, char,  Char)\
+    MACRO(signal_logger::MatrixXb, BoolEigenMatrix, bool, Bool)
 
 #define FOR_KINDR_TYPES(MACRO) \
-    MACRO(kindr::Position3D, DoubleKindrPosition)\
-    MACRO(kindr::RotationQuaternionPD, DoubleKindrRotationQuaternion)\
-    MACRO(kindr::EulerAnglesZyxPD, DoubleKindrEulerAnglesZyx)\
-    MACRO(kindr::LocalAngularVelocityPD, DoubleKindrLocalAngularVelocity)\
-    MACRO(kindr::AngleAxisPD, DoubleKindrAngleAxis)\
-    MACRO(kindr::RotationMatrixPD, DoubleKindrRotationMatrix)\
-    MACRO(kindr::RotationVectorPD, DoubleKindrRotationVector)\
-    MACRO(kindr::Velocity3D, DoubleKindrLinearVelocity)\
-    MACRO(kindr::Acceleration3D, DoubleKindrLinearAcceleration)\
-    MACRO(kindr::AngularAcceleration3D, DoubleKindrAngularAcceleration)\
-    MACRO(kindr::Force3D, DoubleKindrForce)\
-    MACRO(kindr::Torque3D, DoubleKindrTorque)\
-    MACRO(kindr::VectorTypeless3D, DoubleKindrVector)
+    MACRO(signal_logger::KindrPositionD, DoubleKindrPosition)\
+    MACRO(signal_logger::KindrRotationQuaternionD, DoubleKindrRotationQuaternion)\
+    MACRO(signal_logger::KindrEulerAnglesZyxD, DoubleKindrEulerAnglesZyx)\
+    MACRO(signal_logger::KindrAngularVelocityD, DoubleKindrLocalAngularVelocity)\
+    MACRO(signal_logger::KindrAngleAxisD, DoubleKindrAngleAxis)\
+    MACRO(signal_logger::KindrRotationMatrixD, DoubleKindrRotationMatrix)\
+    MACRO(signal_logger::KindrRotationVectorD, DoubleKindrRotationVector)\
+    MACRO(signal_logger::KindrLinearVelocityD, DoubleKindrLinearVelocity)\
+    MACRO(signal_logger::KindrLinearAccelerationD, DoubleKindrLinearAcceleration)\
+    MACRO(signal_logger::KindrAngularAccelerationD, DoubleKindrAngularAcceleration)\
+    MACRO(signal_logger::KindrForceD, DoubleKindrForce)\
+    MACRO(signal_logger::KindrTorqueD, DoubleKindrTorque)\
+    MACRO(signal_logger::KindrVectorD, DoubleKindrVector)
 
 #define FOR_ALL_TYPES(MACRO) \
     FOR_PRIMITIVE_TYPES(MACRO)\

@@ -10,6 +10,7 @@
 // signal logger
 #include "signal_logger/LogElementInterface.hpp"
 #include "signal_logger/macro_definitions.hpp"
+#include "signal_logger/typedefs.hpp"
 
 // message logger
 #include "message_logger/message_logger.hpp"
@@ -27,25 +28,10 @@
 
 namespace signal_logger {
 
-// Some logger defaults
-const std::string LOGGER_DEFAULT_GROUP_NAME = "/log/";
-const std::string LOGGER_DEFAULT_UNIT       = "-";
-const bool LOGGER_DEFAULT_UPDATE            = false;
-const std::string LOGGER_DEFAULT_SCRIPT_FILENAME   = "logger.script";
-const std::string LOGGER_PREFIX = "/log";
-
 //! Class that severs as base class for all the loggers and defines the interface for accessing the logger
 class SignalLoggerBase {
 
  public:
-  //! Convenience typedefs (They are also used in the macros -> do not delete them)
-  typedef Eigen::Matrix< long ,Eigen::Dynamic, Eigen::Dynamic >         MatrixXl;
-  typedef Eigen::Matrix< short ,Eigen::Dynamic, Eigen::Dynamic >        MatrixXs;
-  typedef Eigen::Matrix< char ,Eigen::Dynamic, Eigen::Dynamic >         MatrixXc;
-  typedef Eigen::Matrix< unsigned char ,Eigen::Dynamic, Eigen::Dynamic > MatrixXUc;
-  typedef Eigen::Matrix< bool ,Eigen::Dynamic, Eigen::Dynamic >         MatrixXb;
-  typedef Eigen::Matrix< std::string ,Eigen::Dynamic, Eigen::Dynamic >  MatrixXstring;
-  typedef std::pair<int64_t, int64_t> TimestampPair; // s/ns
 
   //! Get the logger type at runtime
   enum class LoggerType: unsigned int {

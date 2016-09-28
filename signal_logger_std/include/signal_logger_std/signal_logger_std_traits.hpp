@@ -8,7 +8,7 @@
 #pragma once
 
 #include <fstream>
-#include "signal_logger/SignalLoggerBase.hpp"
+#include "signal_logger/typedefs.hpp"
 
 namespace signal_logger_std {
 
@@ -33,7 +33,7 @@ struct sls_traits
 
 //! Trait for TimestampPair type
 template <typename ValueType_>
-struct sls_traits<ValueType_, typename std::enable_if<std::is_same<signal_logger::SignalLoggerBase::TimestampPair, ValueType_>::value>::type>
+struct sls_traits<ValueType_, typename std::enable_if<std::is_same<signal_logger::TimestampPair, ValueType_>::value>::type>
 {
   //! Writes both entries s and ns in binary form
   static void writeToFile(std::ofstream * file, ValueType_ * ptr) {
