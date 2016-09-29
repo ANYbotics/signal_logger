@@ -37,19 +37,14 @@ class LogElementInterface
                         type_(type),
                         name_(name),
                         unit_(unit),
-                        isCollected_(false)
+                        isEnabled_(false)
  {
 
  }
 
  public:
   //! Destructor
-  virtual ~LogElementInterface()
-  {
-
-  }
-
-  //! Interface that all Log Elements shall provide
+  virtual ~LogElementInterface() { }
 
   //! Reads pointer and pushes the data into the buffer
   virtual void collectData() = 0;
@@ -62,6 +57,12 @@ class LogElementInterface
 
   //! Reads one item from the buffer and writes it to the log file. (called on storage of log files)
   virtual void writeDataToLogFile() = 0;
+
+  //! Initialize logger elements communication etc
+  virtual void initialize() = 0;
+
+  //! Shutdown logger elements communication etc
+  virtual void shutdown() = 0;
 
   /** Function to push an item to the buffer. If the type added mismatches the buffer type and error will be thrown.
    * @tparam ValueType_ Type of the value to add
@@ -106,21 +107,23 @@ class LogElementInterface
     return unit_;
   }
 
-  //! @return whether log element is collected
-  bool isCollected() const {
-    return isCollected_;
+  //! @return whether log element is enabled
+  bool isEnabled() const {
+    return isEnabled_;
   }
 
-  //! @return whether log element is collected
-  void setIsCollected(const bool isCollected) {
-    if(isCollected != isCollected_)
+  //! @return whether log element is enabled
+  void setIsEnabled(const bool isEnabled) {
+    if(isEnabled != isEnabled_)
     {
-      isCollected_ = isCollected;
-      if(isCollected_) {
+      isEnabled_ = isEnabled;
+      if(isEnabled_) {
         pBuffer_->set_capacity(bufferSize_);
+        this->initialize();
       }
       else {
         pBuffer_->set_capacity(0);
+        this->shutdown();
       }
     }
   }
@@ -131,7 +134,7 @@ class LogElementInterface
   std::type_index type_;
   std::string name_;
   std::string unit_;
-  bool isCollected_;
+  bool isEnabled_;
 
 };
 

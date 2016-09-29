@@ -39,9 +39,6 @@ include_directories(${catkin_INCLUDE_DIRS})
 include_directories(${kindr_INCLUDE_DIRS})
 
 set(SRCS
-    src/logger.cpp
-    src/LoggerBase.cpp
-    src/LoggerNone.cpp
     src/SignalLoggerBase.cpp
 )
 

@@ -43,7 +43,6 @@ class LogElementRos: public signal_logger::LogElementBase<ValueType_>
     nh_(nh)
   {
     //! A buffer is already provided, publisher should not create internal one
-    pub_ = nh_.advertise<MsgType>(name, 1);
     msg_.reset(new MsgType());
   }
 
@@ -62,6 +61,9 @@ class LogElementRos: public signal_logger::LogElementBase<ValueType_>
     traits::slr_traits<ValueType_>::updateMsg(&data, msg_, now);
     pub_.publish(msg_);
   }
+
+  void initialize() { pub_ = nh_.advertise<MsgType>(this->getName(), 1); }
+  void shutdown() { pub_.shutdown(); }
 
   //! These functions do nothing for a ros element
   void writeHeaderToLogFile() { }

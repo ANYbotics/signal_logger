@@ -27,7 +27,7 @@ include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
 
 add_library(signal_logger_std SHARED 
-    src/LoggerStd.cpp
+    src/SignalLoggerStd.cpp
 )
 target_link_libraries(signal_logger_std
     ${catkin_LIBRARIES}

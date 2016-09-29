@@ -12,14 +12,6 @@
 
 namespace signal_logger {
 
-// Some logger defaults
-const std::string LOGGER_DEFAULT_GROUP_NAME = "/log/";
-const std::string LOGGER_DEFAULT_UNIT       = "-";
-const bool LOGGER_DEFAULT_UPDATE            = false;
-const std::string LOGGER_DEFAULT_SCRIPT_FILENAME   = "logger.script";
-const std::string LOGGER_PREFIX = "/log";
-
-
 //! Time stamp pair <s,ns>
 typedef std::pair<int64_t, int64_t> TimestampPair;
 

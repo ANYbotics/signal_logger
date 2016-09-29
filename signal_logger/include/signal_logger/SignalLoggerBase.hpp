@@ -8,11 +8,9 @@
 #pragma once
 
 // signal logger
+#include <signal_logger/LogElementTypes.hpp>
 #include "signal_logger/LogElementInterface.hpp"
 #include "signal_logger/macro_definitions.hpp"
-#include "signal_logger/typedefs.hpp"
-
-// message logger
 #include "message_logger/message_logger.hpp"
 
 // kindr
@@ -27,6 +25,13 @@
 #include <atomic>
 
 namespace signal_logger {
+
+// Some logger defaults
+const std::string LOGGER_DEFAULT_GROUP_NAME = "/log/";
+const std::string LOGGER_DEFAULT_UNIT       = "-";
+const bool LOGGER_DEFAULT_UPDATE            = false;
+const std::string LOGGER_DEFAULT_SCRIPT_FILENAME   = "logger.script";
+const std::string LOGGER_PREFIX = "/log";
 
 //! Class that severs as base class for all the loggers and defines the interface for accessing the logger
 class SignalLoggerBase {

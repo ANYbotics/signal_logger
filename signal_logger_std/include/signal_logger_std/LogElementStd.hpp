@@ -46,7 +46,7 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
   }
 
   //! Write Header (name nrbytes \n)
-  void writeHeaderToLogFile()
+  virtual void writeHeaderToLogFile()
   {
     this->generateHeader();
   }
@@ -66,14 +66,20 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
   }
 
   //! Write Data
-  void writeDataToLogFile() {
+  virtual void writeDataToLogFile() {
     ValueType_ data;
     signal_logger::LogElementBase<ValueType_>::readDataFromBuffer(&data);
     signal_logger_std::traits::sls_traits<ValueType_>::writeToFile(file_, &data);
   }
 
   //! Publish no implementation
-  void publishData() { }
+  virtual void publishData() { }
+
+  //! Initizalize -> empty
+  virtual void initialize() { }
+
+  //! Shutdown -> empty
+  virtual void shutdown() { }
 
  protected:
   std::ofstream * file_;

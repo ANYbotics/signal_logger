@@ -12,6 +12,9 @@
 #include "assert.h"
 #include <fstream>
 #include <thread>
+#include <ctime>
+#include <ratio>
+#include <chrono>
 
 namespace signal_logger {
 
@@ -141,7 +144,7 @@ void SignalLoggerBase::collectLoggerData()
     // Add data to buffer
     for(auto & elem : logElements_)
     {
-      if(elem.second->isCollected())
+      if(elem.second->isEnabled())
       {
         elem.second->collectData();
       }
@@ -204,7 +207,7 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
     // Disable all log data and reallocate buffer
     for(auto & elem : logElements_)
     {
-      elem.second->setIsCollected(false);
+      elem.second->setIsEnabled(false);
     }
 
     // Read logging script and enable present data
@@ -214,7 +217,7 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
       if(logElements_.find(readName) != logElements_.end())
       {
         // Enable item collection
-        logElements_.at(readName)->setIsCollected(true);
+        logElements_.at(readName)->setIsEnabled(true);
       }
       else {
         MELO_WARN("Can not log data! Data with name %s was not added to the logger. ", readName.c_str());

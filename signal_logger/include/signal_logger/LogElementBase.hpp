@@ -47,6 +47,7 @@ class LogElementBase: public LogElementInterface
   void collectData()
   {
     push_front<ValueType_>(*ptr_);
+    publishData();
   }
 
   //! Read value from Buffer
@@ -101,6 +102,7 @@ class LogElementBase<ValueType_, typename std::enable_if<std::is_base_of<Eigen::
         push_front<typename ValueType_::Scalar>( (*ptr_)(r,c) );
       }
     }
+    publishData();
   }
 
   //! Read value from Buffer

@@ -9,17 +9,17 @@
 
 // signal logger
 #include "signal_logger/macro_definitions.hpp"
-#include "signal_logger_std/LogElementStd.hpp"
+#include "signal_logger_ros/LogElementRos.hpp"
 #include "signal_logger/SignalLoggerBase.hpp"
 
 //! This macro generates the implementation of the add function for all types that are currently supported
-#define ADD_STD_VAR_IMPLEMENTATION(TYPE, NAME, ...) \
+#define ADD_ROS_VAR_IMPLEMENTATION(TYPE, NAME, ...) \
     virtual void add##NAME(const TYPE & var, \
                            const std::string& name, \
                            const std::string& group, \
                            const std::string& unit, \
                            bool update) { \
       std::string elementName = signal_logger::LOGGER_PREFIX + "/" + group + "/" + name; \
-      logElements_[elementName] = new LogElementStd<TYPE>(const_cast<TYPE*>(&var), elementName , unit, bufferSize_, &file_); \
+      logElements_[elementName] = new LogElementRos<TYPE>(const_cast<TYPE*>(&var), elementName , unit, bufferSize_, nh_); \
     } /*
  */

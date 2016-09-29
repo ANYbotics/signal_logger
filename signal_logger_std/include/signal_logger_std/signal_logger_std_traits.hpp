@@ -7,8 +7,8 @@
 
 #pragma once
 
+#include <signal_logger/LogElementTypes.hpp>
 #include <fstream>
-#include "signal_logger/typedefs.hpp"
 
 namespace signal_logger_std {
 
