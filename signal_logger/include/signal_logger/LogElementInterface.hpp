@@ -109,6 +109,17 @@ class LogElementInterface
     }
   }
 
+  //! @return buffer size of the log element
+  std::size_t getBufferSize() {
+    return bufferSize_;
+  }
+
+  //! @return buffer size of the log element
+  void setBufferSize(std::size_t bufferSize) {
+    bufferSize_ = bufferSize;
+    pBuffer_->set_capacity(bufferSize_);
+  }
+
   //! @return name of the log element
   std::type_index getType() {
     return type_;
@@ -128,9 +139,20 @@ class LogElementInterface
   unsigned int getDivider() const {
     return divider_;
   }
+
+  //! @return set update frequency divider
+  void setDivider(unsigned int divider) {
+    divider_ = divider;
+  }
+
   //! @return whether log element is enabled
   bool isEnabled() const {
     return isEnabled_;
+  }
+
+  //! @return buffer size of the log element
+  bool isBufferFull() {
+    return bufferSize_ == pBuffer_->get_no_unread_items();
   }
 
   //! @return whether log element is enabled

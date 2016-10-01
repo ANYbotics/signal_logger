@@ -1,0 +1,17 @@
+<library path="lib/librqt_signal_logger">
+    <class name="SignalLoggerPlugin" type="SignalLoggerPlugin" base_class_type="rqt_gui_cpp::Plugin">
+        <description>
+            An interface for signal_logger.
+        </description>
+        <qtgui>
+            <group>
+                <label>Starleth</label>
+                <icon type="theme">folder</icon>
+                <statustip>Plugins related to starleth</statustip>
+            </group>
+            <label>SignalLogger</label>
+            <icon type="theme">applications-graphics</icon>
+            <statustip>An interface for signal_logger.</statustip>
+        </qtgui>
+    </class>
+</library>

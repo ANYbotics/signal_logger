@@ -354,9 +354,9 @@ struct slr_traits<signal_logger::KindrAngleAxisD> {
     msg->matrix.data.push_back(vectorPtr_->axis().x());
     msg->matrix.data.push_back(vectorPtr_->axis().y());
     msg->matrix.data.push_back(vectorPtr_->axis().z());
-    msg->matrix.layout.dim[0].label = "alphaXYZ";
-    msg->matrix.layout.dim[0].size = 4;
-    msg->matrix.layout.dim[0].stride = 4;
+//    msg->matrix.layout.dim[0].label = "alphaXYZ";
+//    msg->matrix.layout.dim[0].size = 4;
+//    msg->matrix.layout.dim[0].stride = 4;
   }
 };
 
@@ -368,12 +368,12 @@ struct slr_traits<signal_logger::KindrRotationMatrixD> {
 
   static void updateMsg(const signal_logger::KindrRotationMatrixD* vectorPtr_, msgtypePtr msg, const ros::Time& timeStamp) {
     msg->header.stamp = timeStamp;
-    msg->matrix.layout.dim[0].label = "row";
-    msg->matrix.layout.dim[0].size = 3;
-    msg->matrix.layout.dim[0].stride = 9;
-    msg->matrix.layout.dim[1].label = "col";
-    msg->matrix.layout.dim[1].size = 3;
-    msg->matrix.layout.dim[1].stride = 9;
+//    msg->matrix.layout.dim[0].label = "row";
+//    msg->matrix.layout.dim[0].size = 3;
+//    msg->matrix.layout.dim[0].stride = 9;
+//    msg->matrix.layout.dim[1].label = "col";
+//    msg->matrix.layout.dim[1].size = 3;
+//    msg->matrix.layout.dim[1].stride = 9;
     msg->matrix.data.clear();
     for (int r=0; r<3; r++)  {
       for (int c=0; c<3; c++)  {
