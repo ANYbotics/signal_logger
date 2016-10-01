@@ -29,6 +29,7 @@ namespace signal_logger {
 // Some logger defaults
 const std::string LOGGER_DEFAULT_GROUP_NAME = "/log/";
 const std::string LOGGER_DEFAULT_UNIT       = "-";
+const unsigned int LOGGER_DEFAULT_DIVIDER    = 1;
 const bool LOGGER_DEFAULT_UPDATE            = false;
 const std::string LOGGER_DEFAULT_SCRIPT_FILENAME   = "logger.script";
 const std::string LOGGER_PREFIX = "/log";
@@ -106,6 +107,7 @@ class SignalLoggerBase {
             const std::string& name,
             const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME},
             const std::string& unit = std::string{LOGGER_DEFAULT_UNIT},
+            const unsigned int divider = LOGGER_DEFAULT_DIVIDER,
             bool update = LOGGER_DEFAULT_UPDATE)
   {
     MELO_ERROR("Type of signal with name %s is not supported.", name.c_str());
@@ -132,6 +134,8 @@ class SignalLoggerBase {
   std::atomic_bool isUpdateLocked_;
   //! Flag to collect data
   std::atomic_bool isCollectingData_;
+  //! Flag to save data
+  std::atomic_bool isSavingData_;
   //! Nr of calls to collect data
   std::atomic_uint noCollectDataCalls_;
   //! Data in buffer

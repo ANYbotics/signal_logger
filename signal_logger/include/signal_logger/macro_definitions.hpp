@@ -11,18 +11,20 @@
                            const std::string& name, \
                            const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, \
                            const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, \
+                           const unsigned int divider = LOGGER_DEFAULT_DIVIDER, \
                            bool update = LOGGER_DEFAULT_UPDATE) = 0; /*
                             */
 
 #define ADD_EIGEN_VAR_AS_UNDERLYING_TYPE_IMPLEMENTATION(TYPE, NAME, UNDERLYING_TYPE, UNDERLYING_TYPE_NAME) \
     void add##NAME(const TYPE& var, \
                    const signal_logger::MatrixXstring& names, \
-                   const std::string& group, \
-                   const std::string& unit, \
-                   bool update) { \
+                   const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, \
+                   const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, \
+                   const unsigned int divider = LOGGER_DEFAULT_DIVIDER, \
+                   bool update = LOGGER_DEFAULT_UPDATE) { \
       for (int r=0; r<static_cast<signal_logger::MatrixXstring>(names).rows(); r++)  { \
         for (int c=0; c<static_cast<signal_logger::MatrixXstring>(names).cols(); c++)  { \
-          add##UNDERLYING_TYPE_NAME((UNDERLYING_TYPE)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, update); \
+          add##UNDERLYING_TYPE_NAME((UNDERLYING_TYPE)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, divider, update); \
         } \
       } \
     } /*
@@ -34,12 +36,13 @@
                               const std::string& name, \
                               const std::string& group, \
                               const std::string& unit, \
+                              const unsigned int divider, \
                               bool update) \
   { \
     if(logElements_.find(name) != logElements_.end()) { \
       printf("A signal with the same name %s is already logged. Overwrite.", name.c_str()); \
     } \
-    add##NAME(var, name, group, unit, update); \
+    add##NAME(var, name, group, unit, divider, update); \
   }
 
 #define FOR_PRIMITIVE_TYPES(MACRO) \

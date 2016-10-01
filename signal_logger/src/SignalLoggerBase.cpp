@@ -22,6 +22,7 @@ SignalLoggerBase::SignalLoggerBase():
       isInitialized_(false),
       isUpdateLocked_(false),
       isCollectingData_(false),
+      isSavingData_(false),
       noCollectDataCalls_(0),
       noDataInBuffer_(0),
       bufferStorageRate_(0),
@@ -67,7 +68,7 @@ void SignalLoggerBase::initLogger(int updateFrequency, int samplingFrequency, do
 
 void SignalLoggerBase::startLogger()
 {
-  if(!isInitialized_)
+  if(!isInitialized_ || isSavingData_)
   {
     MELO_WARN("Signal logger could not be started! Logger not initialized.");
     return;
@@ -97,7 +98,7 @@ void SignalLoggerBase::restartLogger()
 
 void SignalLoggerBase::updateLogger(bool updateScript) {
 
-  if(!isInitialized_ || isCollectingData_ || isUpdateLocked_)
+  if(!isInitialized_ || isCollectingData_ || isUpdateLocked_ || isSavingData_)
   {
     MELO_WARN("Signal logger could not be updated!");
     return;
@@ -136,7 +137,7 @@ void SignalLoggerBase::lockUpdate()
 
 void SignalLoggerBase::collectLoggerData()
 {
-  if(!isInitialized_) return;
+  if(!isInitialized_ || isSavingData_) return;
 
   // Is logger started?
   if(isCollectingData_ && noCollectDataCalls_%bufferStorageRate_ == 0)
@@ -159,9 +160,11 @@ void SignalLoggerBase::collectLoggerData()
 
 void SignalLoggerBase::saveLoggerData()
 {
-  if(!isInitialized_)
+  isSavingData_ = true;
+  if(!isInitialized_ || isCollectingData_)
   {
     MELO_WARN("Signal logger could not save data!");
+    isSavingData_ = false;
     return;
   }
 

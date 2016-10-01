@@ -31,12 +31,14 @@ class LogElementInterface
                       const std::size_t & bufferSize,
                       const std::type_index & type,
                       const std::string & name,
-                      const std::string & unit) :
+                      const std::string & unit,
+                      const unsigned int divider) :
                         pBuffer_(pBuffer),
                         bufferSize_(bufferSize),
                         type_(type),
                         name_(name),
                         unit_(unit),
+                        divider_(divider),
                         isEnabled_(false)
  {
 
@@ -52,10 +54,10 @@ class LogElementInterface
   //! Reads buffer and processes data (called at every timestep)
   virtual void publishData() = 0;
 
-  //! Writes the header of the log File
+  //! Write header of log file
   virtual void writeHeaderToLogFile() = 0;
 
-  //! Reads one item from the buffer and writes it to the log file. (called on storage of log files)
+  //! Write data to log file
   virtual void writeDataToLogFile() = 0;
 
   //! Initialize logger elements communication etc
@@ -92,6 +94,21 @@ class LogElementInterface
     }
   }
 
+  /** Function to pop all items from the buffer. If the pop data type mismatches the buffer type and error will be thrown.
+   *  However unread flag is untouched. This basically is a copy of the buffer entries, but they remain unchanged.
+   * @tparam ValueType_ Type of the value to read
+   * @return  all data stored in the buffer
+   */
+  template<typename ValueType_>
+  std::vector<ValueType_> read_full_buffer() {
+    if (type_ == typeid(ValueType_)) {
+      return std::static_pointer_cast<Buffer<ValueType_> >(pBuffer_)->read_full_buffer();
+    }
+    else {
+      throw std::runtime_error("Buffer value type mismatch");
+    }
+  }
+
   //! @return name of the log element
   std::type_index getType() {
     return type_;
@@ -107,6 +124,10 @@ class LogElementInterface
     return unit_;
   }
 
+  //! @return get update frequency divider
+  unsigned int getDivider() const {
+    return divider_;
+  }
   //! @return whether log element is enabled
   bool isEnabled() const {
     return isEnabled_;
@@ -128,12 +149,22 @@ class LogElementInterface
     }
   }
 
- private:
+ protected:
+  //! Data Buffer
   internal::BufferInterfacePtr pBuffer_;
+
+ private:
+  //! Size of the data buffer
   std::size_t bufferSize_;
+  //! Type stored in the buffer
   std::type_index type_;
+  //! Name of the log element
   std::string name_;
+  //! Unit of the log element
   std::string unit_;
+  //! Defines log element collection frequency = updateFrequency/divider
+  unsigned int divider_;
+  //! Indicates if log element is currently active
   bool isEnabled_;
 
 };

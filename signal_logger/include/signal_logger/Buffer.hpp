@@ -31,8 +31,8 @@ class Buffer : public internal::BufferInterface {
   typedef typename boost::call_traits<value_type>::param_type param_type;
 
   explicit Buffer(size_type window_size) :
-      unread_(0),
-      container_(window_size)
+              no_unread_items_(0),
+    		      container_(window_size)
   {
 
   }
@@ -41,10 +41,10 @@ class Buffer : public internal::BufferInterface {
     // Lock the circular buffer
     boost::mutex::scoped_lock lock(mutex_);
 
-    // Increment number of unread items if buffer not full
-    if(is_not_full()) {
-      ++unread_;
-    }
+    // Update idx
+    newest_idx_ = ++newest_idx_ % container_.capacity();
+    no_unread_items_ = std::min(++no_unread_items_, container_.capacity());
+    no_items_ = std::min(++no_items_, container_.capacity());
 
     // Add value to the buffer
     container_.push_front(item);
@@ -62,7 +62,22 @@ class Buffer : public internal::BufferInterface {
     not_empty_.wait(lock, boost::bind(&Buffer<value_type>::is_not_empty, this));
 
     // Get item from buffer, decrement nr of unread items
-    *pItem = container_[--unread_];
+    *pItem = container_[--newest_idx_];
+    --no_unread_items_;
+  }
+
+  std::vector<value_type> read_full_buffer() {
+    boost::mutex::scoped_lock lock(mutex_);
+
+    std::vector<value_type> data_vector(no_items_);
+
+    size_type idx = newest_idx_ - no_items_;
+    size_type i = idx < 0 ? idx+container_.capacity() : idx;
+    for(int j = 0; j < no_items_; ++j)
+    {
+      data_vector.at((i+j)%container_.capacity()) = container_[(i+j)%container_.capacity()];
+    }
+    return data_vector;
   }
 
   void set_capacity(std::size_t new_capacity) {
@@ -74,19 +89,39 @@ class Buffer : public internal::BufferInterface {
 
     // Clear the buffer and restart filling
     container_.clear();
-    unread_ = size_type(0);
+    no_unread_items_ = size_type(0);
+    no_items_ = size_type(0);
+    newest_idx_ = size_type(0);
   }
+
+  //! Unread data in the buffer
+  std::size_t get_no_unread_items() {
+    boost::mutex::scoped_lock lock(mutex_);
+    return no_unread_items_;
+  }
+
+  //! Get the number of "valid" items in the buffer
+  std::size_t get_no_items() {
+    boost::mutex::scoped_lock lock(mutex_);
+    return no_items_;
+  }
+
 
  private:
   Buffer(const Buffer&);              // Disabled copy constructor
   Buffer& operator = (const Buffer&); // Disabled assign operator
 
   // Helpers
-  bool is_not_empty() const { return unread_ > 0; }
-  bool is_not_full() const { return unread_ < container_.capacity(); }
+  bool is_not_empty() const { return no_unread_items_ > 0; }
 
   // Count unread variables
-  size_type unread_;
+  size_type newest_idx_;
+  // Count unread variables
+  size_type no_unread_items_;
+  // Count all variables
+  size_type no_items_;
+
+
   // Circular buffer
   container_type container_;
   // Mutex protecting accessing this container

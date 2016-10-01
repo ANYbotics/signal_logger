@@ -29,6 +29,12 @@ class BufferInterface {
 
   virtual void set_capacity(std::size_t new_capacity) = 0;
 
+  virtual std::size_t get_no_unread_items() = 0;
+
+  virtual std::size_t get_no_items() = 0;
+
+
+
 };
 
 } // namespace internal

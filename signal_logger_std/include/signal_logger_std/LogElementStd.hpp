@@ -31,9 +31,10 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
   LogElementStd(ValueType_ * ptr,
                 const std::string & name,
                 const std::string & unit,
+                const unsigned int divider,
                 const std::size_t buffer_size,
                 std::ofstream * file) :
-    signal_logger::LogElementBase<ValueType_>(ptr, name, unit, buffer_size),
+    signal_logger::LogElementBase<ValueType_>(ptr, name, unit, divider, buffer_size),
     file_(file)
   {
 
@@ -45,32 +46,47 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
 
   }
 
-  //! Write Header (name nrbytes \n)
-  virtual void writeHeaderToLogFile()
+  void writeHeaderToLogFile()
   {
-    this->generateHeader();
+    generateHeader();
   }
 
   // Version for not eigen matrices
   template<typename V = ValueType_>
   typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
   generateHeader() {
-    signal_logger_std::traits::sls_traits<V>::writeHeader(file_, this->getName());
+    signal_logger_std::traits::sls_traits<V>::writeHeader(file_, this->getName(), this->pBuffer_->get_no_items(), this->getDivider());
   }
 
   // Version for eigen matrices
   template<typename V = ValueType_>
   typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
   generateHeader() {
-    signal_logger_std::traits::sls_traits<V>::writeHeader(file_, this->getName(), this->rows(), this->cols());
+    signal_logger_std::traits::sls_traits<V>::writeHeader(file_, this->getName(), this->pBuffer_->get_no_items(),
+                                                          this->getDivider(), this->rows(), this->cols());
   }
 
   //! Write Data
   virtual void writeDataToLogFile() {
-    ValueType_ data;
-    signal_logger::LogElementBase<ValueType_>::readDataFromBuffer(&data);
-    signal_logger_std::traits::sls_traits<ValueType_>::writeToFile(file_, &data);
+    writeData();
   }
+
+  // Version for not eigen matrices
+  template<typename V = ValueType_>
+  typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
+  writeData() {
+    std::vector<ValueType_> data = signal_logger::LogElementInterface::read_full_buffer<ValueType_>();
+    signal_logger_std::traits::sls_traits<V>::writeToFile(file_, data);
+  }
+
+  // Version for eigen matrices
+  template<typename V = ValueType_>
+  typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
+  writeData() {
+    std::vector<typename ValueType_::Scalar> data = signal_logger::LogElementInterface::read_full_buffer<typename ValueType_::Scalar>();
+    signal_logger_std::traits::sls_traits<V>::writeToFile(file_, data, this->rows(), this->cols());
+  }
+
 
   //! Publish no implementation
   virtual void publishData() { }

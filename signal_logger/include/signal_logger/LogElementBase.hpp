@@ -30,8 +30,9 @@ class LogElementBase: public LogElementInterface
   LogElementBase(ValueType_ * ptr,
                  const std::string & name,
                  const std::string & unit,
+                 const unsigned int divider,
                  const std::size_t buffer_size) :
-    LogElementInterface(new Buffer<ValueType_>(0), buffer_size, typeid(ValueType_), name, unit),
+    LogElementInterface(new Buffer<ValueType_>(0), buffer_size, typeid(ValueType_), name, unit, divider),
     ptr_(ptr)
   {
 
@@ -51,7 +52,7 @@ class LogElementBase: public LogElementInterface
   }
 
   //! Read value from Buffer
-  void readDataFromBuffer(ValueType_* pItem)
+  void pop_value(ValueType_* pItem)
   {
     pop_back<ValueType_>(pItem);
   }
@@ -77,8 +78,9 @@ class LogElementBase<ValueType_, typename std::enable_if<std::is_base_of<Eigen::
   LogElementBase(ValueType_ * ptr,
                  const std::string & name,
                  const std::string & unit,
+                 const unsigned int divider,
                  const std::size_t buffer_size) :
-    LogElementInterface(new Buffer<typename ValueType_::Scalar>(0), buffer_size*ptr->rows()*ptr->cols(), typeid(typename ValueType_::Scalar), name, unit),
+    LogElementInterface(new Buffer<typename ValueType_::Scalar>(0), buffer_size*ptr->rows()*ptr->cols(), typeid(typename ValueType_::Scalar), name, unit, divider),
     ptr_(ptr),
     no_rows_(ptr->rows()),
     no_cols_(ptr->cols())
@@ -106,7 +108,7 @@ class LogElementBase<ValueType_, typename std::enable_if<std::is_base_of<Eigen::
   }
 
   //! Read value from Buffer
-  void readDataFromBuffer(ValueType_* pItem)
+  void pop_value(ValueType_* pItem)
   {
     // Resize data to proper size
     pItem->resize(no_rows_, no_cols_);

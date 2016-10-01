@@ -37,9 +37,10 @@ class LogElementRos: public signal_logger::LogElementBase<ValueType_>
   LogElementRos(ValueType_ * ptr,
                 const std::string & name,
                 const std::string & unit,
+                const unsigned int divider,
                 const std::size_t buffer_size,
                 const ros::NodeHandle & nh) :
-    signal_logger::LogElementBase<ValueType_>(ptr, name, unit, buffer_size),
+    signal_logger::LogElementBase<ValueType_>(ptr, name, unit, divider, buffer_size),
     nh_(nh)
   {
     //! A buffer is already provided, publisher should not create internal one
@@ -56,7 +57,7 @@ class LogElementRos: public signal_logger::LogElementBase<ValueType_>
   void publishData()
   {
     ValueType_ data;
-    signal_logger::LogElementBase<ValueType_>::readDataFromBuffer(&data);
+    signal_logger::LogElementBase<ValueType_>::pop_value(&data);
     ros::Time now = ros::Time::now();
     traits::slr_traits<ValueType_>::updateMsg(&data, msg_, now);
     pub_.publish(msg_);

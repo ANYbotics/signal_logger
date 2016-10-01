@@ -18,8 +18,9 @@
                            const std::string& name, \
                            const std::string& group, \
                            const std::string& unit, \
+                           const unsigned int divider, \
                            bool update) { \
       std::string elementName = signal_logger::LOGGER_PREFIX + "/" + group + "/" + name; \
-      logElements_[elementName] = new LogElementStd<TYPE>(const_cast<TYPE*>(&var), elementName , unit, bufferSize_, &file_); \
+      logElements_[elementName] = new LogElementStd<TYPE>(const_cast<TYPE*>(&var), elementName , unit, divider, bufferSize_, &file_); \
     } /*
  */

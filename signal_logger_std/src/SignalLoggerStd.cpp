@@ -26,20 +26,17 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName) {
 
   // Open file
   file_.open(logFileName, std::ios::out | std::ios::trunc);
+  file_ << "// DataName noBytes noPts divider" << std::endl;
+
   for(auto & elem : logElements_) {
     if(elem.second->isEnabled()) {
       elem.second->writeHeaderToLogFile();
     }
   }
+
   //    # FIXME for binary
-  //    file_.close();
-  //    file_.open(filename, std::ios::out | std::ios::app | std::ios::binary);
-  for(auto & elem : logElements_) {
-    if(elem.second->isEnabled()) {
-      elem.second->writeDataToLogFile();
-    }
-  }
-  file_<<std::endl;
+  file_.close();
+  file_.open(logFileName, std::ios::out | std::ios::app | std::ios::binary);
   for(auto & elem : logElements_) {
     if(elem.second->isEnabled()) {
       elem.second->writeDataToLogFile();
