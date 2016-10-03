@@ -57,6 +57,15 @@ class LogElementBase: public LogElementInterface
     pop_back<ValueType_>(pItem);
   }
 
+  void setBufferSize(std::size_t bufferSize) {
+    bufferSize_ = bufferSize;
+    pBuffer_->set_capacity(bufferSize_);
+  }
+
+  std::size_t getBufferSize() {
+    return bufferSize_;
+  }
+
  protected:
   ValueType_ * ptr_;
 
@@ -120,6 +129,15 @@ class LogElementBase<ValueType_, typename std::enable_if<std::is_base_of<Eigen::
         pop_back<typename ValueType_::Scalar>(&(*pItem)(r,c));
       }
     }
+  }
+
+  void setBufferSize(std::size_t bufferSize) {
+    bufferSize_ = bufferSize*no_rows_*no_cols_;
+    pBuffer_->set_capacity(bufferSize_);
+  }
+
+  std::size_t getBufferSize() {
+    return bufferSize_/(no_rows_*no_cols_);
   }
 
   std::size_t rows()

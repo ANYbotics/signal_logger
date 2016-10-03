@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
     rqt_gui_cpp
     signal_logger_msgs
 )
-
 find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 include(${QT_USE_FILE})
 
@@ -23,6 +22,7 @@ catkin_python_setup()
 ###########
 set(rqt_signal_logger_SRCS
     src/SignalLoggerPlugin.cpp
+    src/LED.cpp
 )
 ###########
 
@@ -34,6 +34,7 @@ set(rqt_signal_logger_SRCS
 set(rqt_signal_logger_HDRS
     include/rqt_signal_logger/SignalLoggerPlugin.hpp
     include/rqt_signal_logger/LogElement.hpp
+    include/rqt_signal_logger/LED.hpp
 )
 ###########
 
@@ -43,7 +44,8 @@ set(rqt_signal_logger_HDRS
 # ui files #
 ############
 set(rqt_signal_logger_UIS
-    resource/signal_logger_plugin.ui
+    resource/signal_logger_configure.ui
+    resource/signal_logger_variables.ui
 )
 ############
 
@@ -84,7 +86,7 @@ target_link_libraries(rqt_signal_logger
     ${QT_QTGUI_LIBRARY}
     ${QT_QTOPENGL_LIBRARY}
     ${OPENGL_LIBRARIES}
-    glut GL GLU GLEW
+    glut GL GLU GLEW yaml-cpp
 )
 
 

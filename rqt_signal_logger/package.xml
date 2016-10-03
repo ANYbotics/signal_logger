@@ -16,7 +16,7 @@
   <depend>rqt_gui</depend>
   <depend>rqt_gui_cpp</depend>
   <depend>signal_logger_msgs</depend>
-
+  
   <export>
   <architecture_inent/>
   <rqt_gui plugin="${prefix}/plugin.xml"/>

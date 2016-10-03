@@ -110,15 +110,10 @@ class LogElementInterface
   }
 
   //! @return buffer size of the log element
-  std::size_t getBufferSize() {
-    return bufferSize_;
-  }
+  virtual std::size_t getBufferSize() = 0;
 
   //! @return buffer size of the log element
-  void setBufferSize(std::size_t bufferSize) {
-    bufferSize_ = bufferSize;
-    pBuffer_->set_capacity(bufferSize_);
-  }
+  virtual void setBufferSize(std::size_t bufferSize) = 0;
 
   //! @return name of the log element
   std::type_index getType() {
@@ -174,10 +169,10 @@ class LogElementInterface
  protected:
   //! Data Buffer
   internal::BufferInterfacePtr pBuffer_;
-
- private:
   //! Size of the data buffer
   std::size_t bufferSize_;
+
+ private:
   //! Type stored in the buffer
   std::type_index type_;
   //! Name of the log element
