@@ -9,31 +9,32 @@
 
 // Signal logger
 #include "signal_logger/LogElementInterface.hpp"
-
-// Eigen
-#include "Eigen/Core"
+#include "signal_logger/Buffer.hpp"
 
 namespace signal_logger {
 
-//! Implementation for all types except Eigen Matrices
-template <typename ValueType_, typename IsEigenType_ = void>
+template <typename ValueType_>
 class LogElementBase: public LogElementInterface
 {
  public:
   /** Constructor
-   * @param ptr     pointer to the data that shall be logged
-   * @param name    name of the log element
-   * @param unit    unit of the logged data
-   * @param buffer_size size of the buffer (old elements will always be overwritten)
-   * @return log element
-  */
+   *  @param ptr        pointer to the log var
+   *  @param name       name of the log var
+   *  @param unit       unit of the log var
+   *  @param divider    log_freq = ctrl_freq/divider
+   *  @param action     save, publish or save and publish
+   *  @param bufferSize size of the buffer (bufferSize elementes of type ValueType_)
+   *  @param isBufferLooping is the buffer replacing old values with new ones?
+   */
   LogElementBase(ValueType_ * ptr,
                  const std::string & name,
                  const std::string & unit,
-                 const unsigned int divider,
-                 const std::size_t buffer_size) :
-    LogElementInterface(new Buffer<ValueType_>(0), buffer_size, typeid(ValueType_), name, unit, divider),
-    ptr_(ptr)
+                 const std::size_t divider,
+                 const LogElementAction action,
+                 const std::size_t bufferSize,
+                 const bool isBufferLooping) :
+    LogElementInterface(name, unit, divider, action, bufferSize, isBufferLooping),
+    buffer_(ptr, 0) // Zero buffer size log element not enabled
   {
 
   }
@@ -47,117 +48,32 @@ class LogElementBase: public LogElementInterface
   //! Push data to the buffer
   void collectData()
   {
-    push_front<ValueType_>(*ptr_);
-    publishData();
+    buffer_.collect();
   }
 
-  //! Read value from Buffer
-  void pop_value(ValueType_* pItem)
-  {
-    pop_back<ValueType_>(pItem);
-  }
-
-  void setBufferSize(std::size_t bufferSize) {
+  //! @param desired buffer size of the log element
+  virtual void setBufferSize(const std::size_t bufferSize) {
     bufferSize_ = bufferSize;
-    pBuffer_->set_capacity(bufferSize_);
+    buffer_.setBufferSize(bufferSize_);
   }
 
-  std::size_t getBufferSize() {
-    return bufferSize_;
+  //! @param flag indicating if buffer should be looping
+  virtual void setIsBufferLooping(const bool isBufferLooping) {
+    isBufferLooping_ = isBufferLooping;
   }
 
- protected:
-  ValueType_ * ptr_;
-
-};
-
-//! Implementation for Eigen Matrices
-template <typename ValueType_>
-class LogElementBase<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value>::type> : public LogElementInterface
-{
- public:
-  /** Constructor
-   * @param ptr     pointer to the data that shall be logged
-   * @param name    name of the log element
-   * @param unit    unit of the logged data
-   * @param buffer_size size of the buffer, since buffer is of type double this is
-   *                    multiplied by nr_rows and nr_cols (old elements will always be overwritten)
-   * @return log element
-  */
-  LogElementBase(ValueType_ * ptr,
-                 const std::string & name,
-                 const std::string & unit,
-                 const unsigned int divider,
-                 const std::size_t buffer_size) :
-    LogElementInterface(new Buffer<typename ValueType_::Scalar>(0), buffer_size*ptr->rows()*ptr->cols(), typeid(typename ValueType_::Scalar), name, unit, divider),
-    ptr_(ptr),
-    no_rows_(ptr->rows()),
-    no_cols_(ptr->cols())
-  {
-
+  //! @return flag indicating if buffer is full
+  virtual bool isBufferFull() const {
+    return buffer_.isLooping() ? bufferSize_ <= buffer_.noUnreadItems() : bufferSize_ <= buffer_.noItems();
   }
 
-  //! Destructor
-  virtual ~LogElementBase()
-  {
-
-  }
-
-  //! Loop through matrix and push data to the buffer
-  void collectData()
-  {
-    for (int r=0; r<no_rows_; r++)
-    {
-      for (int c=0; c<no_cols_; c++)
-      {
-        push_front<typename ValueType_::Scalar>( (*ptr_)(r,c) );
-      }
-    }
-    publishData();
-  }
-
-  //! Read value from Buffer
-  void pop_value(ValueType_* pItem)
-  {
-    // Resize data to proper size
-    pItem->resize(no_rows_, no_cols_);
-
-    for (int r=0; r<no_rows_; r++)
-    {
-      for (int c=0; c<no_cols_; c++)
-      {
-        pop_back<typename ValueType_::Scalar>(&(*pItem)(r,c));
-      }
-    }
-  }
-
-  void setBufferSize(std::size_t bufferSize) {
-    bufferSize_ = bufferSize*no_rows_*no_cols_;
-    pBuffer_->set_capacity(bufferSize_);
-  }
-
-  std::size_t getBufferSize() {
-    return bufferSize_/(no_rows_*no_cols_);
-  }
-
-  std::size_t rows()
-  {
-    return no_rows_;
-  }
-
-  std::size_t cols()
-  {
-    return no_cols_;
+  //! @return all read and unread elements in the buffer
+  std::vector<ValueType_> getBufferCopy() {
+    return buffer_.copyBuffer();
   }
 
  protected:
-  ValueType_ * ptr_;
-
- private:
-  std::size_t no_rows_;
-  std::size_t no_cols_;
-
+  Buffer<ValueType_> buffer_;
 };
 
 } /* namespace signal_logger */
-

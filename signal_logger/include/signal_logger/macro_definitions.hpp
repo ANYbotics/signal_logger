@@ -7,43 +7,50 @@
 #pragma once
 
 #define ADD_VAR_DEFINITION(TYPE, NAME, ...) \
-    virtual void add##NAME(const TYPE& var, \
-                           const std::string& name, \
-                           const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, \
-                           const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, \
-                           const unsigned int divider = LOGGER_DEFAULT_DIVIDER, \
-                           bool update = LOGGER_DEFAULT_UPDATE) = 0; /*
-                            */
+    virtual void add##NAME( const TYPE & var, \
+                            const std::string& name, \
+                            const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, \
+                            const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, \
+                            const std::size_t divider = std::size_t{LOGGER_DEFAULT_DIVIDER}, \
+                            const signal_logger::LogElementInterface::LogElementAction & action = LOGGER_DEFAULT_ACTION, \
+                            const std::size_t bufferSize = std::size_t{LOGGER_DEFAULT_BUFFER_SIZE}, \
+                            const bool bufferLooping = LOGGER_DEFAULT_BUFFER_LOOPING ) = 0; /*
+                             */
 
 #define ADD_EIGEN_VAR_AS_UNDERLYING_TYPE_IMPLEMENTATION(TYPE, NAME, UNDERLYING_TYPE, UNDERLYING_TYPE_NAME) \
-    void add##NAME(const TYPE& var, \
-                   const signal_logger::MatrixXstring& names, \
-                   const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, \
-                   const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, \
-                   const unsigned int divider = LOGGER_DEFAULT_DIVIDER, \
-                   bool update = LOGGER_DEFAULT_UPDATE) { \
+    void add##NAME( const TYPE & var, \
+                    const signal_logger::MatrixXstring& names, \
+                    const std::string& group, \
+                    const std::string& unit, \
+                    const std::size_t divider, \
+                    const signal_logger::LogElementInterface::LogElementAction & action, \
+                    const std::size_t bufferSize, \
+                    const bool bufferLooping) \
+    { \
       for (int r=0; r<static_cast<signal_logger::MatrixXstring>(names).rows(); r++)  { \
         for (int c=0; c<static_cast<signal_logger::MatrixXstring>(names).cols(); c++)  { \
-          add##UNDERLYING_TYPE_NAME((UNDERLYING_TYPE)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, divider, update); \
+          add##UNDERLYING_TYPE_NAME((UNDERLYING_TYPE)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, divider, action, bufferSize, bufferLooping); \
         } \
       } \
     } /*
- */
+     */
 
 #define ADD_VAR_TEMPLATE_SPECIFICATIONS(TYPE, NAME, ...) \
-  template < > \
-  void SignalLoggerBase::add( const TYPE & var, \
-                              const std::string& name, \
-                              const std::string& group, \
-                              const std::string& unit, \
-                              const unsigned int divider, \
-                              bool update) \
-  { \
-    if(logElements_.find(name) != logElements_.end()) { \
-      printf("A signal with the same name %s is already logged. Overwrite.", name.c_str()); \
-    } \
-    add##NAME(var, name, group, unit, divider, update); \
-  }
+    template < > \
+    void SignalLoggerBase::add( const TYPE & var, \
+                                const std::string& name, \
+                                const std::string& group, \
+                                const std::string& unit, \
+                                const std::size_t divider, \
+                                const signal_logger::LogElementInterface::LogElementAction & action, \
+                                const std::size_t bufferSize, \
+                                const bool bufferLooping) \
+    { \
+      if(logElements_.find(name) != logElements_.end()) { \
+        printf("A signal with the same name %s is already logged. Overwrite.", name.c_str()); \
+      } \
+      add##NAME(var, name, group, unit, divider, action, bufferSize, bufferLooping); \
+    }
 
 #define FOR_PRIMITIVE_TYPES(MACRO) \
     MACRO(float, Float)\

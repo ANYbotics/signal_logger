@@ -29,8 +29,10 @@ namespace signal_logger {
 // Some logger defaults
 const std::string LOGGER_DEFAULT_GROUP_NAME = "/log/";
 const std::string LOGGER_DEFAULT_UNIT       = "-";
-const unsigned int LOGGER_DEFAULT_DIVIDER    = 1;
-const bool LOGGER_DEFAULT_UPDATE            = false;
+const std::size_t LOGGER_DEFAULT_DIVIDER    = 1;
+const LogElementInterface::LogElementAction LOGGER_DEFAULT_ACTION = LogElementInterface::LogElementAction::SAVE_AND_PUBLISH;
+const std::size_t LOGGER_DEFAULT_BUFFER_SIZE = 0;
+const bool LOGGER_DEFAULT_BUFFER_LOOPING = false;
 const std::string LOGGER_DEFAULT_SCRIPT_FILENAME   = "logger.yaml";
 const std::string LOGGER_PREFIX = "/log";
 
@@ -105,8 +107,10 @@ class SignalLoggerBase {
             const std::string& name,
             const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME},
             const std::string& unit = std::string{LOGGER_DEFAULT_UNIT},
-            const unsigned int divider = LOGGER_DEFAULT_DIVIDER,
-            bool update = LOGGER_DEFAULT_UPDATE)
+            const std::size_t divider = LOGGER_DEFAULT_DIVIDER,
+            const LogElementInterface::LogElementAction & action = LOGGER_DEFAULT_ACTION,
+            const std::size_t bufferSize = LOGGER_DEFAULT_BUFFER_SIZE,
+            const bool bufferLooping = LOGGER_DEFAULT_BUFFER_LOOPING )
   {
     MELO_ERROR("Type of signal with name %s is not supported.", name.c_str());
   }
@@ -119,11 +123,9 @@ class SignalLoggerBase {
 
   virtual bool workerSaveData(const std::string & logFileName) = 0;
 
-
   // Add pure virtual add-functions for every single type
   FOR_ALL_TYPES(ADD_VAR_DEFINITION);
   FOR_EIGEN_TYPES(ADD_EIGEN_VAR_AS_UNDERLYING_TYPE_IMPLEMENTATION);
-
 
  protected:
   //! Flag to check if logger is initialized

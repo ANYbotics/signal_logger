@@ -24,27 +24,27 @@ SignalLoggerStd::~SignalLoggerStd()
 //! Save all the buffered data into a log file
 bool SignalLoggerStd::workerSaveData(const std::string & logFileName) {
 
-  // Open file
+  // Clear streams
+  headerStream_.clear();
+  dataStream_.clear();
+
+  // Fill streams
+  for(auto & elem : logElements_) {
+    if(elem.second->isEnabled()) {
+      elem.second->saveDataToLogFile();
+    }
+  }
+
+  // Write string header
   file_.open(logFileName, std::ios::out | std::ios::trunc);
-  file_ << "// DataName noBytes noPts divider" << std::endl;
+  file_ << headerStream_ << std::endl;
 
-  for(auto & elem : logElements_) {
-    if(elem.second->isEnabled()) {
-      elem.second->writeHeaderToLogFile();
-    }
-  }
-
-  //    # FIXME for binary
-  file_.close();
+  // Write binary data
   file_.open(logFileName, std::ios::out | std::ios::app | std::ios::binary);
-  for(auto & elem : logElements_) {
-    if(elem.second->isEnabled()) {
-      elem.second->writeDataToLogFile();
-    }
-  }
+  file_ << dataStream_ << std::endl;
 
+  // Close file
   file_.close();
-
   MELO_INFO( "All done, captain!" );
 
   return true;

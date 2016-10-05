@@ -37,10 +37,12 @@ class LogElementRos: public signal_logger::LogElementBase<ValueType_>
   LogElementRos(ValueType_ * ptr,
                 const std::string & name,
                 const std::string & unit,
-                const unsigned int divider,
-                const std::size_t buffer_size,
+                const std::size_t divider,
+                const signal_logger::LogElementInterface::LogElementAction action,
+                const std::size_t bufferSize,
+                const bool isBufferLooping,
                 const ros::NodeHandle & nh) :
-    signal_logger::LogElementBase<ValueType_>(ptr, name, unit, divider, buffer_size),
+    signal_logger::LogElementBase<ValueType_>(ptr, name, unit, divider, action, bufferSize, isBufferLooping),
     nh_(nh)
   {
     //! A buffer is already provided, publisher should not create internal one
@@ -57,18 +59,17 @@ class LogElementRos: public signal_logger::LogElementBase<ValueType_>
   void publishData()
   {
     ValueType_ data;
-    signal_logger::LogElementBase<ValueType_>::pop_value(&data);
+    this->buffer_.read(&data);
     ros::Time now = ros::Time::now();
     traits::slr_traits<ValueType_>::updateMsg(&data, msg_, now);
     pub_.publish(msg_);
   }
 
-  void initialize() { pub_ = nh_.advertise<MsgType>(this->getName(), 1); }
-  void shutdown() { pub_.shutdown(); }
+  void initializeElement() { pub_ = nh_.advertise<MsgType>(this->getName(), 1); }
+  void shutdownElement() { pub_.shutdown(); }
 
   //! These functions do nothing for a ros element
-  void writeHeaderToLogFile() { }
-  void writeDataToLogFile() { }
+  void saveDataToLogFile() { }
 
  protected:
   ros::NodeHandle nh_;

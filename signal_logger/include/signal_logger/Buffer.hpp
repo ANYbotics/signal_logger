@@ -2,132 +2,291 @@
  * CircularBuffer.hpp
  *
  *  Created on: Sep 21, 2016
- *      Author: gabrielhottiger
+ *      Author: Gabriel Hottiger
  */
 
 #pragma once
 
+// Message logger
+#include "message_logger/message_logger.hpp"
+
+// Eigen
+#include <Eigen/Core>
+
 // Boost
 #include <boost/circular_buffer.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/condition.hpp>
+#include <boost/thread/mutex.hpp>
 
-// Signal logger
-#include <signal_logger/BufferInterface.hpp>
+// STL
+#include <type_traits>
 
 namespace signal_logger {
 
-
-// This implementation of a thread-safe circular buffer can be found here:
-// http://www.boost.org/doc/libs/1_54_0/libs/circular_buffer/doc/circular_buffer.html#boundedbuffer
-
-template <class T>
-class Buffer : public internal::BufferInterface {
+/** Buffer that stores all elements in a circular manner. Allows looping, thus overwriting
+ *  old entries with newer ones, keeps count of the unread items, push and pop influence this count.
+ *  If buffer is empty no elements can be popped, if buffer is full and not looping
+ *  no elements can be pushed. Popping does not delete the item, only sets unread item
+ *  count . A copy of all the elements stored in the  buffer (read and unread items) can be obtained.
+ *  This implementation of a thread-safe circular buffer is adapted from here:
+ *  http://www.boost.org/doc/libs/1_54_0/libs/circular_buffer/doc/circular_buffer.html#boundedbuffer
+ */
+//! Thread-safe circular buffer
+template <typename ValueType_>
+class Buffer
+{
  public:
+  //! Convenience typedefs
+  template<typename T , typename Enable = void>
+  struct Container {
+    typedef boost::circular_buffer<ValueType_> type;
+  };
 
-  typedef boost::circular_buffer<T> container_type;
+  template<typename T>
+  struct Container<T, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<T>, T>::value>::type>
+  {
+       typedef boost::circular_buffer<typename ValueType_::Scalar> type;
+  };
+
+  typedef typename Container<ValueType_>::type container_type;
   typedef typename container_type::size_type size_type;
-  typedef typename container_type::value_type value_type;
-  typedef typename boost::call_traits<value_type>::param_type param_type;
 
-  explicit Buffer(size_type window_size) :
-              no_unread_items_(0),
-    		      container_(window_size)
+  /** Constructor for non-eigen-types
+   *  @param window_size
+   */
+  template<typename V = ValueType_>
+  explicit Buffer(V * ptr, size_type window_size = 0,
+                  typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0) :
+    ptr_(ptr),
+    latestIdx_(0),
+    noUnreadItems_(0),
+    noItems_(0),
+    isLooping_(true),
+    container_(window_size),
+    mutex_(),
+    rows_(1),
+    cols_(1)
   {
 
   }
 
-  void push_front(param_type item) {
+  /** Constructor for eigen-types
+   *  @param window_size
+   */
+  template<typename V = ValueType_>
+  explicit Buffer(V * ptr, size_type window_size = 0,
+                  typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0) :
+    ptr_(ptr),
+    latestIdx_(0),
+    noUnreadItems_(0),
+    noItems_(0),
+    isLooping_(true),
+    container_(window_size),
+    mutex_(),
+    rows_(ptr->rows()),
+    cols_(ptr->cols())
+  {
+
+  }
+
+  //! Push data into the buffer (if looping or not full).
+  bool collect()
+  {
     // Lock the circular buffer
     boost::mutex::scoped_lock lock(mutex_);
 
-    // Update idx
-    newest_idx_ = ++newest_idx_ % container_.capacity();
-    no_unread_items_ = std::min(++no_unread_items_, container_.capacity());
-    no_items_ = std::min(++no_items_, container_.capacity());
+    // Non-looping buffers don't allow filling a full buffer
+    if(!isLooping_ && noItems_ >= bufferSize_) { return false; }
 
     // Add value to the buffer
-    container_.push_front(item);
+    pushElementFront(ptr_);
 
-    // Lock
-    lock.unlock();
-    not_empty_.notify_one();
+    /*  lastIdx -> iterating through buffer
+     *  noUnreadItems -> increases on push decreased on pop
+     *  noItems -> increases on push, max out at capacity
+     */
+    latestIdx_ = ++latestIdx_ % bufferSize_;
+    noUnreadItems_ = std::min(++noUnreadItems_, bufferSize_);
+    noItems_ = std::min(++noItems_, bufferSize_);
+
+    return true;
   }
 
-  void pop_back(value_type * pItem) {
+  /** Pop an item from the buffer (if buffer not empty).
+   *  @param pItem pointer to value in which popped value is stored
+   */
+  bool read(ValueType_ * pItem)
+  {
     // Lock the circular buffer
     boost::mutex::scoped_lock lock(mutex_);
 
-    // Wait for another thread to fill in a value to pop
-    not_empty_.wait(lock, boost::bind(&Buffer<value_type>::is_not_empty, this));
+    // Check if buffer is empty
+    if( noUnreadItems_ == 0 ) { return false; }
 
-    // Get item from buffer, decrement nr of unread items
-    *pItem = container_[--newest_idx_];
-    --no_unread_items_;
+    // Get item from buffer,
+    readElementAtPosition(pItem, (latestIdx_ - 1) );
+
+    // Decrement nr of unread items and latest idx
+    --latestIdx_;
+    --noUnreadItems_;
+
+    return true;
   }
 
-  std::vector<value_type> read_full_buffer() {
+  /** Make a copy of the complete (valid) buffer entries. The unread counter remains
+   *  unchanged, it copies the last noItmes_ items into a vector of value_type.
+   *  @return vector containing all buffered items
+   */
+  template<typename V = ValueType_>
+  std::vector<V> copyBuffer(typename std::enable_if<!std::is_same<bool, V>::value>::type* = 0)
+  {
+    // Lock circular buffer
     boost::mutex::scoped_lock lock(mutex_);
 
-    std::vector<value_type> data_vector(no_items_);
-
-    size_type idx = newest_idx_ - no_items_;
-    size_type i = idx < 0 ? idx+container_.capacity() : idx;
-    for(int j = 0; j < no_items_; ++j)
-    {
-      data_vector.at((i+j)%container_.capacity()) = container_[(i+j)%container_.capacity()];
+    // Fill vector
+    std::vector<ValueType_> data_vector(noItems_);
+    size_type start = latestIdx_ - noItems_ + (noItems_ > latestIdx_)*bufferSize_;
+    for(int j = 0; j < noItems_; ++j) {
+      readElementAtPosition( &data_vector[j] , (start + j) % bufferSize_);
     }
+
     return data_vector;
   }
 
-  void set_capacity(std::size_t new_capacity) {
+  template<typename V = ValueType_>
+  std::vector<bool> copyBuffer(typename std::enable_if<std::is_same<bool, V>::value>::type* = 0)
+  {
+    // Lock circular buffer
+    boost::mutex::scoped_lock lock(mutex_);
+
+    // Fill vector
+    std::vector<bool> data_vector(noItems_);
+    size_type start = latestIdx_ - noItems_ + (noItems_ > latestIdx_)*bufferSize_;
+    for(int j = 0; j < noItems_; ++j) {
+      bool read;
+      readElementAtPosition( &read , (start + j) % bufferSize_);
+      data_vector[j] = read;
+    }
+
+    return data_vector;
+  }
+
+  /** Change the buffer size
+   *  @param bufferSize new buffer size
+   */
+  void setBufferSize(const std::size_t bufferSize) {
     // Lock the circular buffer
     boost::mutex::scoped_lock lock(mutex_);
 
     // Change capacity of the container
-    container_.set_capacity(new_capacity);
+    bufferSize_ = bufferSize;
+    container_.set_capacity(bufferSize_ * rows_ * cols_);
 
     // Clear the buffer and restart filling
     container_.clear();
-    no_unread_items_ = size_type(0);
-    no_items_ = size_type(0);
-    newest_idx_ = size_type(0);
+    noUnreadItems_ = size_type(0);
+    noItems_ = size_type(0);
+    latestIdx_ = size_type(0);
   }
 
-  //! Unread data in the buffer
-  std::size_t get_no_unread_items() {
+  //! @return number of unread elements
+  std::size_t noUnreadItems() const {
     boost::mutex::scoped_lock lock(mutex_);
-    return no_unread_items_;
+    return noUnreadItems_;
   }
 
-  //! Get the number of "valid" items in the buffer
-  std::size_t get_no_items() {
+  //! @return number of items stored in the buffer (read and unread)
+  std::size_t noItems() const {
     boost::mutex::scoped_lock lock(mutex_);
-    return no_items_;
+    return noItems_;
   }
 
+  //! @return true, iff buffer is looping
+  bool isLooping() const {
+    boost::mutex::scoped_lock lock(mutex_);
+    return isLooping_;
+  }
+
+  //! @param isLooping flag indicating if buffer is looping
+  void setIsLooping(const bool isLooping) {
+    boost::mutex::scoped_lock lock(mutex_);
+    isLooping_ = isLooping;
+  }
 
  private:
-  Buffer(const Buffer&);              // Disabled copy constructor
-  Buffer& operator = (const Buffer&); // Disabled assign operator
+  //! Disabled copy constructor
+  Buffer(const Buffer&);
+  //! Disabled assign operator
+  Buffer& operator = (const Buffer&);
 
-  // Helpers
-  bool is_not_empty() const { return no_unread_items_ > 0; }
+ private:
+  // Version for non-eigen-types
+  template<typename V = ValueType_>
+  typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
+  pushElementFront(ValueType_ * item) {
+    container_.push_front(*item);
+  }
 
-  // Count unread variables
-  size_type newest_idx_;
-  // Count unread variables
-  size_type no_unread_items_;
-  // Count all variables
-  size_type no_items_;
+  // Version for eigen-types
+  template<typename V = ValueType_>
+  typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
+  pushElementFront(ValueType_ * item) {
+    if(item->rows() != rows_ || item->cols() != cols_) {
+      // Error output -> don't push back
+      MELO_ERROR_STREAM("Matrix size not consistent" << std::endl << "init_rows = " << rows_ <<
+                        "item_rows = " << item->rows() << std::endl << "init_cols = " << cols_ <<
+                        "item_cols = " << item->cols());
+      return;
+    }
+    for(std::size_t i = 0; i < item->size(); ++i) {
+      container_.push_front( *(item->data() + i) );
+    }
+  }
 
+  // Version for non-eigen-types
+  template<typename V = ValueType_>
+  typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
+  readElementAtPosition(ValueType_ * item, size_t position) {
+    if(position < 0 || position >= bufferSize_) {
+      throw std::out_of_range("Can not read element at position " + std::to_string(position));
+    }
+    *item = container_[position];
+  }
 
-  // Circular buffer
+  // Version for eigen-types
+  template<typename V = ValueType_>
+  typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
+  readElementAtPosition(ValueType_ * item, size_t position) {
+    if(position < 0 || position >= bufferSize_) {
+      throw std::out_of_range("Can not read element at position " + std::to_string(position));
+    }
+    item->resize(rows_, cols_);
+    // (position+1)*cols_*rows_ -1  refers to the last element of the buffered matrix
+    for(std::size_t i = 0; i < item->size(); ++i) {
+      *(item->data() + i) = container_[ (position+1)*cols_*rows_ - 1 - i ];
+    }
+  }
+
+ private:
+  //! Pointer to value
+  ValueType_* ptr_;
+  //! Buffer size w.r.t. to ValueType_ (bufferSize_ is not necessary equal to container_.capacity())
+  size_type bufferSize_;
+  //! Index of the newest entry
+  size_type latestIdx_;
+  //! Number of unread items
+  size_type noUnreadItems_;
+  //! Number of items in the buffer (read and unread)
+  size_type noItems_;
+  //! Is the buffer "circulating", refreshing old entries with new ones
+  bool isLooping_;
+  //! Circular buffer
   container_type container_;
-  // Mutex protecting accessing this container
-  boost::mutex mutex_;
-  // Condition for thread synchronisation
-  boost::condition not_empty_;
+  //! Mutex protecting accessing this container
+  mutable boost::mutex mutex_;
+
+  //! Eigen specific entries (0 in other cases)
+  const std::size_t rows_;
+  const std::size_t cols_;
 };
 
 } /* namespace signal_logger */

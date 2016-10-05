@@ -7,9 +7,8 @@
 
 #pragma once
 
-// Signal logger
-#include "signal_logger/BufferInterface.hpp"
-#include "signal_logger/Buffer.hpp"
+// STL
+#include <string>
 
 namespace signal_logger {
 
@@ -19,32 +18,41 @@ namespace signal_logger {
  */
 class LogElementInterface
 {
- protected:
-  /** Constructor
-   * @param pBuffer pointer to buffer that stores entries of ValueType_ (Length is zero until not collected)
-   * @param type    typeindex of ValueType_ / datatype id of the log element
-   * @param name    name of the log element
-   * @param unit    unit of the logged data
-   * @return log element
-   */
-  LogElementInterface(internal::BufferInterface * pBuffer,
-                      const std::size_t & bufferSize,
-                      const std::type_index & type,
-                      const std::string & name,
-                      const std::string & unit,
-                      const unsigned int divider) :
-                        pBuffer_(pBuffer),
-                        bufferSize_(bufferSize),
-                        type_(type),
-                        name_(name),
-                        unit_(unit),
-                        divider_(divider),
-                        isEnabled_(false)
- {
-
- }
+ public:
+  //! Enum containing possible logging actions
+  enum class LogElementAction: unsigned int
+  {
+    SAVE_AND_PUBLISH = 0,
+    SAVE = 1,
+    PUBLISH = 2
+  };
 
  public:
+  /** Constructor
+   *  @param name       name of the log var
+   *  @param unit       unit of the log var
+   *  @param divider    log_freq = ctrl_freq/divider
+   *  @param action     save, publish or save and publish
+   *  @param bufferSize size of the buffer (bufferSize elementes of type ValueType_)
+   *  @param isBufferLooping is the buffer replacing old values with new ones?
+   */
+  LogElementInterface(const std::string & name,
+                      const std::string & unit,
+                      const std::size_t divider,
+                      const LogElementAction action,
+                      const std::size_t bufferSize,
+                      const bool isBufferLooping) :
+      name_(name),
+      unit_(unit),
+      divider_(divider),
+      action_(action),
+      bufferSize_(bufferSize),
+      isBufferLooping_(isBufferLooping),
+      isEnabled_(false)
+  {
+
+  }
+
   //! Destructor
   virtual ~LogElementInterface() { }
 
@@ -55,86 +63,13 @@ class LogElementInterface
   virtual void publishData() = 0;
 
   //! Write header of log file
-  virtual void writeHeaderToLogFile() = 0;
-
-  //! Write data to log file
-  virtual void writeDataToLogFile() = 0;
+  virtual void saveDataToLogFile() = 0;
 
   //! Initialize logger elements communication etc
-  virtual void initialize() = 0;
+  virtual void initializeElement() = 0;
 
   //! Shutdown logger elements communication etc
-  virtual void shutdown() = 0;
-
-  /** Function to push an item to the buffer. If the type added mismatches the buffer type and error will be thrown.
-   * @tparam ValueType_ Type of the value to add
-   * @param  item       item of type ValueType_ that shall be added
-   */
-  template<typename ValueType_>
-  void push_front(typename boost::call_traits<ValueType_>::param_type item) {
-    if (type_ == typeid(ValueType_)) {
-      return std::static_pointer_cast<Buffer<ValueType_> >(pBuffer_)->push_front(item);
-    }
-    else {
-      throw std::runtime_error("Buffer value type mismatch");
-    }
-  }
-
-  /** Function to pop an item from the buffer. If the pop data type mismatches the buffer type and error will be thrown.
-   * @tparam ValueType_ Type of the value to add
-   * @param  pItem      pointer to the an object where the popped data shall be stored in
-   */
-  template<typename ValueType_>
-  void pop_back(ValueType_* pItem) {
-    if (type_ == typeid(ValueType_)) {
-      return std::static_pointer_cast<Buffer<ValueType_> >(pBuffer_)->pop_back(pItem);
-    }
-    else {
-      throw std::runtime_error("Buffer value type mismatch");
-    }
-  }
-
-  /** Function to pop all items from the buffer. If the pop data type mismatches the buffer type and error will be thrown.
-   *  However unread flag is untouched. This basically is a copy of the buffer entries, but they remain unchanged.
-   * @tparam ValueType_ Type of the value to read
-   * @return  all data stored in the buffer
-   */
-  template<typename ValueType_>
-  std::vector<ValueType_> read_full_buffer() {
-    if (type_ == typeid(ValueType_)) {
-      return std::static_pointer_cast<Buffer<ValueType_> >(pBuffer_)->read_full_buffer();
-    }
-    else {
-      throw std::runtime_error("Buffer value type mismatch");
-    }
-  }
-
-  //! @return is buffer of the log element looping
-  bool isBufferLooping() const {
-    return pBuffer_->is_looping();
-  }
-
-
-  //! @param is buffer of the log element looping
-  void setIsBufferLooping(const bool isLooping) {
-    pBuffer_->set_is_looping(isLooping);
-  }
-
-  //! @return buffer size of the log element
-  virtual std::size_t getBufferSize() = 0;
-
-  //! @param buffer size of the log element
-  virtual void setBufferSize(std::size_t bufferSize) = 0;
-
-  //! @return buffer size of the log element
-  bool isBufferFull() {
-    return pBuffer_->is_looping() ? bufferSize_ <= pBuffer_->get_no_unread_items() : bufferSize_ <= pBuffer_->get_no_items();
-  }
-
-  //! @return name of the log element
-  std::type_index getType() {
-    return type_;
-  }
+  virtual void shutdownElement() = 0;
 
   //! @return name of the log element
   std::string getName() const {
@@ -146,55 +81,86 @@ class LogElementInterface
     return unit_;
   }
 
-  //! @return get update frequency divider
+  //! @param desired unit of the log element
+  void setUnit(const std::string & unit) {
+    unit_ = unit;
+  }
+
+  //! @return update frequency divider
   unsigned int getDivider() const {
     return divider_;
   }
 
-  //! @return set update frequency divider
+  //! @param desired update frequency divider
   void setDivider(unsigned int divider) {
     divider_ = divider;
   }
 
-  //! @return whether log element is enabled
+  //! @return action log element takes
+  LogElementAction getAction() const {
+    return action_;
+  }
+
+  //! @param desired action log element takes
+  void setAction(LogElementAction action) {
+    action_ = action;
+  }
+
+  //! @return buffer size of the log element
+  virtual std::size_t getBufferSize() const {
+    return bufferSize_;
+  }
+
+  //! @param desired buffer size of the log element
+  virtual void setBufferSize(const std::size_t bufferSize) = 0;
+
+  //! @return flag indicating if buffer is looping
+  virtual bool isBufferLooping() const {
+    return isBufferLooping_;
+  }
+
+  //! @param flag indicating if buffer should be looping
+  virtual void setIsBufferLooping(const bool isBufferLooping) = 0;
+
+  //! @return flag indicating if buffer is full
+  virtual bool isBufferFull() const = 0;
+
+  //! @return flag indicating if log element is enabled
   bool isEnabled() const {
     return isEnabled_;
   }
 
-  //! @return whether log element is enabled
+  //! @param flag indicating if log element should be enabled
   void setIsEnabled(const bool isEnabled) {
     if(isEnabled != isEnabled_)
     {
       isEnabled_ = isEnabled;
       if(isEnabled_) {
-        pBuffer_->set_capacity(bufferSize_);
-        this->initialize();
+        this->setBufferSize(bufferSize_);
+        this->initializeElement();
       }
       else {
-        pBuffer_->set_capacity(0);
-        this->shutdown();
+        this->setBufferSize(std::size_t(0));
+        this->shutdownElement();
       }
     }
   }
 
  protected:
-  //! Data Buffer
-  internal::BufferInterfacePtr pBuffer_;
-  //! Size of the data buffer
-  std::size_t bufferSize_;
-
- private:
-  //! Type stored in the buffer
-  std::type_index type_;
   //! Name of the log element
   std::string name_;
   //! Unit of the log element
   std::string unit_;
   //! Defines log element collection frequency = updateFrequency/divider
-  unsigned int divider_;
+  std::size_t divider_;
+  //! Action
+  LogElementAction action_;
+  //! Buffer size
+  std::size_t bufferSize_;
+  //! Buffer looping
+  bool isBufferLooping_;
   //! Indicates if log element is currently active
   bool isEnabled_;
-
 };
 
 } /* namespace signal_logger */

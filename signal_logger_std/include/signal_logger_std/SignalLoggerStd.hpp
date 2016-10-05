@@ -30,6 +30,8 @@ class SignalLoggerStd : public signal_logger::SignalLoggerBase
 
  private:
   std::ofstream file_;
+  std::stringstream headerStream_;
+  std::stringstream dataStream_;
 };
 
 } /* namespace signal_logger */
