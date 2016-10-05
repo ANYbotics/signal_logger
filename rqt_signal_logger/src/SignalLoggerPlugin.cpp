@@ -40,14 +40,14 @@ static size_t getMaxParamNameWidth(std::vector<std::string> const &lines) {
 }
 
 SignalLoggerPlugin::SignalLoggerPlugin() :
-                    rqt_gui_cpp::Plugin(),
-                    tabWidget_(),
-                    varsWidget_(0),
-                    configureWidget_(0),
-                    paramsGrid_(),
-                    paramsWidget_(0),
-                    paramsScrollHelperWidget_(0),
-                    paramsScrollLayout_(0)
+                            rqt_gui_cpp::Plugin(),
+                            tabWidget_(),
+                            varsWidget_(0),
+                            configureWidget_(0),
+                            paramsGrid_(),
+                            paramsWidget_(0),
+                            paramsScrollHelperWidget_(0),
+                            paramsScrollLayout_(0)
 {
   // Constructor is called first before initPlugin function, needless to say.
   // give QObjects reasonable names
@@ -91,20 +91,23 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
 
   /******************************/
   //#Fixme read from param server
-  std::string getLogElementListServiceName{"/get_log_element_list"};
-  std::string getParameterServiceName{"/get_log_element"};
-  std::string setParameterListServiceName{"/set_log_element"};
-  std::string startLoggerServiceName{"/start_logger"};
-  std::string stopLoggerServiceName{"/stop_logger"};
-  std::string saveLoggerDataServiceName{"/save_logger_data"};
+  std::string getLogElementListServiceName{"/sl_ros/get_logger_element_names"};
+  std::string getParameterServiceName{"/sl_ros/get_logger_element"};
+  std::string setParameterListServiceName{"/sl_ros/set_logger_element"};
+  std::string startLoggerServiceName{"/sl_ros/start_logger"};
+  std::string stopLoggerServiceName{"/sl_ros/stop_logger"};
+  std::string saveLoggerDataServiceName{"/sl_ros/save_logger_data"};
+  std::string loadLoggerScriptServiceName{"/sl_ros/load_logger_script"};
 
   // ROS services
-  getLogElementListClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerInfo>(getLogElementListServiceName);
-  getLogElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerElement>(getParameterServiceName);
-  setLogElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::SetLoggerElement>(setParameterListServiceName);
+  getLoggerElementNamesClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerElementNames>(getLogElementListServiceName);
+  getLoggerElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerElement>(getParameterServiceName);
+  setLoggerElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::SetLoggerElement>(setParameterListServiceName);
   startLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(startLoggerServiceName);
   stopLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(stopLoggerServiceName);
   saveLoggerDataClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(saveLoggerDataServiceName);
+  loadLoggerScriptClient_ = getNodeHandle().serviceClient<signal_logger_msgs::LoadLoggerScript>(loadLoggerScriptServiceName);
+
 }
 
 void SignalLoggerPlugin::changeAll() {
@@ -115,13 +118,12 @@ void SignalLoggerPlugin::changeAll() {
 
 void SignalLoggerPlugin::refreshAll() {
 
-  signal_logger_msgs::GetLoggerInfo::Request req;
-  signal_logger_msgs::GetLoggerInfo::Response res;
+  signal_logger_msgs::GetLoggerElementNamesRequest req;
+  signal_logger_msgs::GetLoggerElementNamesResponse res;
 
-  if (getLogElementListClient_.call(req,res)) {
+  if (getLoggerElementNamesClient_.call(req,res)) {
     // Update parameter names
-    logElementNames_ = res.active_log_elements;
-    logElementNames_.insert(logElementNames_.end(),res.inactive_log_elements.begin(), res.inactive_log_elements.end());
+    logElementNames_ = res.log_element_names;
 
     // Sort names alphabetically.
     std::sort(logElementNames_.begin(), logElementNames_.end(), compareNoCase );
@@ -137,8 +139,7 @@ void SignalLoggerPlugin::refreshAll() {
 void SignalLoggerPlugin::startLogger() {
   std_srvs::Trigger::Request req;
   std_srvs::Trigger::Response res;
-  startLoggerClient_.call(req, res);
-  if(res.success) {
+  if(startLoggerClient_.call(req, res) && res.success) {
     statusMessage("Successfully started logger!", MessageType::SUCCESS, 2.0);
   }
   else {
@@ -149,8 +150,7 @@ void SignalLoggerPlugin::startLogger() {
 void SignalLoggerPlugin::stopLogger() {
   std_srvs::Trigger::Request req;
   std_srvs::Trigger::Response res;
-  stopLoggerClient_.call(req, res);
-  if(res.success) {
+  if(stopLoggerClient_.call(req, res) && res.success) {
     statusMessage("Successfully stopped logger!", MessageType::SUCCESS, 2.0);
   }
   else {
@@ -161,8 +161,7 @@ void SignalLoggerPlugin::stopLogger() {
 void SignalLoggerPlugin::saveLoggerData() {
   std_srvs::Trigger::Request req;
   std_srvs::Trigger::Response res;
-  saveLoggerDataClient_.call(req, res);
-  if(res.success) {
+  if(saveLoggerDataClient_.call(req, res) && res.success) {
     std::string msg = std::string{"Successfully saved logger data to file: "} + res.message;
     statusMessage(msg, MessageType::SUCCESS, 2.0);
   }
@@ -178,43 +177,16 @@ void SignalLoggerPlugin::selectYamlFile() {
 }
 
 void SignalLoggerPlugin::loadYamlFile() {
-  std::string filename = configureUi_.pathEdit->text().toStdString();
-  struct stat buffer;
-  if(stat(filename.c_str(), &buffer) == 0)
-  {
-    refreshAll();
-    const size_t maxParamNameWidth = getMaxParamNameWidth(logElementNames_);
-    logElements_.clear();
-    try {
-      YAML::Node config = YAML::LoadFile(filename);
-      for( size_t i = 0; i < config["log_elements"].size(); ++i) {
-        std::string name = config["log_elements"][i]["name"].as<std::string>();
-        if(std::find(logElementNames_.begin(), logElementNames_.end(), name) != logElementNames_.end()) {
-          logElements_.push_back(std::shared_ptr<LogElement>(new LogElement(name, varsWidget_, paramsGrid_, &getLogElementClient_, &setLogElementClient_, maxParamNameWidth)));
-          logElements_.back()->checkBoxIsLogging->setCheckState(config["log_elements"][i]["logged"].as<bool>()?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
-          logElements_.back()->comboBoxIsLooping->setCurrentIndex(config["log_elements"][i]["buffer"]["looping"].as<bool>());
-          logElements_.back()->spinBoxBufferSize->setValue(config["log_elements"][i]["buffer"]["size"].as<int>());
-          logElements_.back()->spinBoxDivider->setValue(config["log_elements"][i]["divider"].as<int>());
-          logElements_.back()->labelParamName->setText(QString::fromStdString(name));
-        }
-        else {
-          ROS_WARN_STREAM("Could not load " << name << "from config file. Var not logged.");
-        }
-      }
-      changeAll();
-      refreshAll();
-      statusMessage("Successfully loaded logger configuration file!", MessageType::SUCCESS, 2.0);
-    }
-    catch(YAML::Exception & e) {
-      ROS_WARN_STREAM("Could not load config file, because exception occurred: "<<e.what());
-      statusMessage("Logger configuration file can not be opened!", MessageType::ERROR, 2.0);
-      return;
-    }
+  signal_logger_msgs::LoadLoggerScriptRequest req;
+  signal_logger_msgs::LoadLoggerScriptResponse res;
+  req.filepath = configureUi_.pathEdit->text().toStdString();
+  if(loadLoggerScriptClient_.call(req, res) && res.success) {
+    statusMessage("Successfully loaded logger configuration file!", MessageType::SUCCESS, 2.0);
   }
   else {
-    statusMessage("Logger configuration file can not be opened!", MessageType::ERROR, 2.0);
+    statusMessage("Could not load logger configuration file!", MessageType::ERROR, 2.0);
   }
-
+  refreshAll();
 }
 
 void SignalLoggerPlugin::saveYamlFile() {
@@ -236,38 +208,60 @@ void SignalLoggerPlugin::saveYamlFile() {
   }
 
   YAML::Node node;
+  std::size_t j = 0;
   for ( std::size_t i = 0; i < logElements_.size(); ++i)
   {
-    node["log_elements"][i]["name"] = logElements_[i]->labelParamName->text().toStdString();
-    node["log_elements"][i]["logged"] = static_cast<bool>(logElements_[i]->checkBoxIsLogging->checkState());
-    node["log_elements"][i]["divider"] = logElements_[i]->spinBoxDivider->value();
-    node["log_elements"][i]["action"] = logElements_[i]->comboBoxLogType->currentIndex();
-    node["log_elements"][i]["buffer"]["size"] = logElements_[i]->spinBoxBufferSize->value();
-    node["log_elements"][i]["buffer"]["looping"] = static_cast<bool>(logElements_[i]->comboBoxIsLooping->currentIndex());
+    if(static_cast<bool>(logElements_[i]->checkBoxIsLogging->checkState())) {
+      node["log_elements"][j]["name"] = logElements_[i]->labelParamName->text().toStdString();
+      node["log_elements"][j]["divider"] = logElements_[i]->spinBoxDivider->value();
+      node["log_elements"][j]["action"] = logElements_[i]->comboBoxLogType->currentIndex();
+      node["log_elements"][j]["buffer"]["size"] = logElements_[i]->spinBoxBufferSize->value();
+      node["log_elements"][j]["buffer"]["looping"] = static_cast<bool>(logElements_[i]->comboBoxIsLooping->currentIndex());
+      j++;
+    }
   }
 
-  std::ofstream outfile(filename);
-  writeYamlOrderedMaps(outfile, node);
-  outfile.close();
+  // If there are logged elements save them to file
+  if(j!=0) {
+    std::ofstream outfile(filename);
+    writeYamlOrderedMaps(outfile, node);
+    outfile.close();
+  }
 
   statusMessage("Successfully saved logger configuration file!", MessageType::SUCCESS, 2.0);
 }
 
 void SignalLoggerPlugin::shutdownPlugin() {
-  getLogElementListClient_.shutdown();
-  getLogElementClient_.shutdown();
-  setLogElementClient_.shutdown();
+  getLoggerElementNamesClient_.shutdown();
+  getLoggerElementClient_.shutdown();
+  setLoggerElementClient_.shutdown();
   startLoggerClient_.shutdown();
   stopLoggerClient_.shutdown();
   saveLoggerDataClient_.shutdown();
+  loadLoggerScriptClient_.shutdown();
 }
 
 void SignalLoggerPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const {
   plugin_settings.setValue("lineEditFilter", varsUi_.lineEditFilter->displayText());
+  plugin_settings.setValue("pathEdit", configureUi_.pathEdit->displayText());
+
 }
 
 void SignalLoggerPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings) {
   varsUi_.lineEditFilter->setText(plugin_settings.value("lineEditFilter").toString());
+  configureUi_.pathEdit->setText(plugin_settings.value("pathEdit").toString());
+}
+
+// Try to find the Needle in the Haystack - ignore case
+// Taken from http://stackoverflow.com/questions/3152241/case-insensitive-stdstring-find
+bool findStringIC(const std::string & strHaystack, const std::string & strNeedle)
+{
+  auto it = std::search(
+      strHaystack.begin(), strHaystack.end(),
+      strNeedle.begin(),   strNeedle.end(),
+      [](char ch1, char ch2) { return std::toupper(ch1) == std::toupper(ch2); }
+  );
+  return (it != strHaystack.end() );
 }
 
 void SignalLoggerPlugin::drawParamList() {
@@ -297,9 +291,9 @@ void SignalLoggerPlugin::drawParamList() {
   // Create a line for each filtered parameter
   std::string filter = varsUi_.lineEditFilter->text().toStdString();
   for (auto& name : logElementNames_) {
-    std::size_t found = name.find(filter);
-    if (found!=std::string::npos) {
-      logElements_.push_back(std::shared_ptr<LogElement>(new LogElement(name, varsWidget_, paramsGrid_, &getLogElementClient_, &setLogElementClient_, maxParamNameWidth)));
+    //    std::size_t found = name.find(filter);
+    if (findStringIC(name, filter)) {
+      logElements_.push_back(std::shared_ptr<LogElement>(new LogElement(name, varsWidget_, paramsGrid_, &getLoggerElementClient_, &setLoggerElementClient_, maxParamNameWidth)));
     }
   }
   // This needs to be done after everthing is setup.

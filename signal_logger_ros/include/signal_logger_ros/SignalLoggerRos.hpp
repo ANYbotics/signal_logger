@@ -12,9 +12,11 @@
 #include "signal_logger/SignalLoggerBase.hpp"
 
 // msgs
-#include "signal_logger_msgs/GetLoggerInfo.h"
+#include "signal_logger_msgs/GetLoggerElementNames.h"
 #include "signal_logger_msgs/GetLoggerElement.h"
 #include "signal_logger_msgs/SetLoggerElement.h"
+#include "signal_logger_msgs/LoadLoggerScript.h"
+#include <std_srvs/Trigger.h>
 
 namespace signal_logger_ros {
 
@@ -31,14 +33,26 @@ class SignalLoggerRos : public signal_logger::SignalLoggerBase
   virtual LoggerType getLoggerType() const { return SignalLoggerBase::LoggerType::TypeRos; }
 
   //! Services needed by the gui
-  bool getLoggerInfo(signal_logger_msgs::GetLoggerInfo::Request& req,
-                     signal_logger_msgs::GetLoggerInfo::Response& res);
+  bool getLoggerElementNames(signal_logger_msgs::GetLoggerElementNamesRequest& req,
+                             signal_logger_msgs::GetLoggerElementNamesResponse& res);
 
-  bool getLogElement(signal_logger_msgs::GetLoggerElement::Request& req,
-                     signal_logger_msgs::GetLoggerElement::Response& res);
+  bool getLoggerElement(signal_logger_msgs::GetLoggerElementRequest& req,
+                        signal_logger_msgs::GetLoggerElementResponse& res);
 
-  bool setLogElement(signal_logger_msgs::SetLoggerElement::Request& req,
-                     signal_logger_msgs::SetLoggerElement::Response& res);
+  bool setLoggerElement(signal_logger_msgs::SetLoggerElementRequest& req,
+                        signal_logger_msgs::SetLoggerElementResponse& res);
+
+  bool startLogger(std_srvs::TriggerRequest& req,
+                   std_srvs::TriggerResponse& res);
+
+  bool stopLogger(std_srvs::TriggerRequest& req,
+                  std_srvs::TriggerResponse& res);
+
+  bool saveLoggerData(std_srvs::TriggerRequest& req,
+                      std_srvs::TriggerResponse& res);
+
+  bool loadLoggerScript(signal_logger_msgs::LoadLoggerScriptRequest& req,
+                        signal_logger_msgs::LoadLoggerScriptResponse& res);
 
   bool logElementtoMsg(const std::string & name, signal_logger_msgs::LogElement & msg);
 
@@ -49,10 +63,13 @@ class SignalLoggerRos : public signal_logger::SignalLoggerBase
 
  private:
   ros::NodeHandle nh_;
-  ros::ServiceServer loggerInfoService_;
-  ros::ServiceServer getLogElementService_;
-  ros::ServiceServer setLogElementService_;
-
+  ros::ServiceServer getLoggerElementNamesService_;
+  ros::ServiceServer getLoggerElementService_;
+  ros::ServiceServer setLoggerElementService_;
+  ros::ServiceServer startLoggerService_;
+  ros::ServiceServer stopLoggerService_;
+  ros::ServiceServer saveLoggerDataService_;
+  ros::ServiceServer loadLoggerScriptService_;
 };
 
 } /* namespace signal_logger */

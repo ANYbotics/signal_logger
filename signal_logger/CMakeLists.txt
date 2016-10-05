@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(Eigen3 REQUIRED)
+# pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
 
 # Attempt to find catkinized kindr
 find_package(kindr QUIET)
@@ -45,6 +46,7 @@ set(SRCS
 add_library(signal_logger SHARED ${SRCS})
 target_link_libraries(signal_logger
     ${catkin_LIBRARIES}
+    yaml-cpp
 )
 
 #############

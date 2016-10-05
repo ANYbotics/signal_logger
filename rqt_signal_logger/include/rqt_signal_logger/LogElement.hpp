@@ -223,7 +223,7 @@ class LogElement: public QObject {
         comboBoxLogType->setCurrentIndex(res.log_element.action);
         spinBoxBufferSize->setValue( res.log_element.buffer_size );
         comboBoxIsLooping->setCurrentIndex(res.log_element.is_buffer_looping);
-        ledBufferIsFull->setColor(QString::fromStdString(res.log_element.is_buffer_full?"green":"red"));
+        ledBufferIsFull->setColor(QString::fromStdString(res.log_element.is_buffer_full?"red":"green"));
       }
       else {
         ROS_WARN_STREAM("Could not get parameter " << name_);

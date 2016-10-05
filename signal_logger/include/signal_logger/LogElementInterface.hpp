@@ -109,11 +109,27 @@ class LogElementInterface
     }
   }
 
+  //! @return is buffer of the log element looping
+  bool isBufferLooping() const {
+    return pBuffer_->is_looping();
+  }
+
+
+  //! @param is buffer of the log element looping
+  void setIsBufferLooping(const bool isLooping) {
+    pBuffer_->set_is_looping(isLooping);
+  }
+
   //! @return buffer size of the log element
   virtual std::size_t getBufferSize() = 0;
 
-  //! @return buffer size of the log element
+  //! @param buffer size of the log element
   virtual void setBufferSize(std::size_t bufferSize) = 0;
+
+  //! @return buffer size of the log element
+  bool isBufferFull() {
+    return pBuffer_->is_looping() ? bufferSize_ <= pBuffer_->get_no_unread_items() : bufferSize_ <= pBuffer_->get_no_items();
+  }
 
   //! @return name of the log element
   std::type_index getType() {
@@ -143,11 +159,6 @@ class LogElementInterface
   //! @return whether log element is enabled
   bool isEnabled() const {
     return isEnabled_;
-  }
-
-  //! @return buffer size of the log element
-  bool isBufferFull() {
-    return bufferSize_ == pBuffer_->get_no_unread_items();
   }
 
   //! @return whether log element is enabled

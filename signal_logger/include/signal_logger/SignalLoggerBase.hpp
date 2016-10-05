@@ -31,7 +31,7 @@ const std::string LOGGER_DEFAULT_GROUP_NAME = "/log/";
 const std::string LOGGER_DEFAULT_UNIT       = "-";
 const unsigned int LOGGER_DEFAULT_DIVIDER    = 1;
 const bool LOGGER_DEFAULT_UPDATE            = false;
-const std::string LOGGER_DEFAULT_SCRIPT_FILENAME   = "logger.script";
+const std::string LOGGER_DEFAULT_SCRIPT_FILENAME   = "logger.yaml";
 const std::string LOGGER_PREFIX = "/log";
 
 //! Class that severs as base class for all the loggers and defines the interface for accessing the logger
@@ -42,8 +42,8 @@ class SignalLoggerBase {
   //! Get the logger type at runtime
   enum class LoggerType: unsigned int {
     TypeNone = 0,
-        TypeStd,
-        TypeRos
+    TypeStd,
+    TypeRos
   };
 
  public:
@@ -64,30 +64,28 @@ class SignalLoggerBase {
   virtual void initLogger(int updateFrequency, int samplingFrequency, double samplingTime, const std::string& collectScriptFileName = std::string{LOGGER_DEFAULT_SCRIPT_FILENAME});
 
   //! Starts the logger (enable collecting)
-  virtual void startLogger();
+  virtual bool startLogger();
 
   //! Stop the logger (disable collecting)
-  virtual void stopLogger();
+  virtual bool stopLogger();
 
   //! Stop and then restart the logger
-  virtual void restartLogger();
+  virtual bool restartLogger();
 
-  /** Update the logger (added variables are added)
-   * @param updateScript, determines if the update script shall be update with the new variables
-   */
-  virtual void updateLogger(bool updateScript = true);
+  /** Update the logger (added variables are added) */
+  virtual bool updateLogger();
 
   //! Do not allow to update the logger
   virtual void lockUpdate();
 
   //! Collect log data, read data and push it into the buffer
-  virtual void collectLoggerData();
+  virtual bool collectLoggerData();
 
   //! Save all the buffered data into a log file
-  virtual void saveLoggerData();
+  virtual bool saveLoggerData();
 
   //! Stop the logger and save all the buffered data into a log file
-  virtual void stopAndSaveLoggerData();
+  virtual bool stopAndSaveLoggerData();
 
   //! @return the logger type
   virtual LoggerType getLoggerType() const = 0;

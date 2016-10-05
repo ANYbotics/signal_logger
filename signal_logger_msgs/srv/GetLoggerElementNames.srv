@@ -1,0 +1,4 @@
+## Returns all names of the elements registered to the logger
+
+---
+string[] log_element_names

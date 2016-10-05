@@ -8,32 +8,36 @@
 // signal logger
 #include "signal_logger/SignalLoggerBase.hpp"
 
+// yaml
+#include <yaml-cpp/yaml.h>
+
 // stl
 #include "assert.h"
-#include <fstream>
+#include <sys/stat.h>
 #include <thread>
 #include <ctime>
 #include <ratio>
 #include <chrono>
+#include <fstream>
 
 namespace signal_logger {
 
 SignalLoggerBase::SignalLoggerBase():
-      isInitialized_(false),
-      isUpdateLocked_(false),
-      isCollectingData_(false),
-      isSavingData_(false),
-      noCollectDataCalls_(0),
-      noDataInBuffer_(0),
-      bufferStorageRate_(0),
-      bufferSize_(0),
-      collectScriptFileName_(std::string{LOGGER_DEFAULT_SCRIPT_FILENAME}),
-      updateFrequency_(0),
-      samplingFrequency_(0),
-      samplingTime_(0.0),
-      logElements_(),
-      loggerMutex_(),
-      scriptMutex_()
+          isInitialized_(false),
+          isUpdateLocked_(false),
+          isCollectingData_(false),
+          isSavingData_(false),
+          noCollectDataCalls_(0),
+          noDataInBuffer_(0),
+          bufferStorageRate_(0),
+          bufferSize_(0),
+          collectScriptFileName_(std::string{LOGGER_DEFAULT_SCRIPT_FILENAME}),
+          updateFrequency_(0),
+          samplingFrequency_(0),
+          samplingTime_(0.0),
+          logElements_(),
+          loggerMutex_(),
+          scriptMutex_()
 {
 
 }
@@ -66,68 +70,48 @@ void SignalLoggerBase::initLogger(int updateFrequency, int samplingFrequency, do
   isInitialized_ = true;
 }
 
-void SignalLoggerBase::startLogger()
+bool SignalLoggerBase::startLogger()
 {
   if(!isInitialized_ || isSavingData_)
   {
     MELO_WARN("Signal logger could not be started! Logger not initialized.");
-    return;
+    return false;
   }
 
   isCollectingData_ = true;
   noCollectDataCalls_ = 0;
   noDataInBuffer_ = 0;
+  return true;
 }
 
-void SignalLoggerBase::stopLogger()
+bool SignalLoggerBase::stopLogger()
 {
   if(!isInitialized_ || !isCollectingData_)
   {
     MELO_WARN("Signal logger could not be stopped!");
-    return;
+    return false;
   }
 
   isCollectingData_ = false;
+
+  return true;
 }
 
-void SignalLoggerBase::restartLogger()
+bool SignalLoggerBase::restartLogger()
 {
-  this->stopLogger();
-  this->startLogger();
+  return this->stopLogger() && this->startLogger();
 }
 
-void SignalLoggerBase::updateLogger(bool updateScript) {
+bool SignalLoggerBase::updateLogger() {
 
   if(!isInitialized_ || isCollectingData_ || isUpdateLocked_ || isSavingData_)
   {
     MELO_WARN("Signal logger could not be updated!");
-    return;
+    return false;
   }
 
-  // update logging script
-  if (updateScript) {
-    std::lock_guard<std::mutex> lockScript(scriptMutex_);
+  return readDataCollectScript(collectScriptFileName_);
 
-    std::ofstream collectScript;
-    collectScript.open(collectScriptFileName_, std::ios::out | std::ios::trunc);
-
-    if(collectScript.is_open())
-    {
-      for(auto & elem : logElements_)
-      {
-        collectScript << elem.second->getName() << std::endl;
-      }
-    }
-    else {
-      MELO_ERROR("Could not open script file %s ", collectScriptFileName_.c_str());
-      return;
-    }
-
-    // close file
-    collectScript.close();
-  }
-
-  readDataCollectScript(collectScriptFileName_);
 }
 
 void SignalLoggerBase::lockUpdate()
@@ -135,9 +119,9 @@ void SignalLoggerBase::lockUpdate()
   isUpdateLocked_ = true;
 }
 
-void SignalLoggerBase::collectLoggerData()
+bool SignalLoggerBase::collectLoggerData()
 {
-  if(!isInitialized_ || isSavingData_) return;
+  if(!isInitialized_ || isSavingData_) return false;
 
   // Is logger started?
   if(isCollectingData_ && noCollectDataCalls_%bufferStorageRate_ == 0)
@@ -156,16 +140,18 @@ void SignalLoggerBase::collectLoggerData()
 
   // #TODO handle overflow? -> is it a problem?
   ++noCollectDataCalls_;
+
+  return true;
 }
 
-void SignalLoggerBase::saveLoggerData()
+bool SignalLoggerBase::saveLoggerData()
 {
   isSavingData_ = true;
   if(!isInitialized_ || isCollectingData_)
   {
     MELO_WARN("Signal logger could not save data!");
     isSavingData_ = false;
-    return;
+    return false;
   }
 
   // Get local time
@@ -179,12 +165,13 @@ void SignalLoggerBase::saveLoggerData()
   // Save data in different thread
   std::thread t1(&SignalLoggerBase::workerSaveData, this,  std::string{filename});
   t1.detach();
+
+  return true;
 }
 
-void SignalLoggerBase::stopAndSaveLoggerData()
+bool SignalLoggerBase::stopAndSaveLoggerData()
 {
-  this->stopLogger();
-  this->saveLoggerData();
+  return this->stopLogger() && this->saveLoggerData();
 }
 
 bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
@@ -197,43 +184,42 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
   // Lock script
   std::lock_guard<std::mutex> lockScript(scriptMutex_);
 
-  std::ifstream collectScript(scriptName);
-
-  if(collectScript.is_open())
+  // Check file existance
+  struct stat buffer;
+  if(stat(scriptName.c_str(), &buffer) == 0)
   {
-    if(isCollectingData_) {
-      // Logger can not run when reading script
-      // #TODO inform user
-      stopLogger();
-    }
-
     // Disable all log data and reallocate buffer
     for(auto & elem : logElements_)
     {
       elem.second->setIsEnabled(false);
     }
 
-    // Read logging script and enable present data
-    std::string readName;
-    while(std::getline(collectScript, readName))
-    {
-      if(logElements_.find(readName) != logElements_.end())
-      {
-        // Enable item collection
-        logElements_.at(readName)->setIsEnabled(true);
+    // Load Yaml
+    try {
+      YAML::Node config = YAML::LoadFile(scriptName);
+      for( size_t i = 0; i < config["log_elements"].size(); ++i) {
+        std::string name = config["log_elements"][i]["name"].as<std::string>();
+        auto elem = logElements_.find(name);
+        if(elem != logElements_.end()) {
+          elem->second->setIsEnabled(true);
+          elem->second->setBufferSize(config["log_elements"][i]["buffer"]["size"].as<int>());
+          elem->second->setDivider(config["log_elements"][i]["divider"].as<int>());
+          elem->second->setIsBufferLooping(config["log_elements"][i]["buffer"]["looping"].as<bool>());
+        }
+        else {
+          MELO_WARN_STREAM("Could not load " << name << "from config file. Var not logged.");
+        }
       }
-      else {
-        MELO_WARN("Can not log data! Data with name %s was not added to the logger. ", readName.c_str());
-      }
+    }
+    catch(YAML::Exception & e) {
+      MELO_WARN_STREAM("Could not load config file, because exception occurred: "<<e.what());
+      return false;
     }
   }
   else {
-    MELO_ERROR("Could not open script file %s ", scriptName.c_str());
+    MELO_ERROR("Logger configuration file can not be opened!");
     return false;
   }
-
-  // close script
-  collectScript.close();
 
   return true;
 }

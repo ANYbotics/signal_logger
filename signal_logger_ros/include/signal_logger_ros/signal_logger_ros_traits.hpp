@@ -351,9 +351,9 @@ struct slr_traits<signal_logger::KindrAngleAxisD> {
     msg->header.stamp = timeStamp;
     msg->matrix.data.clear();
     msg->matrix.data.push_back(vectorPtr_->angle());
-    msg->matrix.data.push_back(vectorPtr_->axis().x());
-    msg->matrix.data.push_back(vectorPtr_->axis().y());
-    msg->matrix.data.push_back(vectorPtr_->axis().z());
+    msg->matrix.data.push_back(vectorPtr_->axis()(0));
+    msg->matrix.data.push_back(vectorPtr_->axis()(1));
+    msg->matrix.data.push_back(vectorPtr_->axis()(2));
 //    msg->matrix.layout.dim[0].label = "alphaXYZ";
 //    msg->matrix.layout.dim[0].size = 4;
 //    msg->matrix.layout.dim[0].stride = 4;

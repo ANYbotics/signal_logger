@@ -20,10 +20,10 @@
 
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
-
+#include <signal_logger_msgs/LoadLoggerScript.h>
 #include <signal_logger_msgs/SetLoggerElement.h>
 #include <signal_logger_msgs/GetLoggerElement.h>
-#include <signal_logger_msgs/GetLoggerInfo.h>
+#include <signal_logger_msgs/GetLoggerElementNames.h>
 #include <std_srvs/Trigger.h>
 
 #include <list>
@@ -59,12 +59,13 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   QVBoxLayout* paramsScrollLayout_;
 
   // ROS services
-  ros::ServiceClient getLogElementListClient_;
-  ros::ServiceClient getLogElementClient_;
-  ros::ServiceClient setLogElementClient_;
+  ros::ServiceClient getLoggerElementNamesClient_;
+  ros::ServiceClient getLoggerElementClient_;
+  ros::ServiceClient setLoggerElementClient_;
   ros::ServiceClient startLoggerClient_;
   ros::ServiceClient stopLoggerClient_;
   ros::ServiceClient saveLoggerDataClient_;
+  ros::ServiceClient loadLoggerScriptClient_;
 
   std::vector<std::shared_ptr<LogElement>> logElements_;
   std::vector<std::string> logElementNames_;
