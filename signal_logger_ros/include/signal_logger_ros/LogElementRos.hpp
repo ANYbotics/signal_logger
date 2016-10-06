@@ -59,10 +59,13 @@ class LogElementRos: public signal_logger::LogElementBase<ValueType_>
   void publishData()
   {
     ValueType_ data;
-    this->buffer_.read(&data);
-    ros::Time now = ros::Time::now();
-    traits::slr_traits<ValueType_>::updateMsg(&data, msg_, now);
-    pub_.publish(msg_);
+
+    if(this->buffer_.read(&data))
+    {
+      ros::Time now = ros::Time::now();
+      traits::slr_traits<ValueType_>::updateMsg(&data, msg_, now);
+      pub_.publish(msg_);
+    }
   }
 
   void initializeElement() { pub_ = nh_.advertise<MsgType>(this->getName(), 1); }

@@ -11,6 +11,9 @@
 // yaml
 #include <yaml-cpp/yaml.h>
 
+// boost
+#include <boost/filesystem.hpp>
+
 // stl
 #include "assert.h"
 #include <sys/stat.h>
@@ -23,19 +26,19 @@
 namespace signal_logger {
 
 SignalLoggerBase::SignalLoggerBase():
-                  isInitialized_(false),
-                  isUpdateLocked_(false),
-                  isCollectingData_(false),
-                  isSavingData_(false),
-                  noCollectDataCalls_(0),
-                  defaultDivider_(0),
-                  collectScriptFileName_(std::string{LOGGER_DEFAULT_SCRIPT_FILENAME}),
-                  updateFrequency_(0),
-                  defaultSamplingFrequency_(0),
-                  defaultSamplingTime_(0.0),
-                  logElements_(),
-                  loggerMutex_(),
-                  scriptMutex_()
+                          isInitialized_(false),
+                          isUpdateLocked_(false),
+                          isCollectingData_(false),
+                          isSavingData_(false),
+                          noCollectDataCalls_(0),
+                          defaultDivider_(0),
+                          collectScriptFileName_(std::string{LOGGER_DEFAULT_SCRIPT_FILENAME}),
+                          updateFrequency_(0),
+                          defaultSamplingFrequency_(0),
+                          defaultSamplingTime_(0.0),
+                          logElements_(),
+                          loggerMutex_(),
+                          scriptMutex_()
 {
 
 }
@@ -147,6 +150,20 @@ bool SignalLoggerBase::collectLoggerData()
   return true;
 }
 
+bool SignalLoggerBase::publishData()
+{
+  // Publish data from buffer
+  for(auto & elem : logElements_)
+  {
+    if(elem.second->isEnabled())
+    {
+      elem.second->publishData();
+    }
+  }
+
+  return true;
+}
+
 bool SignalLoggerBase::saveLoggerData()
 {
   isSavingData_ = true;
@@ -157,13 +174,28 @@ bool SignalLoggerBase::saveLoggerData()
     return false;
   }
 
+  // Check for file existance
+  const boost::filesystem::path currentDir( boost::filesystem::current_path() );
+  const boost::filesystem::directory_iterator end;
+  boost::filesystem::directory_iterator it;
+  std::string checkString;
+  int i = -1;
+  do{
+    checkString = std::string{"log_"} + std::to_string(++i);
+    it = std::find_if(boost::filesystem::directory_iterator(currentDir), end,
+                      [&checkString](const boost::filesystem::directory_entry& e) {
+                      return e.path().filename().string().compare(0,checkString.size(),checkString) == 0; });
+  } while(it != end);
+
   // Get local time
   std::time_t now = std::chrono::system_clock::to_time_t ( std::chrono::system_clock::now() );
   std::tm now_loc = *std::localtime(&now);
+  char dateTime[21];
+  strftime(dateTime, sizeof dateTime, "_%Y%m%d_%H-%M-%S", &now_loc);
 
-  // Filename format (e.g. d_13Sep2016_12-13-49)
-  char filename[21];
-  strftime(filename, sizeof filename, "d_%d%b%Y_%H-%M-%S", &now_loc);
+  // Filename format (e.g. d_13Sep2016_12-13-49) add nr
+  std::string filename = std::string{"log_"} + std::to_string(i) + std::string{dateTime};
+  std::cout<<"Filename "<<filename<<" created "<<std::endl;
 
   // Save data in different thread
   std::thread t1(&SignalLoggerBase::workerSaveData, this,  std::string{filename});

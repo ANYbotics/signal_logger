@@ -64,7 +64,7 @@ class LogElementBase: public LogElementInterface
 
   //! @return flag indicating if buffer is full
   virtual bool isBufferFull() const {
-    return buffer_.isLooping() ? bufferSize_ <= buffer_.noUnreadItems() : bufferSize_ <= buffer_.noItems();
+    return bufferSize_ <= buffer_.noItems();
   }
 
  protected:

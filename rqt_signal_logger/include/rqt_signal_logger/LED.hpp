@@ -34,7 +34,7 @@ public:
     bool state() const;
 
     bool isFlashing() const;
-    
+
     int flashRate() const;
 
 public slots:

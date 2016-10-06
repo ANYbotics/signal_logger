@@ -48,9 +48,11 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName) {
 
   // Close file
   file_.close();
-  MELO_INFO( "All done, captain!" );
+
+  sleep(3);
 
   isSavingData_ = false;
+  MELO_INFO( "All done, captain!" );
 
   return true;
 

@@ -86,6 +86,9 @@ class SignalLoggerBase {
   //! Collect log data, read data and push it into the buffer
   virtual bool collectLoggerData();
 
+  //! Publish a single data point of every element from the buffer
+  virtual bool publishData();
+
   //! Save all the buffered data into a log file
   virtual bool saveLoggerData();
 

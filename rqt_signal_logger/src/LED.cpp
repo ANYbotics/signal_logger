@@ -200,7 +200,7 @@ isFlashing() const
 {
     return flashing_;
 }
-    
+
 int LED::
 flashRate() const
 {

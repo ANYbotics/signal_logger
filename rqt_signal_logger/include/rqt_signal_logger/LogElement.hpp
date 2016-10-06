@@ -18,6 +18,7 @@
 #include <QApplication>
 #include <QComboBox>
 #include <rqt_signal_logger/LED.hpp>
+#include <rqt_signal_logger/BufferIndicator.hpp>
 
 #include <ros/ros.h>
 
@@ -129,6 +130,11 @@ class LogElement: public QObject {
     ledBufferIsFull->setObjectName(QString::fromStdString(ledBufferIsFullName));
     ledBufferIsFull->setColor(QColor("red"));
 
+    std::string indicatorBufferName = std::string{"indicatorBuffer"} + name;
+    bufferInd_ = new BufferIndicator(widget);
+    bufferInd_->setObjectName(QString::fromStdString(indicatorBufferName));
+    bufferInd_->updateData(25,50,100);
+
     //! Change button
     std::string pushButtonName = std::string{"pushButtonChange"} + name;
     pushButtonChangeParam = new QPushButton(widget);
@@ -147,7 +153,8 @@ class LogElement: public QObject {
     grid->addWidget(spinBoxBufferSize,     iRow, 8, 1, 1);
     grid->addWidget(comboBoxIsLooping,     iRow, 9, 1, 1);
     grid->addWidget(ledBufferIsFull,       iRow, 10, 1, 1);
-    grid->addWidget(pushButtonChangeParam, iRow, 11, 1, 1);
+    grid->addWidget(bufferInd_,            iRow, 11, 1, 1);
+    grid->addWidget(pushButtonChangeParam, iRow, 12, 1, 1);
 
     connect(pushButtonChangeParam, SIGNAL(pressed()), this, SLOT(pushButtonChangeParamPressed()));
 
@@ -168,6 +175,7 @@ class LogElement: public QObject {
     grid_->removeWidget(spinBoxBufferSize);
     grid_->removeWidget(comboBoxIsLooping);
     grid_->removeWidget(ledBufferIsFull);
+    grid_->removeWidget(bufferInd_);
     grid_->removeWidget(pushButtonChangeParam);
 
     delete labelParamNumber;
@@ -181,6 +189,7 @@ class LogElement: public QObject {
     delete spinBoxBufferSize;
     delete comboBoxIsLooping;
     delete ledBufferIsFull;
+    delete bufferInd_;
     delete pushButtonChangeParam;
 
   };
@@ -247,5 +256,7 @@ class LogElement: public QObject {
   QSpinBox* spinBoxBufferSize;
   QComboBox* comboBoxIsLooping;
   LED* ledBufferIsFull;
+  BufferIndicator* bufferInd_;
+
   QPushButton* pushButtonChangeParam;
 };

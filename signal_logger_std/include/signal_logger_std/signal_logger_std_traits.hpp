@@ -27,11 +27,7 @@ struct sls_traits
                                        const std::size_t divider )
   {
     (*headerStream) << name << " " << sizeof(ValueType_) <<  " " << values.size() << " " << divider << std::endl;
-    for (const auto & val : values)  {
-      (*headerStream) << val << " " << std::endl;
-      dataStream->write(reinterpret_cast<const char*>(&val),sizeof(val));
-//      (*dataStream) << val << " ";
-    }
+    for (const auto & val : values)  { dataStream->write(reinterpret_cast<const char*>(&val),sizeof(val)); }
   }
 };
 
@@ -45,20 +41,21 @@ struct sls_traits<ValueType_, typename std::enable_if<std::is_same<signal_logger
                                        const std::string & name,
                                        const std::size_t divider )
   {
+    // Check for nonzero size
+    if(values.size() == 0)
+      return;
+
+    // Write headers
     (*headerStream) << name << "_s " << sizeof(typename ValueType_::first_type) <<  " " << values.size() << " " << divider << std::endl;
     (*headerStream) << name << "_ns " << sizeof(typename ValueType_::second_type) <<  " " << values.size() << " " << divider << std::endl;
-    for (const auto & val : values)  {
-      dataStream->write(reinterpret_cast<const char*>(&val.first),sizeof(val.first));
-      //      (*dataStream) << val.first<< " ";
-    }
-    for (const auto & val : values)  {
-      dataStream->write(reinterpret_cast<const char*>(&val.second),sizeof(val.second));
-      //      (*dataStream) << val.second<< " ";
-    }
+
+    // Write data
+    for (const auto & val : values)  { dataStream->write(reinterpret_cast<const char*>(&val.first),sizeof(val.first)); }
+    for (const auto & val : values)  { dataStream->write(reinterpret_cast<const char*>(&val.second),sizeof(val.second)); }
   }
 };
 
-//! Trait for Eigen Matrices length 3
+//! Trait for Eigen Matrices
 template <typename ValueType_>
 struct sls_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value>::type>
 {
@@ -68,32 +65,27 @@ struct sls_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::Mat
                                        const std::string & name,
                                        const std::size_t divider )
   {
+    // Check for nonzero size
+    if(values.size() == 0)
+      return;
 
+    // Write headers
+    for (int r = 0; r<values.front().rows(); r++)  {
+      for (int c=0; c<values.front().cols(); c++)  {
+        (*headerStream) << std::string(name + "_" + std::to_string(r) + "_" + std::to_string(c)) << " "
+            << sizeof(typename ValueType_::Scalar) << " " << values.size() << " " << divider << std::endl;
+      }
+    }
+
+    // Write data
+    for (int r = 0; r<values.front().rows(); r++)  {
+      for (int c=0; c<values.front().cols(); c++)  {
+        for (const auto & val : values) {
+          dataStream->write(reinterpret_cast<const char*>(&(val(r,c))),sizeof(val(r,c)));
+        }
+      }
+    }
   }
-  //
-  //  //! Write all entries as underlying type
-  //  static void writeToFile(std::ofstream * file, const std::vector<typename ValueType_::Scalar> & data, std::size_t no_rows, std::size_t no_cols) {
-  //    for (int r=0; r<no_rows; r++)  {
-  //      for (int c=0; c<no_cols; c++)  {
-  //        for (int i = 0; i < data.size()/(no_cols*no_rows); i++)  {
-  ////            (*file) << data.at(i*no_cols*no_rows + r*no_cols + c) << " ";
-  //            typename ValueType_::Scalar val = data.at(i*no_cols*no_rows + r*no_cols + c);
-  //            file->write(reinterpret_cast<const char*>(&val),sizeof(val));
-  //        }
-  //        (*file) << std::endl;
-  //      }
-  //    }
-  //  }
-  //
-  //  //! Header appends _r_c to the matrix name
-  //  static void writeHeader(std::ofstream * file, std::string name, const std::size_t nrPoints, const double updateFrequency, std::size_t no_rows, std::size_t no_cols) {
-  //    for (int r=0; r<no_rows; r++)  {
-  //      for (int c=0; c<no_cols; c++)  {
-  //        (*file) << std::string(name + "_" + std::to_string(r) + "_" + std::to_string(c))
-  //                << " " << sizeof(typename ValueType_::Scalar) <<  " " << nrPoints/(no_rows * no_cols) << " " << updateFrequency << std::endl;
-  //      }
-  //    }
-  //  }
 };
 
 //! Trait for Kindr vectors length 3
@@ -106,32 +98,23 @@ struct sls_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::Vec
                                        const std::string & name,
                                        const std::size_t divider )
   {
+    // Check for nonzero size
+    if(values.size() == 0)
+      return;
+
+    // Write headers
+    for(auto suffix : {"_x", "_y", "_z"}) {
+      (*headerStream) << name << suffix << sizeof(typename ValueType_::Scalar) <<  " " << values.size() << " " << divider << std::endl;
+    }
+
+    // Write data
+    for (int r = 0; r<3; r++)  {
+      for (const auto & val : values) {
+        dataStream->write(reinterpret_cast<const char*>(&val.toImplementation()(r)),sizeof(val.toImplementation()(r)));
+      }
+    }
 
   }
-  //  static void writeToFile(std::ofstream * file, const std::vector<ValueType_> & data) {
-  //    for (const auto & entry : data)  {
-  ////      (*file) << entry.x()<< " ";
-  //      file->write(reinterpret_cast<const char*>(&entry.toImplementation()(0)),sizeof(entry.x()));
-  //    }
-  //    (*file)<<std::endl;
-  //    for (const auto & entry : data)  {
-  ////      (*file) << entry.y()<< " ";
-  //      file->write(reinterpret_cast<const char*>(&entry.toImplementation()(1)),sizeof(entry.y()));
-  //    }
-  //    (*file)<<std::endl;
-  //    for (const auto & entry : data)  {
-  ////      (*file) << entry.z()<< " ";
-  //      file->write(reinterpret_cast<const char*>(&entry.toImplementation()(2)),sizeof(entry.z()));
-  //    }
-  //    (*file)<<std::endl;
-  //  }
-  //
-  //  //! Header append x, y and z to data name
-  //  static void writeHeader(std::ofstream * file, std::string name, const std::size_t nrPoints, const double updateFrequency) {
-  //    (*file) << name << "_x " << sizeof(typename ValueType_::Scalar) <<  " " << nrPoints << " " << updateFrequency << std::endl;
-  //    (*file) << name << "_y " << sizeof(typename ValueType_::Scalar) <<  " " << nrPoints << " " << updateFrequency << std::endl;
-  //    (*file) << name << "_z " << sizeof(typename ValueType_::Scalar) <<  " " << nrPoints << " " << updateFrequency << std::endl;
-  //  }
 };
 
 }
