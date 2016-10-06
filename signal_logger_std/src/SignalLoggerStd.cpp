@@ -11,7 +11,9 @@ namespace signal_logger_std {
 
 SignalLoggerStd::SignalLoggerStd():
         signal_logger::SignalLoggerBase(),
-        file_()
+        file_(),
+        headerStream_(std::ostringstream::in | std::ostringstream::out),
+        dataStream_(std::ios::in | std::ios::out | std::ios::binary)
 {
 
 }
@@ -25,8 +27,8 @@ SignalLoggerStd::~SignalLoggerStd()
 bool SignalLoggerStd::workerSaveData(const std::string & logFileName) {
 
   // Clear streams
-  headerStream_.clear();
-  dataStream_.clear();
+  headerStream_.str(std::string());
+  dataStream_.str(std::string());
 
   // Fill streams
   for(auto & elem : logElements_) {
@@ -37,15 +39,18 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName) {
 
   // Write string header
   file_.open(logFileName, std::ios::out | std::ios::trunc);
-  file_ << headerStream_ << std::endl;
+  file_ << headerStream_.str() << std::endl;
+  file_.close();
 
   // Write binary data
   file_.open(logFileName, std::ios::out | std::ios::app | std::ios::binary);
-  file_ << dataStream_ << std::endl;
+  file_ << dataStream_.rdbuf() << std::endl;
 
   // Close file
   file_.close();
   MELO_INFO( "All done, captain!" );
+
+  isSavingData_ = false;
 
   return true;
 

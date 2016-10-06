@@ -7,8 +7,11 @@
 
 #pragma once
 
-#include <Eigen/Core>
+// kindr
 #include <kindr/Core>
+
+// Eigen
+#include <Eigen/Core>
 
 namespace signal_logger {
 

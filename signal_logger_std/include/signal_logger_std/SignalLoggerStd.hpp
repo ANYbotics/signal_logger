@@ -11,6 +11,10 @@
 #include "signal_logger_std/macro_definitions.hpp"
 #include "signal_logger/SignalLoggerBase.hpp"
 
+// STL
+#include <fstream>
+#include <sstream>
+
 namespace signal_logger_std {
 
 class SignalLoggerStd : public signal_logger::SignalLoggerBase

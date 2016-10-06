@@ -34,7 +34,7 @@ class LogElementBase: public LogElementInterface
                  const std::size_t bufferSize,
                  const bool isBufferLooping) :
     LogElementInterface(name, unit, divider, action, bufferSize, isBufferLooping),
-    buffer_(ptr, 0) // Zero buffer size log element not enabled
+    buffer_(ptr) // Zero buffer size log element not enabled
   {
 
   }
@@ -65,11 +65,6 @@ class LogElementBase: public LogElementInterface
   //! @return flag indicating if buffer is full
   virtual bool isBufferFull() const {
     return buffer_.isLooping() ? bufferSize_ <= buffer_.noUnreadItems() : bufferSize_ <= buffer_.noItems();
-  }
-
-  //! @return all read and unread elements in the buffer
-  std::vector<ValueType_> getBufferCopy() {
-    return buffer_.copyBuffer();
   }
 
  protected:

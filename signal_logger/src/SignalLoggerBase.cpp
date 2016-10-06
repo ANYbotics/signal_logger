@@ -23,21 +23,19 @@
 namespace signal_logger {
 
 SignalLoggerBase::SignalLoggerBase():
-          isInitialized_(false),
-          isUpdateLocked_(false),
-          isCollectingData_(false),
-          isSavingData_(false),
-          noCollectDataCalls_(0),
-          noDataInBuffer_(0),
-          bufferStorageRate_(0),
-          bufferSize_(0),
-          collectScriptFileName_(std::string{LOGGER_DEFAULT_SCRIPT_FILENAME}),
-          updateFrequency_(0),
-          samplingFrequency_(0),
-          samplingTime_(0.0),
-          logElements_(),
-          loggerMutex_(),
-          scriptMutex_()
+                  isInitialized_(false),
+                  isUpdateLocked_(false),
+                  isCollectingData_(false),
+                  isSavingData_(false),
+                  noCollectDataCalls_(0),
+                  defaultDivider_(0),
+                  collectScriptFileName_(std::string{LOGGER_DEFAULT_SCRIPT_FILENAME}),
+                  updateFrequency_(0),
+                  defaultSamplingFrequency_(0),
+                  defaultSamplingTime_(0.0),
+                  logElements_(),
+                  loggerMutex_(),
+                  scriptMutex_()
 {
 
 }
@@ -59,10 +57,9 @@ void SignalLoggerBase::initLogger(int updateFrequency, int samplingFrequency, do
 
   // Set configuration
   updateFrequency_ = updateFrequency;
-  samplingFrequency_ = samplingFrequency;
-  samplingTime_ = samplingTime;
-  bufferStorageRate_ = static_cast<double>(updateFrequency_) / static_cast<double>(samplingFrequency_);
-  bufferSize_ = samplingTime_ * static_cast<double>(samplingFrequency_);
+  defaultSamplingFrequency_ = samplingFrequency;
+  defaultSamplingTime_ = samplingTime;
+  defaultDivider_ = static_cast<double>(updateFrequency_) / static_cast<double>(defaultSamplingFrequency_);
   collectScriptFileName_ = collectScriptFileName;
 
   // Notify user
@@ -80,7 +77,6 @@ bool SignalLoggerBase::startLogger()
 
   isCollectingData_ = true;
   noCollectDataCalls_ = 0;
-  noDataInBuffer_ = 0;
   return true;
 }
 
@@ -102,12 +98,21 @@ bool SignalLoggerBase::restartLogger()
   return this->stopLogger() && this->startLogger();
 }
 
-bool SignalLoggerBase::updateLogger() {
+bool SignalLoggerBase::updateLogger(bool updateScript) {
 
   if(!isInitialized_ || isCollectingData_ || isUpdateLocked_ || isSavingData_)
   {
     MELO_WARN("Signal logger could not be updated!");
     return false;
+  }
+
+  if(updateScript) {
+    // Enable all log data to update script
+    for(auto & elem : logElements_)
+    {
+      elem.second->setIsEnabled(true);
+    }
+    saveDataCollectScript(collectScriptFileName_);
   }
 
   return readDataCollectScript(collectScriptFileName_);
@@ -124,18 +129,16 @@ bool SignalLoggerBase::collectLoggerData()
   if(!isInitialized_ || isSavingData_) return false;
 
   // Is logger started?
-  if(isCollectingData_ && noCollectDataCalls_%bufferStorageRate_ == 0)
+  if(isCollectingData_)
   {
     // Add data to buffer
     for(auto & elem : logElements_)
     {
-      if(elem.second->isEnabled())
+      if(elem.second->isEnabled() && (noCollectDataCalls_ % elem.second->getDivider()) == 0)
       {
         elem.second->collectData();
       }
     }
-    // There can not be more data in the buffer that the bufferSize is
-    noDataInBuffer_ = std::min(static_cast<unsigned int>(bufferSize_), ++noDataInBuffer_);
   }
 
   // #TODO handle overflow? -> is it a problem?
@@ -147,7 +150,7 @@ bool SignalLoggerBase::collectLoggerData()
 bool SignalLoggerBase::saveLoggerData()
 {
   isSavingData_ = true;
-  if(!isInitialized_ || isCollectingData_)
+  if(!isInitialized_)
   {
     MELO_WARN("Signal logger could not save data!");
     isSavingData_ = false;
@@ -177,7 +180,7 @@ bool SignalLoggerBase::stopAndSaveLoggerData()
 bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
 {
 
-  if (!isInitialized_) {
+  if (!isInitialized_ || isCollectingData_) {
     return false;
   }
 
@@ -202,9 +205,34 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
         auto elem = logElements_.find(name);
         if(elem != logElements_.end()) {
           elem->second->setIsEnabled(true);
-          elem->second->setBufferSize(config["log_elements"][i]["buffer"]["size"].as<int>());
-          elem->second->setDivider(config["log_elements"][i]["divider"].as<int>());
-          elem->second->setIsBufferLooping(config["log_elements"][i]["buffer"]["looping"].as<bool>());
+          // Check for divider
+          if (YAML::Node parameter = config["log_elements"][i]["divider"]) {
+            elem->second->setDivider(parameter.as<int>());
+          }
+          else {
+            elem->second->setDivider(defaultDivider_);
+          }
+          // Check for action
+          if (YAML::Node parameter = config["log_elements"][i]["action"]) {
+            elem->second->setAction( static_cast<LogElementInterface::LogElementAction>(parameter.as<int>()) );
+          }
+          else {
+            elem->second->setAction(signal_logger::LOGGER_DEFAULT_ACTION);
+          }
+          // Check for buffer size
+          if (YAML::Node parameter = config["log_elements"][i]["buffer"]["size"]) {
+            elem->second->setBufferSize(parameter.as<int>());
+          }
+          else {
+            elem->second->setBufferSize(defaultSamplingFrequency_ * defaultSamplingTime_);
+          }
+          // Check for buffer looping
+          if (YAML::Node parameter = config["log_elements"][i]["buffer"]["looping"]) {
+            elem->second->setIsBufferLooping(parameter.as<bool>());
+          }
+          else {
+            elem->second->setIsBufferLooping(signal_logger::LOGGER_DEFAULT_BUFFER_LOOPING);
+          }
         }
         else {
           MELO_WARN_STREAM("Could not load " << name << "from config file. Var not logged.");
@@ -224,7 +252,39 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
   return true;
 }
 
+bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
+{
+  if (!isInitialized_ || isCollectingData_) {
+    return false;
+  }
+
+  // Lock script
+  std::lock_guard<std::mutex> lockScript(scriptMutex_);
+
+  YAML::Node node;
+  std::size_t j = 0;
+
+  for (auto element : logElements_)
+  {
+    if(element.second->isEnabled()) {
+      node["log_elements"][j]["name"] = element.second->getName();
+      node["log_elements"][j]["divider"] = element.second->getDivider();
+      node["log_elements"][j]["action"] = static_cast<unsigned int>(element.second->getAction());
+      node["log_elements"][j]["buffer"]["size"] = element.second->getBufferSize();
+      node["log_elements"][j]["buffer"]["looping"] = element.second->isBufferLooping();
+      j++;
+    }
+  }
+
+  // If there are logged elements save them to file
+  if(j!=0) {
+    std::ofstream outfile(scriptName);
+    outfile << node;
+    outfile.close();
+  }
+
+  return true;
 
 }
 
-
+}

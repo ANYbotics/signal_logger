@@ -8,9 +8,11 @@
 #pragma once
 
 // signal logger
-#include <signal_logger/LogElementTypes.hpp>
+#include "signal_logger/LogElementTypes.hpp"
 #include "signal_logger/LogElementInterface.hpp"
 #include "signal_logger/macro_definitions.hpp"
+
+// message logger
 #include "message_logger/message_logger.hpp"
 
 // kindr
@@ -20,19 +22,20 @@
 #include <Eigen/Dense>
 
 // stl
-#include <typeindex>
 #include <mutex>
 #include <atomic>
 
 namespace signal_logger {
 
-// Some logger defaults
+// Some logger element defaults
 const std::string LOGGER_DEFAULT_GROUP_NAME = "/log/";
 const std::string LOGGER_DEFAULT_UNIT       = "-";
 const std::size_t LOGGER_DEFAULT_DIVIDER    = 1;
 const LogElementInterface::LogElementAction LOGGER_DEFAULT_ACTION = LogElementInterface::LogElementAction::SAVE_AND_PUBLISH;
 const std::size_t LOGGER_DEFAULT_BUFFER_SIZE = 0;
 const bool LOGGER_DEFAULT_BUFFER_LOOPING = false;
+
+// Some logger defaults
 const std::string LOGGER_DEFAULT_SCRIPT_FILENAME   = "logger.yaml";
 const std::string LOGGER_PREFIX = "/log";
 
@@ -75,7 +78,7 @@ class SignalLoggerBase {
   virtual bool restartLogger();
 
   /** Update the logger (added variables are added) */
-  virtual bool updateLogger();
+  virtual bool updateLogger(bool updateScript = false);
 
   //! Do not allow to update the logger
   virtual void lockUpdate();
@@ -96,12 +99,22 @@ class SignalLoggerBase {
   int getUpdateFrequency() const { return updateFrequency_.load(); }
 
   //! @return the sampling frequency
-  virtual int getSamplingFrequency() const { return samplingFrequency_.load(); }
+  virtual int getSamplingFrequency() const { return defaultSamplingFrequency_.load(); }
 
   //! @return the sampling window
-  virtual double getSamplingWindow() const { return samplingTime_.load(); }
+  virtual double getSamplingWindow() const { return defaultSamplingTime_.load(); }
 
-
+  /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
+    * @tparam ValueType_    Data type of the logger element
+    * @param var            log variable
+    * @param name           name of the log variable
+    * @param group          logger group the variable belongs to
+    * @param unit           unit of the log variable
+    * @param divider        divider is defining the update frequency of the logger element (ctrl_freq/divider)
+    * @param action         log action of the log variable
+    * @param bufferSize     size of the buffer storing log elements
+    * @param bufferLooping  determines if the buffer overwrites old values
+    */
   template<typename ValueType_>
   void add( const ValueType_ & var,
             const std::string& name,
@@ -121,9 +134,17 @@ class SignalLoggerBase {
    */
   bool readDataCollectScript(const std::string & scriptName);
 
+  /** Save collect script
+   * @param scriptName filename of the logging script
+   */
+  bool saveDataCollectScript(const std::string & scriptName);
+
+  /** Saves the logger data in a file in a seperate thread
+   * @param logFileName filename of the log file
+   */
   virtual bool workerSaveData(const std::string & logFileName) = 0;
 
-  // Add pure virtual add-functions for every single type
+  //! Add pure virtual add-functions for every single type
   FOR_ALL_TYPES(ADD_VAR_DEFINITION);
   FOR_EIGEN_TYPES(ADD_EIGEN_VAR_AS_UNDERLYING_TYPE_IMPLEMENTATION);
 
@@ -138,20 +159,16 @@ class SignalLoggerBase {
   std::atomic_bool isSavingData_;
   //! Nr of calls to collect data
   std::atomic_uint noCollectDataCalls_;
-  //! Data in buffer
-  std::atomic_uint noDataInBuffer_;
   //! Store rate updateFrequency_ / samplingFrequency_
-  std::atomic_uint bufferStorageRate_;
-  //! Buffer size
-  std::size_t bufferSize_;
+  std::atomic_uint defaultDivider_;
   //! Collected data script filename
   std::string collectScriptFileName_;
   //! Rate at which collectLoggerData() is called
   std::atomic_uint updateFrequency_;
   //! Rate at which data shall be collected
-  std::atomic_uint samplingFrequency_;
+  std::atomic_uint defaultSamplingFrequency_;
   //! Total recording time -> determines length of buffer
-  std::atomic<double> samplingTime_;
+  std::atomic<double> defaultSamplingTime_;
   //! Map of all log elements
   std::map<std::string, signal_logger::LogElementInterface *> logElements_;
 
@@ -160,6 +177,7 @@ class SignalLoggerBase {
   std::mutex scriptMutex_;
 };
 
+//! Add template specifications
 FOR_ALL_TYPES(ADD_VAR_TEMPLATE_SPECIFICATIONS);
 
 }

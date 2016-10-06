@@ -54,14 +54,12 @@ class Buffer
    *  @param window_size
    */
   template<typename V = ValueType_>
-  explicit Buffer(V * ptr, size_type window_size = 0,
-                  typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0) :
+  explicit Buffer(V * ptr, typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0) :
     ptr_(ptr),
-    latestIdx_(0),
     noUnreadItems_(0),
     noItems_(0),
     isLooping_(true),
-    container_(window_size),
+    container_(0),
     mutex_(),
     rows_(1),
     cols_(1)
@@ -73,14 +71,12 @@ class Buffer
    *  @param window_size
    */
   template<typename V = ValueType_>
-  explicit Buffer(V * ptr, size_type window_size = 0,
-                  typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0) :
+  explicit Buffer(V * ptr, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0) :
     ptr_(ptr),
-    latestIdx_(0),
     noUnreadItems_(0),
     noItems_(0),
     isLooping_(true),
-    container_(window_size),
+    container_(0),
     mutex_(),
     rows_(ptr->rows()),
     cols_(ptr->cols())
@@ -95,7 +91,7 @@ class Buffer
     boost::mutex::scoped_lock lock(mutex_);
 
     // Non-looping buffers don't allow filling a full buffer
-    if(!isLooping_ && noItems_ >= bufferSize_) { return false; }
+    if( (!isLooping_ && noItems_ >= bufferSize_) || bufferSize_ == 0) { return false; }
 
     // Add value to the buffer
     pushElementFront(ptr_);
@@ -104,7 +100,6 @@ class Buffer
      *  noUnreadItems -> increases on push decreased on pop
      *  noItems -> increases on push, max out at capacity
      */
-    latestIdx_ = ++latestIdx_ % bufferSize_;
     noUnreadItems_ = std::min(++noUnreadItems_, bufferSize_);
     noItems_ = std::min(++noItems_, bufferSize_);
 
@@ -122,12 +117,8 @@ class Buffer
     // Check if buffer is empty
     if( noUnreadItems_ == 0 ) { return false; }
 
-    // Get item from buffer,
-    readElementAtPosition(pItem, (latestIdx_ - 1) );
-
-    // Decrement nr of unread items and latest idx
-    --latestIdx_;
-    --noUnreadItems_;
+    // Get item from buffer, Decrement nr of unread items
+    readElementAtPosition(pItem, --noUnreadItems_);
 
     return true;
   }
@@ -144,9 +135,8 @@ class Buffer
 
     // Fill vector
     std::vector<ValueType_> data_vector(noItems_);
-    size_type start = latestIdx_ - noItems_ + (noItems_ > latestIdx_)*bufferSize_;
     for(int j = 0; j < noItems_; ++j) {
-      readElementAtPosition( &data_vector[j] , (start + j) % bufferSize_);
+      readElementAtPosition( &data_vector[j] , (noItems_ - 1) - j);
     }
 
     return data_vector;
@@ -160,10 +150,9 @@ class Buffer
 
     // Fill vector
     std::vector<bool> data_vector(noItems_);
-    size_type start = latestIdx_ - noItems_ + (noItems_ > latestIdx_)*bufferSize_;
     for(int j = 0; j < noItems_; ++j) {
       bool read;
-      readElementAtPosition( &read , (start + j) % bufferSize_);
+      readElementAtPosition( &read , (noItems_ - 1) - j);
       data_vector[j] = read;
     }
 
@@ -185,7 +174,6 @@ class Buffer
     container_.clear();
     noUnreadItems_ = size_type(0);
     noItems_ = size_type(0);
-    latestIdx_ = size_type(0);
   }
 
   //! @return number of unread elements
@@ -271,8 +259,6 @@ class Buffer
   ValueType_* ptr_;
   //! Buffer size w.r.t. to ValueType_ (bufferSize_ is not necessary equal to container_.capacity())
   size_type bufferSize_;
-  //! Index of the newest entry
-  size_type latestIdx_;
   //! Number of unread items
   size_type noUnreadItems_;
   //! Number of items in the buffer (read and unread)

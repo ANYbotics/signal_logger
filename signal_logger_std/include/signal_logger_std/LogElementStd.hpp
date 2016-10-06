@@ -45,7 +45,7 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
   //! Save Data to file
   void saveDataToLogFile()
   {
-    std::vector<ValueType_> values = this->getBufferCopy();
+    std::vector<ValueType_> values = this->buffer_.copyBuffer();
     signal_logger_std::traits::sls_traits<ValueType_>::writeLogElementToStreams(headerStream_, dataStream_, values, this->getName(), this->getDivider());
   }
 

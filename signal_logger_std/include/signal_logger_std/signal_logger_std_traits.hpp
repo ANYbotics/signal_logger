@@ -28,10 +28,10 @@ struct sls_traits
   {
     (*headerStream) << name << " " << sizeof(ValueType_) <<  " " << values.size() << " " << divider << std::endl;
     for (const auto & val : values)  {
+      (*headerStream) << val << " " << std::endl;
       dataStream->write(reinterpret_cast<const char*>(&val),sizeof(val));
-      //      (*dataStream) << val<< " ";
+//      (*dataStream) << val << " ";
     }
-    (*dataStream) << std::endl;
   }
 };
 
@@ -51,12 +51,10 @@ struct sls_traits<ValueType_, typename std::enable_if<std::is_same<signal_logger
       dataStream->write(reinterpret_cast<const char*>(&val.first),sizeof(val.first));
       //      (*dataStream) << val.first<< " ";
     }
-    (*dataStream) << std::endl;
     for (const auto & val : values)  {
       dataStream->write(reinterpret_cast<const char*>(&val.second),sizeof(val.second));
       //      (*dataStream) << val.second<< " ";
     }
-    (*dataStream) << std::endl;
   }
 };
 
