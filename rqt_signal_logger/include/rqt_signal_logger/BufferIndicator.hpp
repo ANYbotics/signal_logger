@@ -1,57 +1,57 @@
+/*
+ * BufferIndicator.hpp
+ *
+ *  Created on: October 2016
+ *      Author: Gabriel Hottiger
+ */
+
 #pragma once
 
+// Qt
 #include <QtDesigner/QtDesigner>
 #include <QWidget>
 
 class QDESIGNER_WIDGET_EXPORT BufferIndicator : public QWidget
 {
-	Q_OBJECT
+  Q_OBJECT
+  Q_PROPERTY(double diameter READ diameter WRITE setDiameter) //mm
+  Q_PROPERTY(Qt::Alignment alignment READ alignment WRITE setAlignment)
 
-	Q_PROPERTY(double diameter READ diameter WRITE setDiameter) // mm
-	Q_PROPERTY(Qt::Alignment alignment READ alignment WRITE setAlignment)
+ public:
+  explicit BufferIndicator(QWidget* parent=0);
+  ~BufferIndicator();
 
-public:
-	explicit BufferIndicator(QWidget* parent=0);
-	~BufferIndicator();
+  double diameter() const;
+  void setDiameter(double diameter);
 
-	double diameter() const;
-	void setDiameter(double diameter);
+  Qt::Alignment alignment() const;
+  void setAlignment(Qt::Alignment alignment);
 
-	Qt::Alignment alignment() const;
-	void setAlignment(Qt::Alignment alignment);
+  int heightForWidth(int width) const;
+  QSize sizeHint() const;
+  QSize minimumSizeHint() const;
 
-public slots:
-	void updateData(const std::size_t nrUnreadElements, std::size_t nrTotalElements, std::size_t bufferSize);
+ public slots:
+  void updateData(const std::size_t nrUnreadElements, std::size_t nrTotalElements, std::size_t bufferSize);
 
-signals:
+ signals:
   void refresh();
 
-public:
-	int heightForWidth(int width) const;
-	QSize sizeHint() const;
-	QSize minimumSizeHint() const;
+ protected:
+  void paintEvent(QPaintEvent* event);
+//  bool event(QEvent *event); // catch mouse hover events
 
-protected:
-	void paintEvent(QPaintEvent* event);
-	 bool event(QEvent *event);
-
-
-private:
-	double diameter_;
-	std::size_t nrUnreadElements_;
-	std::size_t nrTotalElements_;
-	std::size_t bufferSize_;
-	QColor colorUnread_;
+ private:
+  Qt::Alignment alignment_;
+  double diameter_;
+  std::size_t nrUnreadElements_;
+  std::size_t nrTotalElements_;
+  std::size_t bufferSize_;
+  QColor colorUnread_;
   QColor colorTotal_;
-	Qt::Alignment alignment_;
 
-	//
-	// Pixels per mm for x and y...
-	//
-	int pixX_, pixY_;
-
-	//
-	// Scaled values for x and y diameter.
-	//
-	int diamX_, diamY_;
+  // Pixels per mm for x and y...
+  int pixX_, pixY_;
+  // Scaled values for x and y diameter.
+  int diamX_, diamY_;
 };

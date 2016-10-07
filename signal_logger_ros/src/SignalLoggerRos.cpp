@@ -90,7 +90,8 @@ bool SignalLoggerRos::logElementtoMsg(const std::string & name, signal_logger_ms
   msg.action = signal_logger_msgs::LogElement::SAVE_AND_PUBLISH_VAR;
   msg.buffer_size = logElements_.at(name)->getBufferSize();
   msg.is_buffer_looping = logElements_.at(name)->isBufferLooping();
-  msg.is_buffer_full = logElements_.at(name)->isBufferFull();
+  msg.no_items_in_buffer = logElements_.at(name)->noItemsInBuffer();
+  msg.no_unread_items_in_buffer = logElements_.at(name)->noUnreadItemsInBuffer();
 
   return true;
 }

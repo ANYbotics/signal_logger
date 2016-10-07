@@ -7,6 +7,20 @@
 
 #pragma once
 
+// rqt_signal_logger
+#include "rqt_signal_logger/LogElement.hpp"
+
+// custom msgs/srvs
+#include "signal_logger_msgs/LoadLoggerScript.h"
+#include "signal_logger_msgs/SetLoggerElement.h"
+#include "signal_logger_msgs/GetLoggerElement.h"
+#include "signal_logger_msgs/GetLoggerElementNames.h"
+
+// ros
+#include <ros/ros.h>
+#include <std_srvs/Empty.h>
+#include <std_srvs/Trigger.h>
+
 // QT
 #include <rqt_gui_cpp/plugin.h>
 #include <ui_signal_logger_variables.h>
@@ -17,27 +31,27 @@
 #include <QScrollArea>
 #include <QStatusBar>
 
-#include <rqt_signal_logger/LogElement.hpp>
-
-#include <ros/ros.h>
-#include <std_srvs/Empty.h>
-#include <signal_logger_msgs/LoadLoggerScript.h>
-#include <signal_logger_msgs/SetLoggerElement.h>
-#include <signal_logger_msgs/GetLoggerElement.h>
-#include <signal_logger_msgs/GetLoggerElementNames.h>
-#include <std_srvs/Trigger.h>
-
+// STL
 #include <list>
 #include <memory>
 
 class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   Q_OBJECT
  public:
+  //! Status message types
   enum class MessageType {
     ERROR,
     WARNING,
     SUCCESS,
     STATUS
+  };
+  //! Tasks in combo box
+  enum class TaskList {
+    ENABLE_ALL,
+    DISABLE_ALL,
+    SET_DIVIDER,
+    SET_BUFFER_SIZE,
+    SET_BUFFER_SIZE_FROM_TIME
   };
 
  public:
@@ -47,6 +61,22 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   virtual void saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const;
   virtual void restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings);
   void statusMessage(std::string message, MessageType type, double displaySeconds = 0.0);
+
+  protected slots:
+    void refreshAll();
+    void changeAll();
+    void drawParamList();
+    void startLogger();
+    void stopLogger();
+    void saveLoggerData();
+    void selectYamlFile();
+    void loadYamlFile();
+    void saveYamlFile();
+    void taskChanged(int index);
+    void applyButtonPressed();
+
+  signals:
+    void parametersChanged();
 
  private:
   Ui::SignalLoggerVariables varsUi_;
@@ -70,21 +100,6 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
 
   std::vector<std::shared_ptr<LogElement>> logElements_;
   std::vector<std::string> logElementNames_;
-
-  protected slots:
-    void refreshAll();
-    void changeAll();
-    void drawParamList();
-    void startLogger();
-    void stopLogger();
-    void saveLoggerData();
-    void selectYamlFile();
-    void loadYamlFile();
-    void saveYamlFile();
-
-  signals:
-    void parametersChanged();
-
 };
 
 

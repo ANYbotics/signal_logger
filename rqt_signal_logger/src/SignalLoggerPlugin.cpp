@@ -5,19 +5,29 @@
  *      Author: Christian Gehring
  */
 
+// rqt_signal_logger
+#include "rqt_signal_logger/SignalLoggerPlugin.hpp"
+#include "rqt_signal_logger/yaml_helper.hpp"
+
+// yaml-cpp
+#include <yaml-cpp/yaml.h>
+
+// ros
+#include <ros/package.h>
 #include <pluginlib/class_list_macros.h>
+
+// Qt
 #include <QStringList>
 #include <QGridLayout>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QMessageBox>
 #include <QFileDialog>
-#include <rqt_signal_logger/SignalLoggerPlugin.hpp>
-#include <ros/package.h>
 
-#include <yaml-cpp/yaml.h>
-#include <rqt_signal_logger/yaml_helper.hpp>
+// STL
 #include <fstream>
+
+// System
 #include <sys/stat.h>
 
 static bool compareNoCase( const std::string& s1, const std::string& s2 ) {
@@ -74,6 +84,15 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   // Set it up and add it to the user interface
   context.addWidget(tabWidget_);
 
+  // Do some configuration
+  varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::ENABLE_ALL), "Enable all elements");
+  varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::DISABLE_ALL), "Disable all elements");
+  varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::SET_DIVIDER), "Set divider to ");
+  varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::SET_BUFFER_SIZE), "Set buffer size to ");
+  varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::SET_BUFFER_SIZE_FROM_TIME), "Setup buffer size from time");
+  varsUi_.taskComboBox->setCurrentIndex(static_cast<int>(TaskList::ENABLE_ALL));
+  taskChanged(static_cast<int>(TaskList::ENABLE_ALL));
+
   /******************************
    * Connect ui forms to actions *
    ******************************/
@@ -81,6 +100,8 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   connect(varsUi_.lineEditFilter, SIGNAL(returnPressed()), this ,SLOT(refreshAll()));
   connect(varsUi_.pushButtonChangeAll, SIGNAL(pressed()), this, SLOT(changeAll()));
   connect(this, SIGNAL(parametersChanged()), this, SLOT(drawParamList()));
+  connect(varsUi_.taskComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(taskChanged(int)));
+  connect(varsUi_.applyButton, SIGNAL(pressed()), this, SLOT(applyButtonPressed()));
 
   connect(configureUi_.startLoggerButton, SIGNAL(pressed()), this, SLOT(startLogger()));
   connect(configureUi_.stopLoggerButton, SIGNAL(pressed()), this, SLOT(stopLogger()));
@@ -231,6 +252,59 @@ void SignalLoggerPlugin::saveYamlFile() {
   statusMessage("Successfully saved logger configuration file!", MessageType::SUCCESS, 2.0);
 }
 
+void SignalLoggerPlugin::taskChanged(int index) {
+  // Restore Default
+  varsUi_.valueSpinBox->setEnabled(true);
+  varsUi_.valueSpinBox->setSuffix(QString::fromUtf8(""));
+
+  // Change depending on type
+  switch(index) {
+    case static_cast<int>(TaskList::ENABLE_ALL):
+    case static_cast<int>(TaskList::DISABLE_ALL):
+      varsUi_.valueSpinBox->setEnabled(false);
+      break;
+    case static_cast<int>(TaskList::SET_BUFFER_SIZE_FROM_TIME):
+      varsUi_.valueSpinBox->setSuffix(QString::fromUtf8(" [sec]"));
+      break;
+    default:
+      break;
+  }
+}
+
+void SignalLoggerPlugin::applyButtonPressed() {
+
+  switch(varsUi_.taskComboBox->currentIndex()) {
+    case static_cast<int>(TaskList::ENABLE_ALL):
+      for(auto & element : logElements_) {
+        element->checkBoxIsLogging->setCheckState(Qt::CheckState::Checked);
+      }
+      break;
+    case static_cast<int>(TaskList::DISABLE_ALL):
+      for(auto & element : logElements_) {
+        element->checkBoxIsLogging->setCheckState(Qt::CheckState::Unchecked);
+      }
+      break;
+    case static_cast<int>(TaskList::SET_DIVIDER):
+      for(auto & element : logElements_) {
+        element->spinBoxDivider->setValue(varsUi_.valueSpinBox->value());
+      }
+      break;
+    case static_cast<int>(TaskList::SET_BUFFER_SIZE):
+      for(auto & element : logElements_) {
+        element->spinBoxBufferSize->setValue(varsUi_.valueSpinBox->value());
+      }
+      break;
+    case static_cast<int>(TaskList::SET_BUFFER_SIZE_FROM_TIME):
+      for(auto & element : logElements_) {
+        element->spinBoxBufferSize->setValue(varsUi_.valueSpinBox->value()/2.0);
+      }
+      break;
+    default:
+      break;
+  }
+
+}
+
 void SignalLoggerPlugin::shutdownPlugin() {
   getLoggerElementNamesClient_.shutdown();
   getLoggerElementClient_.shutdown();
@@ -278,12 +352,10 @@ void SignalLoggerPlugin::drawParamList() {
 
   paramsWidget_ = new QWidget();
   paramsWidget_->setObjectName(QString::fromUtf8("paramsWidget"));
-  varsUi_.gridLayout->addWidget(paramsWidget_, 10, 1, 1, 1);
-
+  varsUi_.gridLayout->addWidget(paramsWidget_,2,0,10,1);
 
   paramsScrollHelperWidget_ = new QWidget(paramsWidget_);
   paramsGrid_= new QGridLayout(paramsScrollHelperWidget_);
-  paramsGrid_->setSpacing(6);
   paramsGrid_->setObjectName(QString::fromUtf8("paramsGrid"));
 
   const size_t maxParamNameWidth = getMaxParamNameWidth(logElementNames_);

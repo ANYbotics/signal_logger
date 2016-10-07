@@ -36,8 +36,8 @@ class LogElement: public QObject {
   //! Enum mapping defining possible log actions
   enum class LogAction : unsigned int {
     SAVE_AND_PUBLISH = signal_logger_msgs::LogElement::SAVE_AND_PUBLISH_VAR,
-        SAVE = signal_logger_msgs::LogElement::SAVE_VAR,
-        PUBLISH = signal_logger_msgs::LogElement::PUBLISH_VAR
+    SAVE = signal_logger_msgs::LogElement::SAVE_VAR,
+    PUBLISH = signal_logger_msgs::LogElement::PUBLISH_VAR
   };
 
  public:
@@ -56,47 +56,41 @@ class LogElement: public QObject {
     int iRow = grid->rowCount();
 
     //! Add number label
-    std::string labelParamNumberName = std::string{"labelParamNumber"} + name;
     labelParamNumber = new QLabel(widget);
-    labelParamNumber->setObjectName(QString::fromStdString(labelParamNumberName));
+    labelParamNumber->setObjectName(QString::fromStdString(std::string{"labelParamNumber"} + name));
     labelParamNumber->setText(QString::number(iRow)+QString::fromUtf8(")"));
 
     //! Add is logging checkbox
-    std::string checkBoxIsLoggingName = std::string{"checkBoxIsLogging"} + name;
     checkBoxIsLogging = new QCheckBox(widget);
-    checkBoxIsLogging->setObjectName(QString::fromStdString(checkBoxIsLoggingName));
+    checkBoxIsLogging->setObjectName(QString::fromStdString(std::string{"checkBoxIsLogging"} + name));
     checkBoxIsLogging->setText("log?");
     checkBoxIsLogging->setLayoutDirection(Qt::LayoutDirection::RightToLeft);
     checkBoxIsLogging->setTristate(false);
     checkBoxIsLogging->setCheckState(Qt::CheckState::Unchecked);
 
     //! Add name label
-    std::string labelParamNameName = std::string{"labelParamName"} + name;
     labelParamName = new QLabel(widget);
-    labelParamName->setObjectName(QString::fromStdString(labelParamNameName));
+    labelParamName->setObjectName(QString::fromStdString(std::string{"labelParamName"} + name));
     labelParamName->setText(QString::fromStdString(name));
     labelParamName->setFixedSize(maxParamNameWidth-10, labelParamName->height());
 
     //! Add log type combobox
-    std::string comboBoxLogTypeName = std::string{"comboBoxLogType"} + name;
     comboBoxLogType = new QComboBox(widget);
-    comboBoxLogType->setObjectName(QString::fromStdString(comboBoxLogTypeName));
+    comboBoxLogType->setObjectName(QString::fromStdString(std::string{"comboBoxLogType"} + name));
     comboBoxLogType->insertItem(static_cast<int>(LogAction::SAVE_AND_PUBLISH), "Save and Publish");
     comboBoxLogType->insertItem(static_cast<int>(LogAction::SAVE),"Save");
     comboBoxLogType->insertItem(static_cast<int>(LogAction::PUBLISH),"Publish");
 
     //! Add divider label
-    std::string labelDividerName = std::string{"labelDivider"} + name;
     labelDivider = new QLabel(widget);
-    labelDivider->setObjectName(QString::fromStdString(labelDividerName));
+    labelDivider->setObjectName(QString::fromStdString(std::string{"labelDivider"} + name));
     labelDivider->setText(QString::fromStdString(std::string{"Divider:"}));
     labelDivider->setFixedWidth(labelDivider->fontMetrics().width(labelDivider->text())+10);
     labelDivider->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
     //! Add divider spinbox
-    std::string spinBoxDividerName = std::string{"spinBoxDivider"} + name;
     spinBoxDivider = new QSpinBox(widget);
-    spinBoxDivider->setObjectName(QString::fromStdString(spinBoxDividerName));
+    spinBoxDivider->setObjectName(QString::fromStdString(std::string{"spinBoxDivider"} + name));
     spinBoxDivider->setMinimumSize(QSize(50, 0));
     spinBoxDivider->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
     spinBoxDivider->setMinimum(1);
@@ -104,18 +98,15 @@ class LogElement: public QObject {
     spinBoxDivider->setSingleStep(1);
 
     //! Add buffer label
-    std::string labelBufferName = std::string{"labelBuffer"} + name;
     labelBuffer = new QLabel(widget);
-    labelBuffer->setObjectName(QString::fromStdString(labelBufferName));
-    std::string bufferLabel = "Buffer size:";
-    labelBuffer->setText(QString::fromStdString(bufferLabel));
+    labelBuffer->setObjectName(QString::fromStdString(std::string{"labelBuffer"} + name));
+    labelBuffer->setText(QString::fromStdString("Buffer size:"));
     labelBuffer->setFixedWidth(labelBuffer->fontMetrics().width(labelBuffer->text())+10);
     labelBuffer->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
     //! Add buffer size spinbox
-    std::string spinBoxBufferSizeName = std::string{"spinBoxBufferSize"} + name;
     spinBoxBufferSize = new QSpinBox(widget);
-    spinBoxBufferSize->setObjectName(QString::fromStdString(spinBoxBufferSizeName));
+    spinBoxBufferSize->setObjectName(QString::fromStdString(std::string{"spinBoxBufferSize"} + name));
     spinBoxBufferSize->setMinimumSize(QSize(50, 0));
     spinBoxBufferSize->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
     spinBoxBufferSize->setMinimum(1);
@@ -123,28 +114,24 @@ class LogElement: public QObject {
     spinBoxBufferSize->setSingleStep(1);
 
     //! Add buffer looping combobox
-    std::string comboBoxIsLoopingName = std::string{"comboBoxIsLooping"} + name;
     comboBoxIsLooping = new QComboBox(widget);
-    comboBoxIsLooping->setObjectName(QString::fromStdString(comboBoxIsLoopingName));
+    comboBoxIsLooping->setObjectName(QString::fromStdString(std::string{"comboBoxIsLooping"} + name));
     comboBoxIsLooping->addItem("Not Looping");
     comboBoxIsLooping->addItem("Looping");
 
     // Buffer Indicator
-    std::string indicatorBufferName = std::string{"indicatorBuffer"} + name;
     bufferInd_ = new BufferIndicator(widget);
-    bufferInd_->setObjectName(QString::fromStdString(indicatorBufferName));
-    connect(bufferInd_, SIGNAL(refresh()), this, SLOT(refreshElement()));
+    bufferInd_->setObjectName(QString::fromStdString(std::string{"indicatorBuffer"} + name));
+//    connect(bufferInd_, SIGNAL(refresh()), this, SLOT(refreshElement()));
 
     //! Change button
-    std::string pushButtonChangeName = std::string{"pushButtonChange"} + name;
     pushButtonChangeParam = new QPushButton(widget);
-    pushButtonChangeParam->setObjectName(QString::fromStdString(pushButtonChangeName));
+    pushButtonChangeParam->setObjectName(QString::fromStdString(std::string{"pushButtonChange"} + name));
     pushButtonChangeParam->setText(QString::fromUtf8("change"));
 
     //! Change button
-    std::string pushButtonRefreshName = std::string{"pushButtonRefresh"} + name;
     pushButtonRefreshParam = new QPushButton(widget);
-    pushButtonRefreshParam->setObjectName(QString::fromStdString(pushButtonRefreshName));
+    pushButtonRefreshParam->setObjectName(QString::fromStdString(std::string{"pushButtonRefresh"} + name));
     pushButtonRefreshParam->setText(QString::fromUtf8("refresh"));
 
     grid->addWidget(labelParamNumber,      iRow, 0, 1, 1);
@@ -201,13 +188,16 @@ class LogElement: public QObject {
   public slots:
 
   void pushButtonChangeParamPressed() {
-    ROS_INFO_STREAM("Change logger element " << name_);
+    ROS_DEBUG_STREAM("Change logger element " << name_);
 
     signal_logger_msgs::GetLoggerElementRequest reqGet;
     signal_logger_msgs::GetLoggerElementResponse resGet;
 
     reqGet.name = name_;
-    getLogElementClient_->call(reqGet, resGet);
+    if(!getLogElementClient_->call(reqGet, resGet)) {
+      ROS_INFO_STREAM("Could not change logger element " << name_);
+      return;
+    }
 
     signal_logger_msgs::SetLoggerElementRequest req;
     signal_logger_msgs::SetLoggerElementResponse res;
@@ -218,6 +208,7 @@ class LogElement: public QObject {
     req.log_element.action = comboBoxLogType->currentIndex();
     req.log_element.buffer_size = spinBoxBufferSize->value();
     req.log_element.is_buffer_looping = comboBoxIsLooping->currentIndex();
+
     if(!setLogElementClient_->call(req, res)) {
       ROS_INFO_STREAM("Could not change logger element " << name_);
     }
@@ -236,7 +227,7 @@ class LogElement: public QObject {
         comboBoxLogType->setCurrentIndex(res.log_element.action);
         spinBoxBufferSize->setValue( res.log_element.buffer_size );
         comboBoxIsLooping->setCurrentIndex(res.log_element.is_buffer_looping);
-        bufferInd_->updateData(25,50,res.log_element.buffer_size);
+        bufferInd_->updateData(res.log_element.no_unread_items_in_buffer,res.log_element.no_items_in_buffer,res.log_element.buffer_size);
       }
       else {
         ROS_WARN_STREAM("Could not get parameter " << name_);

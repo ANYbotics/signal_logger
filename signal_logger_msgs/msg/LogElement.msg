@@ -18,5 +18,6 @@ int8 PUBLISH_VAR=2
 int8 action
 
 int32 buffer_size
-bool is_buffer_full
 bool is_buffer_looping
+int32 no_items_in_buffer
+int32 no_unread_items_in_buffer

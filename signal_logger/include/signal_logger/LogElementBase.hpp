@@ -62,9 +62,14 @@ class LogElementBase: public LogElementInterface
     isBufferLooping_ = isBufferLooping;
   }
 
-  //! @return flag indicating if buffer is full
-  virtual bool isBufferFull() const {
-    return bufferSize_ <= buffer_.noItems();
+  //! @return number of total items in buffer
+  virtual std::size_t noItemsInBuffer() const {
+    return buffer_.noItems();
+  }
+
+  //! @return number of unread items in buffer
+  virtual std::size_t noUnreadItemsInBuffer() const {
+    return buffer_.noUnreadItems();
   }
 
  protected:

@@ -122,8 +122,10 @@ class LogElementInterface
   //! @param flag indicating if buffer should be looping
   virtual void setIsBufferLooping(const bool isBufferLooping) = 0;
 
-  //! @return flag indicating if buffer is full
-  virtual bool isBufferFull() const = 0;
+  //! @return number of total items in buffer
+  virtual std::size_t noItemsInBuffer() const = 0;
+  //! @return number of unread items in buffer
+  virtual std::size_t noUnreadItemsInBuffer() const = 0;
 
   //! @return flag indicating if log element is enabled
   bool isEnabled() const {

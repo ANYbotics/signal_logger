@@ -22,7 +22,6 @@ catkin_python_setup()
 ###########
 set(rqt_signal_logger_SRCS
     src/SignalLoggerPlugin.cpp
-    src/LED.cpp
     src/BufferIndicator.cpp
 )
 ###########
@@ -35,7 +34,6 @@ set(rqt_signal_logger_SRCS
 set(rqt_signal_logger_HDRS
     include/rqt_signal_logger/SignalLoggerPlugin.hpp
     include/rqt_signal_logger/LogElement.hpp
-    include/rqt_signal_logger/LED.hpp
     include/rqt_signal_logger/BufferIndicator.hpp
 )
 ###########

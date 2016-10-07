@@ -1,43 +1,44 @@
-#include <math.h>
-#include <rqt_signal_logger/BufferIndicator.hpp>
+/*
+ * BufferIndicator.cpp
+ *
+ *  Created on: October 2016
+ *      Author: Gabriel Hottiger
+ */
 
+// rqt_signal_logger
+#include "rqt_signal_logger/BufferIndicator.hpp"
+
+// Qt
 #include <QPainter>
-#include <QGradient>
-#include <QPaintDevice>
-#include <QTimer>
 
-#include <iostream>
+// Stl
+#include <math.h>
 
-BufferIndicator::
-BufferIndicator(QWidget* parent) :
-QWidget(parent),
-diameter_(7),
-nrUnreadElements_(0),
-nrTotalElements_(0),
-bufferSize_(0),
-colorUnread_(QColor(85, 117, 168)),
-colorTotal_(QColor(170, 196, 237,150)),
-alignment_(Qt::AlignCenter)
+BufferIndicator::BufferIndicator(QWidget* parent) :
+  QWidget(parent),
+  alignment_(Qt::AlignCenter),
+  diameter_(7),
+  nrUnreadElements_(0),
+  nrTotalElements_(0),
+  bufferSize_(0),
+  colorUnread_(QColor(85, 117, 168)),
+  colorTotal_(QColor(170, 196, 237,150))
 {
   setDiameter(diameter_);
-// Enable this to refresh on mouse over
-  this->setMouseTracking(true);
+  // Enable this to refresh on mouse over
+  //  this->setMouseTracking(true);
 }
 
-BufferIndicator::
-~BufferIndicator()
+BufferIndicator::~BufferIndicator()
 {
 }
 
-
-double BufferIndicator::
-diameter() const
+double BufferIndicator::diameter() const
 {
   return diameter_;
 }
 
-void BufferIndicator::
-setDiameter(double diameter)
+void BufferIndicator::setDiameter(double diameter)
 {
   diameter_ = diameter;
 
@@ -50,21 +51,34 @@ setDiameter(double diameter)
   update();
 }
 
-Qt::Alignment BufferIndicator::
-alignment() const
+Qt::Alignment BufferIndicator::alignment() const
 {
   return alignment_;
 }
 
-void BufferIndicator::
-setAlignment(Qt::Alignment alignment)
+void BufferIndicator::setAlignment(Qt::Alignment alignment)
 {
   alignment_ = alignment;
 
   update();
 }
-void BufferIndicator::
-updateData(const std::size_t nrUnreadElements, std::size_t nrTotalElements, std::size_t bufferSize)
+
+int BufferIndicator::heightForWidth(int width) const
+{
+  return width;
+}
+
+QSize BufferIndicator::sizeHint() const
+{
+  return QSize(diamX_, diamY_);
+}
+
+QSize BufferIndicator::minimumSizeHint() const
+{
+  return QSize(diamX_, diamY_);
+}
+
+void BufferIndicator::updateData(const std::size_t nrUnreadElements, std::size_t nrTotalElements, std::size_t bufferSize)
 {
   // set sizes
   bufferSize_ = bufferSize;
@@ -81,49 +95,28 @@ updateData(const std::size_t nrUnreadElements, std::size_t nrTotalElements, std:
   update();
 }
 
-int BufferIndicator::
-heightForWidth(int width) const
-{
-  return width;
-}
+//bool BufferIndicator::event(QEvent *event){
+//  switch(event->type())
+//  {
+//    case QEvent::Enter:
+//      emit refresh();
+//      return true;
+//      break;
+//    default:
+//      break;
+//  }
+//  return QWidget::event(event);
+//}
 
-QSize BufferIndicator::
-sizeHint() const
-{
-  return QSize(diamX_, diamY_);
-}
-
-QSize BufferIndicator::
-minimumSizeHint() const
-{
-  return QSize(diamX_, diamY_);
-}
-
-bool BufferIndicator::
-event(QEvent *event){
-  switch(event->type())
-  {
-    case QEvent::Enter:
-      emit refresh();
-      return true;
-      break;
-    default:
-      break;
-  }
-  return QWidget::event(event);
-}
-
-void BufferIndicator::
-paintEvent(QPaintEvent *event)
+void BufferIndicator::paintEvent(QPaintEvent *event)
 {
   Q_UNUSED(event);
-
-  QPainter p(this);
 
   QRect geo = geometry();
   int width = geo.width();
   int height = geo.height();
 
+  // Handle alignement
   int x=0, y=0;
   if ( alignment_ & Qt::AlignLeft )
     x = 0;
@@ -141,38 +134,37 @@ paintEvent(QPaintEvent *event)
   else if ( alignment_ & Qt::AlignVCenter )
     y = (height-diamY_)/2;
 
-  QPointF topleft(x, y);
-  QPointF bottomright(x+diamX_, y+diamY_);
+  // Declare bounding rectangles and center point
+  QRectF outerBox = QRectF(x,y,diamX_,diamY_);
+  QRectF innerBox = QRectF(x+diamX_/3,y+diamX_/3,diamX_/3,diamY_/3);
   QPointF center(x+diamX_/2, y+diamY_/2);
-  QRectF boundingRect(topleft, bottomright);
-  QPointF whiteBoxTopLeft(x+diamX_/3, y+diamY_/3);
-  QPointF whiteBoxBottomRight(x+2*diamX_/3, y+2*diamY_/3);
-  QRectF whiteBoxBoundingRect(whiteBoxTopLeft, whiteBoxBottomRight);
 
-  QPainterPath unreadArc;
-  unreadArc.moveTo(center);
-  unreadArc.arcTo(boundingRect, 90, - (double)nrUnreadElements_/(double)bufferSize_ * 360.0);
-
-  QPainterPath totalArc;
-  totalArc.moveTo(center);
-  totalArc.arcTo(boundingRect, 90, - (double)nrTotalElements_/(double)bufferSize_ * 360.0);
-
+  // Setup painter
+  QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing, true);
   p.setPen(Qt::NoPen);
 
+  // Draw white background circle
   p.setBrush(QBrush(QColor("white")));
-  p.drawEllipse(boundingRect);
+  p.drawEllipse(outerBox);
 
+  // Draw total elements circle segment
+  QPainterPath totalArc;
+  totalArc.moveTo(center);
+  totalArc.arcTo(outerBox, 90, - (double)nrTotalElements_/(double)bufferSize_ * 360.0);
   p.drawPath(totalArc);
   p.fillPath (totalArc, QBrush (colorTotal_));
 
+  // Draw unread elements circle (always smaller or equal to total elements, equal size use pattern)
+  QPainterPath unreadArc;
+  unreadArc.moveTo(center);
+  unreadArc.arcTo(outerBox, 90, - (double)nrUnreadElements_/(double)bufferSize_ * 360.0);
+  QBrush unreadBrush = nrTotalElements_ != nrUnreadElements_? QBrush (colorUnread_): QBrush(QColor(75,0,130));
   p.drawPath(unreadArc);
-  p.fillPath (unreadArc, QBrush (colorUnread_));
+  p.fillPath (unreadArc, unreadBrush);
 
+  // Draw inner circle with background color
   p.setBrush(QBrush(QWidget::palette().color(QWidget::backgroundRole())));
-  p.drawEllipse(whiteBoxBoundingRect);
-
-
-
+  p.drawEllipse(innerBox);
 
 }
