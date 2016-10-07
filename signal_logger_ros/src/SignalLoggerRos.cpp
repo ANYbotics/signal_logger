@@ -10,7 +10,7 @@
 namespace signal_logger_ros {
 
 SignalLoggerRos::SignalLoggerRos():
-                                signal_logger::SignalLoggerBase(),
+                                signal_logger_std::SignalLoggerStd(),
                                 nh_()
 {
   getLoggerElementNamesService_ = nh_.advertiseService("/sl_ros/get_logger_element_names", &SignalLoggerRos::getLoggerElementNames, this);
@@ -20,16 +20,12 @@ SignalLoggerRos::SignalLoggerRos():
   stopLoggerService_ = nh_.advertiseService("/sl_ros/stop_logger", &SignalLoggerRos::stopLogger, this);
   saveLoggerDataService_ = nh_.advertiseService("/sl_ros/save_logger_data", &SignalLoggerRos::saveLoggerData, this);
   loadLoggerScriptService_ = nh_.advertiseService("/sl_ros/load_logger_script", &SignalLoggerRos::loadLoggerScript, this);
+  isLoggerRunningService_  =  nh_.advertiseService("/sl_ros/is_logger_running", &SignalLoggerRos::isLoggerRunning, this);
 }
 
 SignalLoggerRos::~SignalLoggerRos()
 {
 
-}
-
-//! Do nothing for now
-bool SignalLoggerRos::workerSaveData(const std::string & logFileName) {
-  return true;
 }
 
 bool SignalLoggerRos::getLoggerElementNames(signal_logger_msgs::GetLoggerElementNamesRequest& req,
@@ -52,7 +48,13 @@ bool SignalLoggerRos::getLoggerElement(signal_logger_msgs::GetLoggerElement::Req
 
 bool SignalLoggerRos::setLoggerElement(signal_logger_msgs::SetLoggerElement::Request& req,
                                        signal_logger_msgs::SetLoggerElement::Response& res) {
-  res.success = msgToLogElement(req.log_element);
+  if(isCollectingData_)
+  {
+    res.success = false;
+  } else {
+    res.success = msgToLogElement(req.log_element);
+  }
+
   return true;
 }
 
@@ -74,9 +76,22 @@ bool SignalLoggerRos::saveLoggerData(std_srvs::TriggerRequest& req,
   return true;
 }
 
+
+bool SignalLoggerRos::isLoggerRunning(std_srvs::TriggerRequest& req,
+                                      std_srvs::TriggerResponse& res) {
+  res.success = this->isCollectingData_;
+  return true;
+}
+
 bool SignalLoggerRos::loadLoggerScript(signal_logger_msgs::LoadLoggerScriptRequest& req,
                                        signal_logger_msgs::LoadLoggerScriptResponse& res) {
-  res.success = SignalLoggerBase::readDataCollectScript(req.filepath);
+  if(isCollectingData_)
+  {
+    res.success = false;
+  } else {
+    res.success = SignalLoggerBase::readDataCollectScript(req.filepath);
+  }
+
   return true;
 }
 
@@ -87,11 +102,25 @@ bool SignalLoggerRos::logElementtoMsg(const std::string & name, signal_logger_ms
   msg.name = logElements_.at(name)->getName();
   msg.is_logged = logElements_.at(name)->isEnabled();
   msg.divider = logElements_.at(name)->getDivider();
-  msg.action = signal_logger_msgs::LogElement::SAVE_AND_PUBLISH_VAR;
   msg.buffer_size = logElements_.at(name)->getBufferSize();
   msg.is_buffer_looping = logElements_.at(name)->isBufferLooping();
   msg.no_items_in_buffer = logElements_.at(name)->noItemsInBuffer();
   msg.no_unread_items_in_buffer = logElements_.at(name)->noUnreadItemsInBuffer();
+
+  switch(logElements_.at(name)->getAction()) {
+    case signal_logger::LogElementInterface::LogElementAction::SAVE_AND_PUBLISH:
+      msg.action = signal_logger_msgs::LogElement::SAVE_AND_PUBLISH_VAR;
+      break;
+    case signal_logger::LogElementInterface::LogElementAction::SAVE:
+      msg.action = signal_logger_msgs::LogElement::SAVE_VAR;
+      break;
+    case signal_logger::LogElementInterface::LogElementAction::PUBLISH:
+      msg.action = signal_logger_msgs::LogElement::PUBLISH_VAR;
+      break;
+    default:
+      MELO_ERROR("Undefined action!");
+      break;
+  }
 
   return true;
 }
@@ -102,9 +131,23 @@ bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg
 
   logElements_.at(msg.name)->setIsEnabled(msg.is_logged);
   logElements_.at(msg.name)->setDivider(msg.divider);
-  // Publish/save action
   logElements_.at(msg.name)->setBufferSize(msg.buffer_size);
   logElements_.at(msg.name)->setIsBufferLooping(msg.is_buffer_looping);
+
+  switch(msg.action) {
+    case signal_logger_msgs::LogElement::SAVE_AND_PUBLISH_VAR:
+      logElements_.at(msg.name)->setAction(signal_logger::LogElementInterface::LogElementAction::SAVE_AND_PUBLISH);
+      break;
+    case signal_logger_msgs::LogElement::SAVE_VAR:
+      logElements_.at(msg.name)->setAction(signal_logger::LogElementInterface::LogElementAction::SAVE);
+      break;
+    case signal_logger_msgs::LogElement::PUBLISH_VAR:
+      logElements_.at(msg.name)->setAction(signal_logger::LogElementInterface::LogElementAction::PUBLISH);
+      break;
+    default:
+      MELO_ERROR("Undefined action!");
+      break;
+  }
 
   return true;
 }

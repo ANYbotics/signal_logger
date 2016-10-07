@@ -139,11 +139,9 @@ class LogElementInterface
       isEnabled_ = isEnabled;
       if(isEnabled_) {
         this->setBufferSize(bufferSize_);
-        this->initializeElement();
       }
       else {
         this->setBufferSize(std::size_t(0));
-        this->shutdownElement();
       }
     }
   }

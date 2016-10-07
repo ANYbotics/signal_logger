@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
     geometry_msgs
     kindr_msgs
     signal_logger_msgs
+    signal_logger_std
 )
 
 ###################################
@@ -17,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES signal_logger_ros
- CATKIN_DEPENDS signal_logger roco std_msgs geometry_msgs kindr_msgs signal_logger_msgs
+ CATKIN_DEPENDS signal_logger roco std_msgs geometry_msgs kindr_msgs signal_logger_msgs signal_logger_std
 # DEPENDS system_lib
 )
 

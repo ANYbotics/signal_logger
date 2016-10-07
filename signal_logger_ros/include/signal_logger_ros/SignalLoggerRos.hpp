@@ -9,7 +9,7 @@
 
 // signal logger
 #include "signal_logger_ros/macro_definitions.hpp"
-#include "signal_logger/SignalLoggerBase.hpp"
+#include "signal_logger_std/SignalLoggerStd.hpp"
 
 // msgs
 #include "signal_logger_msgs/GetLoggerElementNames.h"
@@ -20,14 +20,11 @@
 
 namespace signal_logger_ros {
 
-class SignalLoggerRos : public signal_logger::SignalLoggerBase
+class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
 {
  public:
   SignalLoggerRos();
   virtual ~SignalLoggerRos();
-
-  //! Save all the buffered data into a log file
-  virtual bool workerSaveData(const std::string & logFileName);
 
   //! @return the logger type
   virtual LoggerType getLoggerType() const { return SignalLoggerBase::LoggerType::TypeRos; }
@@ -51,6 +48,9 @@ class SignalLoggerRos : public signal_logger::SignalLoggerBase
   bool saveLoggerData(std_srvs::TriggerRequest& req,
                       std_srvs::TriggerResponse& res);
 
+  bool isLoggerRunning(std_srvs::TriggerRequest& req,
+                       std_srvs::TriggerResponse& res);
+
   bool loadLoggerScript(signal_logger_msgs::LoadLoggerScriptRequest& req,
                         signal_logger_msgs::LoadLoggerScriptResponse& res);
 
@@ -70,6 +70,8 @@ class SignalLoggerRos : public signal_logger::SignalLoggerBase
   ros::ServiceServer stopLoggerService_;
   ros::ServiceServer saveLoggerDataService_;
   ros::ServiceServer loadLoggerScriptService_;
+  ros::ServiceServer isLoggerRunningService_;
+
 };
 
 } /* namespace signal_logger */

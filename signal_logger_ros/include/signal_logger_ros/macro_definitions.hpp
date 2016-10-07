@@ -23,6 +23,6 @@
                            const std::size_t bufferSize, \
                            const bool bufferLooping) { \
       std::string elementName = signal_logger::LOGGER_PREFIX + "/" + group + "/" + name; \
-      logElements_[elementName] = new LogElementRos<TYPE>(const_cast<TYPE*>(&var), elementName , unit, divider, action, bufferSize, bufferLooping, nh_); \
+      logElements_[elementName] = new LogElementRos<TYPE>(const_cast<TYPE*>(&var), elementName , unit, divider, action, bufferSize, bufferLooping, &headerStream_, &dataStream_, nh_); \
     } /*
  */

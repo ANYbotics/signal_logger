@@ -8,7 +8,7 @@
 #pragma once
 
 // signal logger
-#include "signal_logger/LogElementBase.hpp"
+#include "signal_logger_std/LogElementStd.hpp"
 #include "signal_logger_ros/signal_logger_ros_traits.hpp"
 
 // ros
@@ -19,7 +19,7 @@ namespace signal_logger_ros {
 
 //! Log element for ros logging
 template <typename ValueType_>
-class LogElementRos: public signal_logger::LogElementBase<ValueType_>
+class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
 {
   //! convinience typedefs
   using MsgType = typename traits::slr_traits<ValueType_>::msgtype;
@@ -41,8 +41,10 @@ class LogElementRos: public signal_logger::LogElementBase<ValueType_>
                 const signal_logger::LogElementInterface::LogElementAction action,
                 const std::size_t bufferSize,
                 const bool isBufferLooping,
+                std::stringstream * headerStream,
+                std::stringstream * dataStream,
                 const ros::NodeHandle & nh) :
-    signal_logger::LogElementBase<ValueType_>(ptr, name, unit, divider, action, bufferSize, isBufferLooping),
+    signal_logger_std::LogElementStd<ValueType_>(ptr, name, unit, divider, action, bufferSize, isBufferLooping, headerStream, dataStream),
     nh_(nh)
   {
     //! A buffer is already provided, publisher should not create internal one
@@ -68,11 +70,16 @@ class LogElementRos: public signal_logger::LogElementBase<ValueType_>
     }
   }
 
-  void initializeElement() { pub_ = nh_.advertise<MsgType>(this->getName(), 1); }
-  void shutdownElement() { pub_.shutdown(); }
-
-  //! These functions do nothing for a ros element
-  void saveDataToLogFile() { }
+  void initializeElement()
+  {
+    signal_logger_std::LogElementStd<ValueType_>::initializeElement();
+    pub_ = nh_.advertise<MsgType>(this->getName(), 1);
+  }
+  void shutdownElement()
+  {
+    pub_.shutdown();
+    signal_logger_std::LogElementStd<ValueType_>::shutdownElement();
+  }
 
  protected:
   ros::NodeHandle nh_;

@@ -32,7 +32,7 @@ class SignalLoggerStd : public signal_logger::SignalLoggerBase
  protected:
   FOR_ALL_TYPES(ADD_STD_VAR_IMPLEMENTATION);
 
- private:
+ protected:
   std::ofstream file_;
   std::stringstream headerStream_;
   std::stringstream dataStream_;

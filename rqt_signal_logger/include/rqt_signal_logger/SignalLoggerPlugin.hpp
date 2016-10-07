@@ -97,6 +97,7 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   ros::ServiceClient stopLoggerClient_;
   ros::ServiceClient saveLoggerDataClient_;
   ros::ServiceClient loadLoggerScriptClient_;
+  ros::ServiceClient isLoggerRunningClient_;
 
   std::vector<std::shared_ptr<LogElement>> logElements_;
   std::vector<std::string> logElementNames_;

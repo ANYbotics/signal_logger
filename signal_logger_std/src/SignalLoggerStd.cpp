@@ -32,7 +32,9 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName) {
 
   // Fill streams
   for(auto & elem : logElements_) {
-    if(elem.second->isEnabled()) {
+    if(elem.second->isEnabled() && (elem.second->getAction() == signal_logger::LogElementInterface::LogElementAction::SAVE ||
+       elem.second->getAction() == signal_logger::LogElementInterface::LogElementAction::SAVE_AND_PUBLISH) )
+    {
       elem.second->saveDataToLogFile();
     }
   }

@@ -78,6 +78,14 @@ bool SignalLoggerBase::startLogger()
     return false;
   }
 
+  for(auto & elem : logElements_)
+  {
+    if(elem.second->isEnabled())
+    {
+      elem.second->initializeElement();
+    }
+  }
+
   isCollectingData_ = true;
   noCollectDataCalls_ = 0;
   return true;
@@ -89,6 +97,14 @@ bool SignalLoggerBase::stopLogger()
   {
     MELO_WARN("Signal logger could not be stopped!");
     return false;
+  }
+
+  for(auto & elem : logElements_)
+  {
+    if(elem.second->isEnabled())
+    {
+      elem.second->shutdownElement();
+    }
   }
 
   isCollectingData_ = false;
@@ -155,7 +171,9 @@ bool SignalLoggerBase::publishData()
   // Publish data from buffer
   for(auto & elem : logElements_)
   {
-    if(elem.second->isEnabled())
+    if(elem.second->isEnabled() &&
+       (elem.second->getAction() == LogElementInterface::LogElementAction::PUBLISH ||
+       elem.second->getAction() == LogElementInterface::LogElementAction::SAVE_AND_PUBLISH) )
     {
       elem.second->publishData();
     }
@@ -241,29 +259,17 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
           if (YAML::Node parameter = config["log_elements"][i]["divider"]) {
             elem->second->setDivider(parameter.as<int>());
           }
-          else {
-            elem->second->setDivider(defaultDivider_);
-          }
           // Check for action
           if (YAML::Node parameter = config["log_elements"][i]["action"]) {
             elem->second->setAction( static_cast<LogElementInterface::LogElementAction>(parameter.as<int>()) );
-          }
-          else {
-            elem->second->setAction(signal_logger::LOGGER_DEFAULT_ACTION);
           }
           // Check for buffer size
           if (YAML::Node parameter = config["log_elements"][i]["buffer"]["size"]) {
             elem->second->setBufferSize(parameter.as<int>());
           }
-          else {
-            elem->second->setBufferSize(defaultSamplingFrequency_ * defaultSamplingTime_);
-          }
           // Check for buffer looping
           if (YAML::Node parameter = config["log_elements"][i]["buffer"]["looping"]) {
             elem->second->setIsBufferLooping(parameter.as<bool>());
-          }
-          else {
-            elem->second->setIsBufferLooping(signal_logger::LOGGER_DEFAULT_BUFFER_LOOPING);
           }
         }
         else {

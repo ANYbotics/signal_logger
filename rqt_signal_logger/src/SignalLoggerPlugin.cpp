@@ -119,6 +119,8 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   std::string stopLoggerServiceName{"/sl_ros/stop_logger"};
   std::string saveLoggerDataServiceName{"/sl_ros/save_logger_data"};
   std::string loadLoggerScriptServiceName{"/sl_ros/load_logger_script"};
+  std::string isLoggerRunningServiceName{"/sl_ros/is_logger_running"};
+
 
   // ROS services
   getLoggerElementNamesClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerElementNames>(getLogElementListServiceName);
@@ -128,7 +130,7 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   stopLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(stopLoggerServiceName);
   saveLoggerDataClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(saveLoggerDataServiceName);
   loadLoggerScriptClient_ = getNodeHandle().serviceClient<signal_logger_msgs::LoadLoggerScript>(loadLoggerScriptServiceName);
-
+  isLoggerRunningClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(isLoggerRunningServiceName);
 }
 
 void SignalLoggerPlugin::changeAll() {
@@ -138,7 +140,6 @@ void SignalLoggerPlugin::changeAll() {
 }
 
 void SignalLoggerPlugin::refreshAll() {
-
   signal_logger_msgs::GetLoggerElementNamesRequest req;
   signal_logger_msgs::GetLoggerElementNamesResponse res;
 
@@ -383,6 +384,17 @@ void SignalLoggerPlugin::drawParamList() {
 
   paramsWidget_->setLayout(paramsScrollLayout_);
   paramsScrollHelperWidget_->setLayout(paramsGrid_);
+
+  std_srvs::TriggerRequest req_islogging;
+  std_srvs::TriggerResponse res_islogging;
+
+  if (isLoggerRunningClient_.call(req_islogging, res_islogging)) {
+    paramsWidget_->setEnabled(!res_islogging.success);
+  }
+  else {
+    ROS_WARN("Could not get parameter list!");
+    return;
+  }
 
 }
 
