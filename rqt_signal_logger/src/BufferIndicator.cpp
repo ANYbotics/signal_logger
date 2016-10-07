@@ -6,18 +6,22 @@
 #include <QPaintDevice>
 #include <QTimer>
 
+#include <iostream>
+
 BufferIndicator::
 BufferIndicator(QWidget* parent) :
 QWidget(parent),
-diameter_(5),
+diameter_(7),
 nrUnreadElements_(0),
 nrTotalElements_(0),
 bufferSize_(0),
-colorUnread_(QColor("green")),
-colorTotal_(QColor("blue")),
+colorUnread_(QColor(85, 117, 168)),
+colorTotal_(QColor(170, 196, 237,150)),
 alignment_(Qt::AlignCenter)
 {
   setDiameter(diameter_);
+// Enable this to refresh on mouse over
+  this->setMouseTracking(true);
 }
 
 BufferIndicator::
@@ -68,15 +72,14 @@ updateData(const std::size_t nrUnreadElements, std::size_t nrTotalElements, std:
   nrUnreadElements_ = nrUnreadElements;
 
   // set the tooltip for additional info
-  std::string toolTip = std::string{"Buffer size: "} + std::to_string(bufferSize_)
-                      + std::string{"\nTotal items: "} + std::to_string(nrTotalElements_)
-                      + std::string{"\nUnread items: "} + std::to_string(nrUnreadElements_);
+  std::string toolTip = std::string{"Buffer size: \t"} + std::to_string(bufferSize_)
+  + std::string{"\nTotal items: \t"} + std::to_string(nrTotalElements_)
+  + std::string{"\nUnread items: \t"} + std::to_string(nrUnreadElements_);
   this->setToolTip(QString::fromStdString(toolTip));
 
   // redraw
   update();
 }
-
 
 int BufferIndicator::
 heightForWidth(int width) const
@@ -94,6 +97,20 @@ QSize BufferIndicator::
 minimumSizeHint() const
 {
   return QSize(diamX_, diamY_);
+}
+
+bool BufferIndicator::
+event(QEvent *event){
+  switch(event->type())
+  {
+    case QEvent::Enter:
+      emit refresh();
+      return true;
+      break;
+    default:
+      break;
+  }
+  return QWidget::event(event);
 }
 
 void BufferIndicator::
@@ -128,6 +145,9 @@ paintEvent(QPaintEvent *event)
   QPointF bottomright(x+diamX_, y+diamY_);
   QPointF center(x+diamX_/2, y+diamY_/2);
   QRectF boundingRect(topleft, bottomright);
+  QPointF whiteBoxTopLeft(x+diamX_/3, y+diamY_/3);
+  QPointF whiteBoxBottomRight(x+2*diamX_/3, y+2*diamY_/3);
+  QRectF whiteBoxBoundingRect(whiteBoxTopLeft, whiteBoxBottomRight);
 
   QPainterPath unreadArc;
   unreadArc.moveTo(center);
@@ -138,8 +158,21 @@ paintEvent(QPaintEvent *event)
   totalArc.arcTo(boundingRect, 90, - (double)nrTotalElements_/(double)bufferSize_ * 360.0);
 
   p.setRenderHint(QPainter::Antialiasing, true);
-  p.setPen(colorTotal_);
+  p.setPen(Qt::NoPen);
+
+  p.setBrush(QBrush(QColor("white")));
+  p.drawEllipse(boundingRect);
+
   p.drawPath(totalArc);
-  p.setPen(colorUnread_);
+  p.fillPath (totalArc, QBrush (colorTotal_));
+
   p.drawPath(unreadArc);
+  p.fillPath (unreadArc, QBrush (colorUnread_));
+
+  p.setBrush(QBrush(QWidget::palette().color(QWidget::backgroundRole())));
+  p.drawEllipse(whiteBoxBoundingRect);
+
+
+
+
 }

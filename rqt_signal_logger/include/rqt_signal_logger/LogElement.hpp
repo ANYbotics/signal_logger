@@ -1,39 +1,43 @@
 /*
- * DoubleParameter.hpp
+ * LogElement.hpp
  *
- *  Created on: August 2016
- *      Author: Christian Gehring
+ *  Created on: October 2016
+ *      Author: Gabriel Hottiger
  */
 
 #pragma once
 
-#include <QWidget>
-#include <QStringList>
-#include <QSpinBox>
-#include <QGridLayout>
-#include <QPushButton>
-#include <QLineEdit>
-#include <QCheckBox>
-#include <QLabel>
-#include <QApplication>
-#include <QComboBox>
-#include <rqt_signal_logger/LED.hpp>
-#include <rqt_signal_logger/BufferIndicator.hpp>
+// rqt_signal_logger custom widgets
+#include "rqt_signal_logger/BufferIndicator.hpp"
 
+// msgs
+#include "signal_logger_msgs/GetLoggerElement.h"
+#include "signal_logger_msgs/SetLoggerElement.h"
+
+// ros
 #include <ros/ros.h>
 
-#include <signal_logger_msgs/GetLoggerElement.h>
-#include <signal_logger_msgs/SetLoggerElement.h>
+// QT
+#include <QApplication>
+#include <QWidget>
+#include <QGridLayout>
+#include <QLabel>
+#include <QCheckBox>
+#include <QSpinBox>
+#include <QComboBox>
+#include <QPushButton>
+
 
 //! This class draws and handles log elements.
 class LogElement: public QObject {
   Q_OBJECT
 
  public:
-  enum class LogType : unsigned int {
-    SAVE_AND_PUBLISH = 0,
-    SAVE = 1,
-    PUBLISH = 2
+  //! Enum mapping defining possible log actions
+  enum class LogAction : unsigned int {
+    SAVE_AND_PUBLISH = signal_logger_msgs::LogElement::SAVE_AND_PUBLISH_VAR,
+        SAVE = signal_logger_msgs::LogElement::SAVE_VAR,
+        PUBLISH = signal_logger_msgs::LogElement::PUBLISH_VAR
   };
 
  public:
@@ -42,12 +46,13 @@ class LogElement: public QObject {
              QGridLayout* grid,
              ros::ServiceClient* getLogElementClient,
              ros::ServiceClient* setLogElementClient,
-             size_t maxParamNameWidth) {
-
+             size_t maxParamNameWidth)
+ {
     name_ = name;
     grid_ = grid;
-    getLogElementClient_ = getLogElementClient;
+    getLogElementClient_= getLogElementClient;
     setLogElementClient_ = setLogElementClient;
+    // Get current row number
     int iRow = grid->rowCount();
 
     //! Add number label
@@ -61,6 +66,7 @@ class LogElement: public QObject {
     checkBoxIsLogging = new QCheckBox(widget);
     checkBoxIsLogging->setObjectName(QString::fromStdString(checkBoxIsLoggingName));
     checkBoxIsLogging->setText("log?");
+    checkBoxIsLogging->setLayoutDirection(Qt::LayoutDirection::RightToLeft);
     checkBoxIsLogging->setTristate(false);
     checkBoxIsLogging->setCheckState(Qt::CheckState::Unchecked);
 
@@ -71,11 +77,21 @@ class LogElement: public QObject {
     labelParamName->setText(QString::fromStdString(name));
     labelParamName->setFixedSize(maxParamNameWidth-10, labelParamName->height());
 
+    //! Add log type combobox
+    std::string comboBoxLogTypeName = std::string{"comboBoxLogType"} + name;
+    comboBoxLogType = new QComboBox(widget);
+    comboBoxLogType->setObjectName(QString::fromStdString(comboBoxLogTypeName));
+    comboBoxLogType->insertItem(static_cast<int>(LogAction::SAVE_AND_PUBLISH), "Save and Publish");
+    comboBoxLogType->insertItem(static_cast<int>(LogAction::SAVE),"Save");
+    comboBoxLogType->insertItem(static_cast<int>(LogAction::PUBLISH),"Publish");
+
     //! Add divider label
     std::string labelDividerName = std::string{"labelDivider"} + name;
     labelDivider = new QLabel(widget);
     labelDivider->setObjectName(QString::fromStdString(labelDividerName));
-    labelDivider->setText(QString::fromUtf8("Divider: "));
+    labelDivider->setText(QString::fromStdString(std::string{"Divider:"}));
+    labelDivider->setFixedWidth(labelDivider->fontMetrics().width(labelDivider->text())+10);
+    labelDivider->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
     //! Add divider spinbox
     std::string spinBoxDividerName = std::string{"spinBoxDivider"} + name;
@@ -87,25 +103,14 @@ class LogElement: public QObject {
     spinBoxDivider->setMaximum(100);
     spinBoxDivider->setSingleStep(1);
 
-    //! Add log type label
-    std::string labelLogTypeName = std::string{"labelLogType"} + name;
-    labelLogType = new QLabel(widget);
-    labelLogType->setObjectName(QString::fromStdString(labelLogTypeName));
-    labelLogType->setText(QString::fromUtf8("Log Type: "));
-
-    //! Add log type combobox
-    std::string comboBoxLogTypeName = std::string{"comboBoxLogType"} + name;
-    comboBoxLogType = new QComboBox(widget);
-    comboBoxLogType->setObjectName(QString::fromStdString(comboBoxLogTypeName));
-    comboBoxLogType->addItem("Save and Publish");
-    comboBoxLogType->addItem("Save");
-    comboBoxLogType->addItem("Publish");
-
     //! Add buffer label
     std::string labelBufferName = std::string{"labelBuffer"} + name;
     labelBuffer = new QLabel(widget);
     labelBuffer->setObjectName(QString::fromStdString(labelBufferName));
-    labelBuffer->setText(QString::fromUtf8("\t\t<b>Buffer:</b>\tsize:"));
+    std::string bufferLabel = "Buffer size:";
+    labelBuffer->setText(QString::fromStdString(bufferLabel));
+    labelBuffer->setFixedWidth(labelBuffer->fontMetrics().width(labelBuffer->text())+10);
+    labelBuffer->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
     //! Add buffer size spinbox
     std::string spinBoxBufferSizeName = std::string{"spinBoxBufferSize"} + name;
@@ -124,73 +129,72 @@ class LogElement: public QObject {
     comboBoxIsLooping->addItem("Not Looping");
     comboBoxIsLooping->addItem("Looping");
 
-    //! Led buffer full
-    std::string ledBufferIsFullName = std::string{"ledBufferIsFull"} + name;
-    ledBufferIsFull = new LED(widget);
-    ledBufferIsFull->setObjectName(QString::fromStdString(ledBufferIsFullName));
-    ledBufferIsFull->setColor(QColor("red"));
-
+    // Buffer Indicator
     std::string indicatorBufferName = std::string{"indicatorBuffer"} + name;
     bufferInd_ = new BufferIndicator(widget);
     bufferInd_->setObjectName(QString::fromStdString(indicatorBufferName));
-    bufferInd_->updateData(25,50,100);
+    connect(bufferInd_, SIGNAL(refresh()), this, SLOT(refreshElement()));
 
     //! Change button
-    std::string pushButtonName = std::string{"pushButtonChange"} + name;
+    std::string pushButtonChangeName = std::string{"pushButtonChange"} + name;
     pushButtonChangeParam = new QPushButton(widget);
-    pushButtonChangeParam->setObjectName(QString::fromStdString(pushButtonName));
-    pushButtonChangeParam->setMaximumSize(QSize(60, 16777215));
-    pushButtonChangeParam->setText(QApplication::translate("SignalLogger", "change", 0, QApplication::UnicodeUTF8));
+    pushButtonChangeParam->setObjectName(QString::fromStdString(pushButtonChangeName));
+    pushButtonChangeParam->setText(QString::fromUtf8("change"));
+
+    //! Change button
+    std::string pushButtonRefreshName = std::string{"pushButtonRefresh"} + name;
+    pushButtonRefreshParam = new QPushButton(widget);
+    pushButtonRefreshParam->setObjectName(QString::fromStdString(pushButtonRefreshName));
+    pushButtonRefreshParam->setText(QString::fromUtf8("refresh"));
 
     grid->addWidget(labelParamNumber,      iRow, 0, 1, 1);
     grid->addWidget(checkBoxIsLogging,     iRow, 1, 1, 1);
     grid->addWidget(labelParamName,        iRow, 2, 1, 1);
-    grid->addWidget(labelDivider,          iRow, 3, 1, 1);
-    grid->addWidget(spinBoxDivider,        iRow, 4, 1, 1);
-    grid->addWidget(labelLogType,          iRow, 5, 1, 1);
-    grid->addWidget(comboBoxLogType,       iRow, 6, 1, 1);
-    grid->addWidget(labelBuffer,           iRow, 7, 1, 1);
-    grid->addWidget(spinBoxBufferSize,     iRow, 8, 1, 1);
-    grid->addWidget(comboBoxIsLooping,     iRow, 9, 1, 1);
-    grid->addWidget(ledBufferIsFull,       iRow, 10, 1, 1);
-    grid->addWidget(bufferInd_,            iRow, 11, 1, 1);
-    grid->addWidget(pushButtonChangeParam, iRow, 12, 1, 1);
+    grid->addWidget(comboBoxLogType,       iRow, 3, 1, 1);
+    grid->addWidget(labelDivider,          iRow, 4, 1, 1);
+    grid->addWidget(spinBoxDivider,        iRow, 5, 1, 1);
+    grid->addWidget(labelBuffer,           iRow, 6, 1, 1);
+    grid->addWidget(spinBoxBufferSize,     iRow, 7, 1, 1);
+    grid->addWidget(comboBoxIsLooping,     iRow, 8, 1, 1);
+    grid->addWidget(bufferInd_,            iRow, 9, 1, 1);
+    grid->addWidget(pushButtonChangeParam, iRow, 10, 1, 1);
+    grid->addWidget(pushButtonRefreshParam,iRow, 11, 1, 1);
 
     connect(pushButtonChangeParam, SIGNAL(pressed()), this, SLOT(pushButtonChangeParamPressed()));
+    connect(pushButtonRefreshParam, SIGNAL(pressed()), this, SLOT(refreshElement()));
 
     refreshElement();
-  }
+ }
 
   virtual ~LogElement() {
     disconnect(pushButtonChangeParam, SIGNAL(pressed()), 0, 0);
+    disconnect(pushButtonRefreshParam, SIGNAL(pressed()), 0, 0);
 
     grid_->removeWidget(labelParamNumber);
     grid_->removeWidget(checkBoxIsLogging);
     grid_->removeWidget(labelParamName);
+    grid_->removeWidget(comboBoxLogType);
     grid_->removeWidget(labelDivider);
     grid_->removeWidget(spinBoxDivider);
-    grid_->removeWidget(labelLogType);
-    grid_->removeWidget(comboBoxLogType);
     grid_->removeWidget(labelBuffer);
     grid_->removeWidget(spinBoxBufferSize);
     grid_->removeWidget(comboBoxIsLooping);
-    grid_->removeWidget(ledBufferIsFull);
     grid_->removeWidget(bufferInd_);
     grid_->removeWidget(pushButtonChangeParam);
+    grid_->removeWidget(pushButtonRefreshParam);
 
     delete labelParamNumber;
     delete checkBoxIsLogging;
     delete labelParamName;
+    delete comboBoxLogType;
     delete labelDivider;
     delete spinBoxDivider;
-    delete labelLogType;
-    delete comboBoxLogType;
     delete labelBuffer;
     delete spinBoxBufferSize;
     delete comboBoxIsLooping;
-    delete ledBufferIsFull;
     delete bufferInd_;
     delete pushButtonChangeParam;
+    delete pushButtonRefreshParam;
 
   };
 
@@ -232,31 +236,32 @@ class LogElement: public QObject {
         comboBoxLogType->setCurrentIndex(res.log_element.action);
         spinBoxBufferSize->setValue( res.log_element.buffer_size );
         comboBoxIsLooping->setCurrentIndex(res.log_element.is_buffer_looping);
-        ledBufferIsFull->setColor(QString::fromStdString(res.log_element.is_buffer_full?"red":"green"));
+        bufferInd_->updateData(25,50,res.log_element.buffer_size);
       }
       else {
         ROS_WARN_STREAM("Could not get parameter " << name_);
       }
     }
   }
+
  protected:
   std::string name_;
+  QGridLayout* grid_;
   ros::ServiceClient* getLogElementClient_;
   ros::ServiceClient* setLogElementClient_;
-  QGridLayout* grid_;
+
  public:
   QLabel* labelParamNumber;
   QCheckBox* checkBoxIsLogging;
   QLabel* labelParamName;
   QLabel* labelDivider;
   QSpinBox* spinBoxDivider;
-  QLabel* labelLogType;
   QComboBox* comboBoxLogType;
   QLabel* labelBuffer;
   QSpinBox* spinBoxBufferSize;
   QComboBox* comboBoxIsLooping;
-  LED* ledBufferIsFull;
   BufferIndicator* bufferInd_;
-
+  QPushButton* pushButtonRefreshParam;
   QPushButton* pushButtonChangeParam;
+
 };

@@ -23,6 +23,9 @@ public:
 public slots:
 	void updateData(const std::size_t nrUnreadElements, std::size_t nrTotalElements, std::size_t bufferSize);
 
+signals:
+  void refresh();
+
 public:
 	int heightForWidth(int width) const;
 	QSize sizeHint() const;
@@ -30,6 +33,8 @@ public:
 
 protected:
 	void paintEvent(QPaintEvent* event);
+	 bool event(QEvent *event);
+
 
 private:
 	double diameter_;

@@ -1,12 +1,13 @@
 /*
- * ParametersPlugin.hpp
+ * SignalLoggerPlugin.hpp
  *
- *  Created on: August 2016
- *      Author: Christian Gehring
+ *  Created on: September 2016
+ *      Author: Gabriel Hottiger
  */
 
 #pragma once
 
+// QT
 #include <rqt_gui_cpp/plugin.h>
 #include <ui_signal_logger_variables.h>
 #include <ui_signal_logger_configure.h>
