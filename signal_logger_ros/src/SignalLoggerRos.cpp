@@ -6,6 +6,7 @@
  */
 
 #include "signal_logger_ros/SignalLoggerRos.hpp"
+#include "boost/filesystem.hpp"
 
 namespace signal_logger_ros {
 
@@ -13,7 +14,7 @@ SignalLoggerRos::SignalLoggerRos():
                                 signal_logger_std::SignalLoggerStd(),
                                 nh_()
 {
-  getLoggerElementNamesService_ = nh_.advertiseService("/sl_ros/get_logger_element_names", &SignalLoggerRos::getLoggerElementNames, this);
+  getLoggerConfigurationService_ = nh_.advertiseService("/sl_ros/get_logger_configuration", &SignalLoggerRos::getLoggerConfiguration, this);
   getLoggerElementService_ = nh_.advertiseService("/sl_ros/get_logger_element", &SignalLoggerRos::getLoggerElement, this);
   setLoggerElementService_ = nh_.advertiseService("/sl_ros/set_logger_element", &SignalLoggerRos::setLoggerElement, this);
   startLoggerService_ = nh_.advertiseService("/sl_ros/start_logger", &SignalLoggerRos::startLogger, this);
@@ -28,12 +29,20 @@ SignalLoggerRos::~SignalLoggerRos()
 
 }
 
-bool SignalLoggerRos::getLoggerElementNames(signal_logger_msgs::GetLoggerElementNamesRequest& req,
-                                            signal_logger_msgs::GetLoggerElementNamesResponse& res) {
+bool SignalLoggerRos::getLoggerConfiguration(signal_logger_msgs::GetLoggerConfigurationRequest& req,
+                                            signal_logger_msgs::GetLoggerConfigurationResponse& res) {
   for(auto & elem : this->logElements_)
   {
     res.log_element_names.push_back(elem.first);
   }
+  res.collect_frequency = updateFrequency_;
+  res.logger_namespace = "/log";
+  res.script_filepath = collectScriptFileName_;
+  if(collectScriptFileName_.compare(0,1,"/") != 0)
+  {
+    res.script_filepath.insert(0, boost::filesystem::current_path().string() + std::string{"/"});
+  }
+
   return true;
 }
 

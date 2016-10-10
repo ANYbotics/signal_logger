@@ -36,6 +36,7 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName) {
        elem.second->getAction() == signal_logger::LogElementInterface::LogElementAction::SAVE_AND_PUBLISH) )
     {
       elem.second->saveDataToLogFile();
+      elem.second->clearBuffer();
     }
   }
 

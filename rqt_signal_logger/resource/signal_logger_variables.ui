@@ -73,12 +73,40 @@
       <widget class="QComboBox" name="taskComboBox"/>
      </item>
      <item>
-      <widget class="QSpinBox" name="valueSpinBox"/>
+      <widget class="QDoubleSpinBox" name="valueSpinBox"/>
      </item>
      <item>
       <widget class="QPushButton" name="applyButton">
        <property name="text">
         <string>Apply</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="freqName">
+       <property name="text">
+        <string>Freq:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="freq">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="nsName">
+       <property name="text">
+        <string>Ns:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="ns">
+       <property name="text">
+        <string/>
        </property>
       </widget>
      </item>

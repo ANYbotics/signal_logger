@@ -96,6 +96,16 @@ class LogElementInterface
     divider_ = divider;
   }
 
+  //! @return check action for publishing
+  bool isPublished() {
+    return (action_ == LogElementAction::SAVE_AND_PUBLISH || action_ == LogElementAction::PUBLISH);
+  }
+
+  //! @return check action for saving
+  bool isSaved() {
+    return (action_ == LogElementAction::SAVE_AND_PUBLISH || action_ == LogElementAction::SAVE);
+  }
+
   //! @return action log element takes
   LogElementAction getAction() const {
     return action_;
@@ -126,6 +136,9 @@ class LogElementInterface
   virtual std::size_t noItemsInBuffer() const = 0;
   //! @return number of unread items in buffer
   virtual std::size_t noUnreadItemsInBuffer() const = 0;
+  //! Clear Buffer
+  virtual void clearBuffer() = 0;
+
 
   //! @return flag indicating if log element is enabled
   bool isEnabled() const {
@@ -139,8 +152,10 @@ class LogElementInterface
       isEnabled_ = isEnabled;
       if(isEnabled_) {
         this->setBufferSize(bufferSize_);
+        this->initializeElement();
       }
       else {
+        this->shutdownElement();
         this->setBufferSize(std::size_t(0));
       }
     }

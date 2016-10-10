@@ -26,19 +26,15 @@
 namespace signal_logger {
 
 SignalLoggerBase::SignalLoggerBase():
-                          isInitialized_(false),
-                          isUpdateLocked_(false),
-                          isCollectingData_(false),
-                          isSavingData_(false),
-                          noCollectDataCalls_(0),
-                          defaultDivider_(0),
-                          collectScriptFileName_(std::string{LOGGER_DEFAULT_SCRIPT_FILENAME}),
-                          updateFrequency_(0),
-                          defaultSamplingFrequency_(0),
-                          defaultSamplingTime_(0.0),
-                          logElements_(),
-                          loggerMutex_(),
-                          scriptMutex_()
+                              isInitialized_(false),
+                              isUpdateLocked_(false),
+                              isCollectingData_(false),
+                              isSavingData_(false),
+                              noCollectDataCalls_(0),
+                              collectScriptFileName_(std::string{LOGGER_DEFAULT_SCRIPT_FILENAME}),
+                              updateFrequency_(0),
+                              logElements_(),
+                              scriptMutex_()
 {
 
 }
@@ -48,46 +44,34 @@ SignalLoggerBase::~SignalLoggerBase()
 
 }
 
-void SignalLoggerBase::initLogger(int updateFrequency, int samplingFrequency, double samplingTime, const std::string& collectScriptFileName)
+void SignalLoggerBase::initLogger(int updateFrequency, const std::string& collectScriptFileName)
 {
   // Assert corrupted configuration
-  assert(samplingFrequency <= updateFrequency);
-  assert(samplingFrequency > 0);
   assert(updateFrequency > 0);
-
-  // Lock mutex until logger is initialized
-  std::lock_guard<std::mutex> lockLogger(loggerMutex_);
 
   // Set configuration
   updateFrequency_ = updateFrequency;
-  defaultSamplingFrequency_ = samplingFrequency;
-  defaultSamplingTime_ = samplingTime;
-  defaultDivider_ = static_cast<double>(updateFrequency_) / static_cast<double>(defaultSamplingFrequency_);
   collectScriptFileName_ = collectScriptFileName;
 
   // Notify user
   MELO_INFO("Signal Logger was initialized!");
+
   isInitialized_ = true;
 }
 
 bool SignalLoggerBase::startLogger()
 {
-  if(!isInitialized_ || isSavingData_)
+  if(!isInitialized_ || isSavingData_ || isCollectingData_)
   {
-    MELO_WARN("Signal logger could not be started! Logger not initialized.");
+    MELO_WARN("Signal logger could not be started!%s%s%s", !isInitialized_?" Not initialized!":"",
+        isSavingData_?" Saving data!":"", isCollectingData_?" Already running!":"");
     return false;
   }
 
-  for(auto & elem : logElements_)
-  {
-    if(elem.second->isEnabled())
-    {
-      elem.second->initializeElement();
-    }
-  }
-
+  // Reset flags and data collection calls
   isCollectingData_ = true;
   noCollectDataCalls_ = 0;
+
   return true;
 }
 
@@ -95,16 +79,9 @@ bool SignalLoggerBase::stopLogger()
 {
   if(!isInitialized_ || !isCollectingData_)
   {
-    MELO_WARN("Signal logger could not be stopped!");
+    MELO_WARN("Signal logger could not be stopped!%s%s", !isInitialized_?" Not initialized!":"",
+        !isCollectingData_?" Not running!":"");
     return false;
-  }
-
-  for(auto & elem : logElements_)
-  {
-    if(elem.second->isEnabled())
-    {
-      elem.second->shutdownElement();
-    }
   }
 
   isCollectingData_ = false;
@@ -119,9 +96,10 @@ bool SignalLoggerBase::restartLogger()
 
 bool SignalLoggerBase::updateLogger(bool updateScript) {
 
-  if(!isInitialized_ || isCollectingData_ || isUpdateLocked_ || isSavingData_)
+  if(isUpdateLocked_ || !isInitialized_ || isCollectingData_ || isSavingData_)
   {
-    MELO_WARN("Signal logger could not be updated!");
+    MELO_WARN("Signal logger could not be updated!%s%s%s%s", isUpdateLocked_?" Update locked!":"",
+        !isInitialized_?" Not initialized!":"", isSavingData_?" Saving data!":"", isCollectingData_?" Collecting data!":"");
     return false;
   }
 
@@ -138,9 +116,9 @@ bool SignalLoggerBase::updateLogger(bool updateScript) {
 
 }
 
-void SignalLoggerBase::lockUpdate()
+void SignalLoggerBase::lockUpdate(bool lock)
 {
-  isUpdateLocked_ = true;
+  isUpdateLocked_ = lock;
 }
 
 bool SignalLoggerBase::collectLoggerData()
@@ -160,7 +138,6 @@ bool SignalLoggerBase::collectLoggerData()
     }
   }
 
-  // #TODO handle overflow? -> is it a problem?
   ++noCollectDataCalls_;
 
   return true;
@@ -171,9 +148,7 @@ bool SignalLoggerBase::publishData()
   // Publish data from buffer
   for(auto & elem : logElements_)
   {
-    if(elem.second->isEnabled() &&
-       (elem.second->getAction() == LogElementInterface::LogElementAction::PUBLISH ||
-       elem.second->getAction() == LogElementInterface::LogElementAction::SAVE_AND_PUBLISH) )
+    if(elem.second->isEnabled() && elem.second->isPublished())
     {
       elem.second->publishData();
     }
@@ -185,6 +160,7 @@ bool SignalLoggerBase::publishData()
 bool SignalLoggerBase::saveLoggerData()
 {
   isSavingData_ = true;
+
   if(!isInitialized_)
   {
     MELO_WARN("Signal logger could not save data!");
@@ -192,28 +168,51 @@ bool SignalLoggerBase::saveLoggerData()
     return false;
   }
 
-  // Check for file existance
-  const boost::filesystem::path currentDir( boost::filesystem::current_path() );
-  const boost::filesystem::directory_iterator end;
-  boost::filesystem::directory_iterator it;
-  std::string checkString;
-  int i = -1;
-  do{
-    checkString = std::string{"log_"} + std::to_string(++i);
-    it = std::find_if(boost::filesystem::directory_iterator(currentDir), end,
-                      [&checkString](const boost::filesystem::directory_entry& e) {
-                      return e.path().filename().string().compare(0,checkString.size(),checkString) == 0; });
-  } while(it != end);
+  // Read suffix number from file
+  int suffixNumber = 0;
+  std::ifstream ifs(".last_data", std::ifstream::in);
+  if(ifs.is_open())
+  {
+    ifs >> suffixNumber;
+  }
+  ifs.close();
+
+  // Update suffix number
+  ++suffixNumber;
+
+  // Write next suffix number to file
+  std::ofstream ofs(".last_data", std::ofstream::out | std::ofstream::trunc);
+  if(ofs.is_open())
+  {
+    ofs << suffixNumber;
+  }
+  ofs.close();
+
+  // To string
+  std::string suffixString = std::to_string(suffixNumber);
+  while(suffixString.length() != 5 ) { suffixString.insert(0, "0"); }
+
+//  // Check for file existance
+//  const boost::filesystem::path currentDir( boost::filesystem::current_path() );
+//  const boost::filesystem::directory_iterator end;
+//  boost::filesystem::directory_iterator it;
+//  std::string checkString;
+//  int i = -1;
+//  do{
+//    checkString = std::string{"log_"} + std::to_string(++i);
+//    it = std::find_if(boost::filesystem::directory_iterator(currentDir), end,
+//                      [&checkString](const boost::filesystem::directory_entry& e) {
+//      return e.path().filename().string().compare(0,checkString.size(),checkString) == 0; });
+//  } while(it != end);
 
   // Get local time
   std::time_t now = std::chrono::system_clock::to_time_t ( std::chrono::system_clock::now() );
   std::tm now_loc = *std::localtime(&now);
   char dateTime[21];
-  strftime(dateTime, sizeof dateTime, "_%Y%m%d_%H-%M-%S", &now_loc);
+  strftime(dateTime, sizeof dateTime, "%Y%m%d_%H-%M-%S_", &now_loc);
 
   // Filename format (e.g. d_13Sep2016_12-13-49) add nr
-  std::string filename = std::string{"log_"} + std::to_string(i) + std::string{dateTime};
-  std::cout<<"Filename "<<filename<<" created "<<std::endl;
+  std::string filename = std::string{"d_"} + std::string{dateTime} + suffixString;
 
   // Save data in different thread
   std::thread t1(&SignalLoggerBase::workerSaveData, this,  std::string{filename});
@@ -229,7 +228,6 @@ bool SignalLoggerBase::stopAndSaveLoggerData()
 
 bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
 {
-
   if (!isInitialized_ || isCollectingData_) {
     return false;
   }

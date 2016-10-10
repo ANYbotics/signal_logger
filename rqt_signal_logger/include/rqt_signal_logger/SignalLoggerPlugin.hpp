@@ -14,7 +14,7 @@
 #include "signal_logger_msgs/LoadLoggerScript.h"
 #include "signal_logger_msgs/SetLoggerElement.h"
 #include "signal_logger_msgs/GetLoggerElement.h"
-#include "signal_logger_msgs/GetLoggerElementNames.h"
+#include "signal_logger_msgs/GetLoggerConfiguration.h"
 
 // ros
 #include <ros/ros.h>
@@ -74,6 +74,7 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
     void saveYamlFile();
     void taskChanged(int index);
     void applyButtonPressed();
+    void checkLoggerState();
 
   signals:
     void parametersChanged();
@@ -90,7 +91,7 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   QVBoxLayout* paramsScrollLayout_;
 
   // ROS services
-  ros::ServiceClient getLoggerElementNamesClient_;
+  ros::ServiceClient getLoggerConfigurationClient_;
   ros::ServiceClient getLoggerElementClient_;
   ros::ServiceClient setLoggerElementClient_;
   ros::ServiceClient startLoggerClient_;
@@ -101,6 +102,7 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
 
   std::vector<std::shared_ptr<LogElement>> logElements_;
   std::vector<std::string> logElementNames_;
+  double updateFrequency_;
 };
 
 

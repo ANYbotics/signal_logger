@@ -72,6 +72,11 @@ class LogElementBase: public LogElementInterface
     return buffer_.noUnreadItems();
   }
 
+  //! Clear buffer
+  virtual void clearBuffer() {
+    buffer_.clear();
+  }
+
  protected:
   Buffer<ValueType_> buffer_;
 };

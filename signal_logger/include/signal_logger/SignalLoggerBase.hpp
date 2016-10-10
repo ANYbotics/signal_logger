@@ -61,12 +61,10 @@ class SignalLoggerBase {
   virtual ~SignalLoggerBase();
 
   /** Initializes the logger
-   * @param updateFrequency   Update frequency of the controller (frequency of collectLoggerData beeing called)
-   * @param samplingFrequency Frequency at which data points should be collected
-   * @param samplingTime      Total time that should be recorded (determines the length of the buffer)
+   * @param updateFrequency   Update frequency of the controller (frequency of collectLoggerData being called)
    * @param logScriptFileName Filename of the log script, this specifies which topics shall be logged
    */
-  virtual void initLogger(int updateFrequency, int samplingFrequency, double samplingTime, const std::string& collectScriptFileName = std::string{LOGGER_DEFAULT_SCRIPT_FILENAME});
+  virtual void initLogger(int updateFrequency, const std::string& collectScriptFileName = std::string{LOGGER_DEFAULT_SCRIPT_FILENAME});
 
   //! Starts the logger (enable collecting)
   virtual bool startLogger();
@@ -81,7 +79,7 @@ class SignalLoggerBase {
   virtual bool updateLogger(bool updateScript = false);
 
   //! Do not allow to update the logger
-  virtual void lockUpdate();
+  virtual void lockUpdate(bool lock = true);
 
   //! Collect log data, read data and push it into the buffer
   virtual bool collectLoggerData();
@@ -100,12 +98,6 @@ class SignalLoggerBase {
 
   //! @return the update frequency
   int getUpdateFrequency() const { return updateFrequency_.load(); }
-
-  //! @return the sampling frequency
-  virtual int getSamplingFrequency() const { return defaultSamplingFrequency_.load(); }
-
-  //! @return the sampling window
-  virtual double getSamplingWindow() const { return defaultSamplingTime_.load(); }
 
   /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
     * @tparam ValueType_    Data type of the logger element
@@ -162,21 +154,15 @@ class SignalLoggerBase {
   std::atomic_bool isSavingData_;
   //! Nr of calls to collect data
   std::atomic_uint noCollectDataCalls_;
-  //! Store rate updateFrequency_ / samplingFrequency_
-  std::atomic_uint defaultDivider_;
   //! Collected data script filename
   std::string collectScriptFileName_;
   //! Rate at which collectLoggerData() is called
   std::atomic_uint updateFrequency_;
-  //! Rate at which data shall be collected
-  std::atomic_uint defaultSamplingFrequency_;
-  //! Total recording time -> determines length of buffer
-  std::atomic<double> defaultSamplingTime_;
   //! Map of all log elements
   std::map<std::string, signal_logger::LogElementInterface *> logElements_;
 
   //! Mutexes
-  std::mutex loggerMutex_;
+//  std::mutex loggerMutex_;
   std::mutex scriptMutex_;
 };
 

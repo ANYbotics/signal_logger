@@ -12,7 +12,7 @@
 #include "signal_logger_std/SignalLoggerStd.hpp"
 
 // msgs
-#include "signal_logger_msgs/GetLoggerElementNames.h"
+#include "signal_logger_msgs/GetLoggerConfiguration.h"
 #include "signal_logger_msgs/GetLoggerElement.h"
 #include "signal_logger_msgs/SetLoggerElement.h"
 #include "signal_logger_msgs/LoadLoggerScript.h"
@@ -30,8 +30,8 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
   virtual LoggerType getLoggerType() const { return SignalLoggerBase::LoggerType::TypeRos; }
 
   //! Services needed by the gui
-  bool getLoggerElementNames(signal_logger_msgs::GetLoggerElementNamesRequest& req,
-                             signal_logger_msgs::GetLoggerElementNamesResponse& res);
+  bool getLoggerConfiguration(signal_logger_msgs::GetLoggerConfigurationRequest& req,
+                             signal_logger_msgs::GetLoggerConfigurationResponse& res);
 
   bool getLoggerElement(signal_logger_msgs::GetLoggerElementRequest& req,
                         signal_logger_msgs::GetLoggerElementResponse& res);
@@ -63,7 +63,7 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
 
  private:
   ros::NodeHandle nh_;
-  ros::ServiceServer getLoggerElementNamesService_;
+  ros::ServiceServer getLoggerConfigurationService_;
   ros::ServiceServer getLoggerElementService_;
   ros::ServiceServer setLoggerElementService_;
   ros::ServiceServer startLoggerService_;

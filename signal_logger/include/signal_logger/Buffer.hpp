@@ -200,6 +200,15 @@ class Buffer
     isLooping_ = isLooping;
   }
 
+  //! Clear the buffer
+  void clear() {
+    boost::mutex::scoped_lock lock(mutex_);
+    // Clear the buffer and restart filling
+    container_.clear();
+    noUnreadItems_ = size_type(0);
+    noItems_ = size_type(0);
+  }
+
  private:
   //! Disabled copy constructor
   Buffer(const Buffer&);

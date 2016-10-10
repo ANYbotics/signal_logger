@@ -36,7 +36,7 @@ add_message_files(
 add_service_files(
     FILES
     GetLoggerElement.srv
-    GetLoggerElementNames.srv
+    GetLoggerConfiguration.srv
     LoadLoggerScript.srv
     SetLoggerElement.srv
 )

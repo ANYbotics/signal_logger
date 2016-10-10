@@ -57,7 +57,8 @@ SignalLoggerPlugin::SignalLoggerPlugin() :
                             paramsGrid_(),
                             paramsWidget_(0),
                             paramsScrollHelperWidget_(0),
-                            paramsScrollLayout_(0)
+                            paramsScrollLayout_(0),
+                            updateFrequency_(0.0)
 {
   // Constructor is called first before initPlugin function, needless to say.
   // give QObjects reasonable names
@@ -92,6 +93,9 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::SET_BUFFER_SIZE_FROM_TIME), "Setup buffer size from time");
   varsUi_.taskComboBox->setCurrentIndex(static_cast<int>(TaskList::ENABLE_ALL));
   taskChanged(static_cast<int>(TaskList::ENABLE_ALL));
+  varsUi_.valueSpinBox->setMinimumWidth(varsUi_.valueSpinBox->fontMetrics().width(QString("600.00 [sec]"))+30);
+
+
 
   /******************************
    * Connect ui forms to actions *
@@ -112,7 +116,7 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
 
   /******************************/
   //#Fixme read from param server
-  std::string getLogElementListServiceName{"/sl_ros/get_logger_element_names"};
+  std::string getLoggerConfigurationServiceName{"/sl_ros/get_logger_configuration"};
   std::string getParameterServiceName{"/sl_ros/get_logger_element"};
   std::string setParameterListServiceName{"/sl_ros/set_logger_element"};
   std::string startLoggerServiceName{"/sl_ros/start_logger"};
@@ -123,7 +127,7 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
 
 
   // ROS services
-  getLoggerElementNamesClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerElementNames>(getLogElementListServiceName);
+  getLoggerConfigurationClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerConfiguration>(getLoggerConfigurationServiceName);
   getLoggerElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerElement>(getParameterServiceName);
   setLoggerElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::SetLoggerElement>(setParameterListServiceName);
   startLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(startLoggerServiceName);
@@ -140,12 +144,16 @@ void SignalLoggerPlugin::changeAll() {
 }
 
 void SignalLoggerPlugin::refreshAll() {
-  signal_logger_msgs::GetLoggerElementNamesRequest req;
-  signal_logger_msgs::GetLoggerElementNamesResponse res;
+  signal_logger_msgs::GetLoggerConfigurationRequest req;
+  signal_logger_msgs::GetLoggerConfigurationResponse res;
 
-  if (getLoggerElementNamesClient_.call(req,res)) {
+  if (getLoggerConfigurationClient_.call(req,res)) {
     // Update parameter names
     logElementNames_ = res.log_element_names;
+    updateFrequency_ = res.collect_frequency;
+    configureUi_.pathEdit->setText(QString::fromStdString(res.script_filepath));
+    varsUi_.ns->setText(QString::fromStdString(res.logger_namespace));
+    varsUi_.freq->setText(QString::fromStdString(std::to_string(updateFrequency_)+std::string{" [Hz]"}));
 
     // Sort names alphabetically.
     std::sort(logElementNames_.begin(), logElementNames_.end(), compareNoCase );
@@ -167,6 +175,7 @@ void SignalLoggerPlugin::startLogger() {
   else {
     statusMessage("Could not start logger!", MessageType::ERROR, 2.0);
   }
+  checkLoggerState();
 }
 
 void SignalLoggerPlugin::stopLogger() {
@@ -178,6 +187,7 @@ void SignalLoggerPlugin::stopLogger() {
   else {
     statusMessage("Could not stop logger!", MessageType::ERROR, 2.0);
   }
+  checkLoggerState();
 }
 
 void SignalLoggerPlugin::saveLoggerData() {
@@ -249,6 +259,10 @@ void SignalLoggerPlugin::saveYamlFile() {
     writeYamlOrderedMaps(outfile, node);
     outfile.close();
   }
+  else {
+    statusMessage("Did not save logger configuration file! No data enabled!", MessageType::ERROR, 2.0);
+    return;
+  }
 
   statusMessage("Successfully saved logger configuration file!", MessageType::SUCCESS, 2.0);
 }
@@ -263,9 +277,20 @@ void SignalLoggerPlugin::taskChanged(int index) {
     case static_cast<int>(TaskList::ENABLE_ALL):
     case static_cast<int>(TaskList::DISABLE_ALL):
       varsUi_.valueSpinBox->setEnabled(false);
+      varsUi_.valueSpinBox->setDecimals(0);
+      varsUi_.valueSpinBox->setValue(0);
+      break;
+    case static_cast<int>(TaskList::SET_BUFFER_SIZE):
+    case static_cast<int>(TaskList::SET_DIVIDER):
+      varsUi_.valueSpinBox->setDecimals(0);
+      varsUi_.valueSpinBox->setSingleStep(1.0);
+      varsUi_.valueSpinBox->setRange(0.0, 100000.0);
       break;
     case static_cast<int>(TaskList::SET_BUFFER_SIZE_FROM_TIME):
       varsUi_.valueSpinBox->setSuffix(QString::fromUtf8(" [sec]"));
+      varsUi_.valueSpinBox->setDecimals(2);
+      varsUi_.valueSpinBox->setSingleStep(0.05);
+      varsUi_.valueSpinBox->setRange(0.0, 600.0);
       break;
     default:
       break;
@@ -297,7 +322,7 @@ void SignalLoggerPlugin::applyButtonPressed() {
       break;
     case static_cast<int>(TaskList::SET_BUFFER_SIZE_FROM_TIME):
       for(auto & element : logElements_) {
-        element->spinBoxBufferSize->setValue(varsUi_.valueSpinBox->value()/2.0);
+        element->spinBoxBufferSize->setValue(ceil((double) varsUi_.valueSpinBox->value() * updateFrequency_ / (double)element->spinBoxDivider->value()));
       }
       break;
     default:
@@ -306,8 +331,25 @@ void SignalLoggerPlugin::applyButtonPressed() {
 
 }
 
+void SignalLoggerPlugin::checkLoggerState() {
+  std_srvs::TriggerRequest req_islogging;
+  std_srvs::TriggerResponse res_islogging;
+
+  if (isLoggerRunningClient_.call(req_islogging, res_islogging)) {
+    if(paramsWidget_)
+      paramsWidget_->setEnabled(!res_islogging.success);
+    varsUi_.applyButton->setEnabled(!res_islogging.success);
+    varsUi_.pushButtonChangeAll->setEnabled(!res_islogging.success);
+  }
+  else {
+    ROS_WARN("Could not get parameter list!");
+  }
+
+  return;
+}
+
 void SignalLoggerPlugin::shutdownPlugin() {
-  getLoggerElementNamesClient_.shutdown();
+  getLoggerConfigurationClient_.shutdown();
   getLoggerElementClient_.shutdown();
   setLoggerElementClient_.shutdown();
   startLoggerClient_.shutdown();
@@ -385,16 +427,7 @@ void SignalLoggerPlugin::drawParamList() {
   paramsWidget_->setLayout(paramsScrollLayout_);
   paramsScrollHelperWidget_->setLayout(paramsGrid_);
 
-  std_srvs::TriggerRequest req_islogging;
-  std_srvs::TriggerResponse res_islogging;
-
-  if (isLoggerRunningClient_.call(req_islogging, res_islogging)) {
-    paramsWidget_->setEnabled(!res_islogging.success);
-  }
-  else {
-    ROS_WARN("Could not get parameter list!");
-    return;
-  }
+  this->checkLoggerState();
 
 }
 
