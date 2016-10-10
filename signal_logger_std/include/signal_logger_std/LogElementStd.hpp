@@ -50,7 +50,7 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
   }
 
   //! Publish no implementation
-  virtual void publishData() { }
+  virtual void publishData(signal_logger::LogElementBase<signal_logger::TimestampPair> * time) { }
 
   //! Initizalize -> empty
   virtual void initializeElement() { }

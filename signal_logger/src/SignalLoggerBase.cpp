@@ -69,6 +69,7 @@ bool SignalLoggerBase::startLogger()
   }
 
   // Reset flags and data collection calls
+  for(auto & elem : logElements_) { elem.second->clearBuffer(); }
   isCollectingData_ = true;
   noCollectDataCalls_ = 0;
 
@@ -128,6 +129,13 @@ bool SignalLoggerBase::collectLoggerData()
   // Is logger started?
   if(isCollectingData_)
   {
+    // Get time
+    auto duration = std::chrono::system_clock::now().time_since_epoch();
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
+    logTime_.first = seconds.count();
+    logTime_.second = std::chrono::duration_cast<std::chrono::nanoseconds>(duration-seconds).count();
+    timeElement_->collectData();
+
     // Add data to buffer
     for(auto & elem : logElements_)
     {
@@ -150,7 +158,7 @@ bool SignalLoggerBase::publishData()
   {
     if(elem.second->isEnabled() && elem.second->isPublished())
     {
-      elem.second->publishData();
+      elem.second->publishData(timeElement_.get());
     }
   }
 

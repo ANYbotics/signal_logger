@@ -45,7 +45,8 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
                 std::stringstream * dataStream,
                 const ros::NodeHandle & nh) :
     signal_logger_std::LogElementStd<ValueType_>(ptr, name, unit, divider, action, bufferSize, isBufferLooping, headerStream, dataStream),
-    nh_(nh)
+    nh_(nh),
+    publishCount_(0)
   {
     //! A buffer is already provided, publisher should not create internal one
     msg_.reset(new MsgType());
@@ -58,16 +59,17 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   }
 
   //! Reads buffer and publishes data via ros
-  void publishData()
+  void publishData(signal_logger::LogElementBase<signal_logger::TimestampPair> * time)
   {
     ValueType_ data;
-
     if(this->buffer_.read(&data))
     {
-      ros::Time now = ros::Time::now();
+      signal_logger::TimestampPair tsp_now = time->copyElementFromBack(publishCount_*this->getDivider());
+      ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
       traits::slr_traits<ValueType_>::updateMsg(&data, msg_, now);
       pub_.publish(msg_);
     }
+    ++publishCount_;
   }
 
   void initializeElement()
@@ -85,7 +87,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   ros::NodeHandle nh_;
   ros::Publisher pub_;
   MsgTypePtr msg_;
-
+  std::size_t publishCount_;
 
 };
 

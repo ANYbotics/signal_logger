@@ -24,6 +24,7 @@
                            const bool bufferLooping) \
     { \
       std::string elementName = signal_logger::LOGGER_PREFIX + "/" + group + "/" + name; \
-      logElements_[elementName] = new LogElementStd<TYPE>(const_cast<TYPE*>(&var), elementName , unit, divider, action, bufferSize, bufferLooping, &headerStream_, &dataStream_); \
+      logElements_[elementName].reset(new signal_logger_std::LogElementStd<TYPE>(const_cast<TYPE*>(&var), elementName , \
+              unit, divider, action, bufferSize, bufferLooping, &headerStream_, &dataStream_)); \
     } /*
                             */

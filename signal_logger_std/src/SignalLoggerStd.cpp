@@ -15,7 +15,10 @@ SignalLoggerStd::SignalLoggerStd():
         headerStream_(std::ostringstream::in | std::ostringstream::out),
         dataStream_(std::ios::in | std::ios::out | std::ios::binary)
 {
-
+  timeElement_.reset( new LogElementStd<signal_logger::TimestampPair>(&logTime_, "/log/time" , "[s/ns]", 1,
+                                                                      signal_logger::LogElementInterface::LogElementAction::SAVE,
+                                                                      5000, false, &headerStream_, &dataStream_));
+  timeElement_->setIsEnabled(true);
 }
 
 SignalLoggerStd::~SignalLoggerStd()

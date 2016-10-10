@@ -7,10 +7,16 @@
 
 #pragma once
 
+// signal logger
+#include "signal_logger/LogElementTypes.hpp"
+
 // STL
 #include <string>
 
 namespace signal_logger {
+
+template <typename ValueType_>
+class LogElementBase;
 
 //! A class that defines the basic interface of logger elements.
 /**
@@ -60,7 +66,7 @@ class LogElementInterface
   virtual void collectData() = 0;
 
   //! Reads buffer and processes data (called at every timestep)
-  virtual void publishData() = 0;
+  virtual void publishData(signal_logger::LogElementBase<TimestampPair> * time ) = 0;
 
   //! Write header of log file
   virtual void saveDataToLogFile() = 0;

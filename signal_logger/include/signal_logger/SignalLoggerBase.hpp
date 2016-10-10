@@ -10,6 +10,7 @@
 // signal logger
 #include "signal_logger/LogElementTypes.hpp"
 #include "signal_logger/LogElementInterface.hpp"
+#include "signal_logger/LogElementBase.hpp"
 #include "signal_logger/macro_definitions.hpp"
 
 // message logger
@@ -24,6 +25,7 @@
 // stl
 #include <mutex>
 #include <atomic>
+#include <memory>
 
 namespace signal_logger {
 
@@ -159,7 +161,11 @@ class SignalLoggerBase {
   //! Rate at which collectLoggerData() is called
   std::atomic_uint updateFrequency_;
   //! Map of all log elements
-  std::map<std::string, signal_logger::LogElementInterface *> logElements_;
+  std::map<std::string, std::shared_ptr<signal_logger::LogElementInterface>> logElements_;
+  //! Time log elements
+  std::shared_ptr<signal_logger::LogElementBase<signal_logger::TimestampPair>> timeElement_;
+
+  TimestampPair logTime_;
 
   //! Mutexes
 //  std::mutex loggerMutex_;

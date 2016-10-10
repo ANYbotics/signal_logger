@@ -7,6 +7,9 @@
 
 #pragma once
 
+// Signal logger
+#include "signal_logger/LogElementTypes.hpp"
+
 // Message logger
 #include "message_logger/message_logger.hpp"
 
@@ -123,12 +126,22 @@ class Buffer
     return true;
   }
 
+  ValueType_ copyElementFromBack(std::size_t idx)  const {
+    // Lock the circular buffer
+    boost::mutex::scoped_lock lock(mutex_);
+
+    // read element
+    ValueType_ time;
+    readElementAtPosition(&time, (noItems_-1)-idx);
+    return time;
+  }
+
   /** Make a copy of the complete (valid) buffer entries. The unread counter remains
    *  unchanged, it copies the last noItmes_ items into a vector of value_type.
    *  @return vector containing all buffered items
    */
   template<typename V = ValueType_>
-  std::vector<V> copyBuffer(typename std::enable_if<!std::is_same<bool, V>::value>::type* = 0)
+  std::vector<V> copyBuffer(typename std::enable_if<!std::is_same<bool, V>::value>::type* = 0) const
   {
     // Lock circular buffer
     boost::mutex::scoped_lock lock(mutex_);
@@ -143,7 +156,7 @@ class Buffer
   }
 
   template<typename V = ValueType_>
-  std::vector<bool> copyBuffer(typename std::enable_if<std::is_same<bool, V>::value>::type* = 0)
+  std::vector<bool> copyBuffer(typename std::enable_if<std::is_same<bool, V>::value>::type* = 0) const
   {
     // Lock circular buffer
     boost::mutex::scoped_lock lock(mutex_);
@@ -242,8 +255,8 @@ class Buffer
   // Version for non-eigen-types
   template<typename V = ValueType_>
   typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
-  readElementAtPosition(ValueType_ * item, size_t position) {
-    if(position < 0 || position >= bufferSize_) {
+  readElementAtPosition(ValueType_ * item, size_t position)  const {
+    if(position < 0 || position >= noItems_) {
       throw std::out_of_range("Can not read element at position " + std::to_string(position));
     }
     *item = container_[position];
@@ -252,8 +265,8 @@ class Buffer
   // Version for eigen-types
   template<typename V = ValueType_>
   typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
-  readElementAtPosition(ValueType_ * item, size_t position) {
-    if(position < 0 || position >= bufferSize_) {
+  readElementAtPosition(ValueType_ * item, size_t position)  const {
+    if(position < 0 || position >= noItems_) {
       throw std::out_of_range("Can not read element at position " + std::to_string(position));
     }
     item->resize(rows_, cols_);

@@ -77,6 +77,11 @@ class LogElementBase: public LogElementInterface
     buffer_.clear();
   }
 
+  //! Copy element from back
+  virtual ValueType_ copyElementFromBack(std::size_t idx) const {
+    return buffer_.copyElementFromBack(idx);
+  }
+
  protected:
   Buffer<ValueType_> buffer_;
 };

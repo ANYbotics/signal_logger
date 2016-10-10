@@ -14,6 +14,7 @@
 // STL
 #include <fstream>
 #include <sstream>
+#include <memory>
 
 namespace signal_logger_std {
 
