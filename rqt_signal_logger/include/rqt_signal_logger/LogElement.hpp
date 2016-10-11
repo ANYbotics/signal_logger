@@ -35,9 +35,17 @@ class LogElement: public QObject {
  public:
   //! Enum mapping defining possible log actions
   enum class LogAction : unsigned int {
-    SAVE_AND_PUBLISH = signal_logger_msgs::LogElement::SAVE_AND_PUBLISH_VAR,
-    SAVE = signal_logger_msgs::LogElement::SAVE_VAR,
-    PUBLISH = signal_logger_msgs::LogElement::PUBLISH_VAR
+    NONE = signal_logger_msgs::LogElement::ACTION_NONE,
+    SAVE_AND_PUBLISH = signal_logger_msgs::LogElement::ACTION_SAVE_AND_PUBLISH,
+    SAVE = signal_logger_msgs::LogElement::ACTION_SAVE,
+    PUBLISH = signal_logger_msgs::LogElement::ACTION_PUBLISH
+  };
+
+  //! Enum mapping defining possible buffer types
+  enum class BufferType : unsigned int {
+    FIXED_SIZE = signal_logger_msgs::LogElement::BUFFERTYPE_FIXED_SIZE,
+    LOOPING = signal_logger_msgs::LogElement::BUFFERTYPE_LOOPING,
+    EXPONENTIALLY_GROWING = signal_logger_msgs::LogElement::BUFFERTYPE_EXPONENTIALLY_GROWING
   };
 
  public:
@@ -77,9 +85,11 @@ class LogElement: public QObject {
     //! Add log type combobox
     comboBoxLogType = new QComboBox(widget);
     comboBoxLogType->setObjectName(QString::fromStdString(std::string{"comboBoxLogType"} + name));
+    comboBoxLogType->insertItem(static_cast<int>(LogAction::NONE), "None");
     comboBoxLogType->insertItem(static_cast<int>(LogAction::SAVE_AND_PUBLISH), "Save and Publish");
     comboBoxLogType->insertItem(static_cast<int>(LogAction::SAVE),"Save");
     comboBoxLogType->insertItem(static_cast<int>(LogAction::PUBLISH),"Publish");
+    comboBoxLogType->setCurrentIndex(static_cast<int>(LogAction::SAVE_AND_PUBLISH));
 
     //! Add divider label
     labelDivider = new QLabel(widget);
@@ -114,10 +124,12 @@ class LogElement: public QObject {
     spinBoxBufferSize->setSingleStep(1);
 
     //! Add buffer looping combobox
-    comboBoxIsLooping = new QComboBox(widget);
-    comboBoxIsLooping->setObjectName(QString::fromStdString(std::string{"comboBoxIsLooping"} + name));
-    comboBoxIsLooping->addItem("Not Looping");
-    comboBoxIsLooping->addItem("Looping");
+    comboBoxBufferType = new QComboBox(widget);
+    comboBoxBufferType->setObjectName(QString::fromStdString(std::string{"comboBoxIsLooping"} + name));
+    comboBoxBufferType->insertItem(static_cast<int>(BufferType::FIXED_SIZE), "Fixed Size");
+    comboBoxBufferType->insertItem(static_cast<int>(BufferType::LOOPING), "Looping");
+    comboBoxBufferType->insertItem(static_cast<int>(BufferType::EXPONENTIALLY_GROWING),"Growing");
+    comboBoxBufferType->setCurrentIndex(static_cast<int>(BufferType::FIXED_SIZE));
 
     // Buffer Indicator
     bufferInd_ = new BufferIndicator(widget);
@@ -142,12 +154,12 @@ class LogElement: public QObject {
     grid->addWidget(spinBoxDivider,        iRow, 5, 1, 1);
     grid->addWidget(labelBuffer,           iRow, 6, 1, 1);
     grid->addWidget(spinBoxBufferSize,     iRow, 7, 1, 1);
-    grid->addWidget(comboBoxIsLooping,     iRow, 8, 1, 1);
+    grid->addWidget(comboBoxBufferType,    iRow, 8, 1, 1);
     grid->addWidget(bufferInd_,            iRow, 9, 1, 1);
     grid->addWidget(pushButtonChangeParam, iRow, 10, 1, 1);
     grid->addWidget(pushButtonRefreshParam,iRow, 11, 1, 1);
 
-    connect(pushButtonChangeParam, SIGNAL(pressed()), this, SLOT(pushButtonChangeParamPressed()));
+    connect(pushButtonChangeParam, SIGNAL(pressed()), this, SLOT(changeElement()));
     connect(pushButtonRefreshParam, SIGNAL(pressed()), this, SLOT(refreshElement()));
 
     refreshElement();
@@ -165,7 +177,7 @@ class LogElement: public QObject {
     grid_->removeWidget(spinBoxDivider);
     grid_->removeWidget(labelBuffer);
     grid_->removeWidget(spinBoxBufferSize);
-    grid_->removeWidget(comboBoxIsLooping);
+    grid_->removeWidget(comboBoxBufferType);
     grid_->removeWidget(bufferInd_);
     grid_->removeWidget(pushButtonChangeParam);
     grid_->removeWidget(pushButtonRefreshParam);
@@ -178,7 +190,7 @@ class LogElement: public QObject {
     delete spinBoxDivider;
     delete labelBuffer;
     delete spinBoxBufferSize;
-    delete comboBoxIsLooping;
+    delete comboBoxBufferType;
     delete bufferInd_;
     delete pushButtonChangeParam;
     delete pushButtonRefreshParam;
@@ -187,7 +199,7 @@ class LogElement: public QObject {
 
   public slots:
 
-  void pushButtonChangeParamPressed() {
+  void changeElement() {
     ROS_DEBUG_STREAM("Change logger element " << name_);
 
     signal_logger_msgs::GetLoggerElementRequest reqGet;
@@ -205,9 +217,11 @@ class LogElement: public QObject {
     req.log_element.name = name_;
     req.log_element.is_logged = static_cast<bool>(checkBoxIsLogging->checkState());
     req.log_element.divider = spinBoxDivider->value();
+    std::cout<<"Current index of action "<<comboBoxLogType->currentIndex()<<std::endl;
     req.log_element.action = comboBoxLogType->currentIndex();
     req.log_element.buffer_size = spinBoxBufferSize->value();
-    req.log_element.is_buffer_looping = comboBoxIsLooping->currentIndex();
+    std::cout<<"Current index of buffer type "<<comboBoxBufferType->currentIndex()<<std::endl;
+    req.log_element.buffer_type = comboBoxBufferType->currentIndex();
 
     if(!setLogElementClient_->call(req, res)) {
       ROS_INFO_STREAM("Could not change logger element " << name_);
@@ -226,7 +240,7 @@ class LogElement: public QObject {
         spinBoxDivider->setValue( res.log_element.divider );
         comboBoxLogType->setCurrentIndex(res.log_element.action);
         spinBoxBufferSize->setValue( res.log_element.buffer_size );
-        comboBoxIsLooping->setCurrentIndex(res.log_element.is_buffer_looping);
+        comboBoxBufferType->setCurrentIndex(res.log_element.buffer_type);
         bufferInd_->updateData(res.log_element.no_unread_items_in_buffer,res.log_element.no_items_in_buffer,res.log_element.buffer_size);
       }
       else {
@@ -250,7 +264,7 @@ class LogElement: public QObject {
   QComboBox* comboBoxLogType;
   QLabel* labelBuffer;
   QSpinBox* spinBoxBufferSize;
-  QComboBox* comboBoxIsLooping;
+  QComboBox* comboBoxBufferType;
   BufferIndicator* bufferInd_;
   QPushButton* pushButtonRefreshParam;
   QPushButton* pushButtonChangeParam;

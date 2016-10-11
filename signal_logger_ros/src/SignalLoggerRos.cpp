@@ -112,22 +112,39 @@ bool SignalLoggerRos::logElementtoMsg(const std::string & name, signal_logger_ms
   msg.is_logged = logElements_.at(name)->isEnabled();
   msg.divider = logElements_.at(name)->getDivider();
   msg.buffer_size = logElements_.at(name)->getBufferSize();
-  msg.is_buffer_looping = logElements_.at(name)->isBufferLooping();
   msg.no_items_in_buffer = logElements_.at(name)->noItemsInBuffer();
   msg.no_unread_items_in_buffer = logElements_.at(name)->noUnreadItemsInBuffer();
 
   switch(logElements_.at(name)->getAction()) {
-    case signal_logger::LogElementInterface::LogElementAction::SAVE_AND_PUBLISH:
-      msg.action = signal_logger_msgs::LogElement::SAVE_AND_PUBLISH_VAR;
+    case signal_logger::LogElementAction::NONE:
+      msg.action = signal_logger_msgs::LogElement::ACTION_NONE;
       break;
-    case signal_logger::LogElementInterface::LogElementAction::SAVE:
-      msg.action = signal_logger_msgs::LogElement::SAVE_VAR;
+    case signal_logger::LogElementAction::SAVE_AND_PUBLISH:
+      msg.action = signal_logger_msgs::LogElement::ACTION_SAVE_AND_PUBLISH;
       break;
-    case signal_logger::LogElementInterface::LogElementAction::PUBLISH:
-      msg.action = signal_logger_msgs::LogElement::PUBLISH_VAR;
+    case signal_logger::LogElementAction::SAVE:
+      msg.action = signal_logger_msgs::LogElement::ACTION_SAVE;
+      break;
+    case signal_logger::LogElementAction::PUBLISH:
+      msg.action = signal_logger_msgs::LogElement::ACTION_PUBLISH;
       break;
     default:
       MELO_ERROR("Undefined action!");
+      break;
+  }
+
+  switch(logElements_.at(name)->getBufferType()) {
+    case signal_logger::BufferType::FIXED_SIZE:
+      msg.buffer_type = signal_logger_msgs::LogElement::BUFFERTYPE_FIXED_SIZE;
+      break;
+    case signal_logger::BufferType::LOOPING:
+      msg.buffer_type = signal_logger_msgs::LogElement::BUFFERTYPE_LOOPING;
+      break;
+    case signal_logger::BufferType::EXPONENTIALLY_GROWING:
+      msg.buffer_type = signal_logger_msgs::LogElement::BUFFERTYPE_EXPONENTIALLY_GROWING;
+      break;
+    default:
+      MELO_ERROR("Undefined buffer type!");
       break;
   }
 
@@ -141,22 +158,40 @@ bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg
   logElements_.at(msg.name)->setIsEnabled(msg.is_logged);
   logElements_.at(msg.name)->setDivider(msg.divider);
   logElements_.at(msg.name)->setBufferSize(msg.buffer_size);
-  logElements_.at(msg.name)->setIsBufferLooping(msg.is_buffer_looping);
 
   switch(msg.action) {
-    case signal_logger_msgs::LogElement::SAVE_AND_PUBLISH_VAR:
-      logElements_.at(msg.name)->setAction(signal_logger::LogElementInterface::LogElementAction::SAVE_AND_PUBLISH);
+    case signal_logger_msgs::LogElement::ACTION_NONE:
+      logElements_.at(msg.name)->setAction(signal_logger::LogElementAction::NONE);
       break;
-    case signal_logger_msgs::LogElement::SAVE_VAR:
-      logElements_.at(msg.name)->setAction(signal_logger::LogElementInterface::LogElementAction::SAVE);
+    case signal_logger_msgs::LogElement::ACTION_SAVE_AND_PUBLISH:
+      logElements_.at(msg.name)->setAction(signal_logger::LogElementAction::SAVE_AND_PUBLISH);
       break;
-    case signal_logger_msgs::LogElement::PUBLISH_VAR:
-      logElements_.at(msg.name)->setAction(signal_logger::LogElementInterface::LogElementAction::PUBLISH);
+    case signal_logger_msgs::LogElement::ACTION_SAVE:
+      logElements_.at(msg.name)->setAction(signal_logger::LogElementAction::SAVE);
+      break;
+    case signal_logger_msgs::LogElement::ACTION_PUBLISH:
+      logElements_.at(msg.name)->setAction(signal_logger::LogElementAction::PUBLISH);
       break;
     default:
       MELO_ERROR("Undefined action!");
       break;
   }
+
+  switch(msg.buffer_type) {
+    case signal_logger_msgs::LogElement::BUFFERTYPE_FIXED_SIZE:
+      logElements_.at(msg.name)->setBufferType(signal_logger::BufferType::FIXED_SIZE);
+      break;
+    case signal_logger_msgs::LogElement::BUFFERTYPE_LOOPING:
+      logElements_.at(msg.name)->setBufferType(signal_logger::BufferType::LOOPING);
+      break;
+    case signal_logger_msgs::LogElement::BUFFERTYPE_EXPONENTIALLY_GROWING:
+      logElements_.at(msg.name)->setBufferType(signal_logger::BufferType::EXPONENTIALLY_GROWING);
+      break;
+    default:
+      MELO_ERROR("Undefined buffer type!");
+      break;
+  }
+
 
   return true;
 }

@@ -7,6 +7,9 @@
 
 #pragma once
 
+// signal logger
+#include "signal_logger/LogElementTypes.hpp"
+
 /**
  *  Macro that defines pure virtual add function for every data type
  *  @param TYPE data type of the log variable
@@ -21,15 +24,15 @@
     /** @param divider        divider is defining the update frequency of the logger element (ctrl_freq/divider)*/ \
     /** @param action         log action of the log variable*/ \
     /** @param bufferSize     size of the buffer storing log elements*/ \
-    /** @param bufferLooping  determines if the buffer overwrites old values*/ \
-    virtual void add##NAME( const TYPE & var, \
-                            const std::string& name, \
-                            const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME}, \
-                            const std::string& unit = std::string{LOGGER_DEFAULT_UNIT}, \
-                            const std::size_t divider = std::size_t{LOGGER_DEFAULT_DIVIDER}, \
-                            const signal_logger::LogElementInterface::LogElementAction & action = LOGGER_DEFAULT_ACTION, \
-                            const std::size_t bufferSize = std::size_t{LOGGER_DEFAULT_BUFFER_SIZE}, \
-                            const bool bufferLooping = LOGGER_DEFAULT_BUFFER_LOOPING ) = 0; /*
+    /** @param bufferType     determines type of buffer*/ \
+    virtual void add##NAME( const TYPE & var,\
+                            const std::string & name,\
+                            const std::string & group       = LOG_ELEMENT_DEFAULT_GROUP_NAME, \
+                            const std::string & unit        = LOG_ELEMENT_DEFAULT_UNIT, \
+                            const std::size_t divider       = LOG_ELEMENT_DEFAULT_DIVIDER, \
+                            const signal_logger::LogElementAction action = LOG_ELEMENT_DEFAULT_ACTION, \
+                            const std::size_t bufferSize    = LOG_ELEMENT_DEFAULT_BUFFER_SIZE, \
+                            const signal_logger::BufferType bufferType = LOG_ELEMENT_DEFAULT_BUFFER_TYPE) = 0; /*
                              */
 /**
  *  Macro that implements a version of logging eigen matrices as their underlying types
@@ -47,19 +50,19 @@
     /** @param divider        divider is defining the update frequency of the logger element (ctrl_freq/divider)*/ \
     /** @param action         log action of the log variable*/ \
     /** @param bufferSize     size of the buffer storing log elements*/ \
-    /** @param bufferLooping  determines if the buffer overwrites old values*/ \
+    /** @param bufferType     determines type of buffer*/ \
     void add##NAME( const TYPE & var, \
-                    const signal_logger::MatrixXstring& names, \
-                    const std::string& group, \
-                    const std::string& unit, \
+                    const signal_logger::MatrixXstring & names, \
+                    const std::string & group, \
+                    const std::string & unit, \
                     const std::size_t divider, \
-                    const signal_logger::LogElementInterface::LogElementAction & action, \
+                    const signal_logger::LogElementAction action, \
                     const std::size_t bufferSize, \
-                    const bool bufferLooping) \
+                    const signal_logger::BufferType bufferType) \
     { \
       for (int r=0; r<static_cast<signal_logger::MatrixXstring>(names).rows(); r++)  { \
         for (int c=0; c<static_cast<signal_logger::MatrixXstring>(names).cols(); c++)  { \
-          add##UNDERLYING_TYPE_NAME((UNDERLYING_TYPE)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, divider, action, bufferSize, bufferLooping); \
+          add##UNDERLYING_TYPE_NAME((UNDERLYING_TYPE)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, divider, action, bufferSize, bufferType); \
         } \
       } \
     } /*
@@ -79,21 +82,21 @@
     /** @param divider        divider is defining the update frequency of the logger element (ctrl_freq/divider)*/ \
     /** @param action         log action of the log variable*/ \
     /** @param bufferSize     size of the buffer storing log elements*/ \
-    /** @param bufferLooping  determines if the buffer overwrites old values*/ \
+    /** @param bufferType     determines type of buffer*/ \
     template < > \
     void SignalLoggerBase::add( const TYPE & var, \
-                                const std::string& name, \
-                                const std::string& group, \
-                                const std::string& unit, \
+                                const std::string & name, \
+                                const std::string & group, \
+                                const std::string & unit, \
                                 const std::size_t divider, \
-                                const signal_logger::LogElementInterface::LogElementAction & action, \
+                                const signal_logger::LogElementAction action, \
                                 const std::size_t bufferSize, \
-                                const bool bufferLooping) \
+                                const signal_logger::BufferType bufferType) \
     { \
       if(logElements_.find(name) != logElements_.end()) { \
         printf("A signal with the same name %s is already logged. Overwrite.", name.c_str()); \
       } \
-      add##NAME(var, name, group, unit, divider, action, bufferSize, bufferLooping); \
+      add##NAME(var, name, group, unit, divider, action, bufferSize, bufferType); \
     }
 
 /**

@@ -24,12 +24,12 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
                 const std::string & name,
                 const std::string & unit,
                 const std::size_t divider,
-                const signal_logger::LogElementInterface::LogElementAction action,
+                const signal_logger::LogElementAction action,
                 const std::size_t bufferSize,
-                const bool isBufferLooping,
+                const signal_logger::BufferType bufferType,
                 std::stringstream * headerStream,
                 std::stringstream * dataStream) :
-    signal_logger::LogElementBase<ValueType_>(ptr, name, unit, divider, action, bufferSize, isBufferLooping),
+    signal_logger::LogElementBase<ValueType_>(ptr, name, unit, divider, action, bufferSize, bufferType),
     headerStream_(headerStream),
     dataStream_(dataStream)
   {
@@ -43,20 +43,11 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
   }
 
   //! Save Data to file
-  void saveDataToLogFile()
+  void saveDataToLogFile() override
   {
     std::vector<ValueType_> values = this->buffer_.copyBuffer();
     signal_logger_std::traits::sls_traits<ValueType_>::writeLogElementToStreams(headerStream_, dataStream_, values, this->getName(), this->getDivider());
   }
-
-  //! Publish no implementation
-  virtual void publishData(signal_logger::LogElementBase<signal_logger::TimestampPair> * time) { }
-
-  //! Initizalize -> empty
-  virtual void initializeElement() { }
-
-  //! Shutdown -> empty
-  virtual void shutdownElement() { }
 
  protected:
   std::stringstream* headerStream_;

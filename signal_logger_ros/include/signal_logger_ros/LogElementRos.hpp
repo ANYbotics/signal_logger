@@ -26,29 +26,21 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   using MsgTypePtr = typename traits::slr_traits<ValueType_>::msgtypePtr;
 
  public:
-  /** Constructor
-   * @param ptr     pointer to the data that shall be logged
-   * @param name    name of the log element
-   * @param unit    unit of the logged data
-   * @param buffer_size size of the buffer (old elements will always be overwritten)
-   * @param nh      nodehandle to advertise the publisher
-   * @return log element
-  */
   LogElementRos(ValueType_ * ptr,
                 const std::string & name,
                 const std::string & unit,
                 const std::size_t divider,
-                const signal_logger::LogElementInterface::LogElementAction action,
+                const signal_logger::LogElementAction action,
                 const std::size_t bufferSize,
-                const bool isBufferLooping,
+                const signal_logger::BufferType bufferType,
                 std::stringstream * headerStream,
                 std::stringstream * dataStream,
                 const ros::NodeHandle & nh) :
-    signal_logger_std::LogElementStd<ValueType_>(ptr, name, unit, divider, action, bufferSize, isBufferLooping, headerStream, dataStream),
-    nh_(nh),
-    publishCount_(0)
+      signal_logger_std::LogElementStd<ValueType_>(ptr, name, unit, divider, action, bufferSize, bufferType, headerStream, dataStream),
+      nh_(nh),
+      pub_(),
+      publishCount_(0)
   {
-    //! A buffer is already provided, publisher should not create internal one
     msg_.reset(new MsgType());
   }
 
@@ -59,34 +51,51 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   }
 
   //! Reads buffer and publishes data via ros
-  void publishData(signal_logger::LogElementBase<signal_logger::TimestampPair> * time)
+  void publishData(const signal_logger::LogElementBase<signal_logger::TimestampPair> & time) override
   {
     ValueType_ data;
+
     if(this->buffer_.read(&data))
     {
-      signal_logger::TimestampPair tsp_now = time->copyElementFromBack(publishCount_*this->getDivider());
-      ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
-      traits::slr_traits<ValueType_>::updateMsg(&data, msg_, now);
-      pub_.publish(msg_);
+      if( (publishCount_*this->getDivider()) < time.getBufferSize()) {
+        signal_logger::TimestampPair tsp_now = time.getNthTimestep(publishCount_*this->getDivider());
+        ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
+        traits::slr_traits<ValueType_>::updateMsg(&data, msg_, now);
+        pub_.publish(msg_);
+        ++publishCount_;
+      }
+      else {
+        MELO_ERROR_STREAM("Buffer of time in Logger is too small.");
+      }
     }
-    ++publishCount_;
   }
 
-  void initializeElement()
+  void restartElement() override
+  {
+    signal_logger_std::LogElementStd<ValueType_>::restartElement();
+    publishCount_ = std::size_t(0);
+  }
+
+  void initializeElement() override
   {
     signal_logger_std::LogElementStd<ValueType_>::initializeElement();
     pub_ = nh_.advertise<MsgType>(this->getName(), 1);
   }
-  void shutdownElement()
+
+  void shutdownElement() override
   {
     pub_.shutdown();
     signal_logger_std::LogElementStd<ValueType_>::shutdownElement();
   }
 
  protected:
+  //! ros nodehandle
   ros::NodeHandle nh_;
+  //! ros publisher
   ros::Publisher pub_;
+  //! message pointer
   MsgTypePtr msg_;
+  //! no published items
   std::size_t publishCount_;
 
 };

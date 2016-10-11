@@ -1,5 +1,5 @@
 /*
- * typedefs.hpp
+ * LogElementTypes.hpp
  *
  *  Created on: Sep 28, 2016
  *      Author: Gabriel Hottiger

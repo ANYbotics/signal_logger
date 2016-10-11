@@ -4,20 +4,23 @@
 ## given by 'divider' -> update_freq = controller_freq/divider.
 ## The 'action' defines if the data logged should be published,
 ## saved or both. The buffer size is defined by 'buffer_size'.
-## If old elements are overwritten by newer ones in the buffer
-## (looping) 'is_buffer_looping' is set to true. Additionally
-## an inidicator of the buffer fill state is given by 'is_buffer_full'.
 
 string name
 bool is_logged
-int32 divider
+uint32 divider
 
-int8 SAVE_AND_PUBLISH_VAR=0
-int8 SAVE_VAR=1
-int8 PUBLISH_VAR=2
-int8 action
+uint8 ACTION_NONE 		      =  0
+uint8 ACTION_SAVE_AND_PUBLISH =  1
+uint8 ACTION_SAVE			  =  2
+uint8 ACTION_PUBLISH	      =  3
+uint8 action
 
-int32 buffer_size
-bool is_buffer_looping
-int32 no_items_in_buffer
-int32 no_unread_items_in_buffer
+uint8 BUFFERTYPE_FIXED_SIZE 	 	   =  0
+uint8 BUFFERTYPE_LOOPING	 	 	   =  1
+uint8 BUFFERTYPE_EXPONENTIALLY_GROWING =  2
+uint8 buffer_type
+
+uint32 buffer_size
+
+uint32 no_items_in_buffer
+uint32 no_unread_items_in_buffer

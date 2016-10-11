@@ -23,8 +23,8 @@ class LogElementBase: public LogElementInterface
    *  @param unit       unit of the log var
    *  @param divider    log_freq = ctrl_freq/divider
    *  @param action     save, publish or save and publish
-   *  @param bufferSize size of the buffer (bufferSize elementes of type ValueType_)
-   *  @param isBufferLooping is the buffer replacing old values with new ones?
+   *  @param bufferSize size of the buffer (bufferSize elements of type ValueType_)
+   *  @param bufferType type of the buffer
    */
   LogElementBase(ValueType_ * ptr,
                  const std::string & name,
@@ -32,58 +32,124 @@ class LogElementBase: public LogElementInterface
                  const std::size_t divider,
                  const LogElementAction action,
                  const std::size_t bufferSize,
-                 const bool isBufferLooping) :
-    LogElementInterface(name, unit, divider, action, bufferSize, isBufferLooping),
-    buffer_(ptr) // Zero buffer size log element not enabled
+                 const BufferType bufferType) :
+    LogElementInterface(),
+    buffer_(ptr), // Zero buffer size log element not enabled
+    name_(name),
+    unit_(unit),
+    divider_(divider),
+    action_(action),
+    isEnabled_(false)
   {
-
-  }
-
-  //! Destructor
-  virtual ~LogElementBase()
-  {
-
-  }
-
-  //! Push data to the buffer
-  void collectData()
-  {
-    buffer_.collect();
-  }
-
-  //! @param desired buffer size of the log element
-  virtual void setBufferSize(const std::size_t bufferSize) {
-    bufferSize_ = bufferSize;
-    buffer_.setBufferSize(bufferSize_);
-  }
-
-  //! @param flag indicating if buffer should be looping
-  virtual void setIsBufferLooping(const bool isBufferLooping) {
-    isBufferLooping_ = isBufferLooping;
-  }
-
-  //! @return number of total items in buffer
-  virtual std::size_t noItemsInBuffer() const {
-    return buffer_.noItems();
-  }
-
-  //! @return number of unread items in buffer
-  virtual std::size_t noUnreadItemsInBuffer() const {
-    return buffer_.noUnreadItems();
-  }
-
-  //! Clear buffer
-  virtual void clearBuffer() {
+    buffer_.setType(bufferType);
+    buffer_.setBufferSize(bufferSize);
     buffer_.clear();
   }
 
-  //! Copy element from back
-  virtual ValueType_ copyElementFromBack(std::size_t idx) const {
-    return buffer_.copyElementFromBack(idx);
+  //! Destructor
+  virtual ~LogElementBase() { }
+
+  //! Data collection is not element specific
+  void collectData() override final { buffer_.collect(); }
+
+  //! Default implementation for element type specific functionality
+  virtual void publishData(const LogElementBase<TimestampPair> & time) override { }
+  virtual void saveDataToLogFile() override { }
+  virtual void initializeElement() override { }
+  virtual void shutdownElement()   override { }
+  virtual void restartElement()    override { this->clearBuffer(); }
+
+  //! @return flag indicating if log element is enabled
+  bool isEnabled() const final { return isEnabled_; }
+
+  //! @param flag indicating if log element should be enabled
+  void setIsEnabled(const bool isEnabled) override final {
+    if(isEnabled != isEnabled_)
+    {
+      isEnabled_ = isEnabled;
+      if(isEnabled_) {
+        buffer_.allocate();
+        this->initializeElement();
+      }
+      else {
+        this->shutdownElement();
+        buffer_.deallocate();
+      }
+    }
+  }
+
+  //! @return name of the log element
+  std::string getName() const override final { return name_; }
+
+  //! @return unit of the log element
+  std::string getUnit() const override final { return unit_; }
+
+  //! @param desired unit of the log element
+  void setUnit(const std::string & unit) override final { unit_ = unit; }
+
+  //! @return update frequency divider
+  unsigned int getDivider() const override final { return divider_; }
+
+  //! @param desired update frequency divider
+  void setDivider(unsigned int divider) override final { divider_ = divider; }
+
+  //! @return check action for publishing
+  bool isPublished() const override final {
+    return (action_ == LogElementAction::SAVE_AND_PUBLISH || action_ == LogElementAction::PUBLISH);
+  }
+
+  //! @return check action for saving
+  bool isSaved() const override final {
+    return (action_ == LogElementAction::SAVE_AND_PUBLISH || action_ == LogElementAction::SAVE);
+  }
+
+  //! @return action log element takes
+  LogElementAction getAction() const override final { return action_; }
+
+  //! @param desired action log element takes
+  void setAction(LogElementAction action) override final { action_ = action; }
+
+  //! @return buffer size of the log element
+  std::size_t getBufferSize() const override final { return buffer_.getBufferSize(); }
+
+  //! @param desired buffer size of the log element
+  void setBufferSize(const std::size_t bufferSize) override final { buffer_.setBufferSize(bufferSize); buffer_.clear(); }
+
+  //! @return type of the buffer
+  BufferType getBufferType() const override final { return buffer_.getType(); }
+
+  //! @param desired type of the buffer
+  void setBufferType(const BufferType bufferType) override final { buffer_.setType(bufferType); }
+
+  //! @return number of total items in buffer
+  std::size_t noItemsInBuffer() const override final { return buffer_.noItems(); }
+
+  //! @return number of unread items in buffer
+  std::size_t noUnreadItemsInBuffer() const override final { return buffer_.noUnreadItems(); }
+
+  //! Clear buffer
+  virtual void clearBuffer() override final { buffer_.clear(); }
+
+  //! Get time at index n
+  template<typename V = ValueType_>
+  V getNthTimestep(std::size_t n, typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0) const final
+  {
+    return buffer_.copyElementFromBack(n);
   }
 
  protected:
+  //! Buffer
   Buffer<ValueType_> buffer_;
+  //! Name of the log element
+  std::string name_;
+  //! Unit of the log element
+  std::string unit_;
+  //! Defines log element collection frequency = updateFrequency/divider
+  std::size_t divider_;
+  //! Action
+  LogElementAction action_;
+  //! Indicates if log element is currently active
+  bool isEnabled_;
 };
 
 } /* namespace signal_logger */

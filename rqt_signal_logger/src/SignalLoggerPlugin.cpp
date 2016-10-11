@@ -139,7 +139,7 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
 
 void SignalLoggerPlugin::changeAll() {
   for (auto& elem : logElements_) {
-    elem->pushButtonChangeParamPressed();
+    elem->changeElement();
   }
 }
 
@@ -248,7 +248,7 @@ void SignalLoggerPlugin::saveYamlFile() {
       node["log_elements"][j]["divider"] = logElements_[i]->spinBoxDivider->value();
       node["log_elements"][j]["action"] = logElements_[i]->comboBoxLogType->currentIndex();
       node["log_elements"][j]["buffer"]["size"] = logElements_[i]->spinBoxBufferSize->value();
-      node["log_elements"][j]["buffer"]["looping"] = static_cast<bool>(logElements_[i]->comboBoxIsLooping->currentIndex());
+      node["log_elements"][j]["buffer"]["looping"] = static_cast<bool>(logElements_[i]->comboBoxBufferType->currentIndex());
       j++;
     }
   }

@@ -9,8 +9,8 @@
 
 // signal logger
 #include "signal_logger/LogElementTypes.hpp"
-#include "signal_logger/LogElementInterface.hpp"
 #include "signal_logger/LogElementBase.hpp"
+#include "signal_logger/LogElementInterface.hpp"
 #include "signal_logger/macro_definitions.hpp"
 
 // message logger
@@ -29,35 +29,37 @@
 
 namespace signal_logger {
 
+// Forward log element action to signal logger namespace
+using LogPair = std::pair<std::string, std::shared_ptr<signal_logger::LogElementInterface>>;
+
 // Some logger element defaults
-const std::string LOGGER_DEFAULT_GROUP_NAME = "/log/";
-const std::string LOGGER_DEFAULT_UNIT       = "-";
-const std::size_t LOGGER_DEFAULT_DIVIDER    = 1;
-const LogElementInterface::LogElementAction LOGGER_DEFAULT_ACTION = LogElementInterface::LogElementAction::SAVE_AND_PUBLISH;
-const std::size_t LOGGER_DEFAULT_BUFFER_SIZE = 0;
-const bool LOGGER_DEFAULT_BUFFER_LOOPING = false;
+const std::string LOG_ELEMENT_DEFAULT_GROUP_NAME   = "/log/";
+const std::string LOG_ELEMENT_DEFAULT_UNIT         = "-";
+const std::size_t LOG_ELEMENT_DEFAULT_DIVIDER      = 1;
+const LogElementAction LOG_ELEMENT_DEFAULT_ACTION  = LogElementAction::NONE;
+const std::size_t LOG_ELEMENT_DEFAULT_BUFFER_SIZE  = 0;
+const BufferType LOG_ELEMENT_DEFAULT_BUFFER_TYPE   = BufferType::FIXED_SIZE;
 
 // Some logger defaults
 const std::string LOGGER_DEFAULT_SCRIPT_FILENAME   = "logger.yaml";
-const std::string LOGGER_PREFIX = "/log";
+const std::string LOGGER_DEFAULT_PREFIX            = "/log";
 
-//! Class that severs as base class for all the loggers and defines the interface for accessing the logger
+//! Class that severs as base class for all the loggers
 class SignalLoggerBase {
 
  public:
-
   //! Get the logger type at runtime
   enum class LoggerType: unsigned int {
     TypeNone = 0,
-    TypeStd,
-    TypeRos
+    TypeStd  = 1,
+    TypeRos  =2
   };
 
  public:
   /** Constructor
-   * @param buffer_size size of the internal buffers of the logger elements
+   * @param loggerPrefix prefix to the logger variables
    */
-  SignalLoggerBase();
+  SignalLoggerBase(const std::string & loggerPrefix = LOGGER_DEFAULT_PREFIX);
 
   //! Destructor
   virtual ~SignalLoggerBase();
@@ -80,7 +82,7 @@ class SignalLoggerBase {
   /** Update the logger (added variables are added) */
   virtual bool updateLogger(bool updateScript = false);
 
-  //! Do not allow to update the logger
+  //! Lock or unlock update logger
   virtual void lockUpdate(bool lock = true);
 
   //! Collect log data, read data and push it into the buffer
@@ -102,25 +104,25 @@ class SignalLoggerBase {
   int getUpdateFrequency() const { return updateFrequency_.load(); }
 
   /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
-    * @tparam ValueType_    Data type of the logger element
-    * @param var            log variable
-    * @param name           name of the log variable
-    * @param group          logger group the variable belongs to
-    * @param unit           unit of the log variable
-    * @param divider        divider is defining the update frequency of the logger element (ctrl_freq/divider)
-    * @param action         log action of the log variable
-    * @param bufferSize     size of the buffer storing log elements
-    * @param bufferLooping  determines if the buffer overwrites old values
+    * @tparam ValueType_       Data type of the logger element
+    * @param  var              log variable
+    * @param  name             name of the log variable
+    * @param  group            logger group the variable belongs to
+    * @param  unit             unit of the log variable
+    * @param  divider          divider is defining the update frequency of the logger element (ctrl_freq/divider)
+    * @param  action           log action of the log variable
+    * @param  bufferSize       size of the buffer storing log elements
+    * @param  isBufferLooping  determines if the buffer overwrites old values
     */
   template<typename ValueType_>
   void add( const ValueType_ & var,
-            const std::string& name,
-            const std::string& group = std::string{LOGGER_DEFAULT_GROUP_NAME},
-            const std::string& unit = std::string{LOGGER_DEFAULT_UNIT},
-            const std::size_t divider = LOGGER_DEFAULT_DIVIDER,
-            const LogElementInterface::LogElementAction & action = LOGGER_DEFAULT_ACTION,
-            const std::size_t bufferSize = LOGGER_DEFAULT_BUFFER_SIZE,
-            const bool bufferLooping = LOGGER_DEFAULT_BUFFER_LOOPING )
+            const std::string & name,
+            const std::string & group       = LOG_ELEMENT_DEFAULT_GROUP_NAME,
+            const std::string & unit        = LOG_ELEMENT_DEFAULT_UNIT,
+            const std::size_t divider       = LOG_ELEMENT_DEFAULT_DIVIDER,
+            const LogElementAction action   = LOG_ELEMENT_DEFAULT_ACTION,
+            const std::size_t bufferSize    = LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
+            const BufferType bufferType     = LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
   {
     MELO_ERROR("Type of signal with name %s is not supported.", name.c_str());
   }
@@ -160,15 +162,16 @@ class SignalLoggerBase {
   std::string collectScriptFileName_;
   //! Rate at which collectLoggerData() is called
   std::atomic_uint updateFrequency_;
+  //! Logger prefix
+  std::string loggerPrefix_;
+
   //! Map of all log elements
   std::map<std::string, std::shared_ptr<signal_logger::LogElementInterface>> logElements_;
-  //! Time log elements
-  std::shared_ptr<signal_logger::LogElementBase<signal_logger::TimestampPair>> timeElement_;
-
+  //! Time variable
   TimestampPair logTime_;
-
+  //! Corresponding time log element
+  std::shared_ptr<signal_logger::LogElementBase<signal_logger::TimestampPair>> timeElement_;
   //! Mutexes
-//  std::mutex loggerMutex_;
   std::mutex scriptMutex_;
 };
 

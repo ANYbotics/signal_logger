@@ -11,32 +11,32 @@
 // yaml
 #include <yaml-cpp/yaml.h>
 
-// boost
-#include <boost/filesystem.hpp>
-
 // stl
 #include "assert.h"
-#include <sys/stat.h>
 #include <thread>
-#include <ctime>
-#include <ratio>
-#include <chrono>
 #include <fstream>
+#include <chrono>
+#include <ctime>
+
+// system
+#include <sys/stat.h>
 
 namespace signal_logger {
 
-SignalLoggerBase::SignalLoggerBase():
-                              isInitialized_(false),
-                              isUpdateLocked_(false),
-                              isCollectingData_(false),
-                              isSavingData_(false),
-                              noCollectDataCalls_(0),
-                              collectScriptFileName_(std::string{LOGGER_DEFAULT_SCRIPT_FILENAME}),
-                              updateFrequency_(0),
-                              logElements_(),
-                              scriptMutex_()
+SignalLoggerBase::SignalLoggerBase(const std::string & loggerPrefix):
+                                            isInitialized_(false),
+                                            isUpdateLocked_(false),
+                                            isCollectingData_(false),
+                                            isSavingData_(false),
+                                            noCollectDataCalls_(0),
+                                            collectScriptFileName_(LOGGER_DEFAULT_SCRIPT_FILENAME),
+                                            updateFrequency_(0),
+                                            loggerPrefix_(loggerPrefix),
+                                            logElements_(),
+                                            logTime_(),
+                                            scriptMutex_()
 {
-
+  timeElement_.reset(new LogElementBase<TimestampPair>(&logTime_, loggerPrefix + std::string{"/time"}, "[s/ns]", 1, LogElementAction::SAVE, 0, BufferType::EXPONENTIALLY_GROWING));
 }
 
 SignalLoggerBase::~SignalLoggerBase()
@@ -55,7 +55,6 @@ void SignalLoggerBase::initLogger(int updateFrequency, const std::string& collec
 
   // Notify user
   MELO_INFO("Signal Logger was initialized!");
-
   isInitialized_ = true;
 }
 
@@ -68,8 +67,12 @@ bool SignalLoggerBase::startLogger()
     return false;
   }
 
+  // Reset elements (default buffer of 10 seconds)
+  timeElement_->restartElement();
+  timeElement_->setBufferSize(10 * updateFrequency_);
+  for(auto & elem : logElements_) { elem.second->restartElement(); }
+
   // Reset flags and data collection calls
-  for(auto & elem : logElements_) { elem.second->clearBuffer(); }
   isCollectingData_ = true;
   noCollectDataCalls_ = 0;
 
@@ -129,11 +132,13 @@ bool SignalLoggerBase::collectLoggerData()
   // Is logger started?
   if(isCollectingData_)
   {
-    // Get time
+    // Get time in seconds and nanoseconds
     auto duration = std::chrono::system_clock::now().time_since_epoch();
     auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
     logTime_.first = seconds.count();
     logTime_.second = std::chrono::duration_cast<std::chrono::nanoseconds>(duration-seconds).count();
+
+    // Collect element into buffer
     timeElement_->collectData();
 
     // Add data to buffer
@@ -158,7 +163,7 @@ bool SignalLoggerBase::publishData()
   {
     if(elem.second->isEnabled() && elem.second->isPublished())
     {
-      elem.second->publishData(timeElement_.get());
+      elem.second->publishData(*timeElement_);
     }
   }
 
@@ -171,7 +176,7 @@ bool SignalLoggerBase::saveLoggerData()
 
   if(!isInitialized_)
   {
-    MELO_WARN("Signal logger could not save data!");
+    MELO_WARN("Signal logger could not save data! Not initialized!");
     isSavingData_ = false;
     return false;
   }
@@ -179,47 +184,25 @@ bool SignalLoggerBase::saveLoggerData()
   // Read suffix number from file
   int suffixNumber = 0;
   std::ifstream ifs(".last_data", std::ifstream::in);
-  if(ifs.is_open())
-  {
-    ifs >> suffixNumber;
-  }
+  if(ifs.is_open()) { ifs >> suffixNumber; }
   ifs.close();
-
-  // Update suffix number
   ++suffixNumber;
 
   // Write next suffix number to file
   std::ofstream ofs(".last_data", std::ofstream::out | std::ofstream::trunc);
-  if(ofs.is_open())
-  {
-    ofs << suffixNumber;
-  }
+  if(ofs.is_open()) { ofs << suffixNumber; }
   ofs.close();
 
-  // To string
+  // To string with format 00000 (e.g 00223)
   std::string suffixString = std::to_string(suffixNumber);
   while(suffixString.length() != 5 ) { suffixString.insert(0, "0"); }
 
-//  // Check for file existance
-//  const boost::filesystem::path currentDir( boost::filesystem::current_path() );
-//  const boost::filesystem::directory_iterator end;
-//  boost::filesystem::directory_iterator it;
-//  std::string checkString;
-//  int i = -1;
-//  do{
-//    checkString = std::string{"log_"} + std::to_string(++i);
-//    it = std::find_if(boost::filesystem::directory_iterator(currentDir), end,
-//                      [&checkString](const boost::filesystem::directory_entry& e) {
-//      return e.path().filename().string().compare(0,checkString.size(),checkString) == 0; });
-//  } while(it != end);
-
   // Get local time
-  std::time_t now = std::chrono::system_clock::to_time_t ( std::chrono::system_clock::now() );
-  std::tm now_loc = *std::localtime(&now);
   char dateTime[21];
-  strftime(dateTime, sizeof dateTime, "%Y%m%d_%H-%M-%S_", &now_loc);
+  std::time_t now = std::chrono::system_clock::to_time_t ( std::chrono::system_clock::now() );
+  strftime(dateTime, sizeof dateTime, "%Y%m%d_%H-%M-%S_", std::localtime(&now));
 
-  // Filename format (e.g. d_13Sep2016_12-13-49) add nr
+  // Filename format (e.g. d_13Sep2016_12-13-49_00011)
   std::string filename = std::string{"d_"} + std::string{dateTime} + suffixString;
 
   // Save data in different thread
@@ -253,43 +236,65 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
       elem.second->setIsEnabled(false);
     }
 
-    // Load Yaml
+    // Save loading of yaml config file
     try {
       YAML::Node config = YAML::LoadFile(scriptName);
-      for( size_t i = 0; i < config["log_elements"].size(); ++i) {
-        std::string name = config["log_elements"][i]["name"].as<std::string>();
-        auto elem = logElements_.find(name);
-        if(elem != logElements_.end()) {
-          elem->second->setIsEnabled(true);
-          // Check for divider
-          if (YAML::Node parameter = config["log_elements"][i]["divider"]) {
-            elem->second->setDivider(parameter.as<int>());
+      if (config["log_elements"].IsSequence())
+      {
+        YAML::Node logElementsNode = config["log_elements"];
+        for( size_t i = 0; i < logElementsNode.size(); ++i)
+        {
+          if (YAML::Node parameter = logElementsNode[i]["name"])
+          {
+            std::string name = logElementsNode[i]["name"].as<std::string>();
+            auto elem = logElements_.find(name);
+            if(elem != logElements_.end())
+            {
+              // Enable element
+              elem->second->setIsEnabled(true);
+
+              // Overwrite defaults if specified in yaml file
+              if (YAML::Node parameter = logElementsNode[i]["divider"])
+              {
+                elem->second->setDivider(parameter.as<int>());
+              }
+              // Check for action
+              if (YAML::Node parameter = logElementsNode[i]["action"])
+              {
+                elem->second->setAction( static_cast<LogElementAction>(parameter.as<int>()) );
+              }
+              // Check for buffer size
+              if (YAML::Node parameter = logElementsNode[i]["buffer"]["size"])
+              {
+                elem->second->setBufferSize(parameter.as<int>());
+              }
+              // Check for buffer looping
+              if (YAML::Node parameter = logElementsNode[i]["buffer"]["type"])
+              {
+                elem->second->setBufferType( static_cast<BufferType>(parameter.as<int>()) );
+              }
+            }
+            else {
+              MELO_WARN_STREAM("Could not load " << name << "from config file. Var not logged.");
+            }
           }
-          // Check for action
-          if (YAML::Node parameter = config["log_elements"][i]["action"]) {
-            elem->second->setAction( static_cast<LogElementInterface::LogElementAction>(parameter.as<int>()) );
-          }
-          // Check for buffer size
-          if (YAML::Node parameter = config["log_elements"][i]["buffer"]["size"]) {
-            elem->second->setBufferSize(parameter.as<int>());
-          }
-          // Check for buffer looping
-          if (YAML::Node parameter = config["log_elements"][i]["buffer"]["looping"]) {
-            elem->second->setIsBufferLooping(parameter.as<bool>());
+          else {
+            MELO_WARN_STREAM("Could not load get name from config file. Ignore entry nr: ." << i << "!");
           }
         }
-        else {
-          MELO_WARN_STREAM("Could not load " << name << "from config file. Var not logged.");
-        }
+      }
+      else {
+        MELO_ERROR_STREAM("Parameter file is ill-formatted. Log elements is no sequence.");
+        return false;
       }
     }
     catch(YAML::Exception & e) {
-      MELO_WARN_STREAM("Could not load config file, because exception occurred: "<<e.what());
+      MELO_ERROR_STREAM("Could not load config file, because exception occurred: "<<e.what());
       return false;
     }
   }
   else {
-    MELO_ERROR("Logger configuration file can not be opened!");
+    MELO_ERROR_STREAM("Logger configuration file can not be opened!");
     return false;
   }
 
@@ -305,6 +310,8 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
   // Lock script
   std::lock_guard<std::mutex> lockScript(scriptMutex_);
 
+
+  // Push back all data to node
   YAML::Node node;
   std::size_t j = 0;
 
@@ -313,9 +320,9 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
     if(element.second->isEnabled()) {
       node["log_elements"][j]["name"] = element.second->getName();
       node["log_elements"][j]["divider"] = element.second->getDivider();
-      node["log_elements"][j]["action"] = static_cast<unsigned int>(element.second->getAction());
+      node["log_elements"][j]["action"] = static_cast<int>(element.second->getAction());
       node["log_elements"][j]["buffer"]["size"] = element.second->getBufferSize();
-      node["log_elements"][j]["buffer"]["looping"] = element.second->isBufferLooping();
+      node["log_elements"][j]["buffer"]["type"] = static_cast<int>(element.second->getBufferType());
       j++;
     }
   }
@@ -327,7 +334,7 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
     outfile.close();
   }
 
-  return true;
+  return j!=0;
 
 }
 
