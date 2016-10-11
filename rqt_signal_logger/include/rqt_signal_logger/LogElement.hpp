@@ -217,10 +217,8 @@ class LogElement: public QObject {
     req.log_element.name = name_;
     req.log_element.is_logged = static_cast<bool>(checkBoxIsLogging->checkState());
     req.log_element.divider = spinBoxDivider->value();
-    std::cout<<"Current index of action "<<comboBoxLogType->currentIndex()<<std::endl;
     req.log_element.action = comboBoxLogType->currentIndex();
     req.log_element.buffer_size = spinBoxBufferSize->value();
-    std::cout<<"Current index of buffer type "<<comboBoxBufferType->currentIndex()<<std::endl;
     req.log_element.buffer_type = comboBoxBufferType->currentIndex();
 
     if(!setLogElementClient_->call(req, res)) {

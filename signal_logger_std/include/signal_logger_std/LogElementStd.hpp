@@ -29,9 +29,9 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
                 const signal_logger::BufferType bufferType,
                 std::stringstream * headerStream,
                 std::stringstream * dataStream) :
-    signal_logger::LogElementBase<ValueType_>(ptr, name, unit, divider, action, bufferSize, bufferType),
-    headerStream_(headerStream),
-    dataStream_(dataStream)
+      signal_logger::LogElementBase<ValueType_>(ptr, name, unit, divider, action, bufferSize, bufferType),
+      headerStream_(headerStream),
+      dataStream_(dataStream)
   {
 
   }
@@ -46,7 +46,9 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
   void saveDataToLogFile() override
   {
     std::vector<ValueType_> values = this->buffer_.copyBuffer();
-    signal_logger_std::traits::sls_traits<ValueType_>::writeLogElementToStreams(headerStream_, dataStream_, values, this->getName(), this->getDivider());
+    signal_logger_std::traits::sls_traits<ValueType_>::writeLogElementToStreams(
+        headerStream_, dataStream_, values, this->getName(), this->getDivider(),
+        this->getBufferType() == signal_logger::BufferType::LOOPING);
   }
 
  protected:

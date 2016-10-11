@@ -11,10 +11,16 @@
 #include <signal_logger_std/LogElementStd.hpp>
 
 #include <fstream>
+#include <typeinfo>
 
 namespace signal_logger_std {
 
 namespace traits {
+template<typename>
+struct is_kindr_vector : std::false_type {};
+
+template<enum kindr::PhysicalType PhysicalType_, typename PrimType_, int Dimension_>
+struct is_kindr_vector<kindr::Vector<PhysicalType_,PrimType_, Dimension_>> : std::true_type {};
 
 //! Default trait for primitive data types
 template <typename ValueType_, typename Enable_ = void>
@@ -24,9 +30,10 @@ struct sls_traits
                                        std::stringstream* dataStream,
                                        const std::vector<ValueType_> & values,
                                        const std::string & name,
-                                       const std::size_t divider )
+                                       const std::size_t divider,
+                                       const bool isBufferLooping)
   {
-    (*headerStream) << name << " " << sizeof(ValueType_) <<  " " << values.size() << " " << divider << std::endl;
+    (*headerStream) << name << " " << sizeof(ValueType_) <<  " " << values.size() << " " << divider << isBufferLooping << std::endl;
     for (const auto & val : values)  { dataStream->write(reinterpret_cast<const char*>(&val),sizeof(val)); }
   }
 };
@@ -39,15 +46,16 @@ struct sls_traits<ValueType_, typename std::enable_if<std::is_same<signal_logger
                                        std::stringstream* dataStream,
                                        const std::vector<ValueType_> & values,
                                        const std::string & name,
-                                       const std::size_t divider )
+                                       const std::size_t divider,
+                                       const bool isBufferLooping )
   {
     // Check for nonzero size
     if(values.size() == 0)
       return;
 
     // Write headers
-    (*headerStream) << name << "_s " << sizeof(typename ValueType_::first_type) <<  " " << values.size() << " " << divider << std::endl;
-    (*headerStream) << name << "_ns " << sizeof(typename ValueType_::second_type) <<  " " << values.size() << " " << divider << std::endl;
+    (*headerStream) << name << "_s " << sizeof(typename ValueType_::first_type) <<  " " << values.size() << " " << divider << isBufferLooping << std::endl;
+    (*headerStream) << name << "_ns " << sizeof(typename ValueType_::second_type) <<  " " << values.size() << " " << divider << isBufferLooping << std::endl;
 
     // Write data
     for (const auto & val : values)  { dataStream->write(reinterpret_cast<const char*>(&val.first),sizeof(val.first)); }
@@ -63,7 +71,8 @@ struct sls_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::Mat
                                        std::stringstream* dataStream,
                                        const std::vector<ValueType_> & values,
                                        const std::string & name,
-                                       const std::size_t divider )
+                                       const std::size_t divider,
+                                       const bool isBufferLooping )
   {
     // Check for nonzero size
     if(values.size() == 0)
@@ -73,7 +82,7 @@ struct sls_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::Mat
     for (int r = 0; r<values.front().rows(); r++)  {
       for (int c=0; c<values.front().cols(); c++)  {
         (*headerStream) << std::string(name + "_" + std::to_string(r) + "_" + std::to_string(c)) << " "
-            << sizeof(typename ValueType_::Scalar) << " " << values.size() << " " << divider << std::endl;
+            << sizeof(typename ValueType_::Scalar) << " " << values.size() << " " << divider << isBufferLooping << std::endl;
       }
     }
 
@@ -90,13 +99,14 @@ struct sls_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::Mat
 
 //! Trait for Kindr vectors length 3
 template <typename ValueType_>
-struct sls_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::VectorBase<ValueType_>, ValueType_>::value && ValueType_::Dimension == 3>::type>
+struct sls_traits<ValueType_, typename std::enable_if<is_kindr_vector<ValueType_>::value && ValueType_::Dimension == 3>::type>
 {
   static void writeLogElementToStreams(std::stringstream* headerStream,
                                        std::stringstream* dataStream,
                                        const std::vector<ValueType_> & values,
                                        const std::string & name,
-                                       const std::size_t divider )
+                                       const std::size_t divider,
+                                       const bool isBufferLooping )
   {
     // Check for nonzero size
     if(values.size() == 0)
@@ -104,7 +114,7 @@ struct sls_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::Vec
 
     // Write headers
     for(auto suffix : {"_x", "_y", "_z"}) {
-      (*headerStream) << name << suffix << sizeof(typename ValueType_::Scalar) <<  " " << values.size() << " " << divider << std::endl;
+      (*headerStream) << name << suffix << sizeof(typename ValueType_::Scalar) <<  " " << values.size() << " " << divider << isBufferLooping << std::endl;
     }
 
     // Write data
@@ -114,6 +124,24 @@ struct sls_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::Vec
       }
     }
 
+  }
+};
+
+//! Trait for Kindr rotations
+template <typename ValueType_>
+struct sls_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::RotationBase<ValueType_>,ValueType_>::value>::type>
+{
+  static void writeLogElementToStreams(std::stringstream* headerStream,
+                                       std::stringstream* dataStream,
+                                       const std::vector<ValueType_> & values,
+                                       const std::string & name,
+                                       const std::size_t divider,
+                                       const bool isBufferLooping )
+  {
+    std::cout<<"There are kindr rotations "<<typeid(ValueType_).name()<<std::endl;
+    std::vector<typename ValueType_::Implementation> implementationVector(values.size());
+    for (unsigned int i = 0; i<values.size(); ++i) { implementationVector.at(i) = values.at(i).toImplementation(); }
+    sls_traits<typename ValueType_::Implementation>::writeLogElementToStreams(headerStream, dataStream, implementationVector, name, divider, isBufferLooping);
   }
 };
 
