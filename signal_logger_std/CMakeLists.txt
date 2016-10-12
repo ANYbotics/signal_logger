@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(signal_logger_std)
 
 # Find Catkin
-find_package(catkin REQUIRED COMPONENTS 
-    signal_logger
-    message_logger
+find_package(catkin REQUIRED COMPONENTS
+  message_logger
+  signal_logger
 )
 
 ###################################
@@ -12,9 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
 ###################################
 catkin_package(
  INCLUDE_DIRS include
- LIBRARIES signal_logger_std
- CATKIN_DEPENDS signal_logger message_logger
-# DEPENDS system_lib
+ LIBRARIES ${PROJECT_NAME}
+ CATKIN_DEPENDS  message_logger signal_logger
 )
 
 ###########
@@ -26,10 +25,11 @@ add_definitions(--std=c++11)
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
 
-add_library(signal_logger_std SHARED 
+add_library(${PROJECT_NAME} SHARED
     src/SignalLoggerStd.cpp
 )
-target_link_libraries(signal_logger_std
+
+target_link_libraries(${PROJECT_NAME}
     ${catkin_LIBRARIES}
 )
 

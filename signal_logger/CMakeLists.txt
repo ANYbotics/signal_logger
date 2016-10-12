@@ -1,50 +1,46 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(signal_logger)
 
-# Find Catkin
-find_package(catkin REQUIRED COMPONENTS
-	message_logger
-)
-
+# Find dependencies
+find_package(catkin REQUIRED COMPONENTS message_logger)
 find_package(Eigen3 REQUIRED)
-# pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
 
-# Attempt to find catkinized kindr
-find_package(kindr QUIET)
-if(NOT kindr_FOUND)
-  # Attempt to find package-based kindr
-  find_package(PkgConfig REQUIRED)
-  pkg_check_modules(kindr kindr REQUIRED)
-endif()
+if(SILO_USE_KINDR)
+  # Attempt to find catkinized kindr
+	find_package(kindr QUIET)
+	if(NOT kindr_FOUND)
+	  # Attempt to find package-based kindr
+	  find_package(PkgConfig REQUIRED)
+	  pkg_check_modules(kindr kindr REQUIRED)
+	endif(NOT kindr_FOUND)
+endif(SILO_USE_KINDR)
 
-###################################
-## catkin specific configuration ##
-###################################
+# Configure catkin package
 catkin_package(
  INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIR}
- LIBRARIES signal_logger
+ LIBRARIES ${PROJECT_NAME}
  CATKIN_DEPENDS message_logger
  DEPENDS kindr
+ CFG_EXTRAS ${PROJECT_NAME}-extras.cmake
 )
-
 
 ###########
 ## Build ##
 ###########
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 add_definitions(--std=c++11)
-
 include_directories(include)
 include_directories(${EIGEN3_INCLUDE_DIR})
 include_directories(${catkin_INCLUDE_DIRS})
-include_directories(${kindr_INCLUDE_DIRS})
+if(SILO_USE_KINDR)
+	include_directories(${kindr_INCLUDE_DIRS})
+endif()
 
-set(SRCS
-    src/SignalLoggerBase.cpp
+add_library(${PROJECT_NAME} SHARED
+  src/SignalLoggerBase.cpp
 )
 
-add_library(signal_logger SHARED ${SRCS})
-target_link_libraries(signal_logger
+target_link_libraries(${PROJECT_NAME}
     ${catkin_LIBRARIES}
     yaml-cpp
 )

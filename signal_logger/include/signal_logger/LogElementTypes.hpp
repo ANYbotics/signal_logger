@@ -7,8 +7,10 @@
 
 #pragma once
 
+#ifdef SIGNAL_LOGGER_USE_KINDR
 // kindr
 #include <kindr/Core>
+#endif
 
 // Eigen
 #include <Eigen/Core>
@@ -30,6 +32,8 @@ typedef Eigen::Matrix< unsigned char ,Eigen::Dynamic, Eigen::Dynamic >  MatrixXU
 typedef Eigen::Matrix< bool ,Eigen::Dynamic, Eigen::Dynamic >           MatrixXb;
 typedef Eigen::Matrix< std::string ,Eigen::Dynamic, Eigen::Dynamic >    MatrixXstring;
 
+#ifdef SIGNAL_LOGGER_USE_KINDR
+
 // Kindr
 typedef kindr::Position3D             KindrPositionD;
 typedef kindr::RotationQuaternionPD   KindrRotationQuaternionD;
@@ -44,5 +48,7 @@ typedef kindr::AngularAcceleration3D  KindrAngularAccelerationD;
 typedef kindr::Force3D                KindrForceD;
 typedef kindr::Torque3D               KindrTorqueD;
 typedef kindr::VectorTypeless3D       KindrVectorD;
+
+#endif
 
 }

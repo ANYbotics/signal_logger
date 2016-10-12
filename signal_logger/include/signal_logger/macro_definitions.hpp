@@ -128,6 +128,8 @@
     MACRO(signal_logger::MatrixXUc, UnsignedCharEigenMatrix, char,  Char)\
     MACRO(signal_logger::MatrixXb, BoolEigenMatrix, bool, Bool)
 
+
+#ifdef SIGNAL_LOGGER_USE_KINDR
 /**
  *  Calls macro for all supported kindr types
  *  @param MACRO macro the shall be applied to every data type
@@ -147,11 +149,19 @@
     MACRO(signal_logger::KindrTorqueD, DoubleKindrTorque)\
     MACRO(signal_logger::KindrVectorD, DoubleKindrVector)
 
+#endif
+
 /**
  *  Calls macro for all supported types
  *  @param MACRO macro the shall be applied to every data type
  */
+#ifdef SIGNAL_LOGGER_USE_KINDR
 #define FOR_ALL_TYPES(MACRO) \
     FOR_PRIMITIVE_TYPES(MACRO)\
     FOR_EIGEN_TYPES(MACRO)\
     FOR_KINDR_TYPES(MACRO)
+#else
+#define FOR_ALL_TYPES(MACRO) \
+    FOR_PRIMITIVE_TYPES(MACRO)\
+    FOR_EIGEN_TYPES(MACRO)
+#endif

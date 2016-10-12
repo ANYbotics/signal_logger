@@ -32,8 +32,9 @@
 #include <signal_logger_msgs/CharStamped.h>
 
 #include "geometry_msgs/Vector3Stamped.h"
+#ifdef SIGNAL_LOGGER_USE_KINDR
 #include "kindr_msgs/VectorAtPosition.h"
-
+#endif
 namespace signal_logger_ros {
 
 namespace traits {
@@ -295,6 +296,7 @@ struct slr_traits<Eigen::Vector3d> {
 /********************************/
 
 
+#ifdef SIGNAL_LOGGER_USE_KINDR
 /********************************
  * Specializations: kindr types *
  ********************************/
@@ -634,7 +636,7 @@ struct slr_traits<signal_logger::KindrLinearAccelerationD, true> {
   }
 };
 /***************************************************/
-
+#endif
 
 template<>
 struct slr_traits<signal_logger::TimestampPair> {

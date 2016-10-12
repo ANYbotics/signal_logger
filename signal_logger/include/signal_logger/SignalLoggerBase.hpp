@@ -16,9 +16,6 @@
 // message logger
 #include "message_logger/message_logger.hpp"
 
-// kindr
-#include <kindr/Core>
-
 // eigen
 #include <Eigen/Dense>
 

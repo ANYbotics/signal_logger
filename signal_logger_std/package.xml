@@ -1,19 +1,20 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>signal_logger_std</name>
   <version>0.0.0</version>
   <description>The signal_logger_std package</description>
+
+  <url type="website">https://bitbucket.org/ethz-asl-lr/signal_logger</url>
   <maintainer email="gehrinch@ethz.ch">Christian Gehring</maintainer>
   <maintainer email="bellicoso@mavt.ethz.ch">Dario Bellicoso</maintainer>
-  <license>BSD</license>
-  <url type="website">https://bitbucket.org/ethz-asl-lr/signal_logger</url>
+  <author email="gabriel.hottiger@mavt.ethz.ch">Gabriel Hottiger</author>
   <author email="gehrinch@ethz.ch">Christian Gehring</author>
   <author email="bellicoso@mavt.ethz.ch">Dario Bellicoso</author>
+  <license>BSD</license>
+
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>signal_logger</build_depend>
-  <build_depend>message_logger</build_depend>
-  <build_depend>kindr</build_depend>
-  <run_depend>signal_logger</run_depend>
-  <run_depend>message_logger</run_depend>
-  <run_depend>kindr</run_depend>
+
+  <depend>signal_logger</depend>
+  <depend>message_logger</depend>
+
 </package>

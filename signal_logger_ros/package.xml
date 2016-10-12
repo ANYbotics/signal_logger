@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
 <package format="2">
- 
   <name>signal_logger_ros</name>
   <version>0.0.0</version>
   <description>The signal_logger_ros package</description>
-  
+
   <url type="website">https://bitbucket.org/ethz-asl-lr/signal_logger</url>
   <maintainer email="gehrinch@ethz.ch">Christian Gehring</maintainer>
   <maintainer email="bellicoso@mavt.ethz.ch">Dario Bellicoso</maintainer>
@@ -12,16 +11,15 @@
   <author email="gehrinch@ethz.ch">Christian Gehring</author>
   <author email="bellicoso@mavt.ethz.ch">Dario Bellicoso</author>
   <license>BSD</license>
-  
+
   <buildtool_depend>catkin</buildtool_depend>
-  
+
+  <depend>message_logger</depend>
   <depend>signal_logger</depend>
-  <depend>roco</depend>
-  <depend>roscpp</depend>
+  <depend>signal_logger_std</depend>
+  <depend>signal_logger_msgs</depend>
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>kindr_msgs</depend>
-  <depend>signal_logger_msgs</depend>
-  <depend>signal_logger_std</depend>
 
 </package>
