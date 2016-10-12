@@ -89,13 +89,13 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::ENABLE_ALL), "Enable all elements");
   varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::DISABLE_ALL), "Disable all elements");
   varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::SET_DIVIDER), "Set divider to ");
+  varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::SET_ACTION), "Set action to ");
+  varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::SET_BUFFER_TYPE), "Set buffer type to ");
   varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::SET_BUFFER_SIZE), "Set buffer size to ");
   varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::SET_BUFFER_SIZE_FROM_TIME), "Setup buffer size from time");
   varsUi_.taskComboBox->setCurrentIndex(static_cast<int>(TaskList::ENABLE_ALL));
   taskChanged(static_cast<int>(TaskList::ENABLE_ALL));
-  varsUi_.valueSpinBox->setMinimumWidth(varsUi_.valueSpinBox->fontMetrics().width(QString("600.00 [sec]"))+30);
-
-
+  varsUi_.valueSpinBox->setMinimumWidth(varsUi_.valueSpinBox->fontMetrics().width(QString("(1) Save and Publish"))+30);
 
   /******************************
    * Connect ui forms to actions *
@@ -106,6 +106,7 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   connect(this, SIGNAL(parametersChanged()), this, SLOT(drawParamList()));
   connect(varsUi_.taskComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(taskChanged(int)));
   connect(varsUi_.applyButton, SIGNAL(pressed()), this, SLOT(applyButtonPressed()));
+  connect(varsUi_.valueSpinBox, SIGNAL(valueChanged(double)), this, SLOT(valueChanged(double)));
 
   connect(configureUi_.startLoggerButton, SIGNAL(pressed()), this, SLOT(startLogger()));
   connect(configureUi_.stopLoggerButton, SIGNAL(pressed()), this, SLOT(stopLogger()));
@@ -271,30 +272,81 @@ void SignalLoggerPlugin::taskChanged(int index) {
   // Restore Default
   varsUi_.valueSpinBox->setEnabled(true);
   varsUi_.valueSpinBox->setSuffix(QString::fromUtf8(""));
+  varsUi_.valueSpinBox->setPrefix(QString::fromUtf8(""));
+  varsUi_.valueSpinBox->setValue(0);
+  varsUi_.valueSpinBox->setMinimum(0);
+  varsUi_.valueSpinBox->setSingleStep(1);
+  varsUi_.valueSpinBox->setDecimals(0);
 
   // Change depending on type
   switch(index) {
     case static_cast<int>(TaskList::ENABLE_ALL):
     case static_cast<int>(TaskList::DISABLE_ALL):
       varsUi_.valueSpinBox->setEnabled(false);
-      varsUi_.valueSpinBox->setDecimals(0);
-      varsUi_.valueSpinBox->setValue(0);
+      break;
+    case static_cast<int>(TaskList::SET_BUFFER_TYPE):
+    case static_cast<int>(TaskList::SET_ACTION):
+      varsUi_.valueSpinBox->setPrefix(QString::fromUtf8("("));
+      valueChanged(0);
       break;
     case static_cast<int>(TaskList::SET_BUFFER_SIZE):
     case static_cast<int>(TaskList::SET_DIVIDER):
-      varsUi_.valueSpinBox->setDecimals(0);
-      varsUi_.valueSpinBox->setSingleStep(1.0);
       varsUi_.valueSpinBox->setRange(0.0, 100000.0);
       break;
     case static_cast<int>(TaskList::SET_BUFFER_SIZE_FROM_TIME):
       varsUi_.valueSpinBox->setSuffix(QString::fromUtf8(" [sec]"));
       varsUi_.valueSpinBox->setDecimals(2);
-      varsUi_.valueSpinBox->setSingleStep(0.05);
       varsUi_.valueSpinBox->setRange(0.0, 600.0);
       break;
     default:
       break;
   }
+}
+
+void SignalLoggerPlugin::valueChanged(double value) {
+  switch(varsUi_.taskComboBox->currentIndex()) {
+     case static_cast<int>(TaskList::SET_ACTION):
+       {
+         varsUi_.valueSpinBox->setValue(((int)roundf(value))%4);
+         switch(((int)roundf(value))%4) {
+           case static_cast<int>(LogElement::LogAction::NONE):
+              varsUi_.valueSpinBox->setSuffix(") None");
+              break;
+           case static_cast<int>(LogElement::LogAction::SAVE_AND_PUBLISH):
+              varsUi_.valueSpinBox->setSuffix(") Save and Publish");
+              break;
+           case static_cast<int>(LogElement::LogAction::SAVE):
+              varsUi_.valueSpinBox->setSuffix(") Save");
+              break;
+           case static_cast<int>(LogElement::LogAction::PUBLISH):
+              varsUi_.valueSpinBox->setSuffix(") Publish");
+              break;
+           default:
+              break;
+         }
+       }
+       break;
+     case static_cast<int>(TaskList::SET_BUFFER_TYPE):
+       {
+         varsUi_.valueSpinBox->setValue(((int)roundf(value))%3);
+         switch(((int)roundf(value))%3) {
+           case static_cast<int>(LogElement::BufferType::FIXED_SIZE):
+              varsUi_.valueSpinBox->setSuffix(") Fixed Size");
+              break;
+           case static_cast<int>(LogElement::BufferType::LOOPING):
+              varsUi_.valueSpinBox->setSuffix(") Looping");
+              break;
+           case static_cast<int>(LogElement::BufferType::EXPONENTIALLY_GROWING):
+              varsUi_.valueSpinBox->setSuffix(") Growing");
+              break;
+           default:
+              break;
+         }
+       }
+       break;
+     default:
+       break;
+   }
 }
 
 void SignalLoggerPlugin::applyButtonPressed() {
@@ -313,6 +365,16 @@ void SignalLoggerPlugin::applyButtonPressed() {
     case static_cast<int>(TaskList::SET_DIVIDER):
       for(auto & element : logElements_) {
         element->spinBoxDivider->setValue(varsUi_.valueSpinBox->value());
+      }
+      break;
+    case static_cast<int>(TaskList::SET_ACTION):
+      for(auto & element : logElements_) {
+        element->comboBoxLogType->setCurrentIndex((int)varsUi_.valueSpinBox->value());
+      }
+      break;
+    case static_cast<int>(TaskList::SET_BUFFER_TYPE):
+      for(auto & element : logElements_) {
+        element->comboBoxBufferType->setCurrentIndex((int)varsUi_.valueSpinBox->value());
       }
       break;
     case static_cast<int>(TaskList::SET_BUFFER_SIZE):

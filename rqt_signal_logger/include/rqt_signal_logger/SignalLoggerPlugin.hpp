@@ -50,6 +50,8 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
     ENABLE_ALL,
     DISABLE_ALL,
     SET_DIVIDER,
+    SET_ACTION,
+    SET_BUFFER_TYPE,
     SET_BUFFER_SIZE,
     SET_BUFFER_SIZE_FROM_TIME
   };
@@ -73,6 +75,7 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
     void loadYamlFile();
     void saveYamlFile();
     void taskChanged(int index);
+    void valueChanged(double value);
     void applyButtonPressed();
     void checkLoggerState();
 
