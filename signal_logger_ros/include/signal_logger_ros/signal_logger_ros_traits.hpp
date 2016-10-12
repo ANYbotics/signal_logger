@@ -32,7 +32,7 @@
 #include <signal_logger_msgs/CharStamped.h>
 
 #include "geometry_msgs/Vector3Stamped.h"
-#ifdef SIGNAL_LOGGER_USE_KINDR
+#ifdef SILO_USE_KINDR
 #include "kindr_msgs/VectorAtPosition.h"
 #endif
 namespace signal_logger_ros {
@@ -296,7 +296,7 @@ struct slr_traits<Eigen::Vector3d> {
 /********************************/
 
 
-#ifdef SIGNAL_LOGGER_USE_KINDR
+#ifdef SILO_USE_KINDR
 /********************************
  * Specializations: kindr types *
  ********************************/

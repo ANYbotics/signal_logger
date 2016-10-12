@@ -7,7 +7,7 @@
 
 #pragma once
 
-#ifdef SIGNAL_LOGGER_USE_KINDR
+#ifdef SILO_USE_KINDR
 // kindr
 #include <kindr/Core>
 #endif
@@ -32,7 +32,7 @@ typedef Eigen::Matrix< unsigned char ,Eigen::Dynamic, Eigen::Dynamic >  MatrixXU
 typedef Eigen::Matrix< bool ,Eigen::Dynamic, Eigen::Dynamic >           MatrixXb;
 typedef Eigen::Matrix< std::string ,Eigen::Dynamic, Eigen::Dynamic >    MatrixXstring;
 
-#ifdef SIGNAL_LOGGER_USE_KINDR
+#ifdef SILO_USE_KINDR
 
 // Kindr
 typedef kindr::Position3D             KindrPositionD;

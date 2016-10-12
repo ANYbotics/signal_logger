@@ -129,7 +129,7 @@
     MACRO(signal_logger::MatrixXb, BoolEigenMatrix, bool, Bool)
 
 
-#ifdef SIGNAL_LOGGER_USE_KINDR
+#ifdef SILO_USE_KINDR
 /**
  *  Calls macro for all supported kindr types
  *  @param MACRO macro the shall be applied to every data type
@@ -155,7 +155,7 @@
  *  Calls macro for all supported types
  *  @param MACRO macro the shall be applied to every data type
  */
-#ifdef SIGNAL_LOGGER_USE_KINDR
+#ifdef SILO_USE_KINDR
 #define FOR_ALL_TYPES(MACRO) \
     FOR_PRIMITIVE_TYPES(MACRO)\
     FOR_EIGEN_TYPES(MACRO)\

@@ -16,7 +16,7 @@ namespace signal_logger_std {
 
 namespace traits {
 
-#ifdef SIGNAL_LOGGER_USE_KINDR
+#ifdef SILO_USE_KINDR
 template<typename>
 struct is_kindr_vector : std::false_type {};
 
@@ -161,7 +161,7 @@ struct sls_traits<ValueType_, typename std::enable_if<is_eigen_angle_axis<ValueT
   }
 };
 
-#ifdef SIGNAL_LOGGER_USE_KINDR
+#ifdef SILO_USE_KINDR
 //! Trait for Kindr vectors length 3
 template <typename ValueType_>
 struct sls_traits<ValueType_, typename std::enable_if<is_kindr_vector<ValueType_>::value && ValueType_::Dimension == 3>::type>
