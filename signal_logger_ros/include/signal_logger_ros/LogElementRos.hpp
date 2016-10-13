@@ -22,8 +22,8 @@ template <typename ValueType_>
 class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
 {
   //! convinience typedefs
-  using MsgType = typename traits::slr_traits<ValueType_>::msgtype;
-  using MsgTypePtr = typename traits::slr_traits<ValueType_>::msgtypePtr;
+  using MsgType = typename traits::slr_msg_traits<ValueType_>::msgtype;
+  using MsgTypePtr = typename traits::slr_msg_traits<ValueType_>::msgtypePtr;
 
  public:
   LogElementRos(ValueType_ * ptr,
@@ -60,7 +60,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
       if( (publishCount_*this->getDivider()) < time.getBufferSize()) {
         signal_logger::TimestampPair tsp_now = time.getNthTimestep(publishCount_*this->getDivider());
         ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
-        traits::slr_traits<ValueType_>::updateMsg(&data, msg_, now);
+        traits::slr_update_traits<ValueType_>::updateMsg(&data, msg_, now);
         pub_.publish(msg_);
         ++publishCount_;
       }

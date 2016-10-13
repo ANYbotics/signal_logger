@@ -49,6 +49,14 @@ typedef kindr::Force3D                KindrForceD;
 typedef kindr::Torque3D               KindrTorqueD;
 typedef kindr::VectorTypeless3D       KindrVectorD;
 
+template<typename VectorType_>
+struct KindrVectorAtPosition {
+  VectorType_ vector;
+  KindrPositionD position;
+};
+
+
+
 #endif
 
 }

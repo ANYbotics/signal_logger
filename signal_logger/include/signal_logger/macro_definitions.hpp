@@ -157,6 +157,28 @@
 
 #ifdef SILO_USE_KINDR
 /**
+ *  Calls macro for all supported kindr vector types
+ *  @param MACRO macro the shall be applied to every data type
+ */
+#define FOR_KINDR_VECTORS(MACRO) \
+    MACRO(signal_logger::KindrLinearVelocityD, DoubleKindrLinearVelocity)\
+    MACRO(signal_logger::KindrLinearAccelerationD, DoubleKindrLinearAcceleration)\
+    MACRO(signal_logger::KindrForceD, DoubleKindrForce)\
+    MACRO(signal_logger::KindrTorqueD, DoubleKindrTorque)\
+    MACRO(signal_logger::KindrVectorD, DoubleKindrVector)
+
+/**
+ *  Calls macro for all supported kindr vector types at position
+ *  @param MACRO macro the shall be applied to every data type
+ */
+#define FOR_KINDR_VECTOR_AT_POSITION(MACRO) \
+    MACRO(signal_logger::KindrVectorAtPosition<signal_logger::KindrLinearVelocityD>, DoubleKindrLinearVelocityAtPosition)\
+    MACRO(signal_logger::KindrVectorAtPosition<signal_logger::KindrLinearAccelerationD>, DoubleKindrLinearAccelerationAtPosition)\
+    MACRO(signal_logger::KindrVectorAtPosition<signal_logger::KindrForceD>, DoubleKindrForceAtPosition)\
+    MACRO(signal_logger::KindrVectorAtPosition<signal_logger::KindrTorqueD>, DoubleKindrTorqueAtPosition)\
+    MACRO(signal_logger::KindrVectorAtPosition<signal_logger::KindrVectorD>, DoubleKindrVectorAtPosition)
+
+/**
  *  Calls macro for all supported kindr types
  *  @param MACRO macro the shall be applied to every data type
  */
@@ -168,13 +190,9 @@
     MACRO(signal_logger::KindrAngleAxisD, DoubleKindrAngleAxis)\
     MACRO(signal_logger::KindrRotationMatrixD, DoubleKindrRotationMatrix)\
     MACRO(signal_logger::KindrRotationVectorD, DoubleKindrRotationVector)\
-    MACRO(signal_logger::KindrLinearVelocityD, DoubleKindrLinearVelocity)\
-    MACRO(signal_logger::KindrLinearAccelerationD, DoubleKindrLinearAcceleration)\
     MACRO(signal_logger::KindrAngularAccelerationD, DoubleKindrAngularAcceleration)\
-    MACRO(signal_logger::KindrForceD, DoubleKindrForce)\
-    MACRO(signal_logger::KindrTorqueD, DoubleKindrTorque)\
-    MACRO(signal_logger::KindrVectorD, DoubleKindrVector)
-
+    FOR_KINDR_VECTORS(MACRO)\
+    FOR_KINDR_VECTOR_AT_POSITION(MACRO)
 #endif
 
 /**
