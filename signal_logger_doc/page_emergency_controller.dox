@@ -1,0 +1,45 @@
+/*! \page page_emergency_controller Emergency Controller
+
+This page assumes you have understood <a href="page_controller.html">how to implement a standard controller</a>.
+
+<H3>Emergency Controller Adaptee Implementation</H3>
+In addition to a standard controller emergency controllers additionally inherit from <BR> roco::EmergencyControllerAdapteeInterface. This adds a fast initialization
+method that is needed when an emergency stop occurs.
+\code{c}
+#include "roco/controllers/controllers.hpp"
+namespace my_emergency_controller {
+class MyEmergencyController: virtual public roco::Controller<my_model::State, my_model::Command>, public roco::EmergencyControllerAdapteeInterface {
+\endcode
+
+In addition to the standard controller functions the following functions have to be implemented.
+\code{c}
+ ...
+ virtual bool initializeFast(double dt);
+}; // end class
+}  // end namespace
+\endcode
+
+<H3>Export Emergency Controller as a Plugin</H3>
+In order to use the plugin mechanism of the following three steps are required.
+
+<H4>1. Export emergency controller via macro </H4>
+ROCOMA_EXPORT_CONTROLLER is replaced by ROCOMA_EXPORT_EMERGENCY_CONTROLLER when implementing an emergency controller.
+\code{c}
+#include "rocoma_plugin/rocoma_plugin.hpp"
+ROCOMA_EXPORT_EMERGENCY_CONTROLLER(MyEmergencyControllerPlugin, my_model::State, my_model::Command, my_emergency_controller::MyEmergencyController)
+\endcode
+NOTE:
+ - A controller can be exported as emergency controller and standard controller by using both macros in the source file.
+
+<H4>2. Add a plugin description file </H4>
+Compared to standard controllers a different base class type rocoma_plugin::EmergencyControllerPluginInterface is used.
+\code{xml}
+<library path="lib/libmy_emergency_controller">
+  <class type="MyEmergencyControllerPlugin" base_class_type="rocoma_plugin::EmergencyControllerPluginInterface<my_model::State, my_model::Command>">
+  </class>
+</library>
+\endcode
+
+<H4>3. Export the plugin description file </H4>
+<a href="page_controller.html">See standard controllers</a>
+*/

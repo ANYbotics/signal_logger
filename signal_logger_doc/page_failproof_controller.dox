@@ -1,0 +1,52 @@
+/*! \page page_failproof_controller Failproof controller
+
+This page assumes you have understood <a href="page_controller.html">how to implement a standard controller</a>.
+
+<H3>Failproof Controller Adaptee Implementation</H3>
+Every failproof controller that shall be managed by rocoma has to inherit from roco::FailproofController.
+\code{c}
+#include "roco/controllers/controllers.hpp"
+namespace my_failproof_controller {
+class MyFailproofController: virtual public roco::FailproofController<my_model::State, my_model::Command> {
+\endcode
+
+A failproof controller has no access to roco::ControllerExtensionInterface, because failproof controllers should not add worker or the like.
+Failproof controllers can never fail and should not throw exceptions, since there is no possible way of handling them.
+Ideally the failproof controller only sets the commands to a certain shutoff/freeze mode. A failproof controller has to implement
+the roco::FailproofControllerAdapteeInterface.
+
+Thus following functions have to be implemented.
+\code{c}
+  // Adaptee Implementation
+  protected:
+   virtual bool create(double dt);
+   virtual void advance(double dt);
+   virtual bool cleanup();
+}; // end class
+}  // end namespace
+\endcode
+
+<H3>Export Failproof Controller as a Plugin</H3>
+In order to use the plugin mechanism of rocoma the following three steps are required.
+
+<H4>1. Export failproof controller via macro </H4>
+\code{c}
+#include "rocoma_plugin/rocoma_plugin.hpp"
+ROCOMA_EXPORT_FAILPROOF_CONTROLLER(MyFailproofControllerPlugin, my_model::State, my_model::Command, my_failproof_controller::MyFailproofController)
+\endcode
+NOTE:
+ - A failproof controller can not be exported as emergency or standard controller, because advance uses a different return type.
+
+<H4>2. Add a plugin description file </H4>
+Compared to standard controllers a different base class type rocoma_plugin::FailproofControllerPluginInterface is used.
+\code{xml}
+<library path="lib/libmy_failproof_controller">
+  <class type="MyFailproofControllerPlugin" base_class_type="rocoma_plugin::FailproofControllerPluginInterface<my_model::State, my_model::Command>">
+  </class>
+</library>
+\endcode
+
+<H4>3. Export the plugin description file </H4>
+<a href="page_controller.html">See standard controllers</a>
+
+*/

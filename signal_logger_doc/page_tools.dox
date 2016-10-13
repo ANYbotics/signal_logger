@@ -1,0 +1,15 @@
+/*! \page page_tools Tools
+
+<H3>Check plugin generation</H3>
+To get all plugins that are currently registered as rocoma plugins can be listed with the following command.
+\code{bash}
+rospack plugins --attrib=plugin rocoma_plugin
+\endcode
+NOTE:
+  - source the workspace before checking
+
+<H3>Build / Clean Controllers individually</H3>
+Using catkin tools controllers can be built and cleaned individually. However, cleaning the controller will not remove
+the exported plugin description file. When you try to add the cleaned controller to the
+controller manager, this will no longer work. The error message will differ from the error message of a controller that was never built before.
+*/

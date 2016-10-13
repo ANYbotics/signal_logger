@@ -1,0 +1,74 @@
+/*! \page page_controller_manager Controller Manager
+
+This page describes the behaviour of the controller manager.
+
+<H3>Add failproof controller</H3>
+ABORT if failproof controller:
+ - is nullptr
+ - can not be created
+
+<H3>Add a controller pair</H3>
+ - The controller pair is not added if:
+  - controller is nullptr
+  - a controller with the same name already exists
+  - controller can not be created
+ - The controller pair is added without 1st layer emergency controller (failproof controller is used directly on emergency stop) if:
+  - emergency controller is nullptr
+  - emergency controller can not be created
+ - If emergency controller with the same name already exists, no additional instance is created, the same emergency controller is used for multiple controllers
+
+<H3>Emergency stop procedure if state OK</H3>
+If the emergency controller is idle switch to the emergency controller and stop the controller in a different thread.
+<table>
+<caption id="multi_row">Table 1a: Emergency Stop on OK state</caption>
+<tr><th>Thread 1                      <th>Thread 2
+<tr><td>controller.advanceController(dt)\n returns false --> emcy stop <td>
+<tr><td>emcy_controller.initializeControllerFast(dt) <td rowspan="3">controller.preStop()\n controller.stop()
+<tr><td>emcy_controller.advanceController(dt)
+<tr><td>emcy_controller.advanceController(dt)
+<tr><td>emcy_controller.advanceController(dt) <td>
+</table>
+If either the emergency controller is currently in being stopped or no 1st layer emergency controller exists, the controller manager directly advances the failproof controller.
+<table>
+<caption id="multi_row">Table 1b: Emergency Stop on OK state, emcy controller stopping</caption>
+<tr><th>Thread 1                      <th>Thread 2        <th>Thread 3
+<tr><td>controller.advanceController(dt)\n returns false --> emcy stop <td>  <td rowspan="3"> emcy_controller.preStop()\n emcy_controller.stop()
+<tr><td>failproof_controller.advanceController(dt) <td rowspan="3">controller.preStop()\n controller.stop()
+<tr><td>failproof_controller.advanceController(dt)
+<tr><td>failproof_controller.advanceController(dt) <td rowspan="2">
+<tr><td>failproof_controller.advanceController(dt) <td>
+</table>
+
+<H3>Emergency stop procedure if state EMERGENCY</H3>
+When the emergency controller is already running we switch to the failproof controller directly.
+<table>
+<caption id="multi_row">Table 2: Emergency Stop on EMERGENCY state</caption>
+<tr><th>Thread 1                      <th>Thread 2
+<tr><td>emcy_controller.advanceController(dt)\n returns false --> emcy stop <td>
+<tr><td>failproof_controller.advanceController(dt) <td rowspan="3">emcy_controller.preStop()\n emcy_controller.stop()
+<tr><td>failproof_controller.advanceController(dt)
+<tr><td>failproof_controller.advanceController(dt)
+<tr><td>failproof_controller.advanceController(dt) <td>
+</table>
+
+<H3>Switch Controller procedure</H3>
+Switching the controller is done in a seperate thread. Advance and switch controller could be called within the same thread and no timing issues should arise.
+<table>
+<caption id="multi_row">Table 3: Controller switching to controller2 </caption>
+<tr><th>Thread 1                      <th>Thread 2
+<tr><td>controller.advanceController(dt)\n switchController(controller2)  <td>
+<tr><td>controller.advanceController(dt) <td rowspan="2"> controller.preStop()
+<tr><td>controller.advanceController(dt)
+<tr><td>controller.advanceController(dt) <td> while(controller2.isBeingStopped()){}
+<tr><td>controller.advanceController(dt) <td rowspan="3"> controller2.initializeController(dt)
+<tr><td>controller.advanceController(dt)
+<tr><td>controller.advanceController(dt)
+<tr><td>controller.advanceController(dt) <td> switch active controller to controller2
+<tr><td>controller2.advanceController(dt) <td rowspan="2"> controller.stop()
+<tr><td>controller2.advanceController(dt)
+<tr><td>controller2.advanceController(dt) <td>
+</table>
+
+
+
+*/
