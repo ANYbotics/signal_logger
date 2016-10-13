@@ -10,23 +10,22 @@
 
 namespace signal_logger_ros {
 
-SignalLoggerRos::SignalLoggerRos():
+SignalLoggerRos::SignalLoggerRos(ros::NodeHandle * nh):
                                 signal_logger_std::SignalLoggerStd(),
-                                nh_()
+                                nh_(nh)
 {
-  getLoggerConfigurationService_ = nh_.advertiseService("/sl_ros/get_logger_configuration", &SignalLoggerRos::getLoggerConfiguration, this);
-  getLoggerElementService_ = nh_.advertiseService("/sl_ros/get_logger_element", &SignalLoggerRos::getLoggerElement, this);
-  setLoggerElementService_ = nh_.advertiseService("/sl_ros/set_logger_element", &SignalLoggerRos::setLoggerElement, this);
-  startLoggerService_ = nh_.advertiseService("/sl_ros/start_logger", &SignalLoggerRos::startLogger, this);
-  stopLoggerService_ = nh_.advertiseService("/sl_ros/stop_logger", &SignalLoggerRos::stopLogger, this);
-  saveLoggerDataService_ = nh_.advertiseService("/sl_ros/save_logger_data", &SignalLoggerRos::saveLoggerData, this);
-  loadLoggerScriptService_ = nh_.advertiseService("/sl_ros/load_logger_script", &SignalLoggerRos::loadLoggerScript, this);
-  isLoggerRunningService_  =  nh_.advertiseService("/sl_ros/is_logger_running", &SignalLoggerRos::isLoggerRunning, this);
+  getLoggerConfigurationService_ = nh_->advertiseService("/sl_ros/get_logger_configuration", &SignalLoggerRos::getLoggerConfiguration, this);
+  getLoggerElementService_ = nh_->advertiseService("/sl_ros/get_logger_element", &SignalLoggerRos::getLoggerElement, this);
+  setLoggerElementService_ = nh_->advertiseService("/sl_ros/set_logger_element", &SignalLoggerRos::setLoggerElement, this);
+  startLoggerService_ = nh_->advertiseService("/sl_ros/start_logger", &SignalLoggerRos::startLogger, this);
+  stopLoggerService_ = nh_->advertiseService("/sl_ros/stop_logger", &SignalLoggerRos::stopLogger, this);
+  saveLoggerDataService_ = nh_->advertiseService("/sl_ros/save_logger_data", &SignalLoggerRos::saveLoggerData, this);
+  loadLoggerScriptService_ = nh_->advertiseService("/sl_ros/load_logger_script", &SignalLoggerRos::loadLoggerScript, this);
+  isLoggerRunningService_  =  nh_->advertiseService("/sl_ros/is_logger_running", &SignalLoggerRos::isLoggerRunning, this);
 }
 
 SignalLoggerRos::~SignalLoggerRos()
 {
-
 }
 
 bool SignalLoggerRos::getLoggerConfiguration(signal_logger_msgs::GetLoggerConfigurationRequest& req,
@@ -195,6 +194,22 @@ bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg
 
   return true;
 }
+
+bool SignalLoggerRos::cleanup() {
+  signal_logger::SignalLoggerBase::cleanup();
+
+  getLoggerConfigurationService_.shutdown();
+  getLoggerElementService_.shutdown();
+  setLoggerElementService_.shutdown();
+  startLoggerService_.shutdown();
+  stopLoggerService_.shutdown();
+  saveLoggerDataService_.shutdown();
+  loadLoggerScriptService_.shutdown();
+  isLoggerRunningService_.shutdown();
+  nh_ = nullptr;
+  return true;
+}
+
 
 
 

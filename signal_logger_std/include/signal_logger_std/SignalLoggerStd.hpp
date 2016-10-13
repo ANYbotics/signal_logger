@@ -21,7 +21,7 @@ namespace signal_logger_std {
 class SignalLoggerStd : public signal_logger::SignalLoggerBase
 {
  public:
-  SignalLoggerStd(const std::string & loggerPrefix = signal_logger::LOGGER_DEFAULT_PREFIX);
+  SignalLoggerStd(const std::string & loggerPrefix = std::string{signal_logger::SignalLoggerBase::LOGGER_DEFAULT_PREFIX});
   virtual ~SignalLoggerStd();
 
   //! Save all the buffered data into a log file

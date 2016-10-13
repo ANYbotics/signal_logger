@@ -38,7 +38,7 @@
                            const std::size_t bufferSize, \
                            const signal_logger::BufferType bufferType) \
     { \
-      std::string elementName = signal_logger::LOGGER_DEFAULT_PREFIX + "/" + group + "/" + name; \
+      std::string elementName = std::string{signal_logger::SignalLoggerBase::LOGGER_DEFAULT_PREFIX} + "/" + group + "/" + name; \
       logElements_[elementName].reset(new signal_logger_std::LogElementStd<TYPE>(const_cast<TYPE*>(&var), elementName , \
               unit, divider, action, bufferSize, bufferType, &headerStream_, &dataStream_)); \
     } /*

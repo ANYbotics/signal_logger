@@ -23,7 +23,7 @@ namespace signal_logger_ros {
 class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
 {
  public:
-  SignalLoggerRos();
+  SignalLoggerRos(ros::NodeHandle * nh);
   virtual ~SignalLoggerRos();
 
   //! @return the logger type
@@ -58,11 +58,13 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
 
   bool msgToLogElement(const signal_logger_msgs::LogElement & msg);
 
+  virtual bool cleanup();
+
  protected:
   FOR_ALL_TYPES(ADD_ROS_VAR_IMPLEMENTATION);
 
  private:
-  ros::NodeHandle nh_;
+  ros::NodeHandle* nh_;
   ros::ServiceServer getLoggerConfigurationService_;
   ros::ServiceServer getLoggerElementService_;
   ros::ServiceServer setLoggerElementService_;

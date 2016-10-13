@@ -29,20 +29,22 @@ namespace signal_logger {
 // Forward log element action to signal logger namespace
 using LogPair = std::pair<std::string, std::shared_ptr<signal_logger::LogElementInterface>>;
 
-// Some logger element defaults
-const std::string LOG_ELEMENT_DEFAULT_GROUP_NAME   = "/log/";
-const std::string LOG_ELEMENT_DEFAULT_UNIT         = "-";
-const std::size_t LOG_ELEMENT_DEFAULT_DIVIDER      = 1;
-const LogElementAction LOG_ELEMENT_DEFAULT_ACTION  = LogElementAction::NONE;
-const std::size_t LOG_ELEMENT_DEFAULT_BUFFER_SIZE  = 0;
-const BufferType LOG_ELEMENT_DEFAULT_BUFFER_TYPE   = BufferType::FIXED_SIZE;
 
-// Some logger defaults
-const std::string LOGGER_DEFAULT_SCRIPT_FILENAME   = "logger.yaml";
-const std::string LOGGER_DEFAULT_PREFIX            = "/log";
 
 //! Class that severs as base class for all the loggers
 class SignalLoggerBase {
+ public:
+  // Some logger element defaults
+  static constexpr const char* LOG_ELEMENT_DEFAULT_GROUP_NAME   = "/log/";
+  static constexpr const char* LOG_ELEMENT_DEFAULT_UNIT         = "-";
+  static constexpr std::size_t LOG_ELEMENT_DEFAULT_DIVIDER      = 1;
+  static constexpr LogElementAction LOG_ELEMENT_DEFAULT_ACTION  = LogElementAction::NONE;
+  static constexpr std::size_t LOG_ELEMENT_DEFAULT_BUFFER_SIZE  = 0;
+  static constexpr BufferType LOG_ELEMENT_DEFAULT_BUFFER_TYPE   = BufferType::FIXED_SIZE;
+
+  // Some logger defaults
+  static constexpr const char* LOGGER_DEFAULT_SCRIPT_FILENAME   = "logger.yaml";
+  static constexpr const char* LOGGER_DEFAULT_PREFIX            = "/log";
 
  public:
   //! Get the logger type at runtime
@@ -93,6 +95,9 @@ class SignalLoggerBase {
 
   //! Stop the logger and save all the buffered data into a log file
   virtual bool stopAndSaveLoggerData();
+
+  //! Cleanup logger
+  virtual bool cleanup();
 
   //! @return the logger type
   virtual LoggerType getLoggerType() const = 0;

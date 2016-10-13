@@ -35,7 +35,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
                 const signal_logger::BufferType bufferType,
                 std::stringstream * headerStream,
                 std::stringstream * dataStream,
-                const ros::NodeHandle & nh) :
+                ros::NodeHandle * nh) :
       signal_logger_std::LogElementStd<ValueType_>(ptr, name, unit, divider, action, bufferSize, bufferType, headerStream, dataStream),
       nh_(nh),
       pub_(),
@@ -79,7 +79,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   void initializeElement() override
   {
     signal_logger_std::LogElementStd<ValueType_>::initializeElement();
-    pub_ = nh_.advertise<MsgType>(this->getName(), 1);
+    pub_ = nh_->advertise<MsgType>(this->getName(), 1);
   }
 
   void shutdownElement() override
@@ -90,7 +90,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
 
  protected:
   //! ros nodehandle
-  ros::NodeHandle nh_;
+  ros::NodeHandle * nh_;
   //! ros publisher
   ros::Publisher pub_;
   //! message pointer

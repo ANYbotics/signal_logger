@@ -217,6 +217,17 @@ bool SignalLoggerBase::stopAndSaveLoggerData()
   return this->stopLogger() && this->saveLoggerData();
 }
 
+bool SignalLoggerBase::cleanup()
+{
+  // Publish data from buffer
+  for(auto & elem : logElements_)
+  {
+    elem.second->shutdownElement();
+  }
+  return true;
+}
+
+
 bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
 {
   if (!isInitialized_ || isCollectingData_) {
