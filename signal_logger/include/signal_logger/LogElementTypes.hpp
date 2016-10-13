@@ -52,10 +52,10 @@ typedef kindr::VectorTypeless3D       KindrVectorD;
 template<typename VectorType_>
 struct KindrVectorAtPosition {
   VectorType_ vector;
+  std::string vectorFrame;
   KindrPositionD position;
+  std::string positionFrame;
 };
-
-
 
 #endif
 

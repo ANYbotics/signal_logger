@@ -150,8 +150,8 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_angle_axis<Va
 
 template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-                                                      && std::is_same<typename ValueType_::Scalar, double>::value
-                                                      && !std::is_same<ValueType_, Eigen::Vector3d>::value>::type> {
+&& std::is_same<typename ValueType_::Scalar, double>::value
+&& !std::is_same<ValueType_, Eigen::Vector3d>::value>::type> {
   typedef signal_logger_msgs::Float64MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Float64MultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::Float64MultiArrayStampedConstPtr msgtypeConstPtr;
@@ -159,7 +159,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen:
 
 template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-                                                      && std::is_same<typename ValueType_::Scalar, float>::value>::type> {
+&& std::is_same<typename ValueType_::Scalar, float>::value>::type> {
   typedef signal_logger_msgs::Float32MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Float32MultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::Float32MultiArrayStampedConstPtr msgtypeConstPtr;
@@ -167,7 +167,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen:
 
 template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-                                                      && std::is_same<typename ValueType_::Scalar, long>::value>::type> {
+&& std::is_same<typename ValueType_::Scalar, long>::value>::type> {
   typedef signal_logger_msgs::Int64MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Int64MultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::Int64MultiArrayStampedConstPtr msgtypeConstPtr;
@@ -175,7 +175,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen:
 
 template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-                                                      && std::is_same<typename ValueType_::Scalar, int>::value>::type> {
+&& std::is_same<typename ValueType_::Scalar, int>::value>::type> {
   typedef signal_logger_msgs::Int32MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Int32MultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::Int32MultiArrayStampedConstPtr msgtypeConstPtr;
@@ -183,7 +183,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen:
 
 template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-                                                      && std::is_same<typename ValueType_::Scalar, short>::value>::type> {
+&& std::is_same<typename ValueType_::Scalar, short>::value>::type> {
   typedef signal_logger_msgs::Int16MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Int16MultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::Int16MultiArrayStampedConstPtr msgtypeConstPtr;
@@ -191,7 +191,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen:
 
 template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-                                                      && std::is_same<typename ValueType_::Scalar, char>::value>::type> {
+&& std::is_same<typename ValueType_::Scalar, char>::value>::type> {
   typedef signal_logger_msgs::Int8MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Int8MultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::Int8MultiArrayStampedConstPtr msgtypeConstPtr;
@@ -199,7 +199,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen:
 
 template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-                                                      && std::is_same<typename ValueType_::Scalar, unsigned char>::value>::type> {
+&& std::is_same<typename ValueType_::Scalar, unsigned char>::value>::type> {
   typedef signal_logger_msgs::Int8MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Int8MultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::Int8MultiArrayStampedConstPtr msgtypeConstPtr;
@@ -207,7 +207,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen:
 
 template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-                                                      && std::is_same<typename ValueType_::Scalar, bool>::value>::type> {
+&& std::is_same<typename ValueType_::Scalar, bool>::value>::type> {
   typedef signal_logger_msgs::BoolMultiArrayStamped         msgtype;
   typedef signal_logger_msgs::BoolMultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::BoolMultiArrayStampedConstPtr msgtypeConstPtr;
@@ -220,12 +220,12 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen:
 #ifdef SILO_USE_KINDR
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<is_kindr_vector<ValueType_>::value && ValueType_::Dimension == 3>::type>
-{
-  typedef geometry_msgs::Vector3Stamped         msgtype;
-  typedef geometry_msgs::Vector3StampedPtr      msgtypePtr;
-  typedef geometry_msgs::Vector3StampedConstPtr msgtypeConstPtr;
-};
+ struct slr_msg_traits<ValueType_, typename std::enable_if<is_kindr_vector<ValueType_>::value && ValueType_::Dimension == 3>::type>
+ {
+   typedef geometry_msgs::Vector3Stamped         msgtype;
+   typedef geometry_msgs::Vector3StampedPtr      msgtypePtr;
+   typedef geometry_msgs::Vector3StampedConstPtr msgtypeConstPtr;
+ };
 
 //! Trait for Kindr rotations
 template <typename ValueType_>
@@ -389,33 +389,28 @@ template <typename ValueType_>
 struct slr_update_traits<ValueType_, typename std::enable_if<is_kindr_vector_at_position<ValueType_>::value>::type> {
   static void updateMsg(const ValueType_* vectorPtr_, typename slr_msg_traits<ValueType_>::msgtypePtr msg, const ros::Time& timeStamp) {
     msg->header.stamp = timeStamp;
-    msg->header.frame_id = " ";
+    msg->header.frame_id = vectorPtr_->vectorFrame;
     msg->vector.x = vectorPtr_->vector.x();
     msg->vector.y = vectorPtr_->vector.y();
     msg->vector.z = vectorPtr_->vector.z();
     msg->position.x = vectorPtr_->position.x();
     msg->position.y = vectorPtr_->position.y();
     msg->position.z = vectorPtr_->position.z();
-    msg->position_frame_id = " ";
+    msg->position_frame_id = vectorPtr_->positionFrame;
     msg->name = " ";
     msg->type = getType();
   }
 
   static int getType()
   {
-    switch(typeid(ValueType_))
-    {
-      case typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrLinearAccelerationD>):
-        return kindr_msgs::VectorAtPosition::TYPE_ACCELERATION;
-      case typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrLinearVelocityD>):
-        return kindr_msgs::VectorAtPosition::TYPE_VELOCITY;
-      case typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrForceD>):
-        return kindr_msgs::VectorAtPosition::TYPE_FORCE;
-      case typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrTorqueD>):
-        return kindr_msgs::VectorAtPosition::TYPE_TORQUE;
-      case typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrVectorD>):
-        return kindr_msgs::VectorAtPosition::TYPE_TYPELESS;
-    }
+    if( typeid(ValueType_) == typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrLinearAccelerationD>) )
+      return kindr_msgs::VectorAtPosition::TYPE_ACCELERATION;
+    if( typeid(ValueType_) == typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrLinearVelocityD>) )
+      return kindr_msgs::VectorAtPosition::TYPE_VELOCITY;
+    if( typeid(ValueType_) == typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrForceD>) )
+      return kindr_msgs::VectorAtPosition::TYPE_FORCE;
+    if( typeid(ValueType_) == typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrTorqueD>) )
+      return kindr_msgs::VectorAtPosition::TYPE_TORQUE;
 
     return kindr_msgs::VectorAtPosition::TYPE_TYPELESS;
   }
