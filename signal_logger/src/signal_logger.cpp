@@ -1,0 +1,19 @@
+/**
+* @file 	  signal_logger.cpp
+* @author 	Christian Gehring, C. Dario Bellicoso, Gabriel Hottiger
+* @date		  June 26, 2013
+*/
+
+// signal_logger
+#include "signal_logger/signal_logger.hpp"
+#include "signal_logger/SignalLoggerNone.hpp"
+
+// STL
+#include <memory>
+
+namespace signal_logger {
+
+//! Initialize logger with standard logger.
+std::shared_ptr<SignalLoggerBase> logger(new SignalLoggerNone());
+
+} /* namespace signal_logger */

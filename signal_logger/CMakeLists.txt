@@ -38,6 +38,7 @@ endif()
 
 add_library(${PROJECT_NAME} SHARED
   src/SignalLoggerBase.cpp
+  src/signal_logger.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
