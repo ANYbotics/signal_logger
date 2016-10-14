@@ -30,6 +30,8 @@
 // System
 #include <sys/stat.h>
 
+namespace rqt_signal_logger {
+
 static bool compareNoCase( const std::string& s1, const std::string& s2 ) {
   return strcasecmp( s1.c_str(), s2.c_str() ) <= 0;
 }
@@ -511,6 +513,6 @@ void SignalLoggerPlugin::statusMessage(std::string message, MessageType type, do
   configureUi_.statusbar->showMessage(QString::fromStdString(message), displaySeconds*1000);
 }
 
-PLUGINLIB_DECLARE_CLASS(rqt_signal_logger, SignalLoggerPlugin, SignalLoggerPlugin, rqt_gui_cpp::Plugin)
+}
 
-
+PLUGINLIB_DECLARE_CLASS(rqt_signal_logger, SignalLoggerPlugin, rqt_signal_logger::SignalLoggerPlugin, rqt_gui_cpp::Plugin)

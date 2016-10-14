@@ -14,6 +14,8 @@
 // Stl
 #include <math.h>
 
+namespace rqt_signal_logger {
+
 BufferIndicator::BufferIndicator(QWidget* parent) :
   QWidget(parent),
   alignment_(Qt::AlignCenter),
@@ -166,5 +168,7 @@ void BufferIndicator::paintEvent(QPaintEvent *event)
   // Draw inner circle with background color
   p.setBrush(QBrush(QWidget::palette().color(QWidget::backgroundRole())));
   p.drawEllipse(innerBox);
+
+}
 
 }

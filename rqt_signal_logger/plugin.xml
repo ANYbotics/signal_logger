@@ -1,5 +1,5 @@
 <library path="lib/librqt_signal_logger">
-    <class name="SignalLoggerPlugin" type="SignalLoggerPlugin" base_class_type="rqt_gui_cpp::Plugin">
+    <class name="SignalLoggerPlugin" type="rqt_signal_logger::SignalLoggerPlugin" base_class_type="rqt_gui_cpp::Plugin">
         <description>
             An interface for signal_logger.
         </description>

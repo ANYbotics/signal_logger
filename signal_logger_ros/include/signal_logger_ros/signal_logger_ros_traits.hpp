@@ -8,6 +8,7 @@
 #pragma once
 
 #include "signal_logger/LogElementTypes.hpp"
+#include "signal_logger/signal_logger_traits.hpp"
 
 #include "geometry_msgs/WrenchStamped.h"
 #include "geometry_msgs/QuaternionStamped.h"
@@ -39,28 +40,7 @@ namespace signal_logger_ros {
 
 namespace traits {
 
-// Type traits
-#ifdef SILO_USE_KINDR
-template<typename>
-struct is_kindr_vector : std::false_type {};
-
-template<enum kindr::PhysicalType PhysicalType_, typename PrimType_, int Dimension_>
-struct is_kindr_vector<kindr::Vector<PhysicalType_,PrimType_, Dimension_>> : std::true_type {};
-
-template<typename>
-struct is_kindr_vector_at_position : std::false_type {};
-
-template<enum kindr::PhysicalType PhysicalType_, typename PrimType_, int Dimension_>
-struct is_kindr_vector_at_position<signal_logger::KindrVectorAtPosition<kindr::Vector<PhysicalType_,PrimType_, Dimension_>>> : std::true_type {};
-#endif
-
-template<typename>
-struct is_eigen_angle_axis : std::false_type {};
-
-template<typename PrimType_>
-struct is_eigen_angle_axis<Eigen::AngleAxis<PrimType_>> : std::true_type {};
-
-
+using namespace signal_logger::traits;
 
 // generic interface
 template<typename ValueType_, typename Enable_ = void> struct slr_msg_traits;
@@ -121,8 +101,8 @@ struct slr_msg_traits<bool> {
 /***************************************************
  * Specializations: Time stamp pair                *
  ***************************************************/
-template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_same<signal_logger::TimestampPair, ValueType_>::value>::type>
+template<>
+struct slr_msg_traits<signal_logger::TimestampPair>
 {
   typedef std_msgs::Time         msgtype;
   typedef std_msgs::TimePtr      msgtypePtr;
@@ -141,6 +121,14 @@ struct slr_msg_traits<Eigen::Vector3d> {
 };
 
 template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_quaternion<ValueType_>::value>::type>
+{
+  typedef geometry_msgs::QuaternionStamped         msgtype;
+  typedef geometry_msgs::QuaternionStampedPtr      msgtypePtr;
+  typedef geometry_msgs::QuaternionStampedConstPtr msgtypeConstPtr;
+};
+
+template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_angle_axis<ValueType_>::value>::type>
 {
   typedef signal_logger_msgs::Float64MultiArrayStamped         msgtype;
@@ -149,65 +137,64 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_angle_axis<Va
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-&& std::is_same<typename ValueType_::Scalar, double>::value
-&& !std::is_same<ValueType_, Eigen::Vector3d>::value>::type> {
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, double>::value>::type>
+{
   typedef signal_logger_msgs::Float64MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Float64MultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::Float64MultiArrayStampedConstPtr msgtypeConstPtr;
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-&& std::is_same<typename ValueType_::Scalar, float>::value>::type> {
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, float>::value>::type>
+{
   typedef signal_logger_msgs::Float32MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Float32MultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::Float32MultiArrayStampedConstPtr msgtypeConstPtr;
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-&& std::is_same<typename ValueType_::Scalar, long>::value>::type> {
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, long>::value>::type>
+{
   typedef signal_logger_msgs::Int64MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Int64MultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::Int64MultiArrayStampedConstPtr msgtypeConstPtr;
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-&& std::is_same<typename ValueType_::Scalar, int>::value>::type> {
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, int>::value>::type>
+{
   typedef signal_logger_msgs::Int32MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Int32MultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::Int32MultiArrayStampedConstPtr msgtypeConstPtr;
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-&& std::is_same<typename ValueType_::Scalar, short>::value>::type> {
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, short>::value>::type>
+{
   typedef signal_logger_msgs::Int16MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Int16MultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::Int16MultiArrayStampedConstPtr msgtypeConstPtr;
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-&& std::is_same<typename ValueType_::Scalar, char>::value>::type> {
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, char>::value>::type>
+{
   typedef signal_logger_msgs::Int8MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Int8MultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::Int8MultiArrayStampedConstPtr msgtypeConstPtr;
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-&& std::is_same<typename ValueType_::Scalar, unsigned char>::value>::type> {
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, unsigned char>::value>::type>
+{
   typedef signal_logger_msgs::Int8MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Int8MultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::Int8MultiArrayStampedConstPtr msgtypeConstPtr;
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value
-&& std::is_same<typename ValueType_::Scalar, bool>::value>::type> {
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, bool>::value>::type>
+{
   typedef signal_logger_msgs::BoolMultiArrayStamped         msgtype;
   typedef signal_logger_msgs::BoolMultiArrayStampedPtr      msgtypePtr;
   typedef signal_logger_msgs::BoolMultiArrayStampedConstPtr msgtypeConstPtr;
@@ -220,42 +207,30 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen:
 #ifdef SILO_USE_KINDR
 
 template <typename ValueType_>
- struct slr_msg_traits<ValueType_, typename std::enable_if<is_kindr_vector<ValueType_>::value && ValueType_::Dimension == 3>::type>
- {
-   typedef geometry_msgs::Vector3Stamped         msgtype;
-   typedef geometry_msgs::Vector3StampedPtr      msgtypePtr;
-   typedef geometry_msgs::Vector3StampedConstPtr msgtypeConstPtr;
- };
-
-//! Trait for Kindr rotations
-template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::RotationBase<ValueType_>,ValueType_>::value>::type>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_kindr_vector3<ValueType_>::value>::type>
 {
-  typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtype      msgtype;
-  typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtypePtr   msgtypePtr;
-  typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtypeConstPtr  msgtypeConstPtr;
-};
-
-template<>
-struct slr_msg_traits<signal_logger::KindrRotationQuaternionD> {
-  typedef geometry_msgs::QuaternionStamped         msgtype;
-  typedef geometry_msgs::QuaternionStampedPtr      msgtypePtr;
-  typedef geometry_msgs::QuaternionStampedConstPtr msgtypeConstPtr;
-};
-
-template<>
-struct slr_msg_traits<signal_logger::KindrAngularVelocityD> {
   typedef geometry_msgs::Vector3Stamped         msgtype;
   typedef geometry_msgs::Vector3StampedPtr      msgtypePtr;
   typedef geometry_msgs::Vector3StampedConstPtr msgtypeConstPtr;
 };
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::RotationBase<ValueType_>,ValueType_>::value
+  ||std::is_base_of<kindr::RotationDiffBase<ValueType_>,ValueType_>::value>::type>
+{
+  typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtype     	 msgtype;
+  typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtypePtr       msgtypePtr;
+  typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtypeConstPtr  msgtypeConstPtr;
+};
+
 /********************************/
 
 /***************************************************
  * Specializations: kindr vector at position types *
  ***************************************************/
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<is_kindr_vector_at_position<ValueType_>::value>::type> {
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_kindr_vector_at_position<ValueType_>::value>::type>
+{
   typedef kindr_msgs::VectorAtPosition         msgtype;
   typedef kindr_msgs::VectorAtPositionPtr      msgtypePtr;
   typedef kindr_msgs::VectorAtPositionConstPtr msgtypeConstPtr;
@@ -270,8 +245,12 @@ template<typename ValueType_, typename Enable_ = void> struct slr_update_traits;
  * Specializations: core types *
  *******************************/
 template<typename ValueType_>
-struct slr_update_traits<ValueType_, typename std::enable_if<std::is_arithmetic<ValueType_>::value>::type> {
-  static void updateMsg(const ValueType_* vectorPtr_, typename slr_msg_traits<ValueType_>::msgtypePtr msg, const ros::Time& timeStamp) {
+struct slr_update_traits<ValueType_, typename std::enable_if<std::is_arithmetic<ValueType_>::value>::type>
+{
+  static void updateMsg(const ValueType_* vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtypePtr msg,
+                        const ros::Time& timeStamp)
+  {
     msg->header.stamp = timeStamp;
     msg->value = *vectorPtr_;
   }
@@ -281,10 +260,13 @@ struct slr_update_traits<ValueType_, typename std::enable_if<std::is_arithmetic<
 /***************************************************
  * Specializations: Time stamp pair                *
  ***************************************************/
-template <typename ValueType_>
-struct slr_update_traits<ValueType_, typename std::enable_if<std::is_same<signal_logger::TimestampPair, ValueType_>::value>::type>
+template <>
+struct slr_update_traits<signal_logger::TimestampPair>
 {
-  static void updateMsg(const signal_logger::TimestampPair* var, typename slr_msg_traits<ValueType_>::msgtypePtr msg, const ros::Time& timeStamp) {
+  static void updateMsg(const signal_logger::TimestampPair* var,
+                        typename slr_msg_traits<signal_logger::TimestampPair>::msgtypePtr msg,
+                        const ros::Time& timeStamp)
+  {
     msg->data.sec = var->first;
     msg->data.nsec = var->second;
   }
@@ -295,8 +277,12 @@ struct slr_update_traits<ValueType_, typename std::enable_if<std::is_same<signal
  * Specializations: eigen types *
  ********************************/
 template<>
-struct slr_update_traits<Eigen::Vector3d> {
-  static void updateMsg(const Eigen::Vector3d * vectorPtr_, slr_msg_traits<Eigen::Vector3d>::msgtypePtr msg, const ros::Time& timeStamp) {
+struct slr_update_traits<Eigen::Vector3d>
+{
+  static void updateMsg(const Eigen::Vector3d * vectorPtr_,
+                        slr_msg_traits<Eigen::Vector3d>::msgtypePtr msg,
+                        const ros::Time& timeStamp)
+  {
     msg->header.stamp = timeStamp;
     msg->vector.x = vectorPtr_->x();
     msg->vector.y = vectorPtr_->y();
@@ -305,23 +291,27 @@ struct slr_update_traits<Eigen::Vector3d> {
 };
 
 template <typename ValueType_>
-struct slr_update_traits<ValueType_, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value>::type>
+struct slr_update_traits<ValueType_, typename std::enable_if<is_eigen_quaternion<ValueType_>::value>::type>
 {
-  static void updateMsg(const ValueType_ * vectorPtr_, typename slr_msg_traits<ValueType_>::msgtypePtr msg, const ros::Time& timeStamp) {
+  static void updateMsg(const ValueType_* vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtypePtr msg,
+                        const ros::Time& timeStamp)
+  {
     msg->header.stamp = timeStamp;
-    msg->matrix.data.clear();
-    for (int r=0; r<vectorPtr_->rows(); r++)  {
-      for (int c=0; c<vectorPtr_->cols(); c++)  {
-        msg->matrix.data.push_back((*vectorPtr_)(r,c));
-      }
-    }
+    msg->quaternion.w = vectorPtr_->w();
+    msg->quaternion.x = vectorPtr_->x();
+    msg->quaternion.y = vectorPtr_->y();
+    msg->quaternion.z = vectorPtr_->z();
   }
 };
 
 template <typename ValueType_>
 struct slr_update_traits<ValueType_, typename std::enable_if<is_eigen_angle_axis<ValueType_>::value>::type>
 {
-  static void updateMsg(const ValueType_* vectorPtr_, typename slr_msg_traits<ValueType_>::msgtypePtr msg, const ros::Time& timeStamp) {
+  static void updateMsg(const ValueType_* vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtypePtr msg,
+                        const ros::Time& timeStamp)
+  {
     msg->header.stamp = timeStamp;
     msg->matrix.data.clear();
     msg->matrix.data.push_back(vectorPtr_->angle());
@@ -331,18 +321,36 @@ struct slr_update_traits<ValueType_, typename std::enable_if<is_eigen_angle_axis
   }
 };
 
+template <typename ValueType_>
+struct slr_update_traits<ValueType_, typename std::enable_if< is_eigen_matrix<ValueType_>::value >::type>
+{
+  static void updateMsg(const ValueType_ * vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtypePtr msg,
+                        const ros::Time& timeStamp)
+  {
+    msg->header.stamp = timeStamp;
+    msg->matrix.data.clear();
+    for (int r=0; r<vectorPtr_->rows(); r++)  {
+      for (int c=0; c<vectorPtr_->cols(); c++)  {
+        msg->matrix.data.push_back((*vectorPtr_)(r,c));
+      }
+    }
+  }
+};
 /********************************/
 
 #ifdef SILO_USE_KINDR
 /********************************
  * Specializations: kindr types *
  ********************************/
-
 //! Trait for Kindr vectors length 3
 template <typename ValueType_>
-struct slr_update_traits<ValueType_, typename std::enable_if<is_kindr_vector<ValueType_>::value && ValueType_::Dimension == 3>::type>
+struct slr_update_traits<ValueType_, typename std::enable_if<is_kindr_vector3<ValueType_>::value>::type>
 {
-  static void updateMsg(const ValueType_* vectorPtr_, typename slr_msg_traits<ValueType_>::msgtypePtr msg, const ros::Time& timeStamp) {
+  static void updateMsg(const ValueType_* vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtypePtr msg,
+                        const ros::Time& timeStamp)
+  {
     msg->header.stamp = timeStamp;
     msg->vector.x = vectorPtr_->x();
     msg->vector.y = vectorPtr_->y();
@@ -352,34 +360,16 @@ struct slr_update_traits<ValueType_, typename std::enable_if<is_kindr_vector<Val
 
 //! Trait for Kindr rotations
 template <typename ValueType_>
-struct slr_update_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::RotationBase<ValueType_>,ValueType_>::value>::type>
+struct slr_update_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::RotationBase<ValueType_>,ValueType_>::value
+  || std::is_base_of<kindr::RotationDiffBase<ValueType_>,ValueType_>::value>::type >
 {
-  static void updateMsg(const ValueType_* vectorPtr_, typename slr_msg_traits<ValueType_>::msgtypePtr msg, const ros::Time& timeStamp) {
+  static void updateMsg(const ValueType_* vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtypePtr msg,
+                        const ros::Time& timeStamp)
+  {
     slr_update_traits<typename ValueType_::Implementation>::updateMsg(&vectorPtr_->toImplementation(), msg, timeStamp);
   }
 };
-
-template <>
-struct slr_update_traits<signal_logger::KindrRotationQuaternionD> {
-  static void updateMsg(const signal_logger::KindrRotationQuaternionD* vectorPtr_, typename slr_msg_traits<signal_logger::KindrRotationQuaternionD>::msgtypePtr msg, const ros::Time& timeStamp) {
-    msg->header.stamp = timeStamp;
-    msg->quaternion.w = vectorPtr_->w();
-    msg->quaternion.x = vectorPtr_->x();
-    msg->quaternion.y = vectorPtr_->y();
-    msg->quaternion.z = vectorPtr_->z();
-  }
-};
-
-template <>
-struct slr_update_traits<signal_logger::KindrAngularVelocityD> {
-  static void updateMsg(const signal_logger::KindrAngularVelocityD* vectorPtr_, typename slr_msg_traits<signal_logger::KindrAngularVelocityD>::msgtypePtr msg, const ros::Time& timeStamp) {
-    msg->header.stamp = timeStamp;
-    msg->vector.x = vectorPtr_->x();
-    msg->vector.y = vectorPtr_->y();
-    msg->vector.z = vectorPtr_->z();
-  }
-};
-
 /********************************/
 
 /***************************************************
@@ -387,7 +377,10 @@ struct slr_update_traits<signal_logger::KindrAngularVelocityD> {
  ***************************************************/
 template <typename ValueType_>
 struct slr_update_traits<ValueType_, typename std::enable_if<is_kindr_vector_at_position<ValueType_>::value>::type> {
-  static void updateMsg(const ValueType_* vectorPtr_, typename slr_msg_traits<ValueType_>::msgtypePtr msg, const ros::Time& timeStamp) {
+  static void updateMsg(const ValueType_* vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtypePtr msg,
+                        const ros::Time& timeStamp)
+  {
     msg->header.stamp = timeStamp;
     msg->header.frame_id = vectorPtr_->vectorFrame;
     msg->vector.x = vectorPtr_->vector.x();

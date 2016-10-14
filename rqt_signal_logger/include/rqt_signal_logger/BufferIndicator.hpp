@@ -11,6 +11,8 @@
 #include <QtDesigner/QtDesigner>
 #include <QWidget>
 
+namespace rqt_signal_logger {
+
 class QDESIGNER_WIDGET_EXPORT BufferIndicator : public QWidget
 {
   Q_OBJECT
@@ -55,3 +57,5 @@ class QDESIGNER_WIDGET_EXPORT BufferIndicator : public QWidget
   // Scaled values for x and y diameter.
   int diamX_, diamY_;
 };
+
+}

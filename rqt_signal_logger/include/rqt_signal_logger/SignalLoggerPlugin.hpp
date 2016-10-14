@@ -35,6 +35,8 @@
 #include <list>
 #include <memory>
 
+namespace rqt_signal_logger {
+
 class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   Q_OBJECT
  public:
@@ -109,3 +111,4 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
 };
 
 
+}

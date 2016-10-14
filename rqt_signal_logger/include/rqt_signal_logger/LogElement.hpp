@@ -27,6 +27,7 @@
 #include <QComboBox>
 #include <QPushButton>
 
+namespace rqt_signal_logger {
 
 //! This class draws and handles log elements.
 class LogElement: public QObject {
@@ -268,3 +269,5 @@ class LogElement: public QObject {
   QPushButton* pushButtonChangeParam;
 
 };
+
+}
