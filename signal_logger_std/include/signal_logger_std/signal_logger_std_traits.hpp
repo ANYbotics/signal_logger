@@ -275,7 +275,13 @@ struct sls_traits<ValueType_, typename std::enable_if<is_kindr_vector_at_positio
       return;
 
     // Write headers
-    for(auto suffix : {"_vector_x", "_vector_y", "_vector_z", "_at_position_x", "_at_position_y", "_at_position_z"}) {
+    for(auto suffix : { "_vector_in_"  + values.front().vectorFrame + "_frame_x",
+                        "_vector_in_"  + values.front().vectorFrame + "_frame_x",
+                        "_vector_in_"  + values.front().vectorFrame + "_frame_x",
+                        "_at_position_in_"  + values.front().positionFrame + "_frame_x",
+                        "_at_position_in_"  + values.front().positionFrame + "_frame_y",
+                        "_at_position_in_"  + values.front().positionFrame + "_frame_z"})
+    {
       (*headerStream) << name << suffix << " "
           << sizeof(double) <<  " "
           << values.size() << " "

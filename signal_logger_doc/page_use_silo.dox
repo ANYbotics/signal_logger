@@ -1,0 +1,51 @@
+/*! \page page_use_silo Use the signal logger in your program
+
+<H3>Access the logger</H3>
+The signal logger is stored as a global shared pointer and can be accessed from everywhere in the current process.
+\code{c}
+// Including the logger
+#include <signal_logger/signal_logger.hpp>
+
+// Accessing the logger
+signal_logger::logger->...
+\endcode
+
+<H3>Create / Reset the logger</H3>
+Three types of loggers are provided:
+<ul>
+  <li> SignalLoggerNone is an empty implementation of the logger
+       \code{c}
+          // Include signal logger none
+          #include "signal_logger/SignalLoggerNone.hpp"
+
+          // Resetting the logger to type none
+          signal_logger::logger.reset(new signal_logger::SignalLoggerNone());
+       \endcode
+  </li>
+  <li> SignalLoggerStd provides the functionality to write a binary log file
+       \code{c}
+          // Include signal logger std
+          #include "signal_logger_std/SignalLoggerStd.hpp"
+
+          // Resetting the logger to type std
+          signal_logger::logger.reset(new signal_logger_std::SignalLoggerStd());
+       \endcode
+  </li>
+  <li> SignalLoggerRos extends the SignalLoggerStd with a ros publishing functionality
+       \code{c}
+           // Include signal logger ros
+           #include "signal_logger_ros/SignalLoggerRos.hpp"
+
+           // Resetting the logger to type ros
+           signal_logger::logger.reset(new signal_logger_ros::SignalLoggerRos(rosNodeHandle));
+       \endcode
+  </li>
+</ul>
+
+To initialize the logger only the
+\code{c}
+signal_logger::logger->initLogger(1, "logging.yaml");
+\endcode
+
+
+*/
