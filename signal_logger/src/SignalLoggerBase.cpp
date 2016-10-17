@@ -24,17 +24,17 @@
 namespace signal_logger {
 
 SignalLoggerBase::SignalLoggerBase(const std::string & loggerPrefix):
-                                            isInitialized_(false),
-                                            isUpdateLocked_(false),
-                                            isCollectingData_(false),
-                                            isSavingData_(false),
-                                            noCollectDataCalls_(0),
-                                            collectScriptFileName_(LOGGER_DEFAULT_SCRIPT_FILENAME),
-                                            updateFrequency_(0),
-                                            loggerPrefix_(loggerPrefix),
-                                            logElements_(),
-                                            logTime_(),
-                                            scriptMutex_()
+                                                isInitialized_(false),
+                                                isUpdateLocked_(false),
+                                                isCollectingData_(false),
+                                                isSavingData_(false),
+                                                noCollectDataCalls_(0),
+                                                collectScriptFileName_(LOGGER_DEFAULT_SCRIPT_FILENAME),
+                                                updateFrequency_(0),
+                                                loggerPrefix_(loggerPrefix),
+                                                logElements_(),
+                                                logTime_(),
+                                                scriptMutex_()
 {
   timeElement_.reset(new LogElementBase<TimestampPair>(&logTime_, loggerPrefix + std::string{"/time"}, "[s/ns]", 1, LogElementAction::SAVE, 0, BufferType::EXPONENTIALLY_GROWING));
 }
@@ -70,7 +70,7 @@ bool SignalLoggerBase::startLogger()
   // Reset elements (default buffer of 10 seconds)
   timeElement_->restartElement();
   timeElement_->setBufferSize(10 * updateFrequency_);
-  for(auto & elem : logElements_) { elem.second->restartElement(); }
+  for(auto & elem : enabledElements_) { elem.second->second->restartElement(); }
 
   // Reset flags and data collection calls
   isCollectingData_ = true;
@@ -138,16 +138,29 @@ bool SignalLoggerBase::collectLoggerData()
     logTime_.first = seconds.count();
     logTime_.second = std::chrono::duration_cast<std::chrono::nanoseconds>(duration-seconds).count();
 
-    // Collect element into buffer
+    // Lock all data and set data to be unsynchronized
+    for(auto & elem : enabledElements_)
+    {
+      elem.second->second->acquireMutex().lock();
+      elem.second->second->setIsTimeSynchronzied(false);
+    }
+
+    // Collect time
     timeElement_->collectData();
 
-    // Add data to buffer
-    for(auto & elem : logElements_)
+    // Unlock all data
+    for(auto & elem : enabledElements_)
     {
-      if(elem.second->isEnabled() && (noCollectDataCalls_ % elem.second->getDivider()) == 0)
-      {
-        elem.second->collectData();
-      }
+      elem.second->second->acquireMutex().unlock();
+    }
+
+    // Collect element into buffer
+    for(auto & elem : enabledElements_)
+    {
+      elem.second->second->acquireMutex().lock();
+      if((noCollectDataCalls_ % elem.second->second->getDivider()) == 0) { elem.second->second->collectData(); }
+      elem.second->second->setIsTimeSynchronzied(true);
+      elem.second->second->acquireMutex().unlock();
     }
   }
 
@@ -159,11 +172,11 @@ bool SignalLoggerBase::collectLoggerData()
 bool SignalLoggerBase::publishData()
 {
   // Publish data from buffer
-  for(auto & elem : logElements_)
+  for(auto & elem : enabledElements_)
   {
-    if(elem.second->isEnabled() && elem.second->isPublished())
+    if(elem.second->second->isPublished())
     {
-      elem.second->publishData(*timeElement_);
+      elem.second->second->publishData(*timeElement_);
     }
   }
 
@@ -220,9 +233,9 @@ bool SignalLoggerBase::stopAndSaveLoggerData()
 bool SignalLoggerBase::cleanup()
 {
   // Publish data from buffer
-  for(auto & elem : logElements_)
+  for(auto & elem : enabledElements_)
   {
-    elem.second->shutdownElement();
+    elem.second->second->shutdownElement();
   }
   return true;
 }
@@ -242,10 +255,8 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
   if(stat(scriptName.c_str(), &buffer) == 0)
   {
     // Disable all log data and reallocate buffer
-    for(auto & elem : logElements_)
-    {
-      elem.second->setIsEnabled(false);
-    }
+    for(auto & elem : enabledElements_) { elem.second->second->setIsEnabled(false); }
+    enabledElements_.clear();
 
     // Save loading of yaml config file
     try {
@@ -263,6 +274,7 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
             {
               // Enable element
               elem->second->setIsEnabled(true);
+              enabledElements_.insert(std::pair<std::string, LogElementMapIterator>(name, elem));
 
               // Overwrite defaults if specified in yaml file
               if (YAML::Node parameter = logElementsNode[i]["divider"])
@@ -326,16 +338,14 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
   YAML::Node node;
   std::size_t j = 0;
 
-  for (auto element : logElements_)
+  for (auto elem : enabledElements_)
   {
-    if(element.second->isEnabled()) {
-      node["log_elements"][j]["name"] = element.second->getName();
-      node["log_elements"][j]["divider"] = element.second->getDivider();
-      node["log_elements"][j]["action"] = static_cast<int>(element.second->getAction());
-      node["log_elements"][j]["buffer"]["size"] = element.second->getBufferSize();
-      node["log_elements"][j]["buffer"]["type"] = static_cast<int>(element.second->getBufferType());
-      j++;
-    }
+    node["log_elements"][j]["name"] = elem.second->second->getName();
+    node["log_elements"][j]["divider"] = elem.second->second->getDivider();
+    node["log_elements"][j]["action"] = static_cast<int>(elem.second->second->getAction());
+    node["log_elements"][j]["buffer"]["size"] = elem.second->second->getBufferSize();
+    node["log_elements"][j]["buffer"]["type"] = static_cast<int>(elem.second->second->getBufferType());
+    j++;
   }
 
   // If there are logged elements save them to file

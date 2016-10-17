@@ -152,12 +152,12 @@ class Buffer
    *  @param idx pointer to value in which popped value is stored
    *  @return val Copy of value at idx
    */
-  ValueType_ copyElementFromBack(std::size_t idx)  const {
+  ValueType_ readElementAtPosition(std::size_t idx)  const {
     // Lock the circular buffer
     boost::mutex::scoped_lock lock(mutex_);
     // read element
     ValueType_ val;
-    readElementAtPosition(&val, (noItems_-1)-idx);
+    readElementAtPosition(&val, idx);
     return val;
   }
 

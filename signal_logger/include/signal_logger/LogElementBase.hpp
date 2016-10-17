@@ -11,6 +11,9 @@
 #include "signal_logger/LogElementInterface.hpp"
 #include "signal_logger/Buffer.hpp"
 
+// STL
+#include <atomic>
+
 namespace signal_logger {
 
 template <typename ValueType_>
@@ -39,7 +42,8 @@ class LogElementBase: public LogElementInterface
     unit_(unit),
     divider_(divider),
     action_(action),
-    isEnabled_(false)
+    isEnabled_(false),
+    isTimeSynchronized_(false)
   {
     buffer_.setType(bufferType);
     buffer_.setBufferSize(bufferSize);
@@ -128,17 +132,26 @@ class LogElementBase: public LogElementInterface
   std::size_t noUnreadItemsInBuffer() const override final { return buffer_.noUnreadItems(); }
 
   //! Clear buffer
-  virtual void clearBuffer() override final { buffer_.clear(); }
+  void clearBuffer() override final { buffer_.clear(); }
+
+  //! Indicates if time is synchronized
+  bool isTimeSynchronzied() const override final { return isTimeSynchronized_; }
+
+  //! Set if time is synchronized
+  void setIsTimeSynchronzied(bool isTimeSynchronized) override final { isTimeSynchronized_ = isTimeSynchronized; }
+
+  //! Get mutex
+  std::mutex& acquireMutex() { return mutex_; }
 
   //! Get time at index n
   template<typename V = ValueType_>
-  V getNthTimestep(std::size_t n, typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0) const final
+  V getTimeStampAtPosition(std::size_t n, typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0) const final
   {
-    return buffer_.copyElementFromBack(n);
+    return buffer_.readElementAtPosition(n);
   }
 
  protected:
-  //! Buffer
+  //! Buffer (threadsafe)
   Buffer<ValueType_> buffer_;
   //! Name of the log element
   std::string name_;
@@ -150,6 +163,10 @@ class LogElementBase: public LogElementInterface
   LogElementAction action_;
   //! Indicates if log element is currently active
   bool isEnabled_;
+  //! Indicates if time is synchronized (nr collected elements = nr collected time elements)
+  std::atomic_bool isTimeSynchronized_;
+  //! Mutex
+  std::mutex mutex_;
 };
 
 } /* namespace signal_logger */

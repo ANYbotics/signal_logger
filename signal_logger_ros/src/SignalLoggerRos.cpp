@@ -152,9 +152,19 @@ bool SignalLoggerRos::logElementtoMsg(const std::string & name, signal_logger_ms
 
 bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg)
 {
-  if( logElements_.find(msg.name) == logElements_.end()) { return false; }
+  auto element_iterator  = logElements_.find(msg.name);
+  if( element_iterator == logElements_.end()) { return false; }
 
   logElements_.at(msg.name)->setIsEnabled(msg.is_logged);
+  if(msg.is_logged)
+  {
+    enabledElements_.insert(std::pair<std::string, signal_logger::SignalLoggerBase::LogElementMapIterator>(msg.name, element_iterator));
+  }
+  else
+  {
+    enabledElements_.erase(msg.name);
+  }
+
   logElements_.at(msg.name)->setDivider(msg.divider);
   logElements_.at(msg.name)->setBufferSize(msg.buffer_size);
 

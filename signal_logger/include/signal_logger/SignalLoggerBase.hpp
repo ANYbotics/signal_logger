@@ -23,6 +23,7 @@
 #include <mutex>
 #include <atomic>
 #include <memory>
+#include <unordered_map>
 
 namespace signal_logger {
 
@@ -45,6 +46,9 @@ class SignalLoggerBase {
   // Some logger defaults
   static constexpr const char* LOGGER_DEFAULT_SCRIPT_FILENAME   = "logger.yaml";
   static constexpr const char* LOGGER_DEFAULT_PREFIX            = "/log";
+
+  using LogElementMap = std::unordered_map<std::string, std::shared_ptr<signal_logger::LogElementInterface>>;
+  using LogElementMapIterator = std::unordered_map<std::string, std::shared_ptr<signal_logger::LogElementInterface>>::iterator;
 
  public:
   //! Get the logger type at runtime
@@ -166,9 +170,10 @@ class SignalLoggerBase {
   std::atomic_uint updateFrequency_;
   //! Logger prefix
   std::string loggerPrefix_;
-
+  //! List of enable iterators
+  std::unordered_map<std::string, LogElementMapIterator> enabledElements_;
   //! Map of all log elements
-  std::map<std::string, std::shared_ptr<signal_logger::LogElementInterface>> logElements_;
+  LogElementMap logElements_;
   //! Time variable
   TimestampPair logTime_;
   //! Corresponding time log element

@@ -53,20 +53,44 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   //! Reads buffer and publishes data via ros
   void publishData(const signal_logger::LogElementBase<signal_logger::TimestampPair> & time) override
   {
-    ValueType_ data;
 
-    if(this->buffer_.read(&data))
+    if(this->noUnreadItemsInBuffer())
     {
-      if( (publishCount_*this->getDivider()) < time.getBufferSize()) {
-        signal_logger::TimestampPair tsp_now = time.getNthTimestep(publishCount_*this->getDivider());
+      std::unique_lock<std::mutex> lock(this->mutex_);
+      signal_logger::TimestampPair tsp_now;
+      if(this->getBufferType() == signal_logger::BufferType::FIXED_SIZE)
+      {
+        /* Read from back of time buffer
+         * (no_items_data - no_unread_items_data)*div -> shift from the first time buffer entry
+         * (no_items_time-1) -> index of the first time
+         * Index in time buffer , idx = (no_items_time-1) - (no_items_data - no_unread_items_data)*div;
+        */
+        tsp_now = time.getTimeStampAtPosition( (time.noItemsInBuffer()-1) - (this->noItemsInBuffer()-this->noUnreadItemsInBuffer())*this->divider_);
+      }
+      else
+      {
+        /* Read from back of time buffer
+         * no_items_time % div_data -> latest element of timebuffer that corresponds to a value
+         * (no_unread_items_data - 1 )*div -> shift from the latest corresponding entry
+         * Index in time buffer , idx = (no_items_time % div_data) + (no_unread_items_data - 1 )*div
+        */
+        // If time is not synchronized (time is 1 collection ahead), correct for this
+        std::size_t offset = this->isTimeSynchronzied()?time.noItemsInBuffer()%this->divider_:((time.noItemsInBuffer()-1)%this->divider_)+1;
+        tsp_now = time.getTimeStampAtPosition( offset + (this->noUnreadItemsInBuffer() - 1)*this->divider_);
+      }
+        // convert to ros time
         ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
+
+        // Read from buffer and transform to message via trait
+        ValueType_ data;
+        this->buffer_.read(&data);
+
+        // Unlock for publishing
+        lock.unlock();
+
+        // publish over ros
         traits::slr_update_traits<ValueType_>::updateMsg(&data, msg_, now);
         pub_.publish(msg_);
-        ++publishCount_;
-      }
-      else {
-        MELO_ERROR_STREAM("Buffer of time in Logger is too small.");
-      }
     }
   }
 
