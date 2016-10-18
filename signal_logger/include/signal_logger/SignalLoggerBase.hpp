@@ -111,17 +111,17 @@ class SignalLoggerBase {
 
   /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
     * @tparam ValueType_       Data type of the logger element
-    * @param  var              log variable
+    * @param  var              Pointer to log variable
     * @param  name             name of the log variable
     * @param  group            logger group the variable belongs to
     * @param  unit             unit of the log variable
     * @param  divider          divider is defining the update frequency of the logger element (ctrl_freq/divider)
     * @param  action           log action of the log variable
     * @param  bufferSize       size of the buffer storing log elements
-    * @param  isBufferLooping  determines if the buffer overwrites old values
+    * @param  bufferType       determines the buffer type
     */
   template<typename ValueType_>
-  void add( const ValueType_ & var,
+  void add( const ValueType_ * const var,
             const std::string & name,
             const std::string & group       = LOG_ELEMENT_DEFAULT_GROUP_NAME,
             const std::string & unit        = LOG_ELEMENT_DEFAULT_UNIT,
@@ -186,4 +186,3 @@ class SignalLoggerBase {
 FOR_ALL_TYPES(ADD_VAR_TEMPLATE_SPECIFICATIONS);
 
 }
-

@@ -67,7 +67,7 @@ class Buffer
    *  @param ptr  pointer to the data to be buffered
    */
   template<typename V = ValueType_>
-  explicit Buffer(V * ptr, typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0) :
+  explicit Buffer(const V * const ptr, typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0) :
   ptr_(ptr),
   bufferSize_(0),
   bufferType_(BufferType::LOOPING),
@@ -85,7 +85,7 @@ class Buffer
    *  @param ptr  pointer to the data to be buffered
    */
   template<typename V = ValueType_>
-  explicit Buffer(V * ptr, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0) :
+  explicit Buffer(const V * const ptr, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0) :
   ptr_(ptr),
   bufferSize_(0),
   bufferType_(BufferType::LOOPING),
@@ -251,7 +251,7 @@ class Buffer
    */
   template<typename V = ValueType_>
   typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
-  pushElementFront(ValueType_ * item) {
+  pushElementFront(const ValueType_ * const item) {
     container_.push_front(*item);
   }
 
@@ -261,7 +261,7 @@ class Buffer
    */
   template<typename V = ValueType_>
   typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
-  pushElementFront(ValueType_ * item) {
+  pushElementFront(const ValueType_ * const item) {
     if(item->rows() != rows_ || item->cols() != cols_) {
       // Error output -> don't push back
       MELO_ERROR_STREAM("Matrix size not consistent" << std::endl << "init_rows = " << rows_ <<
@@ -308,7 +308,7 @@ class Buffer
 
  private:
   //! Pointer to value
-  ValueType_* ptr_;
+  const ValueType_* const ptr_;
   //! Buffer size w.r.t. to ValueType_ (bufferSize_ is not necessary equal to container_.capacity())
   size_type bufferSize_;
   //! Is the buffer "circulating", refreshing old entries with new ones

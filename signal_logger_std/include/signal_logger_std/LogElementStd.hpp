@@ -20,7 +20,7 @@ template <typename ValueType_>
 class LogElementStd: public signal_logger::LogElementBase<ValueType_>
 {
  public:
-  LogElementStd(ValueType_ * ptr,
+  LogElementStd(const ValueType_ * const ptr,
                 const std::string & name,
                 const std::string & unit,
                 const std::size_t divider,

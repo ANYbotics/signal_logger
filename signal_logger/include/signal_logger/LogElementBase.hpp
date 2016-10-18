@@ -29,7 +29,7 @@ class LogElementBase: public LogElementInterface
    *  @param bufferSize size of the buffer (bufferSize elements of type ValueType_)
    *  @param bufferType type of the buffer
    */
-  LogElementBase(ValueType_ * ptr,
+  LogElementBase(const ValueType_ * const ptr,
                  const std::string & name,
                  const std::string & unit,
                  const std::size_t divider,

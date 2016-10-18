@@ -21,7 +21,7 @@
  */
 #define ADD_STD_VAR_IMPLEMENTATION(TYPE, NAME, ...) \
     /** Function definition to add variable of type TYPE to the logger. */ \
-    /** @param var            log variable */ \
+    /** @param var            pointer to log variable */ \
     /** @param name           name of the log variable*/ \
     /** @param group          logger group the variable belongs to*/ \
     /** @param unit           unit of the log variable*/ \
@@ -29,7 +29,7 @@
     /** @param action         log action of the log variable*/ \
     /** @param bufferSize     size of the buffer storing log elements*/ \
     /** @param bufferType     determines type of the buffer*/ \
-    virtual void add##NAME(const TYPE & var, \
+    virtual void add##NAME(const TYPE * const var, \
                            const std::string & name, \
                            const std::string & group, \
                            const std::string & unit, \
@@ -39,7 +39,7 @@
                            const signal_logger::BufferType bufferType) \
     { \
       std::string elementName = std::string{signal_logger::SignalLoggerBase::LOGGER_DEFAULT_PREFIX} + "/" + group + "/" + name; \
-      logElements_[elementName].reset(new signal_logger_std::LogElementStd<TYPE>(const_cast<TYPE*>(&var), elementName , \
+      logElements_[elementName].reset(new signal_logger_std::LogElementStd<TYPE>(var, elementName , \
               unit, divider, action, bufferSize, bufferType, &headerStream_, &dataStream_)); \
     } /*
                             */

@@ -31,6 +31,7 @@
 #include <signal_logger_msgs/Int64Stamped.h>
 #include <signal_logger_msgs/BoolStamped.h>
 #include <signal_logger_msgs/CharStamped.h>
+#include <signal_logger_msgs/UnsignedCharStamped.h>
 
 #include "geometry_msgs/Vector3Stamped.h"
 #ifdef SILO_USE_KINDR
@@ -88,6 +89,13 @@ struct slr_msg_traits<char> {
   typedef signal_logger_msgs::CharStamped          msgtype;
   typedef signal_logger_msgs::CharStampedPtr       msgtypePtr;
   typedef signal_logger_msgs::CharStampedConstPtr  msgtypeConstPtr;
+};
+
+template<>
+struct slr_msg_traits<unsigned char> {
+  typedef signal_logger_msgs::UnsignedCharStamped          msgtype;
+  typedef signal_logger_msgs::UnsignedCharStampedPtr       msgtypePtr;
+  typedef signal_logger_msgs::UnsignedCharStampedConstPtr  msgtypeConstPtr;
 };
 
 template<>

@@ -17,7 +17,7 @@
  */
 #define ADD_VAR_DEFINITION(TYPE, NAME, ...) \
     /** Function definition to add variable of type TYPE to the logger. */ \
-    /** @param var            log variable */ \
+    /** @param var            pointer to log variable */ \
     /** @param name           name of the log variable*/ \
     /** @param group          logger group the variable belongs to*/ \
     /** @param unit           unit of the log variable*/ \
@@ -25,7 +25,7 @@
     /** @param action         log action of the log variable*/ \
     /** @param bufferSize     size of the buffer storing log elements*/ \
     /** @param bufferType     determines type of buffer*/ \
-    virtual void add##NAME( const TYPE & var,\
+    virtual void add##NAME( const TYPE * const var,\
                             const std::string & name,\
                             const std::string & group       = LOG_ELEMENT_DEFAULT_GROUP_NAME, \
                             const std::string & unit        = LOG_ELEMENT_DEFAULT_UNIT, \
@@ -43,7 +43,7 @@
  */
 #define ADD_EIGEN_VAR_AS_UNDERLYING_TYPE_IMPLEMENTATION(TYPE, NAME, UNDERLYING_TYPE, UNDERLYING_TYPE_NAME) \
     /** Function implementation to add eigen matrices as their underlying type to the logger. */ \
-    /** @param var            log matrix */ \
+    /** @param var            pointer to log matrix */ \
     /** @param names          name of every entry of the matrix*/ \
     /** @param group          logger group the variable belongs to*/ \
     /** @param unit           unit of the log variable*/ \
@@ -51,7 +51,7 @@
     /** @param action         log action of the log variable*/ \
     /** @param bufferSize     size of the buffer storing log elements*/ \
     /** @param bufferType     determines type of buffer*/ \
-    void add##NAME( const TYPE & var, \
+    void add##NAME( const TYPE * const var, \
                     const signal_logger::MatrixXstring & names, \
                     const std::string & group, \
                     const std::string & unit, \
@@ -60,10 +60,8 @@
                     const std::size_t bufferSize, \
                     const signal_logger::BufferType bufferType) \
     { \
-      for (int r=0; r<static_cast<signal_logger::MatrixXstring>(names).rows(); r++)  { \
-        for (int c=0; c<static_cast<signal_logger::MatrixXstring>(names).cols(); c++)  { \
-          add##UNDERLYING_TYPE_NAME((UNDERLYING_TYPE)(var(r,c)), static_cast<std::string>(names(r,c)), group, unit, divider, action, bufferSize, bufferType); \
-        } \
+      for(std::size_t i = 0; i < var->size(); ++i) { \
+        add##UNDERLYING_TYPE_NAME(static_cast<const UNDERLYING_TYPE * const>(var->data() + i), static_cast<std::string>(*(names.data() + i)), group, unit, divider, action, bufferSize, bufferType); \
       } \
     } /*
      */
@@ -75,7 +73,7 @@
  */
 #define ADD_VAR_TEMPLATE_SPECIFICATIONS(TYPE, NAME, ...) \
     /** Template specification of the add function. Maps add to the corresponding addTYPE function. */ \
-    /** @param var            log matrix */ \
+    /** @param var            pointer to log var */ \
     /** @param names          name of every entry of the matrix*/ \
     /** @param group          logger group the variable belongs to*/ \
     /** @param unit           unit of the log variable*/ \
@@ -84,7 +82,7 @@
     /** @param bufferSize     size of the buffer storing log elements*/ \
     /** @param bufferType     determines type of buffer*/ \
     template < > \
-    inline void SignalLoggerBase::add<TYPE>(  const TYPE & var, \
+    inline void SignalLoggerBase::add<TYPE>(  const TYPE * const var, \
                                               const std::string & name, \
                                               const std::string & group, \
                                               const std::string & unit, \
@@ -107,7 +105,7 @@
  */
 #define ADD_NONE_VAR_IMPLEMENTATION(TYPE, NAME, ...) \
     /** Function definition to add variable of type TYPE to the logger. */ \
-    /** @param var            log variable */ \
+    /** @param var            pointer to log variable */ \
     /** @param name           name of the log variable*/ \
     /** @param group          logger group the variable belongs to*/ \
     /** @param unit           unit of the log variable*/ \
@@ -115,7 +113,7 @@
     /** @param action         log action of the log variable*/ \
     /** @param bufferSize     size of the buffer storing log elements*/ \
     /** @param bufferType     determines type of buffer*/ \
-    virtual void add##NAME( const TYPE & var,\
+    virtual void add##NAME( const TYPE * const var,\
                             const std::string & name,\
                             const std::string & group, \
                             const std::string & unit, \
@@ -136,6 +134,7 @@
     MACRO(short, Short)\
     MACRO(long, Long)\
     MACRO(char, Char)\
+    MACRO(unsigned char, UnsignedChar)\
     MACRO(bool, Bool)\
     MACRO(signal_logger::TimestampPair, TimeStamp)
 
@@ -151,7 +150,7 @@
     MACRO(signal_logger::MatrixXs, ShortEigenMatrix, short, Short)\
     MACRO(signal_logger::MatrixXl, LongEigenMatrix, long, Long)\
     MACRO(signal_logger::MatrixXc, CharEigenMatrix, char,Char)\
-    MACRO(signal_logger::MatrixXUc, UnsignedCharEigenMatrix, char,  Char)\
+    MACRO(signal_logger::MatrixXUc, UnsignedCharEigenMatrix, unsigned char,  UnsignedChar)\
     MACRO(signal_logger::MatrixXb, BoolEigenMatrix, bool, Bool)
 
 

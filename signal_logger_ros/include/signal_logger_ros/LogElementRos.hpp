@@ -26,7 +26,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   using MsgTypePtr = typename traits::slr_msg_traits<ValueType_>::msgtypePtr;
 
  public:
-  LogElementRos(ValueType_ * ptr,
+  LogElementRos(const ValueType_ * const ptr,
                 const std::string & name,
                 const std::string & unit,
                 const std::size_t divider,
