@@ -55,10 +55,10 @@ namespace signal_logger {
 //! Enum containing possible logging actions
 enum class LogElementAction: unsigned int
 {
-  NONE = 0,
-  SAVE_AND_PUBLISH = 1,
-  SAVE = 2,
-  PUBLISH = 3
+  NONE = 0,/*!< 0 */
+  SAVE_AND_PUBLISH = 1,/*!< 1 */
+  SAVE = 2,/*!< 2 */
+  PUBLISH = 3/*!< 3 */
 };
 
 //! Forward declaration of LogElementBase
@@ -165,4 +165,3 @@ class LogElementInterface
 };
 
 } /* namespace signal_logger */
-

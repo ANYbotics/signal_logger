@@ -1,0 +1,68 @@
+/*! \page page_log_file Log File
+<H3>Naming convention</H3>
+The files are stored in the current working directory (when using ros, /home/$user/.ros/ ) with the following naming convention.
+\code{txt}
+d_#y#m#d_#H-#M-#S_#NR
+\endcode
+<ul>
+  <li> <B>#y</B> year as a four-digit number</li>
+  <li> <B>#m</B> month of the year as a two-digit number</li>
+  <li> <B>#d</B> day of the month as a two-digit number</li>
+  <li> <B>#H</B> hour of the day as a two-digit number</li>
+  <li> <B>#M</B> minutes of the hour as a two-digit number</li>
+  <li> <B>#S</B> seconds of the minute as a two-digit number</li>
+  <li> <B>#NR</B> continuous numeration of all log files as a five-digit number </li>
+</ul>
+
+Example: The 113th dataset overall, recorded at September 13th 2016 at 12:13:49, would be stored as:
+\code{txt}
+d_20160913_12-13-49_00113
+\endcode
+
+<H3>File structure</H3>
+
+<H4>Comment</H4>
+The first line is a comment explaining the header structure.
+\code{txt}
+// Name SizeInBytes NrData Divider LoopingBuffer(0 = false, 1 = true)
+\endcode
+
+<H4>Header</H4>
+The following (readable) lines, provide a list of all saved log elements as described by the previous comment. The time will always be written to the file,
+has always a divider of 1, and the complete number of data values. The other types can vary depending on the logger configuration.
+\code{txt}
+/myLoggerNamespace/time_s 8 100 1 0
+/myLoggerNamespace/time_ns 8 100 1 0
+/myLoggerNamespace/myGroup1/myDataA 1 50 2 0
+/myLoggerNamespace/myGroup1/myDataB 8 50 1 1
+/myLoggerNamespace/myGroup2/myDataC 4 10 5 0
+/myLoggerNamespace/myGroup2/myDataD 2 25 4 1
+\endcode
+Note:
+<ul>
+  <li> myDataA has 1 byte, a divider of 2 and could save all data (100/2=50), thus the bufferSize >= 50 and not looping </li>
+  <li> myDataB has 8 bytes, a divider of 1 and could not save all data (100/1=100 > 50), thus the bufferSize = 50 and looping </li>
+  <li> myDataC has 4 bytes, a divider of 5 and could not save all data (100/5=20 > 10), thus the bufferSize = 10 and not looping </li>
+  <li> myDataD has 2 bytes, a divider of 4 and could save all data (100/4=25), thus the bufferSize >= 25 and looping </li>
+</ul>
+
+This information is enough for lossless parsing of the binary data. The time has to be matched differently depending on the buffer type (from end for looping, from start for fixed/growing buffers).
+
+<H4>Binary Data</H4>
+The third part of the file lists the complete binary data of all log elements. The binary data is written in the order of the header.
+The first SizeInBytesElement1*NrDataElement1 bytes correspond to the first element and so on.<BR>
+Considering our header:
+<ul>
+  <li> The first 800 bytes are the time in seconds </li>
+  <li> The second 800 bytes are the time in nanoseconds </li>
+  <li> The next 50 bytes are myDataA </li>
+  <li> The next 400 bytes are myDataB </li>
+  <li> The next 40 bytes are myDataC </li>
+  <li> The last 50 bytes are myDataD </li>
+</ul>
+
+
+
+
+
+*/

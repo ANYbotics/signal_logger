@@ -251,7 +251,7 @@ void SignalLoggerPlugin::saveYamlFile() {
       node["log_elements"][j]["divider"] = logElements_[i]->spinBoxDivider->value();
       node["log_elements"][j]["action"] = logElements_[i]->comboBoxLogType->currentIndex();
       node["log_elements"][j]["buffer"]["size"] = logElements_[i]->spinBoxBufferSize->value();
-      node["log_elements"][j]["buffer"]["looping"] = static_cast<bool>(logElements_[i]->comboBoxBufferType->currentIndex());
+      node["log_elements"][j]["buffer"]["type"] = logElements_[i]->comboBoxBufferType->currentIndex();
       j++;
     }
   }

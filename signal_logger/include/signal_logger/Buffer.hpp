@@ -29,9 +29,9 @@ namespace signal_logger {
 //! Enum containing possible buffer types
 enum class BufferType: unsigned int
 {
-  FIXED_SIZE = 0,
-  LOOPING = 1,
-  EXPONENTIALLY_GROWING = 2
+  FIXED_SIZE = 0,/*!< 0 */
+  LOOPING = 1,/*!< 1 */
+  EXPONENTIALLY_GROWING = 2/*!< 2 */
 };
 
 /** Buffer that stores all elements in a circular manner. Allows looping, thus overwriting

@@ -104,8 +104,9 @@ doc/doxygen/doc/html/index.html
 /*!
 \page page_how_to How To
  - \subpage page_use_silo <BR>
- - \subpage page_use_managers <BR>
- - \subpage page_tools
+ - \subpage page_log_script <BR>
+ - \subpage page_log_file
+ - \subpage page_rqt_gui
 
 */
 

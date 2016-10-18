@@ -53,9 +53,9 @@ class SignalLoggerBase {
  public:
   //! Get the logger type at runtime
   enum class LoggerType: unsigned int {
-    TypeNone = 0,
-    TypeStd  = 1,
-    TypeRos  =2
+    TypeNone = 0,/*!< 0 */
+    TypeStd  = 1,/*!< 1 */
+    TypeRos  = 2/*!< 2 */
   };
 
  public:

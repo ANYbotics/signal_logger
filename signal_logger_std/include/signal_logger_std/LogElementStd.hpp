@@ -58,4 +58,3 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
 };
 
 } /* namespace signal_logger */
-

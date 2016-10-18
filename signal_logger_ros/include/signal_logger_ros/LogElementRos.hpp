@@ -75,8 +75,16 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
          * Index in time buffer , idx = (no_items_time % div_data) + (no_unread_items_data - 1 )*div
         */
         // If time is not synchronized (time is 1 collection ahead), correct for this
-        std::size_t offset = this->isTimeSynchronzied()?time.noItemsInBuffer()%this->divider_:((time.noItemsInBuffer()-1)%this->divider_)+1;
-        tsp_now = time.getTimeStampAtPosition( offset + (this->noUnreadItemsInBuffer() - 1)*this->divider_);
+        if(time.noItemsInBuffer() < this->divider_)
+        {
+          // If no items not smaller than divider element 0 is read
+          tsp_now = time.getTimeStampAtPosition(time.noItemsInBuffer()-1);
+        }
+        else {
+          std::size_t offset = this->isTimeSynchronzied()?time.noItemsInBuffer()%this->divider_:((time.noItemsInBuffer()-1)%this->divider_)+1;
+          tsp_now = time.getTimeStampAtPosition( offset + (this->noUnreadItemsInBuffer() - 1)*this->divider_);
+        }
+
       }
         // convert to ros time
         ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
@@ -125,4 +133,3 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
 };
 
 } /* namespace signal_logger */
-
