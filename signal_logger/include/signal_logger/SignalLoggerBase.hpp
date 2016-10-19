@@ -137,6 +137,8 @@ class SignalLoggerBase {
     MELO_ERROR("Type of signal with name %s is not supported.", name.c_str());
   }
 
+  FOR_EIGEN_TYPES(ADD_EIGEN_VAR_AS_UNDERLYING_TYPE_IMPLEMENTATION);
+
  protected:
   /** Reads collect script and enables all log data
    * @param scriptName filename of the logging script
@@ -162,7 +164,6 @@ class SignalLoggerBase {
 
   //! Add pure virtual add-functions for every single type
   FOR_ALL_TYPES(ADD_VAR_DEFINITION);
-  FOR_EIGEN_TYPES(ADD_EIGEN_VAR_AS_UNDERLYING_TYPE_IMPLEMENTATION);
 
  protected:
   //! Flag to check if logger is initialized

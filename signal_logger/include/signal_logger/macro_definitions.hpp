@@ -51,14 +51,14 @@
     /** @param action         log action of the log variable*/ \
     /** @param bufferSize     size of the buffer storing log elements*/ \
     /** @param bufferType     determines type of buffer*/ \
-    void add##NAME( const TYPE * const var, \
-                    const signal_logger::MatrixXstring & names, \
-                    const std::string & group, \
-                    const std::string & unit, \
-                    const std::size_t divider, \
-                    const signal_logger::LogElementAction action, \
-                    const std::size_t bufferSize, \
-                    const signal_logger::BufferType bufferType) \
+    void add( const TYPE * const var, \
+              const signal_logger::MatrixXstring & names, \
+              const std::string & group = LOG_ELEMENT_DEFAULT_GROUP_NAME, \
+              const std::string & unit  = LOG_ELEMENT_DEFAULT_UNIT, \
+              const std::size_t divider = LOG_ELEMENT_DEFAULT_DIVIDER, \
+              const signal_logger::LogElementAction action = LOG_ELEMENT_DEFAULT_ACTION, \
+              const std::size_t bufferSize = LOG_ELEMENT_DEFAULT_BUFFER_SIZE, \
+              const signal_logger::BufferType bufferType = LOG_ELEMENT_DEFAULT_BUFFER_TYPE) \
     { \
       for(std::size_t i = 0; i < var->size(); ++i) { \
         add##UNDERLYING_TYPE_NAME(static_cast<const UNDERLYING_TYPE * const>(var->data() + i), static_cast<std::string>(*(names.data() + i)), group, unit, divider, action, bufferSize, bufferType); \
