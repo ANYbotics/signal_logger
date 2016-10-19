@@ -42,9 +42,10 @@ Three types of loggers are provided:
   </li>
 </ul>
 
-To initialize the logger you have to specify the collect frequency (frequency with which collectData() is called). The second argument specifies a configuration yaml file.
+To initialize the logger you have to specify the collect frequency (frequency with which collectData() is called). If 'maxLogTime' is zero a growing time buffer is initialized,
+else a fixed size time buffer of size (collectFrequency*maxLogTime) is allocated. The third argument specifies a configuration yaml file.
 \code{c}
-signal_logger::logger->initLogger(collectFrequency, collectScriptFileName);
+signal_logger::logger->initLogger(collectFrequency, maxLogTime, collectScriptFileName);
 \endcode
 
 <H3>Add variables to the logger</H3>
