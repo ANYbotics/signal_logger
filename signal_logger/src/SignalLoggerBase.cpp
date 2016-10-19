@@ -31,12 +31,12 @@ SignalLoggerBase::SignalLoggerBase(const std::string & loggerPrefix):
                                                 noCollectDataCalls_(0),
                                                 collectScriptFileName_(LOGGER_DEFAULT_SCRIPT_FILENAME),
                                                 updateFrequency_(0),
+                                                maxLoggingTime_(0.0),
                                                 loggerPrefix_(loggerPrefix),
                                                 logElements_(),
                                                 logTime_(),
                                                 scriptMutex_()
 {
-  timeElement_.reset(new LogElementBase<TimestampPair>(&logTime_, loggerPrefix + std::string{"/time"}, "[s/ns]", 1, LogElementAction::SAVE, 0, BufferType::EXPONENTIALLY_GROWING));
 }
 
 SignalLoggerBase::~SignalLoggerBase()
@@ -44,14 +44,23 @@ SignalLoggerBase::~SignalLoggerBase()
 
 }
 
-void SignalLoggerBase::initLogger(int updateFrequency, const std::string& collectScriptFileName)
+void SignalLoggerBase::initLogger(int updateFrequency, const double maxLogTime, const std::string& collectScriptFileName)
 {
   // Assert corrupted configuration
   assert(updateFrequency > 0);
 
   // Set configuration
   updateFrequency_ = updateFrequency;
+  maxLoggingTime_ = maxLogTime;
   collectScriptFileName_ = collectScriptFileName;
+
+  // Get time buffer type and logging tome
+  if(maxLoggingTime_ == 0.0) {
+    resetTimeLogElement(signal_logger::BufferType::EXPONENTIALLY_GROWING);
+  }
+  else {
+    resetTimeLogElement(signal_logger::BufferType::FIXED_SIZE, maxLoggingTime_);
+  }
 
   // Notify user
   MELO_INFO("Signal Logger was initialized!");
@@ -67,9 +76,26 @@ bool SignalLoggerBase::startLogger()
     return false;
   }
 
-  // Reset elements (default buffer of 10 seconds)
+  // If all elements are looping use a looping time buffer
+  bool all_looping = enabledElements_.end() == std::find_if(enabledElements_.begin(), enabledElements_.end(),
+               [] (const std::pair<std::string, LogElementMapIterator>& s) { return s.second->second->getBufferType() != BufferType::LOOPING; } );
+  if(all_looping) {
+    timeElement_->setBufferType(BufferType::LOOPING);
+    auto maxElement = std::max_element(enabledElements_.begin(), enabledElements_.end(), maxScaledBufferSize());
+    timeElement_->setBufferSize(maxElement->second->second->getDivider()*maxElement->second->second->getBufferSize());
+    MELO_INFO_STREAM("Use looping buffer " << maxElement->second->second->getDivider()*maxElement->second->second->getBufferSize());
+  }
+  else {
+    if(maxLoggingTime_ == 0.0) {
+      resetTimeLogElement(signal_logger::BufferType::EXPONENTIALLY_GROWING);
+    }
+    else {
+      resetTimeLogElement(signal_logger::BufferType::FIXED_SIZE, maxLoggingTime_);
+    }
+  }
+
+  // Reset elements
   timeElement_->restartElement();
-  timeElement_->setBufferSize(10 * updateFrequency_);
   for(auto & elem : enabledElements_) { elem.second->second->restartElement(); }
 
   // Reset flags and data collection calls
@@ -146,6 +172,13 @@ bool SignalLoggerBase::collectLoggerData()
     }
 
     // Collect time
+    if(timeElement_->getBufferType() == BufferType::FIXED_SIZE && timeElement_->noItemsInBuffer() == timeElement_->getBufferSize())
+    {
+      MELO_WARN("Logger stopped. Time buffer is full!");
+      this->stopLogger();
+      return true;
+    }
+
     timeElement_->collectData();
 
     // Unlock all data
@@ -358,5 +391,13 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
   return j!=0;
 
 }
+
+bool SignalLoggerBase::resetTimeLogElement(signal_logger::BufferType buffertype, double maxLogTime) {
+
+  timeElement_.reset(new LogElementBase<TimestampPair>(&logTime_, loggerPrefix_ + std::string{"/time"}, "[s/ns]", 1,
+                                                       LogElementAction::SAVE, maxLogTime*updateFrequency_, buffertype));
+}
+
+
 
 }

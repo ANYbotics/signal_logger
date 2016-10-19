@@ -30,6 +30,14 @@ class SignalLoggerStd : public signal_logger::SignalLoggerBase
   //! @return the logger type
   virtual LoggerType getLoggerType() const { return SignalLoggerBase::LoggerType::TypeStd; }
 
+  /** Resets the pointer to the logelement
+   * @param buffertype type of the time buffer
+   * @param maxLogTime maximal time logging
+   */
+  virtual bool resetTimeLogElement(signal_logger::BufferType buffertype,
+                                   double maxLogTime = signal_logger::SignalLoggerBase::LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME) override;
+
+
  protected:
   FOR_ALL_TYPES(ADD_STD_VAR_IMPLEMENTATION);
 

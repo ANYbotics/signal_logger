@@ -105,7 +105,7 @@ class LogElement: public QObject {
     spinBoxDivider->setMinimumSize(QSize(50, 0));
     spinBoxDivider->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
     spinBoxDivider->setMinimum(1);
-    spinBoxDivider->setMaximum(100);
+    spinBoxDivider->setMaximum(1000);
     spinBoxDivider->setSingleStep(1);
 
     //! Add buffer label
@@ -121,7 +121,7 @@ class LogElement: public QObject {
     spinBoxBufferSize->setMinimumSize(QSize(50, 0));
     spinBoxBufferSize->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
     spinBoxBufferSize->setMinimum(1);
-    spinBoxBufferSize->setMaximum(1000);
+    spinBoxBufferSize->setMaximum(100000);
     spinBoxBufferSize->setSingleStep(1);
 
     //! Add buffer looping combobox

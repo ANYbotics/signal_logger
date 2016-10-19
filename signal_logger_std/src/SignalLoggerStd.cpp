@@ -15,10 +15,7 @@ SignalLoggerStd::SignalLoggerStd(const std::string & loggerPrefix):
         headerStream_(std::ostringstream::in | std::ostringstream::out),
         dataStream_(std::ios::in | std::ios::out | std::ios::binary)
 {
-  timeElement_.reset(new signal_logger_std::LogElementStd<signal_logger::TimestampPair>( &logTime_, loggerPrefix + std::string{"/time"},
-                                                                                         "[s/ns]", 1, signal_logger::LogElementAction::SAVE,
-                                                                                         0, signal_logger::BufferType::EXPONENTIALLY_GROWING,
-                                                                                         &headerStream_, &dataStream_));
+
 }
 
 SignalLoggerStd::~SignalLoggerStd()
@@ -62,6 +59,14 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName) {
   MELO_INFO( "All done, captain!" );
 
   return true;
+}
+
+bool SignalLoggerStd::resetTimeLogElement(signal_logger::BufferType buffertype, double maxLogTime) {
+
+  timeElement_.reset(new signal_logger_std::LogElementStd<signal_logger::TimestampPair>( &logTime_, loggerPrefix_ + std::string{"/time"},
+                                                                                         "[s/ns]", 1, signal_logger::LogElementAction::SAVE,
+                                                                                         maxLogTime*updateFrequency_, buffertype,
+                                                                                         &headerStream_, &dataStream_));
 }
 
 } /* namespace signal_logger_std */
