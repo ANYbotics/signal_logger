@@ -36,19 +36,19 @@ class LogElementBase: public LogElementInterface
                  const LogElementAction action,
                  const std::size_t bufferSize,
                  const BufferType bufferType) :
-    LogElementInterface(),
-    buffer_(ptr), // Zero buffer size log element not enabled
-    name_(name),
-    unit_(unit),
-    divider_(divider),
-    action_(action),
-    isEnabled_(false),
-    isTimeSynchronized_(false)
-  {
+                   LogElementInterface(),
+                   buffer_(ptr), // Zero buffer size log element not enabled
+                   name_(name),
+                   unit_(unit),
+                   divider_(divider),
+                   action_(action),
+                   isEnabled_(false),
+                   isTimeSynchronized_(false)
+ {
     buffer_.setType(bufferType);
     buffer_.setBufferSize(bufferSize);
     buffer_.clear();
-  }
+ }
 
   //! Destructor
   virtual ~LogElementBase() { }
@@ -59,27 +59,17 @@ class LogElementBase: public LogElementInterface
   //! Default implementation for element type specific functionality
   virtual void publishData(const LogElementBase<TimestampPair> & time) override { }
   virtual void saveDataToLogFile() override { }
-  virtual void initializeElement() override { }
-  virtual void shutdownElement()   override { }
   virtual void restartElement()    override { this->clearBuffer(); }
+  virtual void cleanupElement()    override { }
 
   //! @return flag indicating if log element is enabled
   bool isEnabled() const final { return isEnabled_; }
 
   //! @param flag indicating if log element should be enabled
   void setIsEnabled(const bool isEnabled) override final {
-    if(isEnabled != isEnabled_)
-    {
-      isEnabled_ = isEnabled;
-      if(isEnabled_) {
-        buffer_.allocate();
-        this->initializeElement();
-      }
-      else {
-        this->shutdownElement();
-        buffer_.deallocate();
-      }
-    }
+    isEnabled_ = isEnabled;
+    buffer_.allocate(isEnabled_);
+    updateElement();
   }
 
   //! @return name of the log element
@@ -111,7 +101,10 @@ class LogElementBase: public LogElementInterface
   LogElementAction getAction() const override final { return action_; }
 
   //! @param desired action log element takes
-  void setAction(LogElementAction action) override final { action_ = action; }
+  void setAction(LogElementAction action) override final {
+    action_ = action;
+    updateElement();
+  }
 
   //! @return buffer size of the log element
   std::size_t getBufferSize() const override final { return buffer_.getBufferSize(); }
@@ -149,6 +142,9 @@ class LogElementBase: public LogElementInterface
   {
     return buffer_.readElementAtPosition(n);
   }
+
+ protected:
+  virtual void updateElement() { };
 
  protected:
   //! Buffer (threadsafe)

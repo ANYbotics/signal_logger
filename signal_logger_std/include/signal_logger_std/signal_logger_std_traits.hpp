@@ -240,9 +240,9 @@ struct sls_traits<ValueType_, typename std::enable_if< is_eigen_matrix<ValueType
  * Specializations: kindr types *
  ********************************/
 template <typename ValueType_>
-struct sls_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::RotationBase<ValueType_>,ValueType_>::value
-|| std::is_base_of<kindr::RotationDiffBase<ValueType_>,ValueType_>::value
-|| is_kindr_vector3<ValueType_>::value >::type>
+struct sls_traits<ValueType_, typename std::enable_if< std::is_base_of<kindr::RotationBase<ValueType_>,ValueType_>::value ||
+                                                       std::is_base_of<kindr::RotationDiffBase<ValueType_>,ValueType_>::value ||
+                                                       is_kindr_vector3<ValueType_>::value >::type>
 {
   static void writeLogElementToStreams(std::stringstream* headerStream,
                                        std::stringstream* dataStream,

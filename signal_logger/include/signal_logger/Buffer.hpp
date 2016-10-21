@@ -182,15 +182,10 @@ class Buffer
   }
 
   //! Allocate buffer size of memory
-  void allocate() {
+  void allocate(bool enabled) {
     boost::mutex::scoped_lock lock(mutex_);
-    container_.set_capacity(bufferSize_ * rows_ * cols_);
-  }
-
-  //! Deallocate memory
-  void deallocate() {
-    boost::mutex::scoped_lock lock(mutex_);
-    container_.set_capacity(0);
+    std::size_t new_capacity = enabled ? (bufferSize_ * rows_ * cols_) : 0;
+    container_.set_capacity(new_capacity);
   }
 
   //! @return number of unread elements

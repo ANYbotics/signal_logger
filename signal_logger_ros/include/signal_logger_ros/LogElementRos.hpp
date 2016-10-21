@@ -38,8 +38,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
                 ros::NodeHandle * nh) :
                   signal_logger_std::LogElementStd<ValueType_>(ptr, name, unit, divider, action, bufferSize, bufferType, headerStream, dataStream),
                   nh_(nh),
-                  pub_(),
-                  publishCount_(0)
+                  pub_()
                   {
     msg_.reset(new MsgType());
                   }
@@ -76,23 +75,19 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
     }
   }
 
-  void restartElement() override
-      {
-    signal_logger_std::LogElementStd<ValueType_>::restartElement();
-    publishCount_ = std::size_t(0);
-      }
+  void updateElement() override {
+    if(this->isPublished() && this->isEnabled()) {
+      pub_ = nh_->advertise<MsgType>(this->getName(), 1);
+    }  else {
+      pub_.shutdown();
+    }
+  }
 
-  void initializeElement() override
-      {
-    signal_logger_std::LogElementStd<ValueType_>::initializeElement();
-    pub_ = nh_->advertise<MsgType>(this->getName(), 1);
-      }
-
-  void shutdownElement() override
-      {
+  void cleanupElement() override {
+    signal_logger_std::LogElementStd<ValueType_>::cleanupElement();
     pub_.shutdown();
-    signal_logger_std::LogElementStd<ValueType_>::shutdownElement();
-      }
+  }
+
 
  protected:
   //! ros nodehandle
@@ -101,9 +96,6 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   ros::Publisher pub_;
   //! message pointer
   MsgTypePtr msg_;
-  //! no published items
-  std::size_t publishCount_;
-
 };
 
 } /* namespace signal_logger */

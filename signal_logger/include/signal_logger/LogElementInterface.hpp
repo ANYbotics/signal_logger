@@ -90,14 +90,11 @@ class LogElementInterface
   //! Write header of log file
   virtual void saveDataToLogFile() = 0;
 
-  //! Initialize logger elements communication etc (called on enable element)
-  virtual void initializeElement() = 0;
-
-  //! Shutdown logger elements communication etc (called on disable element)
-  virtual void shutdownElement() = 0;
-
   //! Reset logger element called before logger start
   virtual void restartElement() = 0;
+
+  //! Cleanup logger element
+  virtual void cleanupElement() = 0;
 
   //! @return flag indicating if log element is enabled
   virtual  bool isEnabled() const = 0;

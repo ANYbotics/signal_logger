@@ -9,7 +9,6 @@
 
 // signal logger
 #include "signal_logger/SignalLoggerBase.hpp"
-#include "signal_logger/macro_definitions.hpp"
 
 namespace signal_logger {
 
@@ -21,6 +20,19 @@ class SignalLoggerNone : public SignalLoggerBase
 
   //! Destructor
   virtual ~SignalLoggerNone() { }
+
+  //! Add
+  template<typename ValueType_>
+  void add( const ValueType_ * const var,
+            const std::string & name,
+            const std::string & group       = LOG_ELEMENT_DEFAULT_GROUP_NAME,
+            const std::string & unit        = LOG_ELEMENT_DEFAULT_UNIT,
+            const std::size_t divider       = LOG_ELEMENT_DEFAULT_DIVIDER,
+            const LogElementAction action   = LOG_ELEMENT_DEFAULT_ACTION,
+            const std::size_t bufferSize    = LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
+            const BufferType bufferType     = LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
+  {
+  }
 
   /** Initializes the logger
    * @param updateFrequency   Update frequency of the controller (frequency of collectLoggerData being called)
@@ -63,9 +75,6 @@ class SignalLoggerNone : public SignalLoggerBase
    * @param logFileName filename of the log file
    */
   virtual bool workerSaveData(const std::string & logFileName) { return true; };
-
-  //! Add empty implementation of add-functions for every single type
-  FOR_ALL_TYPES(ADD_NONE_VAR_IMPLEMENTATION);
 
 };
 

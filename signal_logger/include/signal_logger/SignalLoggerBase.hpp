@@ -11,7 +11,6 @@
 #include "signal_logger/LogElementTypes.hpp"
 #include "signal_logger/LogElementBase.hpp"
 #include "signal_logger/LogElementInterface.hpp"
-#include "signal_logger/macro_definitions.hpp"
 
 // message logger
 #include "message_logger/message_logger.hpp"
@@ -26,12 +25,6 @@
 #include <unordered_map>
 
 namespace signal_logger {
-
-// Forward log element action to signal logger namespace
-using LogPair = std::pair<std::string, std::shared_ptr<signal_logger::LogElementInterface>>;
-
-
-
 
 //! Class that severs as base class for all the loggers
 class SignalLoggerBase {
@@ -50,6 +43,7 @@ class SignalLoggerBase {
   static constexpr const char* LOGGER_DEFAULT_SCRIPT_FILENAME   = "logger.yaml";
   static constexpr const char* LOGGER_DEFAULT_PREFIX            = "/log";
 
+  using LogPair = std::pair<std::string, std::shared_ptr<signal_logger::LogElementInterface>>;
   using LogElementMap = std::unordered_map<std::string, std::shared_ptr<signal_logger::LogElementInterface>>;
   using LogElementMapIterator = LogElementMap::iterator;
 
@@ -113,32 +107,6 @@ class SignalLoggerBase {
   //! @return the update frequency
   int getUpdateFrequency() const { return updateFrequency_.load(); }
 
-  /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
-    * @tparam ValueType_       Data type of the logger element
-    * @param  var              Pointer to log variable
-    * @param  name             name of the log variable
-    * @param  group            logger group the variable belongs to
-    * @param  unit             unit of the log variable
-    * @param  divider          divider is defining the update frequency of the logger element (ctrl_freq/divider)
-    * @param  action           log action of the log variable
-    * @param  bufferSize       size of the buffer storing log elements
-    * @param  bufferType       determines the buffer type
-    */
-  template<typename ValueType_>
-  void add( const ValueType_ * const var,
-            const std::string & name,
-            const std::string & group       = LOG_ELEMENT_DEFAULT_GROUP_NAME,
-            const std::string & unit        = LOG_ELEMENT_DEFAULT_UNIT,
-            const std::size_t divider       = LOG_ELEMENT_DEFAULT_DIVIDER,
-            const LogElementAction action   = LOG_ELEMENT_DEFAULT_ACTION,
-            const std::size_t bufferSize    = LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
-            const BufferType bufferType     = LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
-  {
-    MELO_ERROR("Type of signal with name %s is not supported.", name.c_str());
-  }
-
-  FOR_EIGEN_TYPES(ADD_EIGEN_VAR_AS_UNDERLYING_TYPE_IMPLEMENTATION);
-
  protected:
   /** Reads collect script and enables all log data
    * @param scriptName filename of the logging script
@@ -160,10 +128,6 @@ class SignalLoggerBase {
    * @param maxLogTime maximal time logging
    */
   virtual bool resetTimeLogElement(signal_logger::BufferType buffertype, double maxLogTime = LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME);
-
-
-  //! Add pure virtual add-functions for every single type
-  FOR_ALL_TYPES(ADD_VAR_DEFINITION);
 
  protected:
   //! Flag to check if logger is initialized
@@ -206,8 +170,5 @@ class SignalLoggerBase {
 
 
 };
-
-//! Add template specifications
-FOR_ALL_TYPES(ADD_VAR_TEMPLATE_SPECIFICATIONS);
 
 }
