@@ -82,8 +82,10 @@ bool SignalLoggerBase::startLogger()
   if(all_looping) {
     timeElement_->setBufferType(BufferType::LOOPING);
     auto maxElement = std::max_element(enabledElements_.begin(), enabledElements_.end(), maxScaledBufferSize());
-    timeElement_->setBufferSize(maxElement->second->second->getDivider()*maxElement->second->second->getBufferSize());
-    MELO_INFO_STREAM("Use looping buffer " << maxElement->second->second->getDivider()*maxElement->second->second->getBufferSize());
+    if(maxElement != enabledElements_.end()) {
+      timeElement_->setBufferSize(maxElement->second->second->getDivider()*maxElement->second->second->getBufferSize());
+      MELO_INFO_STREAM("Use looping buffer " << maxElement->second->second->getDivider()*maxElement->second->second->getBufferSize());
+    }
   }
   else {
     if(maxLoggingTime_ == 0.0) {
