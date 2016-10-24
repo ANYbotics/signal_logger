@@ -31,12 +31,12 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName) {
   dataStream_.str(std::string());
 
   // Fill streams
-  headerStream_ << "// Name SizeInBytes NrData Divider LoopingBuffer(0 = false, 1 = true)" << std::endl;
-  //timeElement_->saveDataToLogFile();
-
+  timeElement_->saveDataToLogFile();
+  std::size_t noSavedElements = 2; // time is always saved
   for(auto & elem : enabledElements_) {
     if(elem.second->second->isSaved())
     {
+      noSavedElements++;
       elem.second->second->saveDataToLogFile();
       elem.second->second->clearBuffer();
     }
@@ -44,6 +44,8 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName) {
 
   // Write string header
   file_.open(logFileName, std::ios::out | std::ios::trunc);
+  file_ << "// Name SizeInBytes NrData Divider LoopingBuffer(0 = false, 1 = true)" << std::endl;
+  file_ << noSavedElements << std::endl;
   file_ << headerStream_.str() << std::endl;
   file_.close();
 

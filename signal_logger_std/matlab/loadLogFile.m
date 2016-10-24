@@ -1,18 +1,26 @@
 function [logElements] = loadLogFile(fname)
-% [D,vars,freq] = loadLogFile(fname)
+% [logElements] = loadLogFile(fname)
 %
-% This function converts an binary file into a Matlab matrix and
-% a struct array of variable names and variable units. If fname is
-% given, the file is processed immediately. If no filename is given,
-% a dialog box will ask to located the file.
+% This function loads a log data file and stores it into a vector of
+% structs. 
 %
-% fname (i): input file name (optional)
-% D     (o): data matrix
-% vars  (o): struct array containing variable names and units
-% freq  (o): sampling frequency
+% inputs:
+%       fname: logfile name (if non/invalid -> get path over ui)
+% outputs:
+%   logElements: struct containing log element properties
+%       name:    name of the log element
+%       noBytes: number of bytes of a single data point
+%       noData:  number of logged data points
+%       divider: determines the collect freq. of the element
+%                (update_freq/divider)
+%       isBufferLooping: determines whether the buffer is looping, time has
+%                        to be matched in inverse manor
+%       data:    uint64 vector containing the data (typecast this to
+%                correct type)
+%       time:    time vector matching a time to every data element. Left
+%                empty by this function
 %
-
-% Stefan Schaal, March 2006
+% Gabriel Hottiger, October 2016
 
 % read in the file name
 if ~exist('fname') | isempty(fname),
@@ -62,6 +70,7 @@ for i=1:noElements
     logElements(i).isBufferLooping = header{5}(i);
     logElements(i).data = typecast( fread(fid, logElements(i).noData ,...
         strcat('*uint', num2str( 8*logElements(i).noBytes ) ) ), 'uint64');
+    logElements(i).time = struct('seconds', [], 'nanoseconds', []);
 end
 
 fclose(fid);
