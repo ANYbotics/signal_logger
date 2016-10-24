@@ -167,13 +167,6 @@ bool SignalLoggerBase::collectLoggerData()
     logTime_.first = seconds.count();
     logTime_.second = std::chrono::duration_cast<std::chrono::nanoseconds>(duration-seconds).count();
 
-    // Lock all data and set data to be unsynchronized
-    for(auto & elem : enabledElements_)
-    {
-      elem.second->second->acquireMutex().lock();
-      elem.second->second->setIsTimeSynchronzied(false);
-    }
-
     // Collect time
     if(timeElement_->getBufferType() == BufferType::FIXED_SIZE && timeElement_->noItemsInBuffer() == timeElement_->getBufferSize())
     {
@@ -184,19 +177,13 @@ bool SignalLoggerBase::collectLoggerData()
 
     timeElement_->collectData();
 
-    // Unlock all data
-    for(auto & elem : enabledElements_)
-    {
-      elem.second->second->acquireMutex().unlock();
-    }
-
     // Collect element into buffer
     for(auto & elem : enabledElements_)
     {
-      elem.second->second->acquireMutex().lock();
-      if((noCollectDataCalls_ % elem.second->second->getDivider()) == 0) { elem.second->second->collectData(); }
-      elem.second->second->setIsTimeSynchronzied(true);
-      elem.second->second->acquireMutex().unlock();
+      if((noCollectDataCalls_ % elem.second->second->getDivider()) == 0) {
+        std::unique_lock<std::mutex> lock(elem.second->second->acquireMutex());
+        elem.second->second->collectData();
+      }
     }
   }
 

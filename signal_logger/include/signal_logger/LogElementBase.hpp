@@ -42,8 +42,7 @@ class LogElementBase: public LogElementInterface
                    unit_(unit),
                    divider_(divider),
                    action_(action),
-                   isEnabled_(false),
-                   isTimeSynchronized_(false)
+                   isEnabled_(false)
  {
     buffer_.setType(bufferType);
     buffer_.setBufferSize(bufferSize);
@@ -127,12 +126,6 @@ class LogElementBase: public LogElementInterface
   //! Clear buffer
   void clearBuffer() override final { buffer_.clear(); }
 
-  //! Indicates if time is synchronized
-  bool isTimeSynchronzied() const override final { return isTimeSynchronized_; }
-
-  //! Set if time is synchronized
-  void setIsTimeSynchronzied(bool isTimeSynchronized) override final { isTimeSynchronized_ = isTimeSynchronized; }
-
   //! Get mutex
   std::mutex& acquireMutex() { return mutex_; }
 
@@ -159,8 +152,6 @@ class LogElementBase: public LogElementInterface
   LogElementAction action_;
   //! Indicates if log element is currently active
   bool isEnabled_;
-  //! Indicates if time is synchronized (nr collected elements = nr collected time elements)
-  std::atomic_bool isTimeSynchronized_;
   //! Mutex
   std::mutex mutex_;
 };

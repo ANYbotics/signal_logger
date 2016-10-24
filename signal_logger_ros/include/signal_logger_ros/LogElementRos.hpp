@@ -56,7 +56,6 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
     {
       std::unique_lock<std::mutex> lock(this->mutex_);
       std::size_t idx = (time.noItemsInBuffer()-1) - (this->noItemsInBuffer()-this->noUnreadItemsInBuffer())*this->divider_;
-      if(!this->isTimeSynchronzied()) { ++idx; }
       signal_logger::TimestampPair tsp_now = time.getTimeStampAtPosition(idx);
 
       // convert to ros time

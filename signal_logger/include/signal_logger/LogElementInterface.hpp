@@ -150,12 +150,6 @@ class LogElementInterface
   //! Clear Buffer
   virtual void clearBuffer() = 0;
 
-  //! Indicates if time is synchronized
-  virtual bool isTimeSynchronzied() const = 0;
-
-  //! Set if time is synchronized
-  virtual void setIsTimeSynchronzied(bool isTimeSynchronized) = 0;
-
   //! Get element mutex
   virtual std::mutex& acquireMutex() = 0;
 
