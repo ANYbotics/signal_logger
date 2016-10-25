@@ -19,12 +19,14 @@
                           const signal_logger::BufferType bufferType     = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE) \
   { \
     dynamic_cast<signal_logger_ros::SignalLoggerRos*>(logger.get())->add(&var, name, group, unit, divider, action, bufferSize, bufferType); \
-  }
+  } \
+  FOR_ALL_TYPES(ADD_VAR_TEMPLATE_EXPLICIT_INSTANTIATION);
 
 
 #include <signal_logger/signal_logger.hpp>
 #include <signal_logger_ros/SignalLoggerRos.hpp>
 #include <signal_logger_ros/LogElementRos.hpp>
+#include <signal_logger/macro_definitions.hpp>
 
 namespace signal_logger {
 
