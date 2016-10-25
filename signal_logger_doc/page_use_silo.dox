@@ -1,105 +1,14 @@
 /*! \page page_use_silo Use the signal logger in your program
 
-<H3>Access the logger</H3>
-The signal logger is stored as a global shared pointer and can be accessed from everywhere in the current process.
-\code{c}
-// Including the logger
-#include <signal_logger/signal_logger.hpp>
+<H3>Add a new data type to the logger</H3>
+In order to add a type you have to provide a complete set of traits in order to
+publish and save a log element of that type. These traits have to be added in
+signal_logger_ros/signal_logger_ros_traits.hpp and signal_logger_std_traits.hpp.
 
-// Accessing the logger
-signal_logger::logger->...
+Example:
+\code{c}
+
 \endcode
 
-<H3>Create / Reset the logger</H3>
-Three types of loggers are provided:
-<ul>
-  <li> SignalLoggerNone is an empty implementation of the logger
-       \code{c}
-          // Include signal logger none
-          #include "signal_logger/SignalLoggerNone.hpp"
-
-          // Resetting the logger to type none
-          signal_logger::logger.reset(new signal_logger::SignalLoggerNone());
-       \endcode
-  </li>
-  <li> SignalLoggerStd provides the functionality to write a binary log file
-       \code{c}
-          // Include signal logger std
-          #include "signal_logger_std/SignalLoggerStd.hpp"
-
-          // Resetting the logger to type std
-          signal_logger::logger.reset(new signal_logger_std::SignalLoggerStd());
-       \endcode
-  </li>
-  <li> SignalLoggerRos extends the SignalLoggerStd with a ros publishing functionality
-       \code{c}
-           // Include signal logger ros
-           #include "signal_logger_ros/SignalLoggerRos.hpp"
-
-           // Resetting the logger to type ros
-           signal_logger::logger.reset(new signal_logger_ros::SignalLoggerRos(rosNodeHandle));
-       \endcode
-  </li>
-</ul>
-
-To initialize the logger you have to specify the collect frequency (frequency with which collectData() is called). If 'maxLogTime' is zero a growing time buffer is initialized,
-else a fixed size time buffer of size (collectFrequency*maxLogTime) is allocated. The third argument specifies a configuration yaml file.
-\code{c}
-signal_logger::logger->initLogger(collectFrequency, maxLogTime, collectScriptFileName);
-\endcode
-
-<H3>Add variables to the logger</H3>
-To add a variable to the logger use the signal_logger::SignalLoggerBase::add() function. This function is templated and implemented for all available types listed in LogElementTypes.hpp.
-\code{c}
-signal_logger::logger->add(&myVar, name, group, unit, divider, action, bufferSize, bufferType);
-\endcode
-<ul>
-  <li> <I><B>myVar:</B></I> The variable you want to log. The ptr to this variable has to be constant and valid until the end of the program. </li>
-  <li> <I><B>name:</B></I> The name of the log variable.</li>
-  <li> <I><B>group:</B></I> The namespace of the logger variable. Allows grouping of log variables.</li>
-  <li> <I><B>unit:</B></I> The physical unit of the logged variable.</li>
-  <li> <I><B>divider:</B></I> The default divider of the log variable. (divider = 'collect freq.' / 'log var freq.') )</li>
-  <li> <I><B>action:</B></I> The action that shall be performed for the log element. (see signal_logger::LogElementAction) </li>
-  <li> <I><B>bufferSize:</B></I> The size of the buffer.</li>
-  <li> <I><B>bufferType:</B></I> The type of the buffer. (see signal_logger::BufferType)</li>
-</ul>
-
-However, this will have no effect until the update function signal_logger::SignalLoggerBase::updateLogger() is called.
-\code{c}
-signal_logger::logger->updateLogger(updateScript);
-\endcode
-The update function loads the configuration yaml script (registered in the init function) and activates all the log elements specified in the file. The default configuration of the element is overwritten by the
-configuration specified by the yaml script. If <I>updateScript</I> is true, the yaml script is updated with all previously added logger elements, thus all elements are activated.
-
-
-<H3>Collect logger data</H3>
-The activated/enabled elements of the logger are collected when signal_logger::SignalLoggerBase::collectLoggerData() is called and the logger was started. It is required that this function is called with the 'collectFrequency'
-specified in the init function.
-\code{c}
-signal_logger::logger->collectLoggerData();
-\endcode
-
-
-<H3>Start/Stop the logger</H3>
-To start and stop the logger following functions are provided.
-\code{c}
-signal_logger::logger->startLogger();
-signal_logger::logger->stopLogger();
-signal_logger::logger->restartLogger();
-\endcode
-
-<H3>Save the logger data</H3>
-The standard logger implements saving the data to a binary file. The saving is done in a different, detached thread.
-During the saving procedure no data is collected, when done, the buffer is flushed.
-\code{c}
-signal_logger::logger->saveLoggerData();
-signal_logger::logger->stopAndSaveLoggerData();
-\endcode
-
-<H3>Publish the logger data</H3>
-The ros logger implements publishing data over ros. The signal_logger::SignalLoggerBase::publishLoggerData() function can be executed in parallel to the collect function.
-\code{c}
-signal_logger::logger->publishLoggerData();
-\endcode
 
 */

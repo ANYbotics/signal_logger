@@ -28,9 +28,11 @@ The first line is a comment explaining the header structure.
 \endcode
 
 <H4>Header</H4>
-The following (readable) lines, provide a list of all saved log elements as described by the previous comment. The time will always be written to the file,
+The following (readable) lines, provide an overview of the logged data. The first number stands for the total number of logged elements.
+Below this number a list of all saved log elements is given in the manor described inthe previous comment part. The time will always be written to the file,
 has always a divider of 1, and the complete number of data values. The other types can vary depending on the logger configuration.
 \code{txt}
+6
 /myLoggerNamespace/time_s 8 100 1 0
 /myLoggerNamespace/time_ns 8 100 1 0
 /myLoggerNamespace/myGroup1/myDataA 1 50 2 0
