@@ -104,6 +104,7 @@ doc/doxygen/doc/html/index.html
 /*!
 \page page_how_to How To
  - \subpage page_use_silo <BR>
+ - \subpage page_extend_silo <BR>
  - \subpage page_time <BR>
  - \subpage page_buffer <BR>
  - \subpage page_log_script <BR>
