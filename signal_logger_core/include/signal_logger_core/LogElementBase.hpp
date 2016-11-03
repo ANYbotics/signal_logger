@@ -8,8 +8,8 @@
 #pragma once
 
 // Signal logger
-#include "signal_logger/LogElementInterface.hpp"
-#include "signal_logger/Buffer.hpp"
+#include "signal_logger_core/LogElementInterface.hpp"
+#include "signal_logger_core/Buffer.hpp"
 
 // STL
 #include <atomic>

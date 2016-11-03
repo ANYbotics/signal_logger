@@ -4,7 +4,7 @@ project(signal_logger_std)
 # Find Catkin
 find_package(catkin REQUIRED COMPONENTS
   message_logger
-  signal_logger
+  signal_logger_core
 )
 
 ###################################
@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES ${PROJECT_NAME}
- CATKIN_DEPENDS  message_logger signal_logger
+ CATKIN_DEPENDS  message_logger signal_logger_core
 )
 
 ###########

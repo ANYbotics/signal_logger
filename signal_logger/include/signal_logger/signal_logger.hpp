@@ -10,7 +10,17 @@
 #undef E
 #endif
 
-#include "signal_logger/SignalLoggerBase.hpp"
+#define SILO_USE_ROS
+
+
+#include "signal_logger_core/SignalLoggerBase.hpp"
+#include "signal_logger_std/SignalLoggerStd.hpp"
+#include "signal_logger_core/SignalLoggerNone.hpp"
+
+#ifdef SILO_USE_ROS
+  #include "signal_logger_ros/SignalLoggerRos.hpp"
+#endif
+
 #include <memory>
 #include "assert.h"
 
@@ -18,6 +28,30 @@ namespace signal_logger {
 
 //! Reference to the logger
 extern std::shared_ptr<SignalLoggerBase> logger;
+
+/*
+void setLoggerType(const signal_logger::SignalLoggerBase::LoggerType & type) {
+  switch(type) {
+    case signal_logger::SignalLoggerBase::LoggerType::TypeNone:
+      logger.reset(new signal_logger::SignalLoggerNone());
+      break;
+
+    case signal_logger::SignalLoggerBase::LoggerType::TypeStd:
+      logger.reset(new signal_logger_std::SignalLoggerStd());
+      break;
+
+    #ifdef SILO_USE_ROS
+    case signal_logger::SignalLoggerBase::LoggerType::TypeRos:
+      logger.reset(new signal_logger_ros::SignalLoggerRos());
+      break;
+    #endif
+
+    default:
+      std::cout << "Logger Type is unknown!" << std::endl;
+  }
+
+}
+*/
 
 /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
   * @tparam ValueType_       Data type of the logger element
@@ -38,7 +72,28 @@ void add( const ValueType_ & var,
           const std::size_t divider       = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
           const LogElementAction action   = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
           const std::size_t bufferSize    = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
-          const BufferType bufferType     = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE);
+          const BufferType bufferType     = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
+{
+    #ifdef SILO_USE_ROS
+      signal_logger_ros::SignalLoggerRos* slRos = dynamic_cast<signal_logger_ros::SignalLoggerRos*>(logger.get());
+      if(slRos) {
+        slRos->add<ValueType_>(&var, name, group, unit, divider, action, bufferSize, bufferType);
+        return;
+      }
+    #endif
+
+    signal_logger_std::SignalLoggerStd* slStd = dynamic_cast<signal_logger_std::SignalLoggerStd*>(logger.get());
+    if(slStd) {
+      slStd->add<ValueType_>(&var, name, group, unit, divider, action, bufferSize, bufferType);
+      return;
+    }
+
+    signal_logger::SignalLoggerNone* slNone = dynamic_cast<signal_logger::SignalLoggerNone*>(logger.get());
+    if(slNone) {
+      slNone->add<ValueType_>(&var, name, group, unit, divider, action, bufferSize, bufferType);
+      return;
+    }
+}
 
 /** Function implementation to add eigen matrices as their underlying type to the logger.
   *@param var            pointer to log matrix

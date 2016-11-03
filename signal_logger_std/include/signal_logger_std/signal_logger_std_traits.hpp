@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include <signal_logger/signal_logger_traits.hpp>
-#include <signal_logger/LogElementTypes.hpp>
+#include <signal_logger_core/signal_logger_traits.hpp>
+#include <signal_logger_core/LogElementTypes.hpp>
 #include <signal_logger_std/LogElementStd.hpp>
 #include <fstream>
 #include <typeinfo>

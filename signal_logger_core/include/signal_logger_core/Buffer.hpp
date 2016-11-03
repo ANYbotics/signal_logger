@@ -8,7 +8,7 @@
 #pragma once
 
 // Signal logger
-#include "signal_logger/LogElementTypes.hpp"
+#include "signal_logger_core/LogElementTypes.hpp"
 
 // Message logger
 #include "message_logger/message_logger.hpp"

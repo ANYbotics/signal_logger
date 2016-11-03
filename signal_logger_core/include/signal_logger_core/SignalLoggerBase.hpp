@@ -8,9 +8,9 @@
 #pragma once
 
 // signal logger
-#include "signal_logger/LogElementTypes.hpp"
-#include "signal_logger/LogElementBase.hpp"
-#include "signal_logger/LogElementInterface.hpp"
+#include "signal_logger_core/LogElementTypes.hpp"
+#include "signal_logger_core/LogElementBase.hpp"
+#include "signal_logger_core/LogElementInterface.hpp"
 
 // message logger
 #include "message_logger/message_logger.hpp"

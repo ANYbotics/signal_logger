@@ -8,7 +8,7 @@
 #pragma once
 
 // signal logger
-#include "signal_logger/SignalLoggerBase.hpp"
+#include "signal_logger_core/SignalLoggerBase.hpp"
 
 namespace signal_logger {
 
@@ -79,4 +79,3 @@ class SignalLoggerNone : public SignalLoggerBase
 };
 
 }
-

@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "signal_logger/LogElementTypes.hpp"
-#include "signal_logger/signal_logger_traits.hpp"
+#include "signal_logger_core/LogElementTypes.hpp"
+#include "signal_logger_core/signal_logger_traits.hpp"
 
 #include "geometry_msgs/WrenchStamped.h"
 #include "geometry_msgs/QuaternionStamped.h"

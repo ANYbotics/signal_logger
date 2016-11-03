@@ -15,7 +15,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>message_logger</depend>
-  <depend>signal_logger</depend>
+  <depend>signal_logger_core</depend>
   <depend>signal_logger_std</depend>
   <depend>signal_logger_msgs</depend>
   <depend>std_msgs</depend>

@@ -8,7 +8,7 @@
 #pragma once
 
 // Signal logger
-#include "signal_logger/LogElementBase.hpp"
+#include "signal_logger_core/LogElementBase.hpp"
 #include "signal_logger_std/signal_logger_std_traits.hpp"
 
 // STL

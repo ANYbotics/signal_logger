@@ -6,7 +6,7 @@
 
 // signal_logger
 #include "signal_logger/signal_logger.hpp"
-#include "signal_logger/SignalLoggerNone.hpp"
+#include "signal_logger_core/SignalLoggerNone.hpp"
 
 // STL
 #include <memory>

@@ -1,7 +1,7 @@
 #pragma once
 
 // signal logger
-#include "signal_logger/LogElementTypes.hpp"
+#include "signal_logger_core/LogElementTypes.hpp"
 
 // kindr
 #ifdef SILO_USE_KINDR
