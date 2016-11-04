@@ -44,12 +44,16 @@ This library is written extensively using C++11.
  - <a href="http://wiki.ros.org/catkin">catkin</a> is used to build the library
 
 \section dependencies Dependencies
-The core library of the signal logger is non ROS dependent. And only requires the following dependencies:
+The core and std library of the signal logger are non ROS dependent. And only require the following dependencies:
 <ul>
   <li><a href="https://bitbucket.org/ethz-asl-lr/message_logger">message_logger</a></li>
   <li><a href="http://eigen.tuxfamily.org">Eigen</a></li>
   <li><a href="https://github.com/ethz-asl/kindr">kindr (optional -DSILO_USE_KINDR=OFF)</a></li>
 </ul>
+
+The signal_logger package combines all loggers, for runtime logger type selection. Thus it is ROS depenedent. By setting
+-DSILO_USE_ROS=OFF you can exclude the ros logger and therefore also the ROS dependency. Place an empty CATKIN_IGNORE file in the signal_logger_ros
+package to exclude it from the build (e.g. you don't have ROS).
 
 The ros logger requires these additional dependencies:
 <ul>
@@ -68,7 +72,7 @@ The ros rqt_gui plugin needs these two additional dependencies:
 \section install Installation
 \subsection build_lib_catkin Build the Library with Catkin
 
-Build rocoma with [catkin](wiki.ros.org/catkin):
+Build signal_logger with [catkin](wiki.ros.org/catkin):
 
 \code{.sh}
 cd ~/catkin_ws/src
@@ -83,6 +87,12 @@ cd ~/catkin_ws/src
 git clone https://bitbucket.org/ethz-asl-lr/signal_logger
 catkin build signal_logger
 \endcode
+
+For additionally building the rqt_signal_logger:
+\code{.sh}
+catkin build rqt_signal_logger
+\endcode
+
 
 \subsection build_doc Build this Documentation
 <a href="http://www.stack.nl/~dimitri/doxygen/" >Doxygen</a> needs to be installed to create this documentation.
