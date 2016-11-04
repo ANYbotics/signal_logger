@@ -16,4 +16,20 @@ namespace signal_logger {
 //! Initialize logger with standard logger.
 std::shared_ptr<SignalLoggerBase> logger(new SignalLoggerNone());
 
+void setSignalLoggerNone() {
+  logger.reset(new signal_logger::SignalLoggerNone());
+}
+
+void setSignalLoggerStd() {
+  logger.reset(new signal_logger_std::SignalLoggerStd());
+}
+
+#ifdef SILO_USE_ROS
+void setSignalLoggerRos(ros::NodeHandle* nh) {
+  logger.reset(new signal_logger_ros::SignalLoggerRos(nh));
+}
+#endif
+
+
+
 } /* namespace signal_logger */

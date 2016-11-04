@@ -26,18 +26,12 @@ namespace signal_logger {
 //! Reference to the logger
 extern std::shared_ptr<SignalLoggerBase> logger;
 
-void setSignalLoggerNone() {
-  logger.reset(new signal_logger::SignalLoggerNone());
-}
+void setSignalLoggerNone();
 
-void setSignalLoggerStd() {
-  logger.reset(new signal_logger_std::SignalLoggerStd());
-}
+void setSignalLoggerStd();
 
 #ifdef SILO_USE_ROS
-void setSignalLoggerRos(ros::NodeHandle* nh) {
-  logger.reset(new signal_logger_ros::SignalLoggerRos(nh));
-}
+void setSignalLoggerRos(ros::NodeHandle* nh);
 #endif
 
 /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.

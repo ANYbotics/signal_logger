@@ -321,16 +321,16 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
               }
             }
             else {
-              MELO_WARN_STREAM("Could not load " << name << "from config file. Var not logged.");
+              MELO_DEBUG_STREAM("Could not load " << name << "from config file. Var not logged.");
             }
           }
           else {
-            MELO_WARN_STREAM("Could not load get name from config file. Ignore entry nr: ." << i << "!");
+            MELO_DEBUG_STREAM("Could not load get name from config file. Ignore entry nr: ." << i << "!");
           }
         }
       }
       else {
-        MELO_ERROR_STREAM("Parameter file is ill-formatted. Log elements is no sequence.");
+        MELO_DEBUG_STREAM("Parameter file is ill-formatted. Log elements is no sequence.");
         return false;
       }
     }
