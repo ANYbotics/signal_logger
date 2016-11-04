@@ -15,7 +15,7 @@
 
 #include "signal_logger_core/SignalLoggerBase.hpp"
 #include "signal_logger_std/SignalLoggerStd.hpp"
-#include "signal_logger_core/SignalLoggerNone.hpp"
+#include "signal_logger/SignalLoggerNone.hpp"
 
 #ifdef SILO_USE_ROS
   #include "signal_logger_ros/SignalLoggerRos.hpp"
@@ -29,29 +29,19 @@ namespace signal_logger {
 //! Reference to the logger
 extern std::shared_ptr<SignalLoggerBase> logger;
 
-/*
-void setLoggerType(const signal_logger::SignalLoggerBase::LoggerType & type) {
-  switch(type) {
-    case signal_logger::SignalLoggerBase::LoggerType::TypeNone:
-      logger.reset(new signal_logger::SignalLoggerNone());
-      break;
-
-    case signal_logger::SignalLoggerBase::LoggerType::TypeStd:
-      logger.reset(new signal_logger_std::SignalLoggerStd());
-      break;
-
-    #ifdef SILO_USE_ROS
-    case signal_logger::SignalLoggerBase::LoggerType::TypeRos:
-      logger.reset(new signal_logger_ros::SignalLoggerRos());
-      break;
-    #endif
-
-    default:
-      std::cout << "Logger Type is unknown!" << std::endl;
-  }
-
+void setSignalLoggerNone() {
+  logger.reset(new signal_logger::SignalLoggerNone());
 }
-*/
+
+void setSignalLoggerStd() {
+  logger.reset(new signal_logger_std::SignalLoggerStd());
+}
+
+#ifdef SILO_USE_ROS
+void setSignalLoggerRos(ros::NodeHandle* nh) {
+  logger.reset(new signal_logger_ros::SignalLoggerRos(nh));
+}
+#endif
 
 /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
   * @tparam ValueType_       Data type of the logger element

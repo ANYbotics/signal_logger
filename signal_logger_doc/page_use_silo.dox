@@ -10,55 +10,32 @@ The signal logger is stored as a global shared pointer and can be accessed from 
 signal_logger::logger->...
 \endcode
 
-<H3>Create / Reset the logger</H3>
+<H3>Set the logger type</H3>
+In your main application header file put:
+\code{c}
+   // Include signal logger
+   #include "signal_logger/signal_logger.hpp"
+\endcode
+
+In the source file of your main application you have to set the desired logger type.
 Three types of loggers are provided:
 <ul>
   <li> SignalLoggerNone is an empty implementation of the logger
-    In your main application header file put:
     \code{c}
-       // Include signal logger none
-       #include "signal_logger/signal_logger_none.hpp"
-       // Implement the add function for the current logger type
-       // THIS IS ABSOLUTELY NECESSARY AND SHOULD ONLY BE DONE ONCE!!!
-       USE_SIGNAL_LOGGER_NONE();
-    \endcode
-    In your main application source file put:
-    \code{c}
-       // Header already includes signal_logger_none
        // Resetting the logger to type none
-       addSignalLoggerNone();
+       signal_logger::setSignalLoggerNone();
     \endcode
   </li>
   <li> SignalLoggerStd provides the functionality to write a binary log file
-    In your main application header file put:
     \code{c}
-       // Include signal logger std
-       #include "signal_logger_std/signal_logger_std.hpp"
-       // Implement the add function for the current logger type
-       // THIS IS ABSOLUTELY NECESSARY AND SHOULD ONLY BE DONE ONCE!!!
-       USE_SIGNAL_LOGGER_STD();
-    \endcode
-    In your main application source file put:
-    \code{c}
-       // Header already includes signal_logger_std
        // Resetting the logger to type std
-       addSignalLoggerStd();
+       signal_logger::setSignalLoggerStd();
     \endcode
   </li>
   <li> SignalLoggerRos extends the SignalLoggerStd with a ros publishing functionality
-  In your main application header file put:
     \code{c}
-       // Include signal logger ros
-       #include "signal_logger_ros/signal_logger_ros.hpp"
-       // Implement the add function for the current logger type
-       // THIS IS ABSOLUTELY NECESSARY AND SHOULD ONLY BE DONE ONCE!!!
-       USE_SIGNAL_LOGGER_ROS();
-    \endcode
-    In your main application source file put:
-    \code{c}
-       // Header already includes signal_logger_ros
        // Resetting the logger to type ros (needs a pointer to a nodehandle)
-       addSignalLoggerRos(&nh);
+       signal_logger::setSignalLoggerRos(&nh);
     \endcode
   </li>
 </ul>
@@ -70,7 +47,7 @@ signal_logger::logger->initLogger(collectFrequency, maxLogTime, collectScriptFil
 \endcode
 
 <H3>Add variables to the logger</H3>
-To add a variable to the logger use the signal_logger::add() function. This function is templated and most types are supported a list of
+To add a variable to the logger use the signal_logger::add() function. This function is templated and most types are supported. A subset of the supported
 types is given in LogElementTypes.hpp. Variables can also be added in helper libraries of your main application.
 \code{c}
 signal_logger::add(myVar, name, group, unit, divider, action, bufferSize, bufferType);
@@ -119,9 +96,9 @@ signal_logger::logger->stopAndSaveLoggerData();
 \endcode
 
 <H3>Publish the logger data</H3>
-The ros logger implements publishing data over ros. The signal_logger::SignalLoggerBase::publishLoggerData() function can be executed in parallel to the collect function.
+The ros logger implements publishing data over ros. The signal_logger::SignalLoggerBase::publishData() function can be executed in parallel to the collect function.
 \code{c}
-signal_logger::logger->publishLoggerData();
+signal_logger::logger->publishData();
 \endcode
 
 */

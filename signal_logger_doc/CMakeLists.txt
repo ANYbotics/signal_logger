@@ -37,6 +37,14 @@ IF(DOXYGEN)
     message (FATAL_ERROR "Couldn't find signal logger! ${SOURCE_SILO_DIR}")
   endif()
 
+  # Find signal_logger_core for documentation
+  find_path (SOURCE_SILOCORE_DIR NAMES signal_logger_core/SignalLoggerBase.hpp PATHS ${signal_logger_core_INCLUDE_DIRS}... NO_DEFAULT_PATH)
+  if(EXISTS "${SOURCE_SILOCORE_DIR}")
+    message (STATUS "Found signal logger core at: ${SOURCE_SILOCORE_DIR}")
+  else()
+    message (FATAL_ERROR "Couldn't find signal logger core! ${SOURCE_SILOCORE_DIR}")
+  endif()
+
   # Find signal_logger_msgs for documentation
   find_path (SOURCE_SILOMSGS_DIR NAMES signal_logger_msgs/LogElement.h PATHS ${signal_logger_msgs_INCLUDE_DIRS}... NO_DEFAULT_PATH)
   if(EXISTS "${SOURCE_SILOMSGS_DIR}")
@@ -72,7 +80,7 @@ IF(DOXYGEN)
   # Set some environment variables
   Set(DOCSOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/doc)
   Set(DOXYGEN_IMAGE_DIRS "\"${CMAKE_CURRENT_SOURCE_DIR}/figures/\"" )
-  Set(DOXYGEN_SOURCE_DIRS "${DOXYGEN_SOURCE_DIRS} \"${SOURCE_SILO_DIR}/../\" \"${SOURCE_SILOMSGS_DIR}/../\" \"${SOURCE_SILOROS_DIR}/../\" \"${SOURCE_SILOSTD_DIR}/../\" \"${SOURCE_SILORQT_DIR}/../\" \"${CMAKE_CURRENT_SOURCE_DIR}/\" ")
+  Set(DOXYGEN_SOURCE_DIRS "${DOXYGEN_SOURCE_DIRS} \"${SOURCE_SILO_DIR}/../\"  \"${SOURCE_SILOCORE_DIR}/../\" \"${SOURCE_SILOMSGS_DIR}/../\" \"${SOURCE_SILOROS_DIR}/../\" \"${SOURCE_SILOSTD_DIR}/../\" \"${SOURCE_SILORQT_DIR}/../\" \"${CMAKE_CURRENT_SOURCE_DIR}/\" ")
   Set(HTML_DIR ${CMAKE_CURRENT_SOURCE_DIR}/doc/html)
   MAKE_DIRECTORY(${HTML_DIR})
 
@@ -86,6 +94,7 @@ IF(DOXYGEN)
   # Unset cache files
   unset(${DOXYGEN_SOURCE_DIRS} CACHE)
   unset(${SOURCE_SILO_DIR} CACHE)
+  unset(${SOURCE_SILOCORE_DIR} CACHE)
   unset(${SOURCE_SILOMSGS_DIR} CACHE)
   unset(${SOURCE_SILOROS_DIR} CACHE)
   unset(${SOURCE_SILOSTD_DIR} CACHE)
