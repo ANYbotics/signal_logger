@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(signal_logger_ros)
 
 # List of necessary dependencies
-set(SILO_CATKIN_PACKAGES
+set(SILOROS_CATKIN_PACKAGES
   message_logger
   signal_logger_core
   signal_logger_std
@@ -14,19 +14,19 @@ set(SILO_CATKIN_PACKAGES
 # Append optional dependencies (signal_logger defines SILO_USE_KINDR)
 find_package(catkin REQUIRED COMPONENTS signal_logger_core)
 if(SILO_USE_KINDR)
-  list(APPEND SILO_CATKIN_PACKAGES kindr_msgs)
+  list(APPEND SILOROS_CATKIN_PACKAGES kindr_msgs)
 endif(SILO_USE_KINDR)
 
 # Find depencendies
 find_package(catkin REQUIRED COMPONENTS
-  ${SILO_CATKIN_PACKAGES}
+  ${SILOROS_CATKIN_PACKAGES}
 )
 
 # Configure catkin package
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES ${PROJECT_NAME}
- CATKIN_DEPENDS ${SILO_CATKIN_PACKAGES}
+ CATKIN_DEPENDS ${SILOROS_CATKIN_PACKAGES}
 )
 
 ###########

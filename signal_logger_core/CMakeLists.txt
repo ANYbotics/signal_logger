@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(signal_logger_core)
 
+include(cmake/${PROJECT_NAME}-extras.cmake)
+
 # Find dependencies
 find_package(catkin REQUIRED COMPONENTS message_logger)
 find_package(Eigen3 REQUIRED)

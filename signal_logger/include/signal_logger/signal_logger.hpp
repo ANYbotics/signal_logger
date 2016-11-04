@@ -10,9 +10,6 @@
 #undef E
 #endif
 
-#define SILO_USE_ROS
-
-
 #include "signal_logger_core/SignalLoggerBase.hpp"
 #include "signal_logger_std/SignalLoggerStd.hpp"
 #include "signal_logger/SignalLoggerNone.hpp"
