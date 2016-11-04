@@ -106,6 +106,19 @@ struct slr_msg_traits<bool> {
 };
 /********************************/
 
+/*******************************
+ * Specializations: enum types *
+ *******************************/
+template<typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_enum<ValueType_>::value>::type>
+{
+  typedef typename slr_msg_traits<typename std::underlying_type<ValueType_>::type >::msgtype          msgtype;
+  typedef typename slr_msg_traits<typename std::underlying_type<ValueType_>::type >::msgtypePtr       msgtypePtr;
+  typedef typename slr_msg_traits<typename std::underlying_type<ValueType_>::type >::msgtypeConstPtr  msgtypeConstPtr;
+
+};
+/********************************/
+
 /***************************************************
  * Specializations: Time stamp pair                *
  ***************************************************/
@@ -224,7 +237,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_kindr_vector3<Value
 
 template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::RotationBase<ValueType_>,ValueType_>::value
-  ||std::is_base_of<kindr::RotationDiffBase<ValueType_>,ValueType_>::value>::type>
+||std::is_base_of<kindr::RotationDiffBase<ValueType_>,ValueType_>::value>::type>
 {
   typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtype     	 msgtype;
   typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtypePtr       msgtypePtr;
@@ -261,6 +274,22 @@ struct slr_update_traits<ValueType_, typename std::enable_if<std::is_arithmetic<
   {
     msg->header.stamp = timeStamp;
     msg->value = *vectorPtr_;
+  }
+};
+/********************************/
+
+/*******************************
+ * Specializations: enum types *
+ *******************************/
+template<typename ValueType_>
+struct slr_update_traits<ValueType_, typename std::enable_if<std::is_enum<ValueType_>::value>::type>
+{
+  static void updateMsg(const ValueType_* vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtypePtr msg,
+                        const ros::Time& timeStamp)
+  {
+    typename std::underlying_type<ValueType_>::type vectorPtr = static_cast< typename std::underlying_type<ValueType_>::type >(*vectorPtr_);
+    slr_update_traits<typename std::underlying_type<ValueType_>::type >::updateMsg(&vectorPtr, msg, timeStamp);
   }
 };
 /********************************/
@@ -369,7 +398,7 @@ struct slr_update_traits<ValueType_, typename std::enable_if<is_kindr_vector3<Va
 //! Trait for Kindr rotations
 template <typename ValueType_>
 struct slr_update_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::RotationBase<ValueType_>,ValueType_>::value
-  || std::is_base_of<kindr::RotationDiffBase<ValueType_>,ValueType_>::value>::type >
+|| std::is_base_of<kindr::RotationDiffBase<ValueType_>,ValueType_>::value>::type >
 {
   static void updateMsg(const ValueType_* vectorPtr_,
                         typename slr_msg_traits<ValueType_>::msgtypePtr msg,

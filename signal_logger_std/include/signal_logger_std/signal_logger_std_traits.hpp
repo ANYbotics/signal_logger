@@ -45,6 +45,26 @@ struct sls_traits<ValueType_, typename std::enable_if<std::is_arithmetic<ValueTy
 };
 /********************************/
 
+/*******************************
+ * Specializations: enum types *
+ *******************************/
+template<typename ValueType_>
+struct sls_traits<ValueType_, typename std::enable_if<std::is_enum<ValueType_>::value>::type>
+{
+  static void writeLogElementToStreams(std::stringstream* headerStream,
+                                       std::stringstream* dataStream,
+                                       const std::vector<ValueType_> & values,
+                                       const std::string & name,
+                                       const std::size_t divider,
+                                       const bool isBufferLooping)
+  {
+    std::vector<typename std::underlying_type<ValueType_>::type > underlyingVector(values.size());
+    std::transform(values.begin(), values.end(), underlyingVector.begin(), [](ValueType_ t) { return static_cast<typename std::underlying_type<ValueType_>::type >(t); });
+    sls_traits< typename std::underlying_type<ValueType_>::type >::writeLogElementToStreams(headerStream, dataStream, underlyingVector, name, divider, isBufferLooping);
+  }
+};
+/********************************/
+
 /***************************************************
  * Specializations: Time stamp pair                *
  ***************************************************/
@@ -252,7 +272,7 @@ struct sls_traits<ValueType_, typename std::enable_if< std::is_base_of<kindr::Ro
                                        const bool isBufferLooping )
   {
     std::vector<typename ValueType_::Implementation> implementationVector(values.size());
-    for (unsigned int i = 0; i<values.size(); ++i) { implementationVector.at(i) = values.at(i).toImplementation(); }
+    std::transform(values.begin(), values.end(), implementationVector.begin(), [](ValueType_ t) { return t.toImplementation(); });
     sls_traits<typename ValueType_::Implementation>::writeLogElementToStreams(headerStream, dataStream, implementationVector, name, divider, isBufferLooping);
   }
 };
