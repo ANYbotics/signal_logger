@@ -42,7 +42,7 @@
  */
 
 #include "signal_logger_ros/LoggerRos.hpp"
-#include "roco/log/log_messages.hpp"
+#include "message_logger/message_logger.hpp"
 
 
 const std::string LOGGER_PREFIX = "/log";
@@ -395,7 +395,7 @@ bool LoggerRos::checkIfVarCollected(
 {
   for (it = collectedVars_.begin(); it != collectedVars_.end(); it++) {
     if ((*it).get()->getTopicName().compare(topicName) == 0) {
-      ROCO_WARN_STREAM(
+      MELO_WARN_STREAM(
           "[LoggerRos::checkIfVarCollected] Topic '" << topicName << "' was already being published.");
       return true;
     }
