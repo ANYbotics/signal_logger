@@ -9,6 +9,7 @@ set(SILOROS_CATKIN_PACKAGES
   signal_logger_msgs
   std_msgs
   geometry_msgs
+  bagloader
 )
 
 # Append optional dependencies (signal_logger defines SILO_USE_KINDR)

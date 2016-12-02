@@ -160,15 +160,20 @@ class SignalLoggerBase {
   std::mutex scriptMutex_;
 
  private:
+  //! Comparison operator, get element with largest scaled buffer size
   struct maxScaledBufferSize {
+    /*** Defines the comaprison operator
+     *   @param i  first element to compare
+     *   @param j  second element to compare
+     *   @return fun(i) < fun(j)
+     */
     bool operator() (const std::pair<std::string, LogElementMapIterator> & i, const std::pair<std::string, LogElementMapIterator> & j)
     {
       return (i.second->second->getDivider()*i.second->second->getBufferSize()) <
-          (j.second->second->getDivider()*j.second->second->getBufferSize());
+             (j.second->second->getDivider()*j.second->second->getBufferSize());
     }
   };
 
-
 };
 
-}
+} // end namespace signal_logger

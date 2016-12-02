@@ -1,5 +1,5 @@
 /*
- * CircularBuffer.hpp
+ * Buffer.hpp
  *
  *  Created on: Sep 21, 2016
  *      Author: Gabriel Hottiger
@@ -47,36 +47,38 @@ template <typename ValueType_>
 class Buffer
 {
  public:
-  //! Container typedef (eigen container consists of underlying type)
+  //! CircularBuffer typedef (Eigen matrices are stored as buffer of the underlying type)
   template<typename T , typename Enable = void>
-  struct Container {
+  struct CircularBuffer {
     typedef boost::circular_buffer<ValueType_> type;
   };
-
   template<typename T>
-  struct Container<T, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<T>, T>::value>::type>
+  struct CircularBuffer<T, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<T>, T>::value>::type>
   {
     typedef boost::circular_buffer<typename ValueType_::Scalar> type;
   };
 
-  typedef typename Container<ValueType_>::type container_type;
-  typedef typename container_type::size_type size_type;
+  //! Forward typedef as circular_buffer_type
+  typedef typename CircularBuffer<ValueType_>::type circular_buffer_type;
+
+  //! Forward typedef for size_type
+  typedef typename circular_buffer_type::size_type size_type;
 
  public:
   /** Constructor for non-eigen-types
    *  @param ptr  pointer to the data to be buffered
    */
   template<typename V = ValueType_>
-  explicit Buffer(const V * const ptr, typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0) :
-  ptr_(ptr),
-  bufferSize_(0),
-  bufferType_(BufferType::LOOPING),
-  noUnreadItems_(0),
-  noItems_(0),
-  container_(bufferSize_),
-  mutex_(),
-  rows_(1),
-  cols_(1)
+  explicit Buffer(const V * const ptr, typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0 /* non-eigen-type */ ) :
+    ptr_(ptr),
+    bufferSize_(0),
+    bufferType_(BufferType::LOOPING),
+    noUnreadItems_(0),
+    noItems_(0),
+    container_(bufferSize_),
+    mutex_(),
+    rows_(1),
+    cols_(1)
   {
 
   }
@@ -85,16 +87,16 @@ class Buffer
    *  @param ptr  pointer to the data to be buffered
    */
   template<typename V = ValueType_>
-  explicit Buffer(const V * const ptr, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0) :
-  ptr_(ptr),
-  bufferSize_(0),
-  bufferType_(BufferType::LOOPING),
-  noUnreadItems_(0),
-  noItems_(0),
-  container_(bufferSize_),
-  mutex_(),
-  rows_(ptr->rows()),
-  cols_(ptr->cols())
+  explicit Buffer(const V * const ptr, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0 /* eigen-type */ ) :
+    ptr_(ptr),
+    bufferSize_(0),
+    bufferType_(BufferType::LOOPING),
+    noUnreadItems_(0),
+    noItems_(0),
+    container_(bufferSize_),
+    mutex_(),
+    rows_(ptr->rows()),
+    cols_(ptr->cols())
   {
 
   }
@@ -313,7 +315,7 @@ class Buffer
   //! Number of items in the buffer (read and unread)
   size_type noItems_;
   //! Circular buffer
-  container_type container_;
+  circular_buffer_type container_;
   //! Mutex protecting accessing this container
   mutable boost::mutex mutex_;
   //! Eigen specific entries (1 in other cases)

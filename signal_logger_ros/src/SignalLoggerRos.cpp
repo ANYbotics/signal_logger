@@ -10,9 +10,11 @@
 
 namespace signal_logger_ros {
 
-SignalLoggerRos::SignalLoggerRos(ros::NodeHandle * nh):
+SignalLoggerRos::SignalLoggerRos(ros::NodeHandle * nh,
+                                 bool saveToBagFile):
                                 signal_logger_std::SignalLoggerStd(),
-                                nh_(nh)
+                                nh_(nh),
+                                saveToBagFile_(saveToBagFile)
 {
   getLoggerConfigurationService_ = nh_->advertiseService("/sl_ros/get_logger_configuration", &SignalLoggerRos::getLoggerConfiguration, this);
   getLoggerElementService_ = nh_->advertiseService("/sl_ros/get_logger_element", &SignalLoggerRos::getLoggerElement, this);
@@ -27,6 +29,24 @@ SignalLoggerRos::SignalLoggerRos(ros::NodeHandle * nh):
 SignalLoggerRos::~SignalLoggerRos()
 {
 }
+
+
+bool SignalLoggerRos::workerSaveData(const std::string & logFileName) {
+
+  if(!saveToBagFile_) { return signal_logger_std::SignalLoggerStd::workerSaveData(logFileName); }
+
+  // Write bag file
+  for(auto & elem : enabledElements_) {
+    if(elem.second->second->isSaved())
+    {
+      elem.second->second->saveDataToLogFile();
+      elem.second->second->clearBuffer();
+    }
+  }
+
+  return true;
+}
+
 
 bool SignalLoggerRos::getLoggerConfiguration(signal_logger_msgs::GetLoggerConfigurationRequest& req,
                                             signal_logger_msgs::GetLoggerConfigurationResponse& res) {

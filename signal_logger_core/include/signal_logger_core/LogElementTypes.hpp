@@ -7,9 +7,9 @@
 
 #pragma once
 
-#ifdef SILO_USE_KINDR
 // kindr
-#include <kindr/Core>
+#ifdef SILO_USE_KINDR
+  #include <kindr/Core>
 #endif
 
 // Eigen
@@ -20,7 +20,7 @@ namespace signal_logger {
 //! Time stamp pair <s,ns>
 typedef std::pair<int64_t, int64_t> TimestampPair;
 
-// Eigen
+//! Eigen types
 typedef Eigen::Vector3d  Vector3d;
 typedef Eigen::MatrixXf  MatrixXf;
 typedef Eigen::MatrixXd  MatrixXd;
@@ -33,30 +33,29 @@ typedef Eigen::Matrix< bool ,Eigen::Dynamic, Eigen::Dynamic >           MatrixXb
 typedef Eigen::Matrix< std::string ,Eigen::Dynamic, Eigen::Dynamic >    MatrixXstring;
 
 #ifdef SILO_USE_KINDR
+  // Kindr types
+  typedef kindr::Position3D             KindrPositionD;
+  typedef kindr::RotationQuaternionPD   KindrRotationQuaternionD;
+  typedef kindr::EulerAnglesZyxPD       KindrEulerAnglesZyxD;
+  typedef kindr::LocalAngularVelocityPD KindrAngularVelocityD;
+  typedef kindr::AngleAxisPD            KindrAngleAxisD;
+  typedef kindr::RotationMatrixPD       KindrRotationMatrixD;
+  typedef kindr::RotationVectorPD       KindrRotationVectorD;
+  typedef kindr::Velocity3D             KindrLinearVelocityD;
+  typedef kindr::Acceleration3D         KindrLinearAccelerationD;
+  typedef kindr::AngularAcceleration3D  KindrAngularAccelerationD;
+  typedef kindr::Force3D                KindrForceD;
+  typedef kindr::Torque3D               KindrTorqueD;
+  typedef kindr::VectorTypeless3D       KindrVectorD;
 
-// Kindr
-typedef kindr::Position3D             KindrPositionD;
-typedef kindr::RotationQuaternionPD   KindrRotationQuaternionD;
-typedef kindr::EulerAnglesZyxPD       KindrEulerAnglesZyxD;
-typedef kindr::LocalAngularVelocityPD KindrAngularVelocityD;
-typedef kindr::AngleAxisPD            KindrAngleAxisD;
-typedef kindr::RotationMatrixPD       KindrRotationMatrixD;
-typedef kindr::RotationVectorPD       KindrRotationVectorD;
-typedef kindr::Velocity3D             KindrLinearVelocityD;
-typedef kindr::Acceleration3D         KindrLinearAccelerationD;
-typedef kindr::AngularAcceleration3D  KindrAngularAccelerationD;
-typedef kindr::Force3D                KindrForceD;
-typedef kindr::Torque3D               KindrTorqueD;
-typedef kindr::VectorTypeless3D       KindrVectorD;
-
-template<typename VectorType_>
-struct KindrVectorAtPosition {
-  VectorType_ vector;
-  std::string vectorFrame;
-  KindrPositionD position;
-  std::string positionFrame;
-};
-
+  // Kindr vector at position type
+  template<typename VectorType_>
+  struct KindrVectorAtPosition {
+    VectorType_ vector;
+    std::string vectorFrame;
+    KindrPositionD position;
+    std::string positionFrame;
+  };
 #endif
 
-}
+} // end namespace

@@ -23,7 +23,7 @@ namespace signal_logger_ros {
 class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
 {
  public:
-  SignalLoggerRos(ros::NodeHandle * nh);
+  SignalLoggerRos(ros::NodeHandle * nh, bool saveToBagFile = false);
   virtual ~SignalLoggerRos();
 
   /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
@@ -54,6 +54,9 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
 
   //! @return the logger type
   virtual LoggerType getLoggerType() const { return SignalLoggerBase::LoggerType::TypeRos; }
+
+  //! Save all the buffered data into a log file
+  virtual bool workerSaveData(const std::string & logFileName);
 
   //! Services needed by the gui
   bool getLoggerConfiguration(signal_logger_msgs::GetLoggerConfigurationRequest& req,
@@ -88,6 +91,7 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
 
  private:
   ros::NodeHandle* nh_;
+  bool saveToBagFile_;
   ros::ServiceServer getLoggerConfigurationService_;
   ros::ServiceServer getLoggerElementService_;
   ros::ServiceServer setLoggerElementService_;

@@ -20,6 +20,17 @@ template <typename ValueType_>
 class LogElementStd: public signal_logger::LogElementBase<ValueType_>
 {
  public:
+  /** Constructor
+   *  @param ptr          pointer to the log var
+   *  @param name         name of the log var
+   *  @param unit         unit of the log var
+   *  @param divider      log_freq = ctrl_freq/divider
+   *  @param action       save, publish or save and publish
+   *  @param bufferSize   size of the buffer (bufferSize elements of type ValueType_)
+   *  @param bufferType   type of the buffer
+   *  @param headerStream string stream for log file header
+   *  @param dataStream   type of the buffer
+   */
   LogElementStd(const ValueType_ * const ptr,
                 const std::string & name,
                 const std::string & unit,

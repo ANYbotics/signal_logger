@@ -150,7 +150,7 @@ class LogElementInterface
   //! Clear Buffer
   virtual void clearBuffer() = 0;
 
-  //! Get element mutex
+  //! @return mutex of the log element
   virtual std::mutex& acquireMutex() = 0;
 
 };

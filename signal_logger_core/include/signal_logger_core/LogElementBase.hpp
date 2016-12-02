@@ -126,17 +126,22 @@ class LogElementBase: public LogElementInterface
   //! Clear buffer
   void clearBuffer() override final { buffer_.clear(); }
 
-  //! Get mutex
+  //! @return mutex of the log element
   std::mutex& acquireMutex() { return mutex_; }
 
-  //! Get time at index n
+  /*** Get the timestamp at position in the buffer
+   *   @tparam V  log element type (ValueType_)
+   *   @param  n  position in the buffer
+   *   @return    Timestamp-pair at position n in buffer
+   */
   template<typename V = ValueType_>
-  V getTimeStampAtPosition(std::size_t n, typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0) const final
+  V getTimeStampAtPosition(std::size_t n, typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const final
   {
     return buffer_.readElementAtPosition(n);
   }
 
  protected:
+  //! Update the element
   virtual void updateElement() { };
 
  protected:
