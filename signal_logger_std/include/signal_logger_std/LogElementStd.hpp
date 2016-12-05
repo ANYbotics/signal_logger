@@ -54,7 +54,7 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
   }
 
   //! Save Data to file
-  void saveDataToLogFile() override
+  void saveDataToLogFile(const signal_logger::LogElementBase<signal_logger::TimestampPair> & time, unsigned int nrCollectDataCalls) override
   {
     std::vector<ValueType_> values = this->buffer_.copyBuffer();
     signal_logger_std::traits::sls_traits<ValueType_>::writeLogElementToStreams(

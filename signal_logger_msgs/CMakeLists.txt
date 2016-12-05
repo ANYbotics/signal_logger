@@ -31,6 +31,7 @@ add_message_files(
    BoolStamped.msg
    CharStamped.msg
    UnsignedCharStamped.msg
+   TimeStamped.msg
    LogElement.msg
 )
 

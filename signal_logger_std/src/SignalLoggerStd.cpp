@@ -31,13 +31,13 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName) {
   dataStream_.str(std::string());
 
   // Fill streams
-  timeElement_->saveDataToLogFile();
+  timeElement_->saveDataToLogFile(*timeElement_, noCollectDataCalls_.load());
   std::size_t noSavedElements = 2; // time is always saved
   for(auto & elem : enabledElements_) {
     if(elem.second->second->isSaved())
     {
       noSavedElements++;
-      elem.second->second->saveDataToLogFile();
+      elem.second->second->saveDataToLogFile(*timeElement_, noCollectDataCalls_.load());
       elem.second->second->clearBuffer();
     }
   }

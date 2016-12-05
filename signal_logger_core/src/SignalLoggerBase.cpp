@@ -175,19 +175,29 @@ bool SignalLoggerBase::collectLoggerData()
       return true;
     }
 
-    timeElement_->collectData();
+    // Lock all mutexes
+    for(auto & elem : enabledElements_)
+    {
+      elem.second->second->acquireMutex().lock();
+    }
+
+    // Update time
+    {
+      std::unique_lock<std::mutex> timeLock(timeElement_->acquireMutex());
+      timeElement_->collectData();
+    }
 
     // Collect element into buffer
     for(auto & elem : enabledElements_)
     {
       if((noCollectDataCalls_ % elem.second->second->getDivider()) == 0) {
-        std::unique_lock<std::mutex> lock(elem.second->second->acquireMutex());
         elem.second->second->collectData();
       }
+      elem.second->second->acquireMutex().unlock();
     }
-  }
 
-  ++noCollectDataCalls_;
+    ++noCollectDataCalls_;
+  }
 
   return true;
 }
@@ -199,7 +209,7 @@ bool SignalLoggerBase::publishData()
   {
     if(elem.second->second->isPublished())
     {
-      elem.second->second->publishData(*timeElement_);
+      elem.second->second->publishData(*timeElement_, noCollectDataCalls_);
     }
   }
 

@@ -14,7 +14,8 @@
 #include "geometry_msgs/QuaternionStamped.h"
 
 #include <std_msgs/Float32.h>
-#include <std_msgs/Time.h>
+
+#include <signal_logger_msgs/TimeStamped.h>
 
 #include <signal_logger_msgs/BoolMultiArrayStamped.h>
 #include <signal_logger_msgs/Float32MultiArrayStamped.h>
@@ -125,9 +126,9 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_enum<ValueType
 template<>
 struct slr_msg_traits<signal_logger::TimestampPair>
 {
-  typedef std_msgs::Time         msgtype;
-  typedef std_msgs::TimePtr      msgtypePtr;
-  typedef std_msgs::TimeConstPtr msgtypeConstPtr;
+  typedef signal_logger_msgs::TimeStamped         msgtype;
+  typedef signal_logger_msgs::TimeStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::TimeStampedConstPtr msgtypeConstPtr;
 };
 /********************************/
 
@@ -304,8 +305,9 @@ struct slr_update_traits<signal_logger::TimestampPair>
                         typename slr_msg_traits<signal_logger::TimestampPair>::msgtypePtr msg,
                         const ros::Time& timeStamp)
   {
-    msg->data.sec = var->first;
-    msg->data.nsec = var->second;
+    msg->header.stamp = timeStamp;
+    msg->value.data.sec = var->first;
+    msg->value.data.nsec = var->second;
   }
 };
 /********************************/

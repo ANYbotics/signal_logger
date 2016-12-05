@@ -85,10 +85,10 @@ class LogElementInterface
   /** Reads buffer and processes data (probably called from different thread)
    *  @param time time log element
    */
-  virtual void publishData(const LogElementBase<TimestampPair> & time ) = 0;
+  virtual void publishData(const LogElementBase<TimestampPair> & time , unsigned int nrCollectDataCalls) = 0;
 
   //! Write header of log file
-  virtual void saveDataToLogFile() = 0;
+  virtual void saveDataToLogFile(const LogElementBase<TimestampPair> & time, unsigned int nrCollectDataCalls) = 0;
 
   //! Reset logger element called before logger start
   virtual void restartElement() = 0;

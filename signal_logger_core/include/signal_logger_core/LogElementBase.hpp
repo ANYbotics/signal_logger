@@ -56,8 +56,8 @@ class LogElementBase: public LogElementInterface
   void collectData() override final { buffer_.collect(); }
 
   //! Default implementation for element type specific functionality
-  virtual void publishData(const LogElementBase<TimestampPair> & time) override { }
-  virtual void saveDataToLogFile() override { }
+  virtual void publishData(const LogElementBase<TimestampPair> & time, unsigned int nrCollectDataCalls) override { }
+  virtual void saveDataToLogFile(const LogElementBase<TimestampPair> & time, unsigned int nrCollectDataCalls) override { }
   virtual void restartElement()    override { this->clearBuffer(); }
   virtual void cleanupElement()    override { }
 
