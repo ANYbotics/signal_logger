@@ -168,6 +168,8 @@ class SignalLoggerBase {
   std::shared_ptr<signal_logger::LogElementBase<signal_logger::TimestampPair>> timeElement_;
   //! Mutexes
   std::mutex scriptMutex_;
+  std::mutex collectMutex_;
+
 
  private:
   //! Comparison operator, get element with largest scaled buffer size

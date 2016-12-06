@@ -11,6 +11,7 @@
 #include <signal_logger_std/LogElementStd.hpp>
 #include <fstream>
 #include <typeinfo>
+#include <message_logger/message_logger.hpp>
 
 namespace signal_logger_std {
 

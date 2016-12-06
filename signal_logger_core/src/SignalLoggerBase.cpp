@@ -158,6 +158,8 @@ bool SignalLoggerBase::collectLoggerData()
 {
   if(!isInitialized_ || isSavingData_) return false;
 
+  std::unique_lock<std::mutex> collectLock(collectMutex_);
+
   // Is logger started?
   if(isCollectingData_)
   {
@@ -215,14 +217,21 @@ bool SignalLoggerBase::publishData()
 
 bool SignalLoggerBase::saveLoggerData()
 {
-  isSavingData_ = true;
-
   if(!isInitialized_)
   {
     MELO_WARN("Signal logger could not save data! Not initialized!");
-    isSavingData_ = false;
     return false;
   }
+
+  // Set flag
+  isSavingData_ = true;
+
+  // Wait for collecting to be done
+  {
+    std::unique_lock<std::mutex> collectLock(collectMutex_);
+  }
+
+  // Wait for collect
 
   // Read suffix number from file
   int suffixNumber = 0;

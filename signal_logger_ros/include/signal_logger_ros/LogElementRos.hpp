@@ -41,6 +41,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
    *  @param dataStream   pointer to the data stream of the binary log file
    *  @param nh           ros nodehandle for the ros publisher
    *  @param bagWriter    reference to the bagfile writer object
+   *  @param saveToBag    flag if elemt shall be save to bag
    */
   LogElementRos(const ValueType_ * const ptr,
                 const std::string & name,
@@ -52,10 +53,12 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
                 std::stringstream * headerStream,
                 std::stringstream * dataStream,
                 ros::NodeHandle * nh,
-                const std::shared_ptr<bageditor::BagWriter> & bagWriter) :
+                const std::shared_ptr<bageditor::BagWriter> & bagWriter,
+                bool saveToBag) :
                   signal_logger_std::LogElementStd<ValueType_>(ptr, name, unit, divider, action, bufferSize, bufferType, headerStream, dataStream),
                   nh_(nh),
                   bagWriter_(bagWriter),
+                  saveToBag_(saveToBag),
                   pub_()
   {
     msg_.reset(new MsgType());
@@ -70,6 +73,11 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   //! Save Data to file
   void saveDataToLogFile(const signal_logger::LogElementBase<signal_logger::TimestampPair> & time, unsigned int nrCollectDataCalls) override
   {
+    if(!saveToBag_) {
+      signal_logger_std::LogElementStd<ValueType_>::saveDataToLogFile(time, nrCollectDataCalls);
+      return;
+    }
+
     std::unique_lock<std::mutex> lock(this->mutex_);
 
     // Copy data and time buffers
@@ -135,8 +143,10 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
  protected:
   //! ros nodehandle
   ros::NodeHandle * nh_;
-  //! ros nodehandle
+  //! bag writer
   const std::shared_ptr<bageditor::BagWriter> & bagWriter_;
+  //! save to bag flag
+  bool saveToBag_;
   //! ros publisher
   ros::Publisher pub_;
   //! message pointer

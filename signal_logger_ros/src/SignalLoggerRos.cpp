@@ -46,7 +46,6 @@ bool SignalLoggerRos::workerSaveData(const std::string & logFileName) {
     if(elem.second->second->isSaved())
     {
       elem.second->second->saveDataToLogFile(*timeElement_, noCollectDataCalls_.load());
-      elem.second->second->clearBuffer();
     }
   }
 

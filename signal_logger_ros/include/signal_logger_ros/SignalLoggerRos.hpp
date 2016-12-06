@@ -55,7 +55,7 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
   {
     std::string elementName = std::string{signal_logger::SignalLoggerBase::LOGGER_DEFAULT_PREFIX} + "/" + group + "/" + name;
     logElements_[elementName].reset(new LogElementRos<ValueType_>(var, elementName , unit, divider, action, bufferSize,
-                                                                  bufferType, &headerStream_, &dataStream_, nh_, bagWriter_));
+                                                                  bufferType, &headerStream_, &dataStream_, nh_, bagWriter_, saveToBagFile_));
   }
 
   //! @return the logger type

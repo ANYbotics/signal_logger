@@ -32,24 +32,25 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName) {
 
   // Fill streams
   timeElement_->saveDataToLogFile(*timeElement_, noCollectDataCalls_.load());
-  std::size_t noSavedElements = 2; // time is always saved
+
   for(auto & elem : enabledElements_) {
     if(elem.second->second->isSaved())
     {
-      noSavedElements++;
       elem.second->second->saveDataToLogFile(*timeElement_, noCollectDataCalls_.load());
-      elem.second->second->clearBuffer();
     }
   }
 
   // Write string header
   file_.open(logFileName, std::ios::out | std::ios::trunc);
-  file_ << "// Name SizeInBytes NrData Divider LoopingBuffer(0 = false, 1 = true)" << std::endl;
-  file_ << noSavedElements << std::endl;
+  file_ << "# Log File: " << logFileName << std::endl;
+  file_ << "# Time synchronization offset: " << std::endl;
+  file_ << noCollectDataCalls_.load() << std::endl;
+  file_ << "# (Element Name) (Data Size In Bytes) (No Data Points) (Divider) (Buffer looping (1 or 0))" << std::endl;
   file_ << headerStream_.str() << std::endl;
   file_.close();
 
   // Write binary data
+  file_ << "# Binary Data" << std::endl;
   file_.open(logFileName, std::ios::out | std::ios::app | std::ios::binary);
   file_ << dataStream_.rdbuf();
 
