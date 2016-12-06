@@ -7,6 +7,8 @@
 
 #include "signal_logger_std/SignalLoggerStd.hpp"
 
+#include <algorithm>
+
 namespace signal_logger_std {
 
 SignalLoggerStd::SignalLoggerStd(const std::string & loggerPrefix):
@@ -45,12 +47,15 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName) {
   file_ << "# Log File: " << logFileName << std::endl;
   file_ << "# Time synchronization offset: " << std::endl;
   file_ << noCollectDataCalls_.load() << std::endl;
+  file_ << "# Number of Log Elements: " << std::endl;
+  std::string headerString = headerStream_.str();
+  file_ << std::count(headerString.begin(), headerString.end(), '\n') << std::endl;
   file_ << "# (Element Name) (Data Size In Bytes) (No Data Points) (Divider) (Buffer looping (1 or 0))" << std::endl;
   file_ << headerStream_.str() << std::endl;
+  file_ << "# Binary Data" << std::endl;
   file_.close();
 
   // Write binary data
-  file_ << "# Binary Data" << std::endl;
   file_.open(logFileName, std::ios::out | std::ios::app | std::ios::binary);
   file_ << dataStream_.rdbuf();
 

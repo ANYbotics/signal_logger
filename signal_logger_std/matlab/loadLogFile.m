@@ -1,4 +1,4 @@
-function [logElements] = loadLogFile(fname)
+function [logElements, timeSyncOffset] = loadLogFile(fname)
 % [logElements] = loadLogFile(fname)
 %
 % This function loads a log data file and stores it into a vector of
@@ -23,7 +23,7 @@ function [logElements] = loadLogFile(fname)
 % Gabriel Hottiger, October 2016
 
 % read in the file name
-if ~exist('fname') | isempty(fname),
+if ~exist('fname') || isempty(fname),
 	[fname, pathname] = uigetfile('*','Select Data File');
 	if (fname == 0),
 		return;
@@ -32,32 +32,32 @@ if ~exist('fname') | isempty(fname),
 	fname=strcat(pathname, fname);
 end;
 
-% open as big-endian ("ieee-le" for little endian)
+% open as little-endian ("ieee-be" for big endian)
 fid=fopen(fname, 'r', 'ieee-le');
 if fid == -1,
 	return;
 end;
 
-% skip header comments
-currentLine = fgets(fid);
-while( strcmp(currentLine(1:2), '//') | currentLine == sprintf('\n'))
-    currentLine = fgets(fid);
-end
+% skip comments
+[ fid, currentLine ] = skipComments(fid, false);
 
-% read nr of elements
+% read time synchronization offset
+timeSyncOffset = str2double(currentLine);
+
+% skip comments
+[ fid, currentLine ] = skipComments(fid, false);
+
+% read number of elements
 noElements = str2double(currentLine);
+
+% skip comments
+fid = skipComments(fid, true);
 
 % read header
 header = textscan(fid,'%s %d %d %d %d', noElements);
 
-% skip empty lines until data
-positionInFile = ftell(fid);
-currentLine = fgets(fid);
-while( currentLine == sprintf('\n') )
-    positionInFile = ftell(fid);
-    currentLine = fgets(fid);
-end
-fseek(fid, positionInFile, 'bof');
+% skip header comments
+fid = skipComments(fid, true);
 
 % initialize log elements
 logElements = repmat(struct('name', '', 'noBytes', 0, 'noData', 0, ...
@@ -74,3 +74,4 @@ for i=1:noElements
 end
 
 fclose(fid);
+end
