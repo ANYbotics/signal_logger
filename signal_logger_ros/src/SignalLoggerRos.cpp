@@ -29,6 +29,7 @@ SignalLoggerRos::SignalLoggerRos(ros::NodeHandle * nh,
 
 SignalLoggerRos::~SignalLoggerRos()
 {
+  this->cleanup();
 }
 
 
@@ -229,12 +230,11 @@ bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg
       break;
   }
 
-
   return true;
 }
 
 bool SignalLoggerRos::cleanup() {
-  signal_logger::SignalLoggerBase::cleanup();
+  signal_logger_std::SignalLoggerStd::cleanup();
 
   getLoggerConfigurationService_.shutdown();
   getLoggerElementService_.shutdown();
@@ -248,6 +248,17 @@ bool SignalLoggerRos::cleanup() {
   return true;
 }
 
+
+signal_logger::TimestampPair SignalLoggerRos::getCurrentTime() {
+  signal_logger::TimestampPair timeStamp;
+
+  // Get time in seconds and nanoseconds
+  ros::Time curr_time = ros::Time::now();
+  timeStamp.first = curr_time.sec;
+  timeStamp.second = curr_time.nsec;
+
+  return timeStamp;
+}
 
 
 

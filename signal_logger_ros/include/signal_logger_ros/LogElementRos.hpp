@@ -29,6 +29,19 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   using MsgTypePtr = typename traits::slr_msg_traits<ValueType_>::msgtypePtr;
 
  public:
+  /** Constructor
+   *  @param ptr          pointer to the log var
+   *  @param name         name of the log var
+   *  @param unit         unit of the log var
+   *  @param divider      log_freq = ctrl_freq/divider
+   *  @param action       save, publish or save and publish
+   *  @param bufferSize   size of the buffer (bufferSize elements of type ValueType_)
+   *  @param bufferType   type of the buffer
+   *  @param headerStream pointer to the header stream of the binary log file
+   *  @param dataStream   pointer to the data stream of the binary log file
+   *  @param nh           ros nodehandle for the ros publisher
+   *  @param bagWriter    reference to the bagfile writer object
+   */
   LogElementRos(const ValueType_ * const ptr,
                 const std::string & name,
                 const std::string & unit,
@@ -63,11 +76,12 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
     std::vector<ValueType_> values = this->buffer_.copyBuffer();
 
     // Define start index
-    std::size_t lastEntryIdx = (time.noItemsInBuffer() - 1) - (nrCollectDataCalls - 1) % this->divider_;
+    std::size_t startIdx = (time.noItemsInBuffer() - 1) - (nrCollectDataCalls - 1) % this->divider_
+                           - (this->noItemsInBuffer() - 1) * this->divider_;
 
     // Write to bag
     for(std::size_t i = 0; i < values.size(); ++i) {
-      signal_logger::TimestampPair tsp_now = time.getTimeStampAtPosition(lastEntryIdx - i*this->divider_);
+      signal_logger::TimestampPair tsp_now = time.getTimeStampAtPosition(startIdx + i*this->divider_);
       ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
       ValueType_ data = values.at(values.size() - i - 1);
       traits::slr_update_traits<ValueType_>::updateMsg(&data, msg_, now);
@@ -103,6 +117,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
     }
   }
 
+  //! Update the element, shutdown/advertise the ros publisher
   void updateElement() override {
     if(this->isPublished() && this->isEnabled()) {
       pub_ = nh_->advertise<MsgType>(this->getName(), 1);
@@ -111,11 +126,11 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
     }
   }
 
+  //! Cleanup the element (shutdown ros publisher)
   void cleanupElement() override {
     signal_logger_std::LogElementStd<ValueType_>::cleanupElement();
     pub_.shutdown();
   }
-
 
  protected:
   //! ros nodehandle

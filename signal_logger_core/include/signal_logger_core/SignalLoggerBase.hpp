@@ -29,7 +29,7 @@ namespace signal_logger {
 //! Class that severs as base class for all the loggers
 class SignalLoggerBase {
  public:
-  // Some logger element defaults
+  //! Some logger element defaults
   static constexpr const char* LOG_ELEMENT_DEFAULT_GROUP_NAME   = "/log/";
   static constexpr const char* LOG_ELEMENT_DEFAULT_UNIT         = "-";
   static constexpr std::size_t LOG_ELEMENT_DEFAULT_DIVIDER      = 1;
@@ -37,12 +37,13 @@ class SignalLoggerBase {
   static constexpr std::size_t LOG_ELEMENT_DEFAULT_BUFFER_SIZE  = 1000;
   static constexpr BufferType LOG_ELEMENT_DEFAULT_BUFFER_TYPE   = BufferType::LOOPING;
 
-  // Some logger defaults
+  //! Some logger defaults
   static constexpr const double LOGGER_DEFAULT_MAXIMUM_LOG_TIME   = 0.0;
   static constexpr const double LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME   = 10.0;
   static constexpr const char* LOGGER_DEFAULT_SCRIPT_FILENAME   = "logger.yaml";
   static constexpr const char* LOGGER_DEFAULT_PREFIX            = "/log";
 
+  //! Log element map types
   using LogPair = std::pair<std::string, std::shared_ptr<signal_logger::LogElementInterface>>;
   using LogElementMap = std::unordered_map<std::string, std::shared_ptr<signal_logger::LogElementInterface>>;
   using LogElementMapIterator = LogElementMap::iterator;
@@ -128,6 +129,15 @@ class SignalLoggerBase {
    * @param maxLogTime maximal time logging
    */
   virtual bool resetTimeLogElement(signal_logger::BufferType buffertype, double maxLogTime = LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME);
+
+  /** Returns the current time
+   * @return current time
+   */
+  virtual signal_logger::TimestampPair getCurrentTime();
+
+ private:
+  bool workerSaveDataWrapper(const std::string & logFileName);
+
 
  protected:
   //! Flag to check if logger is initialized

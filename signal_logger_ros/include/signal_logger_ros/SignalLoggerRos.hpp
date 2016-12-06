@@ -23,7 +23,13 @@ namespace signal_logger_ros {
 class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
 {
  public:
+  /** Constructor
+   *  @param nh             pointer to the ros nodehandle
+   *  @param saveToBagFile  flag to enable saving to a bag file (default: false)
+   */
   SignalLoggerRos(ros::NodeHandle * nh, bool saveToBagFile = false);
+
+  //! Destructor
   virtual ~SignalLoggerRos();
 
   /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
@@ -58,48 +64,113 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
   //! Save all the buffered data into a log file
   virtual bool workerSaveData(const std::string & logFileName);
 
-  //! Services needed by the gui
+  /** Get current logger configuration
+   *  @param  req empty request
+   *  @param  res logger_namespace, script_filepath, log_element_names, collect_frequency
+   *  @return true iff successful
+   */
   bool getLoggerConfiguration(signal_logger_msgs::GetLoggerConfigurationRequest& req,
                              signal_logger_msgs::GetLoggerConfigurationResponse& res);
 
+  /** Get logger element
+   *  @param  req element name
+   *  @param  res logger element
+   *  @return true iff successful
+   */
   bool getLoggerElement(signal_logger_msgs::GetLoggerElementRequest& req,
                         signal_logger_msgs::GetLoggerElementResponse& res);
 
+  /** Set logger element
+   *  @param  req log element
+   *  @param  res success status
+   *  @return true iff successful
+   */
   bool setLoggerElement(signal_logger_msgs::SetLoggerElementRequest& req,
                         signal_logger_msgs::SetLoggerElementResponse& res);
 
+  /** Start Logger
+   *  @param  req empty request
+   *  @param  res success status
+   *  @return true iff successful
+   */
   bool startLogger(std_srvs::TriggerRequest& req,
                    std_srvs::TriggerResponse& res);
 
+  /** Stop Logger
+   *  @param  req empty request
+   *  @param  res success status
+   *  @return true iff successful
+   */
   bool stopLogger(std_srvs::TriggerRequest& req,
                   std_srvs::TriggerResponse& res);
 
+  /** Save Logger data
+   *  @param  req empty request
+   *  @param  res success status
+   *  @return true iff successful
+   */
   bool saveLoggerData(std_srvs::TriggerRequest& req,
                       std_srvs::TriggerResponse& res);
 
+  /** Is logger running
+   *  @param  req empty request
+   *  @param  res is logger running flag
+   *  @return true iff successful
+   */
   bool isLoggerRunning(std_srvs::TriggerRequest& req,
                        std_srvs::TriggerResponse& res);
 
+  /** Load logger script
+   *  @param  req file path
+   *  @param  res success status
+   *  @return true iff successful
+   */
   bool loadLoggerScript(signal_logger_msgs::LoadLoggerScriptRequest& req,
                         signal_logger_msgs::LoadLoggerScriptResponse& res);
 
+  /** Write log element to msg
+   *  @param  name log element name
+   *  @param  msg  log element message
+   *  @return true iff successful
+   */
   bool logElementtoMsg(const std::string & name, signal_logger_msgs::LogElement & msg);
 
+  /** Write msg to log element
+   *  @param  msg  log element message (contains name of log element to write)
+   *  @return true iff successful
+   */
   bool msgToLogElement(const signal_logger_msgs::LogElement & msg);
 
+  //! Shutdown ros communication
   virtual bool cleanup();
 
+  /** Returns the current time
+   * @return current time
+   */
+  virtual signal_logger::TimestampPair getCurrentTime();
+
  private:
+  //! ROS nodehandle
   ros::NodeHandle* nh_;
+  //! Flag indicating if data is save to a bag file
   bool saveToBagFile_;
+  //! Shared ptr to a bag writer object
   std::shared_ptr<bageditor::BagWriter> bagWriter_;
+  //! Get logger configuration service
   ros::ServiceServer getLoggerConfigurationService_;
+  //! Get logger element service
   ros::ServiceServer getLoggerElementService_;
+  //! Set logger element service
   ros::ServiceServer setLoggerElementService_;
+  //! Start logger service
   ros::ServiceServer startLoggerService_;
+  //! Stop logger service
   ros::ServiceServer stopLoggerService_;
+  //! Save logger data service
   ros::ServiceServer saveLoggerDataService_;
+  //! Load logger script service
   ros::ServiceServer loadLoggerScriptService_;
+  //! Is logger running service
   ros::ServiceServer isLoggerRunningService_;
 
 };

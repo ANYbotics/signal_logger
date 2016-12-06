@@ -161,11 +161,8 @@ bool SignalLoggerBase::collectLoggerData()
   // Is logger started?
   if(isCollectingData_)
   {
-    // Get time in seconds and nanoseconds
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
-    logTime_.first = seconds.count();
-    logTime_.second = std::chrono::duration_cast<std::chrono::nanoseconds>(duration-seconds).count();
+    // set current time
+    logTime_ = this->getCurrentTime();
 
     // Collect time
     if(timeElement_->getBufferType() == BufferType::FIXED_SIZE && timeElement_->noItemsInBuffer() == timeElement_->getBufferSize())
@@ -252,7 +249,7 @@ bool SignalLoggerBase::saveLoggerData()
   std::string filename = std::string{"d_"} + std::string{dateTime} + suffixString;
 
   // Save data in different thread
-  std::thread t1(&SignalLoggerBase::workerSaveData, this,  std::string{filename});
+  std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this,  std::string{filename});
   t1.detach();
 
   return true;
@@ -398,6 +395,36 @@ bool SignalLoggerBase::resetTimeLogElement(signal_logger::BufferType buffertype,
                                                        LogElementAction::SAVE, maxLogTime*updateFrequency_, buffertype));
 }
 
+signal_logger::TimestampPair SignalLoggerBase::getCurrentTime() {
+  signal_logger::TimestampPair timeStamp;
+
+  // Get time in seconds and nanoseconds
+  auto duration = std::chrono::system_clock::now().time_since_epoch();
+  auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
+  timeStamp.first = seconds.count();
+  timeStamp.second = std::chrono::duration_cast<std::chrono::nanoseconds>(duration-seconds).count();
+
+  return timeStamp;
+}
+
+bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName) {
+
+  bool success = this->workerSaveData(logFileName);
+
+  // Clear buffer for log elements
+  for(auto & elem : enabledElements_) {
+    elem.second->second->clearBuffer();
+  }
+
+  // Clear buffer for time elements
+  timeElement_->clearBuffer();
+
+  // Set flag, notify user
+  isSavingData_ = false;
+  MELO_INFO( "All done, captain!" );
+
+  return success;
+}
 
 
 }

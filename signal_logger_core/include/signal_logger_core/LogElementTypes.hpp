@@ -33,7 +33,7 @@ typedef Eigen::Matrix< bool ,Eigen::Dynamic, Eigen::Dynamic >           MatrixXb
 typedef Eigen::Matrix< std::string ,Eigen::Dynamic, Eigen::Dynamic >    MatrixXstring;
 
 #ifdef SILO_USE_KINDR
-  // Kindr types
+  //! Kindr types
   typedef kindr::Position3D             KindrPositionD;
   typedef kindr::RotationQuaternionPD   KindrRotationQuaternionD;
   typedef kindr::EulerAnglesZyxPD       KindrEulerAnglesZyxD;
@@ -48,7 +48,7 @@ typedef Eigen::Matrix< std::string ,Eigen::Dynamic, Eigen::Dynamic >    MatrixXs
   typedef kindr::Torque3D               KindrTorqueD;
   typedef kindr::VectorTypeless3D       KindrVectorD;
 
-  // Kindr vector at position type
+  //! Kindr vector at position type
   template<typename VectorType_>
   struct KindrVectorAtPosition {
     VectorType_ vector;

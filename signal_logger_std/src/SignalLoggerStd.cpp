@@ -56,10 +56,6 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName) {
   // Close file
   file_.close();
 
-  // Set flag #Fixme this should not be responsibility of the subclass!
-  isSavingData_ = false;
-  MELO_INFO( "All done, captain!" );
-
   return true;
 }
 

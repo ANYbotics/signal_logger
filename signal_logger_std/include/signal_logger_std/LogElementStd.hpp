@@ -63,7 +63,9 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
   }
 
  protected:
+  //! Header stream
   std::stringstream* headerStream_;
+  //! Data stream
   std::stringstream* dataStream_;
 
 };

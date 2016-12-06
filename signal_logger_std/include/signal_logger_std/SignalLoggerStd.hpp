@@ -64,8 +64,11 @@ class SignalLoggerStd : public signal_logger::SignalLoggerBase
                                    double maxLogTime = signal_logger::SignalLoggerBase::LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME) override;
 
  protected:
+  //! Binary log file
   std::ofstream file_;
+  //! Header stream
   std::stringstream headerStream_;
+  //! Data stream
   std::stringstream dataStream_;
 };
 

@@ -83,12 +83,16 @@ class LogElementInterface
   virtual void collectData() = 0;
 
   /** Reads buffer and processes data (probably called from different thread)
-   *  @param time time log element
+   *  @param time                 time log element
+   *  @param noCollectDataCalls   number of collectLoggerData calls, this allows time synchronization for publishing
    */
-  virtual void publishData(const LogElementBase<TimestampPair> & time , unsigned int nrCollectDataCalls) = 0;
+  virtual void publishData(const LogElementBase<TimestampPair> & time , unsigned int noCollectDataCalls) = 0;
 
-  //! Write header of log file
-  virtual void saveDataToLogFile(const LogElementBase<TimestampPair> & time, unsigned int nrCollectDataCalls) = 0;
+  /** Reads buffer and writes data to a file
+   *  @param time                 time log element
+   *  @param noCollectDataCalls   number of collectLoggerData calls, this allows time synchronization of the log file
+   */
+  virtual void saveDataToLogFile(const LogElementBase<TimestampPair> & time, unsigned int noCollectDataCalls) = 0;
 
   //! Reset logger element called before logger start
   virtual void restartElement() = 0;
