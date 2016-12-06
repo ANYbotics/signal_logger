@@ -15,9 +15,14 @@ leOut = leIn;
 
 % Check buffer type
 for i=1:length(leOut)
-    startIdx = leOut(sTimeIdx).noData - mod((timeSyncOffset - 1), leOut(i).divider) ...
-               - (leOut(i).noData - 1) * leOut(i).divider;
-    stopIdx = startIdx + leOut(i).divider*(leOut(i).noData - 1);
+    startIdx = 1;
+    stopIdx = (leOut(i).noData - 1) * leOut(i).divider;
+    if(leOut(sTimeIdx).isBufferLooping)
+        startIdx = leOut(sTimeIdx).noData - mod((timeSyncOffset - 1), leOut(i).divider) ...
+                    - (leOut(i).noData - 1) * leOut(i).divider;
+        stopIdx = startIdx + leOut(i).divider*(leOut(i).noData - 1);
+    end
+
     leOut(i).time.seconds = leOut(sTimeIdx).data(startIdx:leOut(i).divider:stopIdx);
     leOut(i).time.nanoseconds = leOut(nsTimeIdx).data(startIdx:leOut(i).divider:stopIdx);
 end

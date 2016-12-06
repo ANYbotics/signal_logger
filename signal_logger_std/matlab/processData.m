@@ -6,3 +6,4 @@ logElements = matchTimeToData(logElements, timeSyncOffset);
 
 % Cast it back to double
 logElements(3).data = typecast(uint64(logElements(3).data), 'double');
+logElements(4).data = typecast(uint64(logElements(4).data), 'single');
