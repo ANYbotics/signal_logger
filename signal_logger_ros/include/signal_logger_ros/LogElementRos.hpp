@@ -93,7 +93,6 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
     // Write to bag
     for(std::size_t i = 0; i < values.size(); ++i) {
       signal_logger::TimestampPair tsp_now = time.getTimeStampAtPosition(startIdx - i*this->divider_);
-      MELO_INFO_STREAM("Index "<<startIdx - i*this->divider_<<" time "<<tsp_now.first<<" s "<<tsp_now.second<<" ns");
       ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
       ValueType_ data = values.at(i);
       traits::slr_update_traits<ValueType_>::updateMsg(&data, msg_, now);
