@@ -65,11 +65,13 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   virtual void saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const;
   virtual void restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings);
   void statusMessage(std::string message, MessageType type, double displaySeconds = 0.0);
+  void shutdownROS();
 
   protected slots:
     void refreshAll();
     void changeAll();
     void drawParamList();
+    void setLogger();
     void startLogger();
     void stopLogger();
     void saveLoggerData();

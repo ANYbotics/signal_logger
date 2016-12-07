@@ -28,6 +28,7 @@ add_message_files(
    Int64Stamped.msg
    Int32Stamped.msg
    Int8Stamped.msg
+   UInt8Stamped.msg
    BoolStamped.msg
    CharStamped.msg
    UnsignedCharStamped.msg

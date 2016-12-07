@@ -89,7 +89,7 @@ void add( const ValueType_ & var,
 template<typename ValueType_>
 typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value>::type
 add(const ValueType_ & var,
-    const signal_logger::MatrixXstring & names,
+    Eigen::Ref<signal_logger::MatrixXstring> names,
     const std::string & group       = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME,
     const std::string & unit        = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
     const std::size_t divider       = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
@@ -102,7 +102,7 @@ add(const ValueType_ & var,
 
   for(std::size_t i = 0; i < var.size(); ++i)
   {
-    add<typename ValueType_::Scalar>(static_cast<const typename ValueType_::Scalar * const>(var.data() + i),
+    add<typename ValueType_::Scalar>(*static_cast<const typename ValueType_::Scalar * const>(var.data() + i),
                                      static_cast<std::string>(*(names.data() + i)),
                                      group,
                                      unit,

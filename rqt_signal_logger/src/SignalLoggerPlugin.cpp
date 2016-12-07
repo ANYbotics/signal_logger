@@ -112,32 +112,67 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
 
   connect(configureUi_.startLoggerButton, SIGNAL(pressed()), this, SLOT(startLogger()));
   connect(configureUi_.stopLoggerButton, SIGNAL(pressed()), this, SLOT(stopLogger()));
+  connect(configureUi_.setLoggerButton, SIGNAL(pressed()), this, SLOT(setLogger()));
   connect(configureUi_.saveDataButton, SIGNAL(pressed()), this, SLOT(saveLoggerData()));
   connect(configureUi_.pathButton, SIGNAL(pressed()), this, SLOT(selectYamlFile()));
   connect(configureUi_.loadScriptButton, SIGNAL(pressed()), this, SLOT(loadYamlFile()));
   connect(configureUi_.saveScriptButton, SIGNAL(pressed()), this, SLOT(saveYamlFile()));
 
-  /******************************/
-  //#Fixme read from param server
-  std::string getLoggerConfigurationServiceName{"/sl_ros/get_logger_configuration"};
-  std::string getParameterServiceName{"/sl_ros/get_logger_element"};
-  std::string setParameterListServiceName{"/sl_ros/set_logger_element"};
-  std::string startLoggerServiceName{"/sl_ros/start_logger"};
-  std::string stopLoggerServiceName{"/sl_ros/stop_logger"};
-  std::string saveLoggerDataServiceName{"/sl_ros/save_logger_data"};
-  std::string loadLoggerScriptServiceName{"/sl_ros/load_logger_script"};
-  std::string isLoggerRunningServiceName{"/sl_ros/is_logger_running"};
+
+  // Setup services
+  setLogger();
+}
+
+void SignalLoggerPlugin::setLogger() {
+  std::string ns = configureUi_.namespaceEdit->displayText().toStdString();
+
+  std::string getLoggerConfigurationServiceName{"/silo_ros/get_logger_configuration"};
+  std::string getParameterServiceName{"/silo_ros/get_logger_element"};
+  std::string setParameterListServiceName{"/silo_ros/set_logger_element"};
+  std::string startLoggerServiceName{"/silo_ros/start_logger"};
+  std::string stopLoggerServiceName{"/silo_ros/stop_logger"};
+  std::string saveLoggerDataServiceName{"/silo_ros/save_logger_data"};
+  std::string loadLoggerScriptServiceName{"/silo_ros/load_logger_script"};
+  std::string isLoggerRunningServiceName{"/silo_ros/is_logger_running"};
 
 
-  // ROS services
-  getLoggerConfigurationClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerConfiguration>(getLoggerConfigurationServiceName);
-  getLoggerElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerElement>(getParameterServiceName);
-  setLoggerElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::SetLoggerElement>(setParameterListServiceName);
-  startLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(startLoggerServiceName);
-  stopLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(stopLoggerServiceName);
-  saveLoggerDataClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(saveLoggerDataServiceName);
-  loadLoggerScriptClient_ = getNodeHandle().serviceClient<signal_logger_msgs::LoadLoggerScript>(loadLoggerScriptServiceName);
-  isLoggerRunningClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(isLoggerRunningServiceName);
+  // Test if services exist
+  if(ros::service::exists(ns+getLoggerConfigurationServiceName, false) &&
+     ros::service::exists(ns+getParameterServiceName, false) &&
+     ros::service::exists(ns+getLoggerConfigurationServiceName, false) &&
+     ros::service::exists(ns+setParameterListServiceName, false) &&
+     ros::service::exists(ns+startLoggerServiceName, false) &&
+     ros::service::exists(ns+stopLoggerServiceName, false) &&
+     ros::service::exists(ns+saveLoggerDataServiceName, false) &&
+     ros::service::exists(ns+loadLoggerScriptServiceName, false) &&
+     ros::service::exists(ns+isLoggerRunningServiceName, false) )
+    {
+       // ROS services
+       getLoggerConfigurationClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerConfiguration>(ns+getLoggerConfigurationServiceName);
+       getLoggerElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerElement>(ns+getParameterServiceName);
+       setLoggerElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::SetLoggerElement>(ns+setParameterListServiceName);
+       startLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(ns+startLoggerServiceName);
+       stopLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(ns+stopLoggerServiceName);
+       saveLoggerDataClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(ns+saveLoggerDataServiceName);
+       loadLoggerScriptClient_ = getNodeHandle().serviceClient<signal_logger_msgs::LoadLoggerScript>(ns+loadLoggerScriptServiceName);
+       isLoggerRunningClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(ns+isLoggerRunningServiceName);
+     }
+     else {
+       statusMessage("Services not registered!", MessageType::ERROR, 2.0);
+       shutdownROS();
+     }
+}
+
+
+void SignalLoggerPlugin::shutdownROS() {
+  getLoggerConfigurationClient_.shutdown();
+  getLoggerElementClient_.shutdown();
+  setLoggerElementClient_.shutdown();
+  startLoggerClient_.shutdown();
+  stopLoggerClient_.shutdown();
+  saveLoggerDataClient_.shutdown();
+  loadLoggerScriptClient_.shutdown();
+  isLoggerRunningClient_.shutdown();
 }
 
 void SignalLoggerPlugin::changeAll() {
@@ -425,12 +460,14 @@ void SignalLoggerPlugin::shutdownPlugin() {
 void SignalLoggerPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const {
   plugin_settings.setValue("lineEditFilter", varsUi_.lineEditFilter->displayText());
   plugin_settings.setValue("pathEdit", configureUi_.pathEdit->displayText());
+  plugin_settings.setValue("namespaceEdit", configureUi_.namespaceEdit->displayText());
 
 }
 
 void SignalLoggerPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings) {
   varsUi_.lineEditFilter->setText(plugin_settings.value("lineEditFilter").toString());
   configureUi_.pathEdit->setText(plugin_settings.value("pathEdit").toString());
+  configureUi_.namespaceEdit->setText(plugin_settings.value("namespaceEdit").toString());
 }
 
 // Try to find the Needle in the Haystack - ignore case

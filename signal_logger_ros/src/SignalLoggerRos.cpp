@@ -17,14 +17,14 @@ SignalLoggerRos::SignalLoggerRos(ros::NodeHandle * nh,
                                 saveToBagFile_(saveToBagFile),
                                 bagWriter_(nullptr)
 {
-  getLoggerConfigurationService_ = nh_->advertiseService("/sl_ros/get_logger_configuration", &SignalLoggerRos::getLoggerConfiguration, this);
-  getLoggerElementService_ = nh_->advertiseService("/sl_ros/get_logger_element", &SignalLoggerRos::getLoggerElement, this);
-  setLoggerElementService_ = nh_->advertiseService("/sl_ros/set_logger_element", &SignalLoggerRos::setLoggerElement, this);
-  startLoggerService_ = nh_->advertiseService("/sl_ros/start_logger", &SignalLoggerRos::startLogger, this);
-  stopLoggerService_ = nh_->advertiseService("/sl_ros/stop_logger", &SignalLoggerRos::stopLogger, this);
-  saveLoggerDataService_ = nh_->advertiseService("/sl_ros/save_logger_data", &SignalLoggerRos::saveLoggerData, this);
-  loadLoggerScriptService_ = nh_->advertiseService("/sl_ros/load_logger_script", &SignalLoggerRos::loadLoggerScript, this);
-  isLoggerRunningService_  =  nh_->advertiseService("/sl_ros/is_logger_running", &SignalLoggerRos::isLoggerRunning, this);
+  getLoggerConfigurationService_ = nh_->advertiseService("silo_ros/get_logger_configuration", &SignalLoggerRos::getLoggerConfiguration, this);
+  getLoggerElementService_ = nh_->advertiseService("silo_ros/get_logger_element", &SignalLoggerRos::getLoggerElement, this);
+  setLoggerElementService_ = nh_->advertiseService("silo_ros/set_logger_element", &SignalLoggerRos::setLoggerElement, this);
+  startLoggerService_ = nh_->advertiseService("silo_ros/start_logger", &SignalLoggerRos::startLogger, this);
+  stopLoggerService_ = nh_->advertiseService("silo_ros/stop_logger", &SignalLoggerRos::stopLogger, this);
+  saveLoggerDataService_ = nh_->advertiseService("silo_ros/save_logger_data", &SignalLoggerRos::saveLoggerData, this);
+  loadLoggerScriptService_ = nh_->advertiseService("silo_ros/load_logger_script", &SignalLoggerRos::loadLoggerScript, this);
+  isLoggerRunningService_  =  nh_->advertiseService("silo_ros/is_logger_running", &SignalLoggerRos::isLoggerRunning, this);
 }
 
 SignalLoggerRos::~SignalLoggerRos()

@@ -28,6 +28,7 @@
 #include <signal_logger_msgs/Float32Stamped.h>
 #include <signal_logger_msgs/Float64Stamped.h>
 #include <signal_logger_msgs/Int8Stamped.h>
+#include <signal_logger_msgs/UInt8Stamped.h>
 #include <signal_logger_msgs/Int32Stamped.h>
 #include <signal_logger_msgs/Int64Stamped.h>
 #include <signal_logger_msgs/BoolStamped.h>
@@ -73,9 +74,16 @@ struct slr_msg_traits<int> {
 
 template<>
 struct slr_msg_traits<short> {
-  typedef signal_logger_msgs::Int8Stamped        msgtype;
+  typedef signal_logger_msgs::Int8Stamped         msgtype;
   typedef signal_logger_msgs::Int8StampedPtr      msgtypePtr;
   typedef signal_logger_msgs::Int8StampedConstPtr msgtypeConstPtr;
+};
+
+template<>
+struct slr_msg_traits<short unsigned int> {
+  typedef signal_logger_msgs::UInt8Stamped         msgtype;
+  typedef signal_logger_msgs::UInt8StampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::UInt8StampedConstPtr msgtypeConstPtr;
 };
 
 template<>
