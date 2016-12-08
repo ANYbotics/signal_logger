@@ -429,6 +429,7 @@ bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName, Lo
   timeElement_->clearBuffer();
 
   // Set flag, notify user
+  noCollectDataCalls_ = 0;
   isSavingData_ = false;
   MELO_INFO( "All done, captain!" );
 
