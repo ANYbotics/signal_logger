@@ -25,7 +25,7 @@ void setSignalLoggerStd() {
 }
 
 #ifdef SILO_USE_ROS
-void setSignalLoggerRos(ros::NodeHandle* nh, bool saveToBag) {
+void setSignalLoggerRos(ros::NodeHandle* nh) {
   logger.reset(new signal_logger_ros::SignalLoggerRos(nh));
 }
 #endif

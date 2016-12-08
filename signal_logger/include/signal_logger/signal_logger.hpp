@@ -31,7 +31,7 @@ void setSignalLoggerNone();
 void setSignalLoggerStd();
 
 #ifdef SILO_USE_ROS
-void setSignalLoggerRos(ros::NodeHandle* nh, bool saveToBag = false);
+void setSignalLoggerRos(ros::NodeHandle* nh);
 #endif
 
 /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
