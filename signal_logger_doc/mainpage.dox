@@ -11,10 +11,11 @@ Following features were implemented:
   <li>Save the logged data to a log file (parallel)</li>
   <li>Save/Load the logger configuration to/from a .yaml file</li>
 </ul>
-Furthermore a ROS implementation is available, that features:
+Furthermore a ROS implementation is available, that additionally features:
 <ul>
+  <li>Save the logged data to a bag file (parallel) </li>
   <li>Publishing the collected data over ROS topics (parallel) </li>
-  <li>Rqt Plugin that allows configuring the logger</li>
+  <li>Rqt Plugin to configure the logger</li>
 </ul>
 
 \section source_code Source Code
@@ -51,9 +52,9 @@ The core and std library of the signal logger are non ROS dependent. And only re
   <li><a href="https://github.com/ethz-asl/kindr">kindr (optional -DSILO_USE_KINDR=OFF)</a></li>
 </ul>
 
-The signal_logger package combines all loggers, for runtime logger type selection. Thus it is ROS depenedent. By setting
--DSILO_USE_ROS=OFF you can exclude the ros logger and therefore also the ROS dependency. Place an empty CATKIN_IGNORE file in the signal_logger_ros
-package to exclude it from the build (e.g. you don't have ROS).
+The signal_logger package combines all loggers and allows runtime logger type selection. By setting -DSILO_USE_ROS=OFF you can exclude
+the ros logger and therefore also the ROS dependency. Place an empty CATKIN_IGNORE file in the signal_logger_ros package to exclude it
+from the build (e.g. you don't have ROS).
 
 The ros logger requires these additional dependencies:
 <ul>
@@ -61,6 +62,7 @@ The ros logger requires these additional dependencies:
   <li><a href="http://wiki.ros.org/std_msgs">std_msgs</a></li>
   <li><a href="http://wiki.ros.org/geometry_msgs">geometry_msgs</a></li>
   <li><a href="https://github.com/ethz-asl/kindr_ros">kindr_msgs (optional -DSILO_USE_KINDR=OFF)</a></li>
+  <li><a href="https://bitbucket.org/ethz-asl-lr/any_common">bageditor</a></li>
 </ul>
 
 The ros rqt_gui plugin needs these two additional dependencies:
@@ -87,6 +89,10 @@ cd ~/catkin_ws/src
 git clone https://bitbucket.org/ethz-asl-lr/signal_logger
 catkin build signal_logger
 \endcode
+
+To exclude ROS use: \code{.sh} catkin build signal_logger --cmake-args -DSILO_USE_ROS=OFF \endcode
+To exclude KINDR use: \code{.sh} catkin build signal_logger --cmake-args -DSILO_USE_KINDR=OFF \endcode
+
 
 For additionally building the rqt_signal_logger:
 \code{.sh}

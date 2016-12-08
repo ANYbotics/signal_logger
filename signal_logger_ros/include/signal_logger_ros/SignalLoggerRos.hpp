@@ -16,6 +16,8 @@
 #include "signal_logger_msgs/GetLoggerElement.h"
 #include "signal_logger_msgs/SetLoggerElement.h"
 #include "signal_logger_msgs/LoadLoggerScript.h"
+#include "signal_logger_msgs/SaveLoggerData.h"
+
 #include <std_srvs/Trigger.h>
 
 namespace signal_logger_ros {
@@ -25,9 +27,8 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
  public:
   /** Constructor
    *  @param nh             pointer to the ros nodehandle
-   *  @param saveToBagFile  flag to enable saving to a bag file (default: false)
    */
-  SignalLoggerRos(ros::NodeHandle * nh, bool saveToBagFile = false);
+  SignalLoggerRos(ros::NodeHandle * nh);
 
   //! Destructor
   virtual ~SignalLoggerRos();
@@ -55,14 +56,14 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
   {
     std::string elementName = std::string{signal_logger::SignalLoggerBase::LOGGER_DEFAULT_PREFIX} + "/" + group + "/" + name;
     logElements_[elementName].reset(new LogElementRos<ValueType_>(var, elementName , unit, divider, action, bufferSize,
-                                                                  bufferType, &headerStream_, &dataStream_, nh_, bagWriter_, saveToBagFile_));
+                                                                  bufferType, &headerStream_, &dataStream_, nh_, bagWriter_));
   }
 
   //! @return the logger type
   virtual LoggerType getLoggerType() const { return SignalLoggerBase::LoggerType::TypeRos; }
 
   //! Save all the buffered data into a log file
-  virtual bool workerSaveData(const std::string & logFileName);
+  virtual bool workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType);
 
   /** Get current logger configuration
    *  @param  req empty request
@@ -109,8 +110,8 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
    *  @param  res success status
    *  @return true iff successful
    */
-  bool saveLoggerData(std_srvs::TriggerRequest& req,
-                      std_srvs::TriggerResponse& res);
+  bool saveLoggerData(signal_logger_msgs::SaveLoggerDataRequest& req,
+                      signal_logger_msgs::SaveLoggerDataResponse& res);
 
   /** Is logger running
    *  @param  req empty request
@@ -152,8 +153,6 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
  private:
   //! ROS nodehandle
   ros::NodeHandle* nh_;
-  //! Flag indicating if data is save to a bag file
-  bool saveToBagFile_;
   //! Shared ptr to a bag writer object
   std::shared_ptr<bageditor::BagWriter> bagWriter_;
   //! Get logger configuration service

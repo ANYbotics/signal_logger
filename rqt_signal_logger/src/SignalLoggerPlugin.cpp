@@ -23,6 +23,7 @@
 #include <QScrollBar>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QSignalMapper>
 
 // STL
 #include <fstream>
@@ -102,6 +103,7 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   /******************************
    * Connect ui forms to actions *
    ******************************/
+  QSignalMapper* signalMapper = new QSignalMapper (this) ;
   connect(varsUi_.pushButtonRefreshAll, SIGNAL(pressed()), this, SLOT(refreshAll()));
   connect(varsUi_.lineEditFilter, SIGNAL(returnPressed()), this ,SLOT(refreshAll()));
   connect(varsUi_.pushButtonChangeAll, SIGNAL(pressed()), this, SLOT(changeAll()));
@@ -113,12 +115,18 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   connect(configureUi_.startLoggerButton, SIGNAL(pressed()), this, SLOT(startLogger()));
   connect(configureUi_.stopLoggerButton, SIGNAL(pressed()), this, SLOT(stopLogger()));
   connect(configureUi_.setLoggerButton, SIGNAL(pressed()), this, SLOT(setLogger()));
-  connect(configureUi_.saveDataButton, SIGNAL(pressed()), this, SLOT(saveLoggerData()));
+  connect(configureUi_.saveBinButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
+  connect(configureUi_.saveBagButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
+  connect(configureUi_.saveBothButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
   connect(configureUi_.pathButton, SIGNAL(pressed()), this, SLOT(selectYamlFile()));
   connect(configureUi_.loadScriptButton, SIGNAL(pressed()), this, SLOT(loadYamlFile()));
   connect(configureUi_.saveScriptButton, SIGNAL(pressed()), this, SLOT(saveYamlFile()));
 
+  signalMapper -> setMapping (configureUi_.saveBinButton, signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BINARY) ;
+  signalMapper -> setMapping (configureUi_.saveBagButton, signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BAG) ;
+  signalMapper -> setMapping (configureUi_.saveBothButton, signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BINARY_AND_BAG) ;
 
+  connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(saveLoggerData(int))) ;
   // Setup services
   setLogger();
 }
@@ -153,7 +161,7 @@ void SignalLoggerPlugin::setLogger() {
        setLoggerElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::SetLoggerElement>(ns+setParameterListServiceName);
        startLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(ns+startLoggerServiceName);
        stopLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(ns+stopLoggerServiceName);
-       saveLoggerDataClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(ns+saveLoggerDataServiceName);
+       saveLoggerDataClient_ = getNodeHandle().serviceClient<signal_logger_msgs::SaveLoggerData>(ns+saveLoggerDataServiceName);
        loadLoggerScriptClient_ = getNodeHandle().serviceClient<signal_logger_msgs::LoadLoggerScript>(ns+loadLoggerScriptServiceName);
        isLoggerRunningClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(ns+isLoggerRunningServiceName);
      }
@@ -228,11 +236,12 @@ void SignalLoggerPlugin::stopLogger() {
   checkLoggerState();
 }
 
-void SignalLoggerPlugin::saveLoggerData() {
-  std_srvs::Trigger::Request req;
-  std_srvs::Trigger::Response res;
+void SignalLoggerPlugin::saveLoggerData(int type) {
+  signal_logger_msgs::SaveLoggerData::Request req;
+  signal_logger_msgs::SaveLoggerData::Response res;
+  req.logfileType = type;
   if(saveLoggerDataClient_.call(req, res) && res.success) {
-    std::string msg = std::string{"Successfully saved logger data to file: "} + res.message;
+    std::string msg = std::string{"Successfully saved logger data to file."};
     statusMessage(msg, MessageType::SUCCESS, 2.0);
   }
   else {

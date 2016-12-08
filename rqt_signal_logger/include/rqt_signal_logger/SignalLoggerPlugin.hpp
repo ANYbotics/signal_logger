@@ -15,6 +15,7 @@
 #include "signal_logger_msgs/SetLoggerElement.h"
 #include "signal_logger_msgs/GetLoggerElement.h"
 #include "signal_logger_msgs/GetLoggerConfiguration.h"
+#include "signal_logger_msgs/SaveLoggerData.h"
 
 // ros
 #include <ros/ros.h>
@@ -74,7 +75,7 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
     void setLogger();
     void startLogger();
     void stopLogger();
-    void saveLoggerData();
+    void saveLoggerData(int type);
     void selectYamlFile();
     void loadYamlFile();
     void saveYamlFile();

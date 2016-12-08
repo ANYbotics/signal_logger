@@ -10,11 +10,9 @@
 
 namespace signal_logger_ros {
 
-SignalLoggerRos::SignalLoggerRos(ros::NodeHandle * nh,
-                                 bool saveToBagFile):
+SignalLoggerRos::SignalLoggerRos(ros::NodeHandle * nh):
                                 signal_logger_std::SignalLoggerStd(),
                                 nh_(nh),
-                                saveToBagFile_(saveToBagFile),
                                 bagWriter_(nullptr)
 {
   getLoggerConfigurationService_ = nh_->advertiseService("silo_ros/get_logger_configuration", &SignalLoggerRos::getLoggerConfiguration, this);
@@ -33,9 +31,17 @@ SignalLoggerRos::~SignalLoggerRos()
 }
 
 
-bool SignalLoggerRos::workerSaveData(const std::string & logFileName) {
+bool SignalLoggerRos::workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType) {
+  // Save binary data and return
+  if(logfileType == signal_logger::LogFileType::BINARY) {
+    return signal_logger_std::SignalLoggerStd::workerSaveData(logFileName, signal_logger::LogFileType::BINARY);
+  }
 
-  if(!saveToBagFile_) { return signal_logger_std::SignalLoggerStd::workerSaveData(logFileName); }
+  // Save binary data
+  bool success = true;
+  if(logfileType == signal_logger::LogFileType::BINARY_AND_BAG) {
+    success = success && signal_logger_std::SignalLoggerStd::workerSaveData(logFileName, signal_logger::LogFileType::BINARY);
+  }
 
   // Open a new file
   std::string bagFileName = logFileName + std::string{".bag"};
@@ -45,7 +51,7 @@ bool SignalLoggerRos::workerSaveData(const std::string & logFileName) {
   for(auto & elem : enabledElements_) {
     if(elem.second->second->isSaved())
     {
-      elem.second->second->saveDataToLogFile(*timeElement_, noCollectDataCalls_.load());
+      elem.second->second->saveDataToLogFile(*timeElement_, noCollectDataCalls_.load(), signal_logger::LogFileType::BAG);
     }
   }
 
@@ -106,9 +112,25 @@ bool SignalLoggerRos::stopLogger(std_srvs::TriggerRequest& req,
   return true;
 }
 
-bool SignalLoggerRos::saveLoggerData(std_srvs::TriggerRequest& req,
-                                     std_srvs::TriggerResponse& res) {
-  res.success = SignalLoggerBase::saveLoggerData();
+bool SignalLoggerRos::saveLoggerData(signal_logger_msgs::SaveLoggerDataRequest& req,
+                                     signal_logger_msgs::SaveLoggerDataResponse& res) {
+  signal_logger::LogFileType type;
+  switch(req.logfileType) {
+    case signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BINARY:
+      type = signal_logger::LogFileType::BINARY;
+      break;
+    case signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BAG:
+      type = signal_logger::LogFileType::BAG;
+      break;
+    case signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BINARY_AND_BAG:
+      type = signal_logger::LogFileType::BINARY_AND_BAG;
+      break;
+    default:
+      MELO_WARN("Log file type is not known. Do nothing.");
+      res.success = false;
+      return true;
+  }
+  res.success = SignalLoggerBase::saveLoggerData(type);
   return true;
 }
 

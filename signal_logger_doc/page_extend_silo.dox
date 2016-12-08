@@ -5,11 +5,12 @@ In order to add a type you have to provide a complete set of traits in order to
 publish and save a log element of that type. The ros logger traits have to be added signal_logger_ros_traits.hpp and signal_logger_std_traits.hpp.
 Moreover it makes sense to add this new type to LogElementTypes.hpp.
 
-Note: The buffer is templated on the log type. If you use a type the buffer can not handle, you can also
-try to add your time to the buffer customization in signal_logger/Buffer.hpp.
+<i>NOTE</i>: The buffer is templated on the log type. If you use a type the buffer can not handle, you can also
+try to add your new type to the buffer customization in signal_logger/Buffer.hpp.
 
 <H3>Example: Add a Circle type to the signal logger</H3>
 
+<H5> 1. Add your type to the logger type header </H5>
 LogElementTypes.hpp :
 \code{c}
 struct Circle {
@@ -18,6 +19,7 @@ struct Circle {
 };
 \endcode
 
+<H5> 2. Add type to the std logger</H5>
 signal_logger_std_traits.hpp :
 \code{c}
 template <>
@@ -63,6 +65,7 @@ struct sls_traits<signal_logger::Circle>
 };
 \endcode
 
+<H5> 3. Add type to the ros logger</H5>
 For the ros logger we can add a custom msg type to signal_logger_msgs. Lets call it CircleStamped.msg.
 Don't forget to add this msg to the CMakeLists.txt of the signal_logger_msgs package.
 \code{yaml}

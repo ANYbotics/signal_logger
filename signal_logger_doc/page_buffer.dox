@@ -10,7 +10,7 @@ The buffer can have one of three different types.
 <ul>
   <li> <B>Fixed Size: </B> Once the buffer is full, no elements can be added to the buffer.</li>
   <li> <B>Looping: </B> Once the buffer is full, the oldest element is overwritten by the new one.</li>
-  <li> <B>Growing: </B> Once the buffer is full, the buffer is resized in an exponential manor.
+  <li> <B>Growing: </B> Once the buffer is full, the buffer is resized in an exponential manor.<BR>
                     <B>Increasing buffer size (reallocating) is very time inefficient, in time critical application do not use this buffer type!</B></li>
 </ul>
 */

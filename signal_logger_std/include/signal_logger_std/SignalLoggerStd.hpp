@@ -51,7 +51,7 @@ class SignalLoggerStd : public signal_logger::SignalLoggerBase
   }
 
   //! Save all the buffered data into a log file
-  virtual bool workerSaveData(const std::string & logFileName);
+  virtual bool workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType);
 
   //! @return the logger type
   virtual LoggerType getLoggerType() const { return SignalLoggerBase::LoggerType::TypeStd; }

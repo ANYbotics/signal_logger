@@ -42,6 +42,7 @@ add_service_files(
     GetLoggerConfiguration.srv
     LoadLoggerScript.srv
     SetLoggerElement.srv
+    SaveLoggerData.srv
 )
 
 ## Generate added messages and services with any dependencies listed here

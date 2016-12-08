@@ -71,10 +71,8 @@ class SignalLoggerNone : public SignalLoggerBase
   virtual LoggerType getLoggerType() const { return SignalLoggerBase::LoggerType::TypeNone; }
 
  protected:
-  /** Saves the logger data in a file in a seperate thread
-   * @param logFileName filename of the log file
-   */
-  virtual bool workerSaveData(const std::string & logFileName) { return true; };
+  //! Saves the logger data in a file in a seperate thread
+  virtual bool workerSaveData(const std::string & logFileName, LogFileType logfileType) { return true; };
 
 };
 

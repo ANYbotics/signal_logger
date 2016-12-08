@@ -215,7 +215,7 @@ bool SignalLoggerBase::publishData()
   return true;
 }
 
-bool SignalLoggerBase::saveLoggerData()
+bool SignalLoggerBase::saveLoggerData(LogFileType logfileType)
 {
   if(!isInitialized_)
   {
@@ -258,7 +258,7 @@ bool SignalLoggerBase::saveLoggerData()
   std::string filename = std::string{"d_"} + std::string{dateTime} + suffixString;
 
   // Save data in different thread
-  std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this,  std::string{filename});
+  std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this,  std::string{filename}, logfileType);
   t1.detach();
 
   return true;
@@ -416,9 +416,9 @@ signal_logger::TimestampPair SignalLoggerBase::getCurrentTime() {
   return timeStamp;
 }
 
-bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName) {
+bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName, LogFileType logfileType) {
 
-  bool success = this->workerSaveData(logFileName);
+  bool success = this->workerSaveData(logFileName, logfileType);
 
   // Clear buffer for log elements
   for(auto & elem : enabledElements_) {

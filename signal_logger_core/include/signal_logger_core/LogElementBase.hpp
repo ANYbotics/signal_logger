@@ -57,7 +57,7 @@ class LogElementBase: public LogElementInterface
 
   //! Default implementation for element type specific functionality
   virtual void publishData(const LogElementBase<TimestampPair> & time, unsigned int nrCollectDataCalls) override { }
-  virtual void saveDataToLogFile(const LogElementBase<TimestampPair> & time, unsigned int nrCollectDataCalls) override { }
+  virtual void saveDataToLogFile(const LogElementBase<TimestampPair> & time, unsigned int nrCollectDataCalls, LogFileType type = LogFileType::BINARY) override {}
   virtual void restartElement()    override { this->clearBuffer(); }
   virtual void cleanupElement()    override { }
 

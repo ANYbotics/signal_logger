@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>322</width>
-    <height>243</height>
+    <width>311</width>
+    <height>307</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,7 @@
      <x>10</x>
      <y>50</y>
      <width>300</width>
-     <height>101</height>
+     <height>141</height>
     </rect>
    </property>
    <property name="title">
@@ -57,7 +57,7 @@
    <widget class="QPushButton" name="stopLoggerButton">
     <property name="geometry">
      <rect>
-      <x>105</x>
+      <x>100</x>
       <y>30</y>
       <width>90</width>
       <height>30</height>
@@ -67,34 +67,21 @@
      <string>Stop Logger</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="saveDataButton">
-    <property name="geometry">
-     <rect>
-      <x>210</x>
-      <y>30</y>
-      <width>90</width>
-      <height>30</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Save Data</string>
-    </property>
-   </widget>
    <widget class="QLineEdit" name="namespaceEdit">
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>70</y>
+      <y>110</y>
       <width>191</width>
-      <height>25</height>
+      <height>31</height>
      </rect>
     </property>
    </widget>
    <widget class="QPushButton" name="setLoggerButton">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>70</y>
+      <x>200</x>
+      <y>110</y>
       <width>90</width>
       <height>30</height>
      </rect>
@@ -103,13 +90,52 @@
      <string>Set Logger</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="saveBinButton">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>70</y>
+      <width>90</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save Binary</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="saveBagButton">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>70</y>
+      <width>90</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save Bag</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="saveBothButton">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>70</y>
+      <width>90</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save Both</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="groupScript">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>150</y>
-     <width>300</width>
+     <y>200</y>
+     <width>291</width>
      <height>100</height>
     </rect>
    </property>
@@ -120,19 +146,19 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>30</y>
-      <width>260</width>
-      <height>25</height>
+      <y>24</y>
+      <width>251</width>
+      <height>31</height>
      </rect>
     </property>
    </widget>
    <widget class="QToolButton" name="pathButton">
     <property name="geometry">
      <rect>
-      <x>275</x>
-      <y>30</y>
-      <width>25</width>
-      <height>25</height>
+      <x>260</x>
+      <y>24</y>
+      <width>31</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">

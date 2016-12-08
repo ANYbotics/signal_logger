@@ -61,6 +61,14 @@ enum class LogElementAction: unsigned int
   PUBLISH = 3/*!< 3 */
 };
 
+//! Enum containing possible log file types
+enum class LogFileType: unsigned int
+{
+  BINARY = 0,/*!< 0 */
+  BAG = 1, /*!< 1 */
+  BINARY_AND_BAG = 2/*!< 2 */
+};
+
 //! Forward declaration of LogElementBase
 template <typename ValueType_>
 class LogElementBase;
@@ -91,8 +99,9 @@ class LogElementInterface
   /** Reads buffer and writes data to a file
    *  @param time                 time log element
    *  @param noCollectDataCalls   number of collectLoggerData calls, this allows time synchronization of the log file
+   *  @param type                 type of the log file
    */
-  virtual void saveDataToLogFile(const LogElementBase<TimestampPair> & time, unsigned int noCollectDataCalls) = 0;
+  virtual void saveDataToLogFile(const LogElementBase<TimestampPair> & time, unsigned int noCollectDataCalls, LogFileType type = LogFileType::BINARY) = 0;
 
   //! Reset logger element called before logger start
   virtual void restartElement() = 0;
