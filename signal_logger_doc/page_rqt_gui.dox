@@ -39,9 +39,11 @@ The logger can be interfaced with three buttons:
   <li> 'Save Binary'-Button; Saves the logger data to a binary log file.</li>
   <li> 'Save Bag'-Button; Saves the logger data to a bag file.</li>
   <li> 'Save Both'-Button; Saves the logger data to both bag and binary file.</li>
-  <li> 'Namespace'-Textfield; Namespace of the logger you want to edit.</li>
-  <li> 'Set Logger'-Button; Checks if the services exist under the specified namespace.</li>
+  <li> 'Namespace'-ComboBox; Namespace of the logger you want to edit.</li>
 </ul>
+Note: The 'Namespace'-ComboBox is an editable combo box which allows adding of valid namespaces, this
+means that all services must be provided under that namespace. The list of valid
+namespaces is also stored when closing the plugin. Enter 'clear' to clear all namespaces.
 
 The second part of this GUI can be used to load/save data to a logger script.
 <ul>
