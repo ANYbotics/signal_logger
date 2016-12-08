@@ -127,8 +127,7 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   signalMapper -> setMapping (configureUi_.saveBothButton, signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BINARY_AND_BAG) ;
 
   connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(saveLoggerData(int))) ;
-  // Setup services
-  setLogger();
+
 }
 
 void SignalLoggerPlugin::setLogger() {
@@ -477,6 +476,8 @@ void SignalLoggerPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_sett
   varsUi_.lineEditFilter->setText(plugin_settings.value("lineEditFilter").toString());
   configureUi_.pathEdit->setText(plugin_settings.value("pathEdit").toString());
   configureUi_.namespaceEdit->setText(plugin_settings.value("namespaceEdit").toString());
+  // Setup services
+  setLogger();
 }
 
 // Try to find the Needle in the Haystack - ignore case
