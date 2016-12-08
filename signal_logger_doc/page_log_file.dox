@@ -21,18 +21,29 @@ d_20160913_12-13-49_00113
 
 <H3>File structure</H3>
 
-<H4>Comment</H4>
-The first line is a comment explaining the header structure.
+<H4>Header</H4>
+The first line states the file name.
 \code{txt}
-// Name SizeInBytes NrData Divider LoopingBuffer(0 = false, 1 = true)
+# Log File: d_20160913_12-13-49_00113
 \endcode
 
-<H4>Header</H4>
-The following (readable) lines, provide an overview of the logged data. The first number stands for the total number of logged elements.
-Below this number a list of all saved log elements is given in the manor described inthe previous comment part. The time will always be written to the file,
+Then the total number of collect calls is provided for time synchronization of data originating from a looping buffer.
+We know that at collect = 0 all log elements were collected. Thus one can calculate the corresponding time for every element.
+\code{txt}
+# Time synchronization offset:
+27
+\endcode
+
+For easier parsing the total number of logged elements is stored to the file as well.
+\code{txt}
+# Number of Log Elements:
+6
+\endcode
+
+A list of all saved log elements is given in the manor described by the first (commented) line. The time will always be written to the file,
 has always a divider of 1, and the complete number of data values. The other types can vary depending on the logger configuration.
 \code{txt}
-6
+# (Element Name) (Data Size In Bytes) (No Data Points) (Divider) (Buffer looping (1 or 0))
 /myLoggerNamespace/time_s 8 100 1 0
 /myLoggerNamespace/time_ns 8 100 1 0
 /myLoggerNamespace/myGroup1/myDataA 1 50 2 0
@@ -48,10 +59,15 @@ Note:
   <li> myDataD has 2 bytes, a divider of 4 and could save all data (100/4=25), thus the bufferSize >= 25 and looping </li>
 </ul>
 
-This information is enough for lossless parsing of the binary data. The time has to be matched differently depending on the buffer type (from end for looping, from start for fixed/growing buffers).
+This information is enough for lossless parsing of the binary data. The time has to be matched differently depending on the buffer type.
 
 <H4>Binary Data</H4>
-The third part of the file lists the complete binary data of all log elements. The binary data is written in the order of the header.
+The third part of the file lists the complete binary data of all log elements.
+\code{txt}
+# Binary Data
+\endcode
+
+ The binary data is written in the order of the header.
 The first SizeInBytesElement1*NrDataElement1 bytes correspond to the first element and so on.<BR>
 Considering our header:
 <ul>

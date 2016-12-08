@@ -36,8 +36,8 @@ Three types of loggers are provided:
     \code{c}
        /* Resetting the logger to type ros
         * -> Needs a pointer to a nodehandle (e.g. to advertise publishers)
-        * -> The storeBag flag indicates whether the data should be stored in a bag file or the default binary log file.
-       signal_logger::setSignalLoggerRos(&nh, storeBag);
+        */
+       signal_logger::setSignalLoggerRos(&nh);
     \endcode
   </li>
 </ul>

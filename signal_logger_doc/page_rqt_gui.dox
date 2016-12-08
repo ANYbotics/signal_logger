@@ -30,13 +30,18 @@ An element of the Logger Element List has the following entries:
 \image html varsGUI.png "Rqt GUI Log Variable Settings"
 
 <H3>Logger configuration tab</H3>
+The 'Status'-field at the top informs the user of errors/success.
+
 The logger can be interfaced with three buttons:
 <ul>
   <li> 'Start Logger'-Button; Starts the logger.</li>
   <li> 'Stop Logger'-Button; Stops the logger.</li>
-  <li> 'Save Data'-Button; Saves the logger data.</li>
+  <li> 'Save Binary'-Button; Saves the logger data to a binary log file.</li>
+  <li> 'Save Bag'-Button; Saves the logger data to a bag file.</li>
+  <li> 'Save Both'-Button; Saves the logger data to both bag and binary file.</li>
+  <li> 'Namespace'-Textfield; Namespace of the logger you want to edit.</li>
+  <li> 'Set Logger'-Button; Checks if the services exist under the specified namespace.</li>
 </ul>
-The 'Status'-field ("Successfully started logger!"" in image) informs the user of errors/success.
 
 The second part of this GUI can be used to load/save data to a logger script.
 <ul>
