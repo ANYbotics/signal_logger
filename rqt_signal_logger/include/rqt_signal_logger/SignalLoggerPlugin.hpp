@@ -67,12 +67,14 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   virtual void restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings);
   void statusMessage(std::string message, MessageType type, double displaySeconds = 0.0);
   void shutdownROS();
+  bool checkNamespace(const QString & text);
 
   protected slots:
     void refreshAll();
     void changeAll();
     void drawParamList();
-    void setLogger();
+    void setNamespace(const QString & text);
+    void addNamespace();
     void startLogger();
     void stopLogger();
     void saveLoggerData(int type);
@@ -107,6 +109,15 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   ros::ServiceClient saveLoggerDataClient_;
   ros::ServiceClient loadLoggerScriptClient_;
   ros::ServiceClient isLoggerRunningClient_;
+
+  std::string getLoggerConfigurationServiceName_;
+  std::string getParameterServiceName_;
+  std::string setParameterServiceName_;
+  std::string startLoggerServiceName_;
+  std::string stopLoggerServiceName_;
+  std::string saveLoggerDataServiceName_;
+  std::string loadLoggerScriptServiceName_;
+  std::string isLoggerRunningServiceName_;
 
   std::vector<std::shared_ptr<LogElement>> logElements_;
   std::vector<std::string> logElementNames_;

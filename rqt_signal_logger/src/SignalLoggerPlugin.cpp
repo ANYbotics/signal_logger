@@ -103,7 +103,6 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   /******************************
    * Connect ui forms to actions *
    ******************************/
-  QSignalMapper* signalMapper = new QSignalMapper (this) ;
   connect(varsUi_.pushButtonRefreshAll, SIGNAL(pressed()), this, SLOT(refreshAll()));
   connect(varsUi_.lineEditFilter, SIGNAL(returnPressed()), this ,SLOT(refreshAll()));
   connect(varsUi_.pushButtonChangeAll, SIGNAL(pressed()), this, SLOT(changeAll()));
@@ -114,62 +113,90 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
 
   connect(configureUi_.startLoggerButton, SIGNAL(pressed()), this, SLOT(startLogger()));
   connect(configureUi_.stopLoggerButton, SIGNAL(pressed()), this, SLOT(stopLogger()));
-  connect(configureUi_.setLoggerButton, SIGNAL(pressed()), this, SLOT(setLogger()));
-  connect(configureUi_.saveBinButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
-  connect(configureUi_.saveBagButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
-  connect(configureUi_.saveBothButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
   connect(configureUi_.pathButton, SIGNAL(pressed()), this, SLOT(selectYamlFile()));
   connect(configureUi_.loadScriptButton, SIGNAL(pressed()), this, SLOT(loadYamlFile()));
   connect(configureUi_.saveScriptButton, SIGNAL(pressed()), this, SLOT(saveYamlFile()));
+  connect(configureUi_.namespaceComboBox, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(setNamespace(const QString&)));
+  connect(configureUi_.namespaceComboBox->lineEdit(), SIGNAL(returnPressed()), this, SLOT(addNamespace()));
 
+  QSignalMapper* signalMapper = new QSignalMapper (this) ;
+  connect(configureUi_.saveBinButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
+  connect(configureUi_.saveBagButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
+  connect(configureUi_.saveBothButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
   signalMapper -> setMapping (configureUi_.saveBinButton, signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BINARY) ;
   signalMapper -> setMapping (configureUi_.saveBagButton, signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BAG) ;
   signalMapper -> setMapping (configureUi_.saveBothButton, signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BINARY_AND_BAG) ;
-
   connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(saveLoggerData(int))) ;
 
+  getLoggerConfigurationServiceName_ = "/silo_ros/get_logger_configuration";
+  getNodeHandle().getParam("get_logger_configuration_service", getLoggerConfigurationServiceName_);
+
+  getParameterServiceName_  = "/silo_ros/get_logger_element";
+  getNodeHandle().getParam("get_logger_element_service", getParameterServiceName_);
+
+  setParameterServiceName_ = "/silo_ros/set_logger_element";
+  getNodeHandle().getParam("set_logger_element_service", setParameterServiceName_);
+
+  startLoggerServiceName_  = "/silo_ros/start_logger";
+  getNodeHandle().getParam("start_logger_service", startLoggerServiceName_);
+
+  stopLoggerServiceName_ = "/silo_ros/stop_logger";
+  getNodeHandle().getParam("stop_logger_service", stopLoggerServiceName_);
+
+  saveLoggerDataServiceName_  = "/silo_ros/save_logger_data";
+  getNodeHandle().getParam("save_logger_data_service", saveLoggerDataServiceName_);
+
+  loadLoggerScriptServiceName_  = "/silo_ros/load_logger_script";
+  getNodeHandle().getParam("load_logger_script_service", loadLoggerScriptServiceName_);
+
+  isLoggerRunningServiceName_ = "/silo_ros/is_logger_running";
+  getNodeHandle().getParam("is_logger_running_service", isLoggerRunningServiceName_);
+
 }
 
-void SignalLoggerPlugin::setLogger() {
-  std::string ns = configureUi_.namespaceEdit->displayText().toStdString();
-
-  std::string getLoggerConfigurationServiceName{"/silo_ros/get_logger_configuration"};
-  std::string getParameterServiceName{"/silo_ros/get_logger_element"};
-  std::string setParameterListServiceName{"/silo_ros/set_logger_element"};
-  std::string startLoggerServiceName{"/silo_ros/start_logger"};
-  std::string stopLoggerServiceName{"/silo_ros/stop_logger"};
-  std::string saveLoggerDataServiceName{"/silo_ros/save_logger_data"};
-  std::string loadLoggerScriptServiceName{"/silo_ros/load_logger_script"};
-  std::string isLoggerRunningServiceName{"/silo_ros/is_logger_running"};
-
-
-  // Test if services exist
-  if(ros::service::exists(ns+getLoggerConfigurationServiceName, false) &&
-     ros::service::exists(ns+getParameterServiceName, false) &&
-     ros::service::exists(ns+getLoggerConfigurationServiceName, false) &&
-     ros::service::exists(ns+setParameterListServiceName, false) &&
-     ros::service::exists(ns+startLoggerServiceName, false) &&
-     ros::service::exists(ns+stopLoggerServiceName, false) &&
-     ros::service::exists(ns+saveLoggerDataServiceName, false) &&
-     ros::service::exists(ns+loadLoggerScriptServiceName, false) &&
-     ros::service::exists(ns+isLoggerRunningServiceName, false) )
-    {
-       // ROS services
-       getLoggerConfigurationClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerConfiguration>(ns+getLoggerConfigurationServiceName);
-       getLoggerElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerElement>(ns+getParameterServiceName);
-       setLoggerElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::SetLoggerElement>(ns+setParameterListServiceName);
-       startLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(ns+startLoggerServiceName);
-       stopLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(ns+stopLoggerServiceName);
-       saveLoggerDataClient_ = getNodeHandle().serviceClient<signal_logger_msgs::SaveLoggerData>(ns+saveLoggerDataServiceName);
-       loadLoggerScriptClient_ = getNodeHandle().serviceClient<signal_logger_msgs::LoadLoggerScript>(ns+loadLoggerScriptServiceName);
-       isLoggerRunningClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(ns+isLoggerRunningServiceName);
-     }
-     else {
-       statusMessage("Services not registered!", MessageType::ERROR, 2.0);
-       shutdownROS();
-     }
+bool SignalLoggerPlugin::checkNamespace(const QString & text) {
+  return ( ros::service::exists(text.toStdString()+getLoggerConfigurationServiceName_, false) &&
+           ros::service::exists(text.toStdString()+getParameterServiceName_, false) &&
+           ros::service::exists(text.toStdString()+setParameterServiceName_, false) &&
+           ros::service::exists(text.toStdString()+startLoggerServiceName_, false) &&
+           ros::service::exists(text.toStdString()+stopLoggerServiceName_, false) &&
+           ros::service::exists(text.toStdString()+saveLoggerDataServiceName_, false) &&
+           ros::service::exists(text.toStdString()+loadLoggerScriptServiceName_, false) &&
+           ros::service::exists(text.toStdString()+isLoggerRunningServiceName_, false) );
 }
 
+void SignalLoggerPlugin::addNamespace() {
+  QString text = configureUi_.namespaceComboBox->lineEdit()->text();
+
+  if(text == QString("clear")) {
+    configureUi_.namespaceComboBox->clear();
+    configureUi_.namespaceComboBox->lineEdit()->clear();
+    return;
+  }
+
+  if(!checkNamespace(text)) {
+    configureUi_.namespaceComboBox->removeItem(configureUi_.namespaceComboBox->findText(text));
+  }
+
+}
+
+
+void SignalLoggerPlugin::setNamespace(const QString & text) {
+  shutdownROS();
+  if(checkNamespace(text))
+  {
+    // ROS services
+    getLoggerConfigurationClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerConfiguration>(text.toStdString()+getLoggerConfigurationServiceName_);
+    getLoggerElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerElement>(text.toStdString()+getParameterServiceName_);
+    setLoggerElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::SetLoggerElement>(text.toStdString()+setParameterServiceName_);
+    startLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(text.toStdString()+startLoggerServiceName_);
+    stopLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(text.toStdString()+stopLoggerServiceName_);
+    saveLoggerDataClient_ = getNodeHandle().serviceClient<signal_logger_msgs::SaveLoggerData>(text.toStdString()+saveLoggerDataServiceName_);
+    loadLoggerScriptClient_ = getNodeHandle().serviceClient<signal_logger_msgs::LoadLoggerScript>(text.toStdString()+loadLoggerScriptServiceName_);
+    isLoggerRunningClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(text.toStdString()+isLoggerRunningServiceName_);
+    refreshAll();
+  }
+}
 
 void SignalLoggerPlugin::shutdownROS() {
   getLoggerConfigurationClient_.shutdown();
@@ -207,7 +234,7 @@ void SignalLoggerPlugin::refreshAll() {
     emit parametersChanged();
   }
   else {
-    ROS_WARN("Could not get parameter list!");
+    ROS_WARN("Ros service: 'Get Logger Configuration' returned false!");
   }
 }
 
@@ -449,7 +476,7 @@ void SignalLoggerPlugin::checkLoggerState() {
     varsUi_.pushButtonChangeAll->setEnabled(!res_islogging.success);
   }
   else {
-    ROS_WARN("Could not get parameter list!");
+    ROS_WARN("Ros service : 'Is Logger Running' return false!");
   }
 
   return;
@@ -468,16 +495,23 @@ void SignalLoggerPlugin::shutdownPlugin() {
 void SignalLoggerPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const {
   plugin_settings.setValue("lineEditFilter", varsUi_.lineEditFilter->displayText());
   plugin_settings.setValue("pathEdit", configureUi_.pathEdit->displayText());
-  plugin_settings.setValue("namespaceEdit", configureUi_.namespaceEdit->displayText());
+  plugin_settings.setValue("nrNamespaces", configureUi_.namespaceComboBox->count());
+  plugin_settings.setValue("currentNamespace", configureUi_.namespaceComboBox->currentIndex());
 
+  for(int i = 0; i<configureUi_.namespaceComboBox->count(); ++i) {
+    plugin_settings.setValue(QString::fromStdString("ns" + std::to_string(i)), configureUi_.namespaceComboBox->itemText(i));
+  }
 }
 
 void SignalLoggerPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings) {
   varsUi_.lineEditFilter->setText(plugin_settings.value("lineEditFilter").toString());
   configureUi_.pathEdit->setText(plugin_settings.value("pathEdit").toString());
-  configureUi_.namespaceEdit->setText(plugin_settings.value("namespaceEdit").toString());
-  // Setup services
-  setLogger();
+  for(int i = 0; i<plugin_settings.value("nrNamespaces").toInt(); ++i) {
+    configureUi_.namespaceComboBox->insertItem(i, plugin_settings.value(QString::fromStdString("ns" + std::to_string(i))).toString());
+  }
+  int currIdx = plugin_settings.value("currentNamespace").toInt();
+  configureUi_.namespaceComboBox->setCurrentIndex(currIdx);
+  setNamespace(configureUi_.namespaceComboBox->itemText(currIdx));
 }
 
 // Try to find the Needle in the Haystack - ignore case
