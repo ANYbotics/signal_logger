@@ -47,9 +47,13 @@ static size_t getMaxParamNameWidth(std::vector<std::string> const &lines) {
   QFont font("", 0);
   QFontMetrics fm(font);
 
-  auto it = std::max_element(lines.begin(), lines.end(), size_less());
-  QString text = QString::fromStdString(*it);
-  return fm.width(text);
+  if(lines.size() != 0) {
+      auto it = std::max_element(lines.begin(), lines.end(), size_less());
+      QString text = QString::fromStdString(*it);
+      return fm.width(text);
+  }
+
+  return 0;
 }
 
 SignalLoggerPlugin::SignalLoggerPlugin() :
@@ -177,7 +181,6 @@ void SignalLoggerPlugin::addNamespace() {
   if(!checkNamespace(text)) {
     configureUi_.namespaceComboBox->removeItem(configureUi_.namespaceComboBox->findText(text));
   }
-
 }
 
 
@@ -546,6 +549,7 @@ void SignalLoggerPlugin::drawParamList() {
   paramsGrid_= new QGridLayout(paramsScrollHelperWidget_);
   paramsGrid_->setObjectName(QString::fromUtf8("paramsGrid"));
 
+  ROS_INFO("HELLO");
   const size_t maxParamNameWidth = getMaxParamNameWidth(logElementNames_);
 
   // Create a line for each filtered parameter

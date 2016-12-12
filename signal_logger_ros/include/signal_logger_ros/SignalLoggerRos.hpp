@@ -55,6 +55,8 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
             const signal_logger::BufferType bufferType     = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
   {
     std::string elementName = std::string{signal_logger::SignalLoggerBase::LOGGER_DEFAULT_PREFIX} + "/" + group + "/" + name;
+    elementName.erase(std::unique(elementName.begin(), elementName.end(), signal_logger::both_slashes()), elementName.end());
+
     logElements_[elementName].reset(new LogElementRos<ValueType_>(var, elementName , unit, divider, action, bufferSize,
                                                                   bufferType, &headerStream_, &dataStream_, nh_, bagWriter_));
   }

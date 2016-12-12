@@ -26,6 +26,13 @@
 
 namespace signal_logger {
 
+//! Helper for subclass add functions
+struct both_slashes {
+  bool operator()(char a, char b) const {
+    return a == '/' && b == '/';
+  }
+};
+
 //! Class that severs as base class for all the loggers
 class SignalLoggerBase {
  public:
