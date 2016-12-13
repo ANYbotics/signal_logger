@@ -369,7 +369,7 @@ struct slr_update_traits<ValueType_, typename std::enable_if<is_eigen_angle_axis
 };
 
 template <typename ValueType_>
-struct slr_update_traits<ValueType_, typename std::enable_if< is_eigen_matrix<ValueType_>::value >::type>
+struct slr_update_traits<ValueType_, typename std::enable_if< is_eigen_matrix_excluding_vector3<ValueType_>::value >::type>
 {
   static void updateMsg(const ValueType_ * vectorPtr_,
                         typename slr_msg_traits<ValueType_>::msgtypePtr msg,

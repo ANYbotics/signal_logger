@@ -9,6 +9,7 @@
 
 // Signal logger
 #include "signal_logger_core/LogElementTypes.hpp"
+#include "signal_logger_core/signal_logger_traits.hpp"
 
 // Message logger
 #include "message_logger/message_logger.hpp"
@@ -53,7 +54,7 @@ class Buffer
     typedef boost::circular_buffer<ValueType_> type;
   };
   template<typename T>
-  struct CircularBuffer<T, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<T>, T>::value>::type>
+  struct CircularBuffer<T, typename std::enable_if<traits::is_eigen_matrix<T>::value>::type>
   {
     typedef boost::circular_buffer<typename ValueType_::Scalar> type;
   };
@@ -64,41 +65,30 @@ class Buffer
   //! Forward typedef for size_type
   typedef typename circular_buffer_type::size_type size_type;
 
+  //! Default type trait
+  template<typename T, typename Enable_ = void>
+  struct is_buffer_default_type : std::false_type {};
+
+  template<typename T>
+  struct is_buffer_default_type<T, typename std::enable_if<!traits::is_eigen_matrix<T>::value>::type> : std::true_type {};
+
  public:
   /** Constructor for non-eigen-types
    *  @param ptr  pointer to the data to be buffered
    */
   template<typename V = ValueType_>
-  explicit Buffer(const V * const ptr, typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0 /* non-eigen-type */ ) :
-    ptr_(ptr),
-    bufferSize_(0),
-    bufferType_(BufferType::LOOPING),
-    noUnreadItems_(0),
-    noItems_(0),
-    container_(bufferSize_),
-    mutex_(),
-    rows_(1),
-    cols_(1)
+  explicit Buffer(const V * const ptr, typename std::enable_if<is_buffer_default_type<V>::value>::type* = 0 /* default-type */ ) :
+      Buffer(ptr, 1, 1)
   {
-
   }
 
   /** Constructor for eigen-types (initializes rows_ and cols_ correctly)
    *  @param ptr  pointer to the data to be buffered
    */
   template<typename V = ValueType_>
-  explicit Buffer(const V * const ptr, typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type* = 0 /* eigen-type */ ) :
-    ptr_(ptr),
-    bufferSize_(0),
-    bufferType_(BufferType::LOOPING),
-    noUnreadItems_(0),
-    noItems_(0),
-    container_(bufferSize_),
-    mutex_(),
-    rows_(ptr->rows()),
-    cols_(ptr->cols())
+  explicit Buffer(const V * const ptr, typename std::enable_if<traits::is_eigen_matrix<V>::value>::type* = 0 /* eigen-type */ ) :
+    Buffer(ptr, ptr->rows(), ptr->cols())
   {
-
   }
 
   //! Push data into the buffer (if looping or not full).
@@ -242,12 +232,25 @@ class Buffer
   Buffer& operator = (const Buffer&);
 
  private:
-  /** Push an element at front for non-eigen types
+  Buffer(const ValueType_ * const ptr, const std::size_t rows, const std::size_t cols):
+      ptr_(ptr),
+      bufferSize_(0),
+      bufferType_(BufferType::LOOPING),
+      noUnreadItems_(0),
+      noItems_(0),
+      container_(bufferSize_),
+      mutex_(),
+      rows_(rows),
+      cols_(cols)
+  {
+  }
+
+  /** Push an element at front for default types
    *  @param item item to push at front
    *  @return template specialization by return type
    */
   template<typename V = ValueType_>
-  typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
+  typename std::enable_if<is_buffer_default_type<V>::value>::type
   pushElementFront(const ValueType_ * const item) {
     container_.push_front(*item);
   }
@@ -257,7 +260,7 @@ class Buffer
    *  @return template specialization by return type
    */
   template<typename V = ValueType_>
-  typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
+  typename std::enable_if<traits::is_eigen_matrix<V>::value>::type
   pushElementFront(const ValueType_ * const item) {
     if(item->rows() != rows_ || item->cols() != cols_) {
       // Error output -> don't push back
@@ -271,13 +274,13 @@ class Buffer
     }
   }
 
-  /** Push an element at front for non-eigen types
+  /** Push an element at front for default types
    *  @param item item to read from buffer
    *  @param idx position in the buffer
    *  @return template specialization by return type
    */
   template<typename V = ValueType_>
-  typename std::enable_if<!std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
+  typename std::enable_if<is_buffer_default_type<V>::value>::type
   readElementAtPosition(ValueType_ * item, size_t position)  const {
     if(position < 0 || position >= noItems_) {
       throw std::out_of_range("Can not read element at position " + std::to_string(position));
@@ -291,7 +294,7 @@ class Buffer
    *  @return template specialization by return type
    */
   template<typename V = ValueType_>
-  typename std::enable_if<std::is_base_of<Eigen::MatrixBase<V>, V>::value>::type
+  typename std::enable_if<traits::is_eigen_matrix<V>::value>::type
   readElementAtPosition(ValueType_ * item, size_t position)  const {
     if(position < 0 || position >= noItems_) {
       throw std::out_of_range("Can not read element at position " + std::to_string(position));

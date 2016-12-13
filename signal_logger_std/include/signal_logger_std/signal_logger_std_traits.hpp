@@ -215,7 +215,7 @@ struct sls_traits<ValueType_, typename std::enable_if<is_eigen_angle_axis<ValueT
 };
 
 template <typename ValueType_>
-struct sls_traits<ValueType_, typename std::enable_if< is_eigen_matrix<ValueType_>::value >::type>
+struct sls_traits<ValueType_, typename std::enable_if< is_eigen_matrix_excluding_vector3<ValueType_>::value >::type>
 {
   static void writeLogElementToStreams(std::stringstream* headerStream,
                                        std::stringstream* dataStream,

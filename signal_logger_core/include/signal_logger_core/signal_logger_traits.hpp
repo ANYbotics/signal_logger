@@ -44,13 +44,22 @@ struct is_eigen_vector3 : std::false_type {};
 template<typename PrimType_>
 struct is_eigen_vector3<Eigen::Matrix<PrimType_, 3, 1>> : std::true_type {};
 
-//! isEigenMartix (All matrices/vectors except Eigen::Vector3 types) false type
+//! isEigenMatrix false type
 template<typename ValueType_, typename Enable_ = void>
 struct is_eigen_matrix : std::false_type {};
 
+//! isEigenMatrix true type
+template<typename ValueType_>
+struct is_eigen_matrix<ValueType_, typename std::enable_if< std::is_base_of< Eigen::MatrixBase<ValueType_>,
+                                                            ValueType_ >::value>::type > : std::true_type {};
+
+//! isEigenMartix (All matrices/vectors except Eigen::Vector3 types) false type
+template<typename ValueType_, typename Enable_ = void>
+struct is_eigen_matrix_excluding_vector3 : std::false_type {};
+
 //! isEigenMartix (All matrices/vectors except Eigen::Vector3 types) true type
 template<typename ValueType_>
-struct is_eigen_matrix<ValueType_, typename std::enable_if< std::is_base_of< Eigen::MatrixBase<ValueType_>, ValueType_ >::value
+struct is_eigen_matrix_excluding_vector3<ValueType_, typename std::enable_if< is_eigen_matrix<ValueType_>::value
 															&& !is_eigen_vector3<ValueType_>::value >::type > : std::true_type {};
 
 //! isEigenOfScalarMartix (All matrices/vectors except Eigen::Vector3 types) false type
