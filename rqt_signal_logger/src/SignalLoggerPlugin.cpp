@@ -549,7 +549,6 @@ void SignalLoggerPlugin::drawParamList() {
   paramsGrid_= new QGridLayout(paramsScrollHelperWidget_);
   paramsGrid_->setObjectName(QString::fromUtf8("paramsGrid"));
 
-  ROS_INFO("HELLO");
   const size_t maxParamNameWidth = getMaxParamNameWidth(logElementNames_);
 
   // Create a line for each filtered parameter

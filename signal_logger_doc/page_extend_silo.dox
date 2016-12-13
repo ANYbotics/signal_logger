@@ -100,4 +100,82 @@ struct slr_update_traits<signal_logger::Circle>
   }
 };
 \endcode
+
+
+<H3>Add a new data type to the logger using the plugin macro</H3>
+When adding a type would add unnecessary dependencies to the signal_logger or the log type is very specific to your application, you should not add this type to
+the signal logger itself. Using a plugin macro it is possible to provide additional traits to the signal logger defined in another package (e.g. my_signal_logger_extension_package).
+
+First create the new package 'my_signal_logger_extension_package'.<BR>
+<B>my_signal_logger_extension_package</B> <BR>
+&nbsp;&nbsp;<I>include</I> <BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&ndash; my_std_traits.hpp <BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&ndash; my_ros_traits.hpp <BR>
+&nbsp;&nbsp;<I>cmake</I> <BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&ndash; my_signal_logger_extension_package-extras.cmake <BR>
+&nbsp;&nbsp;&ndash; package.xml <BR>
+&nbsp;&nbsp;&ndash; CMakeLists.txt <BR> <BR> <BR>
+
+
+The include files contain the additional traits for the signal logger (see Circle example from above).<BR>
+my_std_traits.hpp:
+\code{c}
+namespace signal_logger_std {
+  namespace traits {
+    // Trait from above example
+  }
+}
+\endcode
+
+my_ros_traits.hpp:
+\code{c}
+namespace signal_logger_ros {
+  namespace traits {
+    // Trait from above example
+  }
+}
+\endcode
+
+<B>NOTE:</B> The message must not necessarily be defined in this package.<BR><BR><BR>
+
+The cmake folder is required to register the include files as plugins to the signal logger.<BR>
+my_signal_logger_extension_package-extras.cmake:
+\code{txt}
+set(SILO_STD_TRAITS_PLUGIN_PATH "my_signal_logger_extension_package/my_std_traits.hpp")
+if (SILO_STD_TRAITS_PLUGIN)
+  if (NOT SILO_STD_TRAITS_PLUGIN STREQUAL SILO_STD_TRAITS_PLUGIN_PATH)
+    MESSAGE(FATAL_ERROR "SILO_STD_TRAITS_PLUGIN already defined!")
+  endif ()
+else (SILO_STD_TRAITS_PLUGIN)
+    add_definitions(-DSILO_STD_TRAITS_PLUGIN=\"${SILO_STD_TRAITS_PLUGIN_PATH}\")
+endif (SILO_STD_TRAITS_PLUGIN)
+
+set(SILO_ROS_TRAITS_PLUGIN_PATH "my_signal_logger_extension_package/my_ros_traits.hpp")
+if (SILO_ROS_TRAITS_PLUGIN)
+  if (NOT SILO_ROS_TRAITS_PLUGIN STREQUAL SILO_ROS_TRAITS_PLUGIN_PATH)
+    MESSAGE(FATAL_ERROR "SILO_ROS_TRAITS_PLUGIN already defined!")
+  endif ()
+else (SILO_ROS_TRAITS_PLUGIN)
+  add_definitions(-DSILO_ROS_TRAITS_PLUGIN=\"${SILO_ROS_TRAITS_PLUGIN_PATH}\")
+endif (SILO_ROS_TRAITS_PLUGIN)
+\endcode
+
+<B>NOTE:</B> It is checked whether another plugin is already defined, then compilation fails.<BR><BR><BR>
+CMakeLists.txt:
+\code{txt}
+cmake_minimum_required(VERSION 2.8.3)
+project(my_signal_logger_extension_package)
+
+include(cmake/${PROJECT_NAME}-extras.cmake)
+
+find_package(catkin REQUIRED COMPONENTS
+  my_dependency1
+  my_dependency2
+)
+catkin_package(
+  INCLUDE_DIRS include
+  CATKIN_DEPENDS my_dependency1 my_dependency2
+  CFG_EXTRAS ${PROJECT_NAME}-extras.cmake
+)
+\endcode
 */

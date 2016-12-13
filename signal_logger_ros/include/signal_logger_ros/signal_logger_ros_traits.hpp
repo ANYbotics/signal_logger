@@ -461,3 +461,7 @@ struct slr_update_traits<ValueType_, typename std::enable_if<is_kindr_vector_at_
 } /* namespace traits */
 
 } /* namespace signal_logger_ros */
+
+#ifdef SILO_ROS_TRAITS_PLUGIN
+#include SILO_ROS_TRAITS_PLUGIN
+#endif
