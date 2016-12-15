@@ -54,15 +54,18 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
   }
 
   //! Save Data to file
-  void saveDataToLogFile(const signal_logger::LogElementBase<signal_logger::TimestampPair> & time,
+  void saveDataToLogFile(const std::vector<signal_logger::TimestampPair> & times,
                          unsigned int nrCollectDataCalls,
                          signal_logger::LogFileType type = signal_logger::LogFileType::BINARY) override
   {
     if(type == signal_logger::LogFileType::BINARY) {
-      std::vector<ValueType_> values = this->buffer_.copyBuffer();
-      signal_logger_std::traits::sls_traits<ValueType_>::writeLogElementToStreams(
-          headerStream_, dataStream_, values, this->getName(), this->getDivider(),
-          this->getBufferType() == signal_logger::BufferType::LOOPING);
+      // Lock the copy mutex
+      std::unique_lock<std::mutex> lock(this->copyMutex_);
+
+      // Write to file
+      signal_logger_std::traits::sls_traits<ValueType_, ValueType_>::writeLogElementToStreams(
+          headerStream_, dataStream_, this->bufferCopy_, this->nameCopy_, this->dividerCopy_,
+          this->isBufferLoopingCopy_);
     }
   }
 

@@ -97,11 +97,14 @@ class LogElementInterface
   virtual void publishData(const LogElementBase<TimestampPair> & time , unsigned int noCollectDataCalls) = 0;
 
   /** Reads buffer and writes data to a file
-   *  @param time                 time log element
+   *  @param time                 vector of times
    *  @param noCollectDataCalls   number of collectLoggerData calls, this allows time synchronization of the log file
    *  @param type                 type of the log file
    */
-  virtual void saveDataToLogFile(const LogElementBase<TimestampPair> & time, unsigned int noCollectDataCalls, LogFileType type = LogFileType::BINARY) = 0;
+  virtual void saveDataToLogFile(const std::vector<TimestampPair> & times, unsigned int noCollectDataCalls, LogFileType type = LogFileType::BINARY) = 0;
+
+  //! Stores a copy of the current buffer, file is saved from this
+  virtual void createLocalBufferCopy() = 0;
 
   //! Reset logger element called before logger start
   virtual void restartElement() = 0;

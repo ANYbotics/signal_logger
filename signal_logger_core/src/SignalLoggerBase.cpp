@@ -69,12 +69,13 @@ void SignalLoggerBase::initLogger(int updateFrequency, const double maxLogTime, 
 
 bool SignalLoggerBase::startLogger()
 {
-  if(!isInitialized_ || isSavingData_ || isCollectingData_)
+  if(!isInitialized_  || isCollectingData_)
   {
-    MELO_WARN("Signal logger could not be started!%s%s%s", !isInitialized_?" Not initialized!":"",
-        isSavingData_?" Saving data!":"", isCollectingData_?" Already running!":"");
+    MELO_WARN("Signal logger could not be started!%s%s", !isInitialized_?" Not initialized!":"", isCollectingData_?" Already running!":"");
     return false;
   }
+
+  // TODO open wait for start thread
 
   // If all elements are looping use a looping time buffer
   bool all_looping = enabledElements_.end() == std::find_if(enabledElements_.begin(), enabledElements_.end(),
@@ -156,7 +157,7 @@ void SignalLoggerBase::lockUpdate(bool lock)
 
 bool SignalLoggerBase::collectLoggerData()
 {
-  if(!isInitialized_ || isSavingData_) return false;
+  if(!isInitialized_ || isCopyingBuffer_) return false;
 
   std::unique_lock<std::mutex> collectLock(collectMutex_);
 
@@ -222,16 +223,6 @@ bool SignalLoggerBase::saveLoggerData(LogFileType logfileType)
     MELO_WARN("Signal logger could not save data! Not initialized!");
     return false;
   }
-
-  // Set flag
-  isSavingData_ = true;
-
-  // Wait for collecting to be done
-  {
-    std::unique_lock<std::mutex> collectLock(collectMutex_);
-  }
-
-  // Wait for collect
 
   // Read suffix number from file
   int suffixNumber = 0;
@@ -418,7 +409,30 @@ signal_logger::TimestampPair SignalLoggerBase::getCurrentTime() {
 
 bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName, LogFileType logfileType) {
 
-  bool success = this->workerSaveData(logFileName, logfileType);
+  // Set flag
+  isCopyingBuffer_ = true;
+  isSavingData_ = true;
+
+  // Wait for collecting to be done
+  {
+    std::unique_lock<std::mutex> collectLock(collectMutex_);
+  }
+
+  // Copy general stuff
+  noCollectDataCallsCopy_ = noCollectDataCalls_.load();
+
+  // Copy data from buffer
+  for(auto & elem : enabledElements_)
+  {
+    if(elem.second->second->isSaved())
+    {
+      elem.second->second->createLocalBufferCopy();
+    }
+  }
+  timeElement_->createLocalBufferCopy();
+
+  // Reset buffers and counters
+  noCollectDataCalls_ = 0;
 
   // Clear buffer for log elements
   for(auto & elem : enabledElements_) {
@@ -428,13 +442,15 @@ bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName, Lo
   // Clear buffer for time elements
   timeElement_->clearBuffer();
 
+  // Set flag -> collection can restart
+  bool success = this->workerSaveData(logFileName, logfileType);
+
   // Set flag, notify user
-  noCollectDataCalls_ = 0;
   isSavingData_ = false;
+  isCopyingBuffer_ = false;
   MELO_INFO( "All done, captain!" );
 
   return success;
 }
-
 
 }

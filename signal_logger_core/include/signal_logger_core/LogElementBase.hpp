@@ -42,7 +42,13 @@ class LogElementBase: public LogElementInterface
                    unit_(unit),
                    divider_(divider),
                    action_(action),
-                   isEnabled_(false)
+                   isEnabled_(false),
+                   mutex_(),
+                   bufferCopy_(),
+                   nameCopy_(),
+                   dividerCopy_(),
+                   isBufferLoopingCopy_(),
+                   copyMutex_()
  {
     buffer_.setType(bufferType);
     buffer_.setBufferSize(bufferSize);
@@ -55,10 +61,27 @@ class LogElementBase: public LogElementInterface
   //! Data collection is not element specific
   void collectData() override final { buffer_.collect(); }
 
-  //! Default implementation for element type specific functionality
+  //! Reads buffer and processes data (probably called from different thread)
   virtual void publishData(const LogElementBase<TimestampPair> & time, unsigned int nrCollectDataCalls) override { }
-  virtual void saveDataToLogFile(const LogElementBase<TimestampPair> & time, unsigned int nrCollectDataCalls, LogFileType type = LogFileType::BINARY) override {}
+
+  //! Writes local buffer copy to a file
+  virtual void saveDataToLogFile(const std::vector<TimestampPair> & times, unsigned int nrCollectDataCalls, LogFileType type = LogFileType::BINARY) override {}
+
+  //! Stores a copy of the current buffer, file is saved from this
+  virtual void createLocalBufferCopy() {
+    // Lock all mutexes and copy the buffer
+    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> lockCopy(copyMutex_);
+    bufferCopy_ = buffer_.copyBuffer();
+    nameCopy_ = name_;
+    dividerCopy_ = divider_;
+    isBufferLoopingCopy_ = (buffer_.getType() == BufferType::LOOPING);
+  }
+
+  //! Reset logger element called before logger start
   virtual void restartElement()    override { this->clearBuffer(); }
+
+  //! Cleanup logger element
   virtual void cleanupElement()    override { }
 
   //! @return flag indicating if log element is enabled
@@ -140,6 +163,16 @@ class LogElementBase: public LogElementInterface
     return buffer_.readElementAtPosition(n);
   }
 
+  /*** Get the timestamp at position in the buffer
+   *   @tparam V  log element type (ValueType_)
+   *   @return    buffer copy
+   */
+  template<typename V = ValueType_>
+  const std::vector<V> & getTimeBufferCopy(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const final
+  {
+    return bufferCopy_;
+  }
+
  protected:
   //! Update the element
   virtual void updateElement() { };
@@ -159,6 +192,17 @@ class LogElementBase: public LogElementInterface
   bool isEnabled_;
   //! Mutex
   std::mutex mutex_;
+  //! Local copy
+  std::vector<ValueType_> bufferCopy_;
+  //! Local name copy
+  std::string nameCopy_;
+  //! Local divider copy
+  std::size_t dividerCopy_;
+  //! Looping buffer local copy
+  bool isBufferLoopingCopy_;
+
+  //! Local copy mutex
+  std::mutex copyMutex_;
 };
 
 } /* namespace signal_logger */

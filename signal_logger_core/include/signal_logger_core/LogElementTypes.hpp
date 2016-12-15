@@ -51,6 +51,7 @@ typedef Eigen::Matrix< std::string ,Eigen::Dynamic, Eigen::Dynamic >    MatrixXs
   //! Kindr vector at position type
   template<typename VectorType_>
   struct KindrVectorAtPosition {
+    typedef VectorType_ VectorType;
     VectorType_ vector;
     std::string vectorFrame;
     KindrPositionD position;

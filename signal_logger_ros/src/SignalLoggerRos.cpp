@@ -34,6 +34,7 @@ SignalLoggerRos::~SignalLoggerRos()
 bool SignalLoggerRos::workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType) {
   // Save binary data and return
   if(logfileType == signal_logger::LogFileType::BINARY) {
+    MELO_INFO("Ok2");
     return signal_logger_std::SignalLoggerStd::workerSaveData(logFileName, signal_logger::LogFileType::BINARY);
   }
 
@@ -51,7 +52,7 @@ bool SignalLoggerRos::workerSaveData(const std::string & logFileName, signal_log
   for(auto & elem : enabledElements_) {
     if(elem.second->second->isSaved())
     {
-      elem.second->second->saveDataToLogFile(*timeElement_, noCollectDataCalls_.load(), signal_logger::LogFileType::BAG);
+      elem.second->second->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_.load(), signal_logger::LogFileType::BAG);
     }
   }
 

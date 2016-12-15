@@ -152,7 +152,6 @@ class SignalLoggerBase {
    */
   bool workerSaveDataWrapper(const std::string & logFileName, LogFileType logfileType);
 
-
  protected:
   //! Flag to check if logger is initialized
   std::atomic_bool isInitialized_;
@@ -162,8 +161,11 @@ class SignalLoggerBase {
   std::atomic_bool isCollectingData_;
   //! Flag to save data
   std::atomic_bool isSavingData_;
+  //! Flag to save data
+  std::atomic_bool isCopyingBuffer_;
   //! Nr of calls to collect data
   std::atomic_uint noCollectDataCalls_;
+  std::atomic_uint noCollectDataCallsCopy_;
   //! Collected data script filename
   std::string collectScriptFileName_;
   //! Rate at which collectLoggerData() is called
