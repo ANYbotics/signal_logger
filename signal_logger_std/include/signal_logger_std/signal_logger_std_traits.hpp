@@ -212,7 +212,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if< is_eigen_
  ********************************/
 template <typename ValueType_, typename ContainerType_>
 struct sls_traits<ValueType_, ContainerType_, typename std::enable_if< std::is_base_of<kindr::RotationBase<ValueType_>,ValueType_>::value ||
-  std::is_base_of<kindr::RotationDiffBase<ValueType_>,ValueType_>::value || is_kindr_vector3<ValueType_>::value >::type>
+  std::is_base_of<kindr::RotationDiffBase<ValueType_>,ValueType_>::value || is_kindr_vector<ValueType_>::value >::type>
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,

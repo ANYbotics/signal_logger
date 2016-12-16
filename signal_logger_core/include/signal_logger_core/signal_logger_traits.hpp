@@ -78,22 +78,13 @@ struct is_eigen_matrix_of_scalar<ValueType_, PrimType_, typename std::enable_if<
 //----------------------------------- KINDR traits -------------------------------------//
 #ifdef SILO_USE_KINDR
 
-//! isKindrVector3 false type
+//! isKindrVector false type
 template<typename>
-struct is_kindr_vector3 : std::false_type {};
-
-//! isKindrVector3 true type
-template<enum kindr::PhysicalType PhysicalType_, typename PrimType_>
-struct is_kindr_vector3<kindr::Vector<PhysicalType_,PrimType_, 3>> : std::true_type {};
-
-//! isKindrVector (All vectors except kindr::Vector3 types) false type
-template<typename ValueType_, typename Enable_ = void>
 struct is_kindr_vector : std::false_type {};
 
-//! isKindrVector (All vectors except kindr::Vector3 types) true type
+//! isKindrVector true type
 template<enum kindr::PhysicalType PhysicalType_, typename PrimType_, int Dimension_>
-struct is_kindr_vector<kindr::Vector<PhysicalType_,PrimType_, Dimension_>,
-  typename std::enable_if<Dimension_ != 3>::type > : std::true_type {};
+struct is_kindr_vector<kindr::Vector<PhysicalType_,PrimType_, Dimension_>> : std::true_type {};
 
 //! isKindrVectorAtPosition false type
 template<typename>

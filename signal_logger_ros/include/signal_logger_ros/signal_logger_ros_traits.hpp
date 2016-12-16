@@ -237,18 +237,18 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_sca
 #ifdef SILO_USE_KINDR
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<is_kindr_vector3<ValueType_>::value>::type>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_kindr_vector<ValueType_>::value>::type>
 {
-  typedef geometry_msgs::Vector3Stamped         msgtype;
-  typedef geometry_msgs::Vector3StampedPtr      msgtypePtr;
-  typedef geometry_msgs::Vector3StampedConstPtr msgtypeConstPtr;
+  typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtype          msgtype;
+  typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtypePtr       msgtypePtr;
+  typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtypeConstPtr  msgtypeConstPtr;
 };
 
 template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::RotationBase<ValueType_>,ValueType_>::value
 ||std::is_base_of<kindr::RotationDiffBase<ValueType_>,ValueType_>::value>::type>
 {
-  typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtype     	 msgtype;
+  typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtype     	   msgtype;
   typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtypePtr       msgtypePtr;
   typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtypeConstPtr  msgtypeConstPtr;
 };
@@ -390,25 +390,10 @@ struct slr_update_traits<ValueType_, typename std::enable_if< is_eigen_matrix_ex
 /********************************
  * Specializations: kindr types *
  ********************************/
-//! Trait for Kindr vectors length 3
-template <typename ValueType_>
-struct slr_update_traits<ValueType_, typename std::enable_if<is_kindr_vector3<ValueType_>::value>::type>
-{
-  static void updateMsg(const ValueType_* vectorPtr_,
-                        typename slr_msg_traits<ValueType_>::msgtypePtr msg,
-                        const ros::Time& timeStamp)
-  {
-    msg->header.stamp = timeStamp;
-    msg->vector.x = vectorPtr_->x();
-    msg->vector.y = vectorPtr_->y();
-    msg->vector.z = vectorPtr_->z();
-  }
-};
-
 //! Trait for Kindr rotations
 template <typename ValueType_>
 struct slr_update_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::RotationBase<ValueType_>,ValueType_>::value
-|| std::is_base_of<kindr::RotationDiffBase<ValueType_>,ValueType_>::value>::type >
+|| std::is_base_of<kindr::RotationDiffBase<ValueType_>,ValueType_>::value || is_kindr_vector<ValueType_>::value>::type>
 {
   static void updateMsg(const ValueType_* vectorPtr_,
                         typename slr_msg_traits<ValueType_>::msgtypePtr msg,

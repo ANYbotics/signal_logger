@@ -393,6 +393,7 @@ bool SignalLoggerBase::resetTimeLogElement(signal_logger::BufferType buffertype,
 
   timeElement_.reset(new LogElementBase<TimestampPair>(&logTime_, loggerPrefix_ + std::string{"/time"}, "[s/ns]", 1,
                                                        LogElementAction::SAVE, maxLogTime*updateFrequency_, buffertype));
+  return true;
 }
 
 signal_logger::TimestampPair SignalLoggerBase::getCurrentTime() {
@@ -408,6 +409,12 @@ signal_logger::TimestampPair SignalLoggerBase::getCurrentTime() {
 }
 
 bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName, LogFileType logfileType) {
+
+  // Check if data already saved
+  if(isSavingData_) {
+    MELO_WARN("Is already saving data!");
+    return false;
+  }
 
   // Set flag
   isCopyingBuffer_ = true;
@@ -431,6 +438,9 @@ bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName, Lo
   }
   timeElement_->createLocalBufferCopy();
 
+  // Copy buffer ended
+  isCopyingBuffer_ = false;
+
   // Reset buffers and counters
   noCollectDataCalls_ = 0;
 
@@ -447,7 +457,6 @@ bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName, Lo
 
   // Set flag, notify user
   isSavingData_ = false;
-  isCopyingBuffer_ = false;
   MELO_INFO( "All done, captain!" );
 
   return success;
