@@ -56,10 +56,10 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, signal_log
   file_ << "# (Element Name) (Data Size In Bytes) (No Data Points) (Divider) (Buffer looping (1 or 0))" << std::endl;
   file_ << headerString; // Has and endl from the last element
   file_ << "# Binary Data" << std::endl;
-  file_.close();
+  //file_.close();
 
   // Write binary data
-  file_.open(logFileName, std::ios::out | std::ios::app | std::ios::binary);
+  //file_.open(logFileName, std::ios::out | std::ios::app | std::ios::binary);
   file_ << dataStream_.rdbuf();
 
   // Close file

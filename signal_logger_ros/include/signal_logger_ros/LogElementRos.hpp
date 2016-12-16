@@ -99,7 +99,8 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
         signal_logger::TimestampPair tsp_now = times.at(startIdx + i*this->dividerCopy_);
         ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
         // Update msg
-        traits::slr_update_traits<ValueType_>::updateMsg(&this->bufferCopy_.at(i), msgSave_, now);
+        ValueType_ data = this->bufferCopy_.at(i);
+        traits::slr_update_traits<ValueType_>::updateMsg(&data, msgSave_, now);
         // Write to bag
         bagWriter_->writeTimedMessageToTopic(this->nameCopy_, now, *msgSave_);
       }
