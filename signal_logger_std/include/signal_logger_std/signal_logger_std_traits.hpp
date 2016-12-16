@@ -40,11 +40,8 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
               << divider  << " " << isBufferLooping         << std::endl;
     for (const auto & value : data)
     {
-      (*binary) << *accessor(&value) << " ";
-      //binary->write(reinterpret_cast<const char*>(accessor(&value)), sizeof(ValueType_) );
+      binary->write(reinterpret_cast<const char*>(accessor(&value)), sizeof(ValueType_) );
     }
-    (*binary)<<std::endl;
-
   }
 };
 /********************************/
