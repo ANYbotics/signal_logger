@@ -32,9 +32,10 @@ SignalLoggerRos::~SignalLoggerRos()
 
 
 bool SignalLoggerRos::workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType) {
+  if(noCollectDataCallsCopy_.load() == 0) { return true; }
+
   // Save binary data and return
   if(logfileType == signal_logger::LogFileType::BINARY) {
-    MELO_INFO("Ok2");
     return signal_logger_std::SignalLoggerStd::workerSaveData(logFileName, signal_logger::LogFileType::BINARY);
   }
 

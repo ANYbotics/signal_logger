@@ -27,6 +27,7 @@ SignalLoggerStd::~SignalLoggerStd()
 
 //! Save all the buffered data into a log file
 bool SignalLoggerStd::workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType) {
+  if(noCollectDataCallsCopy_.load() == 0) { return true; }
 
   if(logfileType != signal_logger::LogFileType::BINARY) { return false; }
 

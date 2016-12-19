@@ -28,6 +28,8 @@ SignalLoggerBase::SignalLoggerBase(const std::string & loggerPrefix):
                                                 isUpdateLocked_(false),
                                                 isCollectingData_(false),
                                                 isSavingData_(false),
+                                                isCopyingBuffer_(false),
+                                                isStarting_(false),
                                                 noCollectDataCalls_(0),
                                                 collectScriptFileName_(LOGGER_DEFAULT_SCRIPT_FILENAME),
                                                 updateFrequency_(0),
@@ -75,7 +77,12 @@ bool SignalLoggerBase::startLogger()
     return false;
   }
 
-  // TODO open wait for start thread
+  if(isCopyingBuffer_ && ! isStarting_) {
+    // Save data in different thread
+    std::thread t1(&SignalLoggerBase::workerStartLogger, this);
+    t1.detach();
+    return true;
+  }
 
   // If all elements are looping use a looping time buffer
   bool all_looping = enabledElements_.end() == std::find_if(enabledElements_.begin(), enabledElements_.end(),
@@ -195,7 +202,6 @@ bool SignalLoggerBase::collectLoggerData()
       }
       elem.second->second->acquireMutex().unlock();
     }
-
     ++noCollectDataCalls_;
   }
 
@@ -438,9 +444,6 @@ bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName, Lo
   }
   timeElement_->createLocalBufferCopy();
 
-  // Copy buffer ended
-  isCopyingBuffer_ = false;
-
   // Reset buffers and counters
   noCollectDataCalls_ = 0;
 
@@ -453,6 +456,9 @@ bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName, Lo
   timeElement_->clearBuffer();
 
   // Set flag -> collection can restart
+  isCopyingBuffer_ = false;
+
+  // Start saving copy to file
   bool success = this->workerSaveData(logFileName, logfileType);
 
   // Set flag, notify user
@@ -461,5 +467,20 @@ bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName, Lo
 
   return success;
 }
+
+bool SignalLoggerBase::workerStartLogger() {
+  isStarting_ = true;
+
+  while(true) {
+    if(!isSavingData_) {
+      isStarting_ = false;
+      MELO_INFO("Delayed logger start!");
+      return startLogger();
+    }
+    // Sleep for one timestep
+    usleep( (1.0/updateFrequency_) * 1e6 );
+  }
+}
+
 
 }

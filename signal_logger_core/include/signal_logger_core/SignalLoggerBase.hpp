@@ -152,6 +152,11 @@ class SignalLoggerBase {
    */
   bool workerSaveDataWrapper(const std::string & logFileName, LogFileType logfileType);
 
+  /** Wait until logger can be started and start logger
+   */
+  bool workerStartLogger();
+
+
  protected:
   //! Flag to check if logger is initialized
   std::atomic_bool isInitialized_;
@@ -163,6 +168,8 @@ class SignalLoggerBase {
   std::atomic_bool isSavingData_;
   //! Flag to save data
   std::atomic_bool isCopyingBuffer_;
+  //! Flag is starting in different thread
+  std::atomic_bool isStarting_;
   //! Nr of calls to collect data
   std::atomic_uint noCollectDataCalls_;
   std::atomic_uint noCollectDataCallsCopy_;
