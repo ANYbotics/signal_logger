@@ -20,47 +20,33 @@ struct Circle {
 \endcode
 
 <H5> 2. Add type to the std logger</H5>
+The std logger traits are written in a way, such that reusing the trait in other "wrapper"-types is possible.
+Every function receives an accessor function that returns a pointer to a value type (in this case signal_logger::Circle) from a pointer
+to a ContainerType_ type. In your custom trait you can therefore reuse built-in or custom traits. Provide a lambda that accesses the
+corresponding entry and pass it to the trait.
+
 signal_logger_std_traits.hpp :
 \code{c}
-template <>
-struct sls_traits<signal_logger::Circle>
+template<typename ContainerType_>
+struct sls_traits<signal_logger::Circle, ContainerType_>
 {
-  static void writeLogElementToStreams(std::stringstream* headerStream,
-                                       std::stringstream* dataStream,
-                                       const std::vector<signal_logger::Circle> & values,
+  static void writeLogElementToStreams(std::stringstream* header,
+                                       std::stringstream* binary,
+                                       const std::vector<ContainerType_> & data,
                                        const std::string & name,
                                        const std::size_t divider,
-                                       const bool isBufferLooping )
+                                       const bool isBufferLooping,
+                                       const std::function<const signal_logger::Circle *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
-    // Check for nonzero size
-    if(values.size() == 0)
-      return;
+    // Use already defined double type trait to write the diameter
+    auto getDiameter = [accessor](const ContainerType_ * const v) { return &(accessor(v)->diameter); };
+    sls_traits<double, ContainerType_>::writeLogElementToStreams(
+        header, binary, data, name + "_diameter", divider, isBufferLooping, getDiameter);
 
-    // Header for diameter
-    (*headerStream) << name << "_diameter "
-        << sizeof(values.front().diameter) <<  " "
-        << values.size() << " "
-        << divider << " "
-        << isBufferLooping  << std::endl;
-
-    // Header for center x
-    (*headerStream) << name << "_cx "
-        << sizeof(values.front().center(0)) <<  " "
-        << values.size() << " "
-        << divider << " "
-        << isBufferLooping  << std::endl;
-
-    // Header for center y
-    (*headerStream) << name << "_cy "
-        << sizeof(values.front().center(1)) <<  " "
-        << values.size() << " "
-        << divider << " "
-        << isBufferLooping  << std::endl;
-
-    // Write data
-    for (const auto & val : values)  { dataStream->write(reinterpret_cast<const char*>(&val.diameter), sizeof(double) ); }
-    for (const auto & val : values)  { dataStream->write(reinterpret_cast<const char*>(&val.center(0)), sizeof(double) ); }
-    for (const auto & val : values)  { dataStream->write(reinterpret_cast<const char*>(&val.center(1)), sizeof(double) ); }
+    // Use already defined eigen matrix type trait to write the center
+    auto getCenter = [accessor](const ContainerType_ * const v) { return &(accessor(v)->center); };
+    sls_traits<Eigen::Vector2d, ContainerType_>::writeLogElementToStreams(
+        header, binary, data, name + "_center", divider, isBufferLooping, getCenter);
   }
 };
 \endcode
