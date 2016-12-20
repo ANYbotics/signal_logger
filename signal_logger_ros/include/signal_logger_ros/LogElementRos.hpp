@@ -15,8 +15,8 @@
 #include <ros/publisher.h>
 #include <ros/node_handle.h>
 
-// bageditor
-#include <bageditor/BagWriter.hpp>
+// rosbag
+#include <rosbag/bag.h>
 
 namespace signal_logger_ros {
 
@@ -53,7 +53,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
                 std::stringstream * headerStream,
                 std::stringstream * dataStream,
                 ros::NodeHandle * nh,
-                const std::shared_ptr<bageditor::BagWriter> & bagWriter) :
+                const std::shared_ptr<rosbag::Bag> & bagWriter) :
                   signal_logger_std::LogElementStd<ValueType_>(ptr, name, unit, divider, action, bufferSize, bufferType, headerStream, dataStream),
                   nh_(nh),
                   bagWriter_(bagWriter),
@@ -102,7 +102,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
         ValueType_ data = this->bufferCopy_.at(i);
         traits::slr_update_traits<ValueType_>::updateMsg(&data, msgSave_, now);
         // Write to bag
-        bagWriter_->writeTimedMessageToTopic(this->nameCopy_, now, *msgSave_);
+        bagWriter_->write(this->nameCopy_, now, *msgSave_);
       }
     }
   }
@@ -112,37 +112,51 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   {
     if(this->noUnreadItemsInBuffer())
     {
-      std::unique_lock<std::mutex> lock(this->mutex_);
-
-      // Define time index depending on buffer type
-      std::size_t idx = (time.noItemsInBuffer() - 1) - (this->noItemsInBuffer()-this->noUnreadItemsInBuffer())*this->divider_;
-
-      if(this->getBufferType() == signal_logger::BufferType::LOOPING) {
-          idx = (time.noItemsInBuffer() - 1) - (nrCollectDataCalls - 1) % this->divider_
-                - (this->noItemsInBuffer()-this->noUnreadItemsInBuffer())*this->divider_;
-      }
-
-      // get time stamp
-      signal_logger::TimestampPair tsp_now = time.getTimeStampAtPosition(idx);
-
-      // convert to ros time
-      ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
-
-      // Read from buffer and transform to message via trait
+      // Local vars
+      signal_logger::TimestampPair tsp_now;
+      ros::Time now;
       ValueType_ data;
-      this->buffer_.read(&data);
 
-      // Unlock for publishing
-      lock.unlock();
+      {
+        std::unique_lock<std::mutex> lock(this->mutex_);
+
+        {
+          std::unique_lock<std::mutex> timeLock(time.acquireMutex());
+
+          // Define time index depending on buffer type
+          std::size_t idx = (time.noItemsInBuffer() - 1) - (this->noItemsInBuffer()-this->noUnreadItemsInBuffer())*this->divider_;
+
+          if(this->buffer_.getType() == signal_logger::BufferType::LOOPING) {
+            idx = (time.noItemsInBuffer() - 1) - (nrCollectDataCalls - 1) % this->divider_
+                - (this->noItemsInBuffer()-this->noUnreadItemsInBuffer())*this->divider_;
+          }
+
+          // get time stamp
+          signal_logger::TimestampPair tsp_now = time.getTimeStampAtPosition(idx);
+
+        } // unlock time mutex
+
+        // convert to ros time
+        ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
+
+        // Read from buffer and transform to message via trait
+        this->buffer_.read(&data);
+
+      } // unlock elements mutex
 
       // publish over ros
       traits::slr_update_traits<ValueType_>::updateMsg(&data, msg_, now);
-      pub_.publish(msg_);
+      {
+        std::unique_lock<std::mutex> lock(this->publishMutex_);
+        pub_.publish(msg_);
+      }
+
     }
   }
 
   //! Update the element, shutdown/advertise the ros publisher
   void updateElement() override {
+    std::unique_lock<std::mutex> lock(this->publishMutex_);
     if(this->isPublished() && this->isEnabled()) {
       pub_ = nh_->advertise<MsgType>(this->getName(), 1);
     }  else {
@@ -153,6 +167,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   //! Cleanup the element (shutdown ros publisher)
   void cleanupElement() override {
     signal_logger_std::LogElementStd<ValueType_>::cleanupElement();
+    std::unique_lock<std::mutex> lock(this->publishMutex_);
     pub_.shutdown();
   }
 
@@ -160,9 +175,11 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   //! ros nodehandle
   ros::NodeHandle * nh_;
   //! bag writer
-  const std::shared_ptr<bageditor::BagWriter> & bagWriter_;
+  const std::shared_ptr<rosbag::Bag> & bagWriter_;
   //! ros publisher
   ros::Publisher pub_;
+  //! publisher mutex
+  std::mutex publishMutex_;
   //! message pointer
   MsgTypePtr msg_;
   MsgTypePtr msgSave_;

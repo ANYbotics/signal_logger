@@ -139,6 +139,9 @@ class LogElementInterface
   //! @return check action for saving
   virtual bool isSaved() const = 0;
 
+  //! @return check copy action for saving
+  virtual bool isCopySaved() const = 0;
+
   //! @return action log element takes
   virtual LogElementAction getAction() const = 0;
 
@@ -167,7 +170,7 @@ class LogElementInterface
   virtual void clearBuffer() = 0;
 
   //! @return mutex of the log element
-  virtual std::mutex& acquireMutex() = 0;
+  virtual std::mutex& acquireMutex() const = 0;
 
 };
 

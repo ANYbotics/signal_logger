@@ -71,18 +71,27 @@ void SignalLoggerBase::initLogger(int updateFrequency, const double maxLogTime, 
 
 bool SignalLoggerBase::startLogger()
 {
+
   if(!isInitialized_  || isCollectingData_)
   {
     MELO_WARN("Signal logger could not be started!%s%s", !isInitialized_?" Not initialized!":"", isCollectingData_?" Already running!":"");
     return false;
   }
 
-  if(isCopyingBuffer_ && ! isStarting_) {
+  if(isStarting_) {
+    MELO_WARN("Signal logger is already started in other thread.");
+    return true;
+  }
+
+  if(isCopyingBuffer_) {
     // Save data in different thread
     std::thread t1(&SignalLoggerBase::workerStartLogger, this);
     t1.detach();
     return true;
   }
+
+  // Wait for publishing to end -> start logger
+  std::unique_lock<std::mutex> lockPublish(publishMutex_);
 
   // If all elements are looping use a looping time buffer
   bool all_looping = enabledElements_.end() == std::find_if(enabledElements_.begin(), enabledElements_.end(),
@@ -164,17 +173,22 @@ void SignalLoggerBase::lockUpdate(bool lock)
 
 bool SignalLoggerBase::collectLoggerData()
 {
-  if(!isInitialized_ || isCopyingBuffer_) return false;
+  //! Check if logger is initialized
+  if(!isInitialized_) { return false; }
 
+  //! If buffer is copied return -> don't collect
+  if(isCopyingBuffer_) { return true; }
+
+  //! Lock for synchronization on saving
   std::unique_lock<std::mutex> collectLock(collectMutex_);
 
   // Is logger started?
   if(isCollectingData_)
   {
-    // set current time
+    // Set current time
     logTime_ = this->getCurrentTime();
 
-    // Collect time
+    // Check if time buffer is full when using a fixed size buffer
     if(timeElement_->getBufferType() == BufferType::FIXED_SIZE && timeElement_->noItemsInBuffer() == timeElement_->getBufferSize())
     {
       MELO_WARN("Logger stopped. Time buffer is full!");
@@ -202,6 +216,7 @@ bool SignalLoggerBase::collectLoggerData()
       }
       elem.second->second->acquireMutex().unlock();
     }
+
     ++noCollectDataCalls_;
   }
 
@@ -210,9 +225,13 @@ bool SignalLoggerBase::collectLoggerData()
 
 bool SignalLoggerBase::publishData()
 {
+  // Lock publish mutex
+  std::unique_lock<std::mutex> lockPublish(publishMutex_);
+
   // Publish data from buffer
   for(auto & elem : enabledElements_)
   {
+
     if(elem.second->second->isPublished())
     {
       elem.second->second->publishData(*timeElement_, noCollectDataCalls_);
@@ -415,7 +434,6 @@ signal_logger::TimestampPair SignalLoggerBase::getCurrentTime() {
 }
 
 bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName, LogFileType logfileType) {
-
   // Check if data already saved
   if(isSavingData_) {
     MELO_WARN("Is already saving data!");
@@ -427,6 +445,7 @@ bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName, Lo
   isSavingData_ = true;
 
   // Wait for collecting to be done
+  // Note: is collecting data remains untouched
   {
     std::unique_lock<std::mutex> collectLock(collectMutex_);
   }
@@ -444,25 +463,32 @@ bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName, Lo
   }
   timeElement_->createLocalBufferCopy();
 
-  // Reset buffers and counters
-  noCollectDataCalls_ = 0;
+  // Reset elements
+  {
+    // Wait for publish to complete
+    std::unique_lock<std::mutex> lockPublish(publishMutex_);
 
-  // Clear buffer for log elements
-  for(auto & elem : enabledElements_) {
-    elem.second->second->clearBuffer();
+    // Reset buffers and counters
+    noCollectDataCalls_ = 0;
+
+    // Clear buffer for log elements
+    for(auto & elem : enabledElements_) {
+      elem.second->second->restartElement();
+    }
+
+    // Clear buffer for time elements
+    timeElement_->restartElement();
+
+    // Set flag -> collection can restart
+    isCopyingBuffer_ = false;
   }
-
-  // Clear buffer for time elements
-  timeElement_->clearBuffer();
-
-  // Set flag -> collection can restart
-  isCopyingBuffer_ = false;
 
   // Start saving copy to file
   bool success = this->workerSaveData(logFileName, logfileType);
 
   // Set flag, notify user
   isSavingData_ = false;
+
   MELO_INFO( "All done, captain!" );
 
   return success;

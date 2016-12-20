@@ -167,7 +167,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_angle_axis<Va
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, double>::value>::type>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar_excluding_vector3<ValueType_, double>::value>::type>
 {
   typedef signal_logger_msgs::Float64MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Float64MultiArrayStampedPtr      msgtypePtr;
@@ -175,7 +175,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_sca
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, float>::value>::type>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar_excluding_vector3<ValueType_, float>::value>::type>
 {
   typedef signal_logger_msgs::Float32MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Float32MultiArrayStampedPtr      msgtypePtr;
@@ -183,7 +183,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_sca
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, long>::value>::type>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar_excluding_vector3<ValueType_, long>::value>::type>
 {
   typedef signal_logger_msgs::Int64MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Int64MultiArrayStampedPtr      msgtypePtr;
@@ -191,7 +191,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_sca
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, int>::value>::type>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar_excluding_vector3<ValueType_, int>::value>::type>
 {
   typedef signal_logger_msgs::Int32MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Int32MultiArrayStampedPtr      msgtypePtr;
@@ -199,7 +199,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_sca
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, short>::value>::type>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar_excluding_vector3<ValueType_, short>::value>::type>
 {
   typedef signal_logger_msgs::Int16MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Int16MultiArrayStampedPtr      msgtypePtr;
@@ -207,7 +207,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_sca
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, char>::value>::type>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar_excluding_vector3<ValueType_, char>::value>::type>
 {
   typedef signal_logger_msgs::Int8MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Int8MultiArrayStampedPtr      msgtypePtr;
@@ -215,7 +215,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_sca
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, unsigned char>::value>::type>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar_excluding_vector3<ValueType_, unsigned char>::value>::type>
 {
   typedef signal_logger_msgs::Int8MultiArrayStamped         msgtype;
   typedef signal_logger_msgs::Int8MultiArrayStampedPtr      msgtypePtr;
@@ -223,7 +223,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_sca
 };
 
 template <typename ValueType_>
-struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, bool>::value>::type>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar_excluding_vector3<ValueType_, bool>::value>::type>
 {
   typedef signal_logger_msgs::BoolMultiArrayStamped         msgtype;
   typedef signal_logger_msgs::BoolMultiArrayStampedPtr      msgtypePtr;

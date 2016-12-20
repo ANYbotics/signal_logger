@@ -192,6 +192,7 @@ class SignalLoggerBase {
   //! Mutexes
   std::mutex scriptMutex_;
   std::mutex collectMutex_;
+  std::mutex publishMutex_;
 
 
  private:

@@ -32,7 +32,8 @@ SignalLoggerRos::~SignalLoggerRos()
 
 
 bool SignalLoggerRos::workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType) {
-  if(noCollectDataCallsCopy_.load() == 0) { return true; }
+
+  if(noCollectDataCallsCopy_ == 0) { return true; }
 
   // Save binary data and return
   if(logfileType == signal_logger::LogFileType::BINARY) {
@@ -47,17 +48,19 @@ bool SignalLoggerRos::workerSaveData(const std::string & logFileName, signal_log
 
   // Open a new file
   std::string bagFileName = logFileName + std::string{".bag"};
-  bagWriter_.reset(new bageditor::BagWriter(bagFileName));
+  bagWriter_.reset(new rosbag::Bag);
+  bagWriter_->open(bagFileName, rosbag::BagMode::Write);
 
   // Write bag file
   for(auto & elem : enabledElements_) {
-    if(elem.second->second->isSaved())
+    if(elem.second->second->isCopySaved())
     {
-      elem.second->second->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_.load(), signal_logger::LogFileType::BAG);
+      elem.second->second->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_, signal_logger::LogFileType::BAG);
     }
   }
 
   // Close file
+  bagWriter_->close();
   bagWriter_.reset();
 
   return true;

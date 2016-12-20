@@ -63,9 +63,11 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
       std::unique_lock<std::mutex> lock(this->copyMutex_);
 
       // Write to file
-      signal_logger_std::traits::sls_traits<ValueType_, ValueType_>::writeLogElementToStreams(
-          headerStream_, dataStream_, this->bufferCopy_, this->nameCopy_, this->dividerCopy_,
-          this->isBufferLoopingCopy_);
+      if(this->bufferCopy_.size()) {
+        signal_logger_std::traits::sls_traits<ValueType_, ValueType_>::writeLogElementToStreams(
+            headerStream_, dataStream_, this->bufferCopy_, this->nameCopy_, this->dividerCopy_,
+            this->isBufferLoopingCopy_);
+      }
     }
   }
 

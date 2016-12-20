@@ -18,6 +18,10 @@
 #include "signal_logger_msgs/LoadLoggerScript.h"
 #include "signal_logger_msgs/SaveLoggerData.h"
 
+// rosbag
+#include <rosbag/bag.h>
+
+// ros services
 #include <std_srvs/Trigger.h>
 
 namespace signal_logger_ros {
@@ -156,7 +160,7 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
   //! ROS nodehandle
   ros::NodeHandle* nh_;
   //! Shared ptr to a bag writer object
-  std::shared_ptr<bageditor::BagWriter> bagWriter_;
+  std::shared_ptr<rosbag::Bag> bagWriter_;
   //! Get logger configuration service
   ros::ServiceServer getLoggerConfigurationService_;
   //! Get logger element service

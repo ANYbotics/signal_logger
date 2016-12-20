@@ -27,7 +27,8 @@ SignalLoggerStd::~SignalLoggerStd()
 
 //! Save all the buffered data into a log file
 bool SignalLoggerStd::workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType) {
-  if(noCollectDataCallsCopy_.load() == 0) { return true; }
+
+  if(noCollectDataCallsCopy_ == 0) { return true; }
 
   if(logfileType != signal_logger::LogFileType::BINARY) { return false; }
 
@@ -36,13 +37,13 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, signal_log
   dataStream_.str(std::string());
 
   // Fill streams
-  timeElement_->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_.load(), signal_logger::LogFileType::BINARY);
+  timeElement_->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_, signal_logger::LogFileType::BINARY);
 
   for(auto & elem : enabledElements_) {
 
-    if(elem.second->second->isSaved())
+    if(elem.second->second->isCopySaved())
     {
-      elem.second->second->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_.load(), signal_logger::LogFileType::BINARY);
+      elem.second->second->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_, signal_logger::LogFileType::BINARY);
     }
   }
 

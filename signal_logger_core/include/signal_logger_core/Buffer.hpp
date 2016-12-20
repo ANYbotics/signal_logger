@@ -19,11 +19,13 @@
 
 // Boost
 #include <boost/circular_buffer.hpp>
-#include <boost/thread/mutex.hpp>
 
 // STL
 #include <type_traits>
 #include <algorithm>
+#include <thread>
+#include <mutex>
+
 
 namespace signal_logger {
 
@@ -95,7 +97,7 @@ class Buffer
   bool collect()
   {
     // Lock the circular buffer
-    boost::mutex::scoped_lock lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
 
     // If buffer is exponentially increasing and full -> increase size by factor 2
     if( bufferType_ == BufferType::EXPONENTIALLY_GROWING && noItems_ >= bufferSize_)
@@ -129,7 +131,7 @@ class Buffer
   bool read(ValueType_ * pItem)
   {
     // Lock the circular buffer
-    boost::mutex::scoped_lock lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
 
     // Check if buffer is empty
     if( noUnreadItems_ == 0 ) { return false; }
@@ -146,7 +148,8 @@ class Buffer
    */
   ValueType_ readElementAtPosition(std::size_t idx)  const {
     // Lock the circular buffer
-    boost::mutex::scoped_lock lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
+
     // read element
     ValueType_ val;
     readElementAtPosition(&val, idx);
@@ -160,7 +163,7 @@ class Buffer
   std::vector<ValueType_> copyBuffer() const
   {
     // Lock circular buffer
-    boost::mutex::scoped_lock lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
 
     // Fill vector
     std::vector<ValueType_> data_vector(noItems_);
@@ -175,51 +178,51 @@ class Buffer
 
   //! Allocate buffer size of memory
   void allocate(bool enabled) {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     std::size_t new_capacity = enabled ? (bufferSize_ * rows_ * cols_) : 0;
     container_.set_capacity(new_capacity);
   }
 
   //! @return number of unread elements
   std::size_t noUnreadItems() const {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     return noUnreadItems_;
   }
 
   //! @return number of items stored in the buffer (read and unread)
   std::size_t noItems() const {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     return noItems_;
   }
 
   //! @return size of the buffer
   std::size_t getBufferSize() const {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     return bufferSize_;
   }
 
   //! @param bufferSize new buffer size
   void setBufferSize(const std::size_t bufferSize) {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     bufferSize_ = bufferSize;
     container_.set_capacity(bufferSize_ * rows_ * cols_);
   }
 
   //! @return type of the buffer
   BufferType getType() const {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     return bufferType_;
   }
 
   //! @param bufferType type of the buffer
   void setType(const BufferType bufferType) {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     bufferType_ = bufferType;
   }
 
   //! Clear the buffer
   void clear() {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     container_.clear();
     noUnreadItems_ = size_type(0);
     noItems_ = size_type(0);
@@ -264,9 +267,9 @@ class Buffer
   pushElementFront(const ValueType_ * const item) {
     if(item->rows() != rows_ || item->cols() != cols_) {
       // Error output -> don't push back
-      MELO_ERROR_STREAM("Matrix size not consistent" << std::endl << "init_rows = " << rows_ <<
-                        "item_rows = " << item->rows() << std::endl << "init_cols = " << cols_ <<
-                        "item_cols = " << item->cols());
+      MELO_ERROR_THROTTLE_STREAM(1.0, "Matrix size not consistent" << std::endl << "init_rows = " << rows_ <<
+                                      "item_rows = " << item->rows() << std::endl << "init_cols = " << cols_ <<
+                                      "item_cols = " << item->cols());
       return;
     }
     for(std::size_t i = 0; i < item->size(); ++i) {
@@ -320,7 +323,7 @@ class Buffer
   //! Circular buffer
   circular_buffer_type container_;
   //! Mutex protecting accessing this container
-  mutable boost::mutex mutex_;
+  mutable std::mutex mutex_;
   //! Eigen specific entries (1 in other cases)
   const std::size_t rows_;
   const std::size_t cols_;
