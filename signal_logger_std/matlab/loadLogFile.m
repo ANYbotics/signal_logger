@@ -68,8 +68,10 @@ for i=1:noElements
     logElements(i).noData = header{3}(i);
     logElements(i).divider = header{4}(i);
     logElements(i).isBufferLooping = header{5}(i);
+    logElements(i).dataType = strcat('uint', num2str( 8*logElements(i).noBytes ) );
     logElements(i).data = typecast( fread(fid, logElements(i).noData ,...
-        strcat('*uint', num2str( 8*logElements(i).noBytes ) ) ), 'uint64');
+        strcat('*uint', num2str( 8*logElements(i).noBytes ) ) ), ...
+         logElements(i).dataType);
     logElements(i).time = struct('seconds', [], 'nanoseconds', []);
 end
 
