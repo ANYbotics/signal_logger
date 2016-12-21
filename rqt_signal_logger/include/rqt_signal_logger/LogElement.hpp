@@ -200,7 +200,7 @@ class LogElement: public QObject {
 
   public slots:
 
-  void changeElement() {
+  bool changeElement() {
     ROS_DEBUG_STREAM("Change logger element " << name_);
 
     signal_logger_msgs::GetLoggerElementRequest reqGet;
@@ -208,8 +208,8 @@ class LogElement: public QObject {
 
     reqGet.name = name_;
     if(!getLogElementClient_->call(reqGet, resGet)) {
-      ROS_INFO_STREAM("Could not change logger element " << name_);
-      return;
+      ROS_WARN_STREAM("Could not change logger element " << name_);
+      return false;
     }
 
     signal_logger_msgs::SetLoggerElementRequest req;
@@ -223,12 +223,14 @@ class LogElement: public QObject {
     req.log_element.buffer_type = comboBoxBufferType->currentIndex();
 
     if(!setLogElementClient_->call(req, res)) {
-      ROS_INFO_STREAM("Could not change logger element " << name_);
+      ROS_WARN_STREAM("Could not change logger element " << name_);
+      return false;
     }
 
+    return true;
   }
 
-  void refreshElement() {
+  bool refreshElement() {
     signal_logger_msgs::GetLoggerElementRequest req;
     signal_logger_msgs::GetLoggerElementResponse res;
 
@@ -244,8 +246,11 @@ class LogElement: public QObject {
       }
       else {
         ROS_WARN_STREAM("Could not get parameter " << name_);
+        return false;
       }
     }
+
+    return true;
   }
 
  protected:

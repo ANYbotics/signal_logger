@@ -58,7 +58,9 @@ static size_t getMaxParamNameWidth(std::vector<std::string> const &lines) {
 
 SignalLoggerPlugin::SignalLoggerPlugin() :
                             rqt_gui_cpp::Plugin(),
+                            widget_(),
                             tabWidget_(),
+                            statusBar_(),
                             varsWidget_(0),
                             configureWidget_(0),
                             paramsGrid_(),
@@ -77,20 +79,34 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   QStringList argv = context.argv();
 
   // create the main widget
-  tabWidget_ = new QTabWidget();
+  widget_ = new QWidget();
+  tabWidget_ = new QTabWidget(widget_);
+  statusBar_ = new QStatusBar(widget_);
+
+  // set black background
+  QPalette pal = statusBar_->palette();
+  pal.setColor(QPalette::Background, Qt::white);
+  statusBar_->setAutoFillBackground(true);
+  statusBar_->setPalette(pal);
+  statusBar_->show();
+
+  // Add to main widget
+  widget_->setLayout(new QVBoxLayout());
+  widget_->layout()->addWidget(statusBar_);
+  widget_->layout()->addWidget(tabWidget_);
 
   // create the vars widget add it as first tab
-  varsWidget_ = new QWidget();
+  varsWidget_ = new QWidget(tabWidget_);
   varsUi_.setupUi(varsWidget_);
   tabWidget_->addTab(varsWidget_, QString::fromUtf8("Variables"));
 
   // create the configure widget add it as second tab
-  configureWidget_ = new QWidget();
+  configureWidget_ = new QWidget(tabWidget_);
   configureUi_.setupUi(configureWidget_);
   tabWidget_->addTab(configureWidget_, QString::fromUtf8("Configure"));
 
   // Set it up and add it to the user interface
-  context.addWidget(tabWidget_);
+  context.addWidget(widget_);
 
   // Do some configuration
   varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::ENABLE_ALL), "Enable all elements");
@@ -173,12 +189,14 @@ void SignalLoggerPlugin::addNamespace() {
   QString text = configureUi_.namespaceComboBox->lineEdit()->text();
 
   if(text == QString("clear")) {
+    statusMessage(std::string("Clear all namespaces!"), MessageType::STATUS);
     configureUi_.namespaceComboBox->clear();
     configureUi_.namespaceComboBox->lineEdit()->clear();
     return;
   }
 
   if(!checkNamespace(text)) {
+    statusMessage(std::string("Services were not found for namespace ") + text.toStdString(), MessageType::ERROR);
     configureUi_.namespaceComboBox->removeItem(configureUi_.namespaceComboBox->findText(text));
   }
 }
@@ -197,6 +215,7 @@ void SignalLoggerPlugin::setNamespace(const QString & text) {
     saveLoggerDataClient_ = getNodeHandle().serviceClient<signal_logger_msgs::SaveLoggerData>(text.toStdString()+saveLoggerDataServiceName_);
     loadLoggerScriptClient_ = getNodeHandle().serviceClient<signal_logger_msgs::LoadLoggerScript>(text.toStdString()+loadLoggerScriptServiceName_);
     isLoggerRunningClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(text.toStdString()+isLoggerRunningServiceName_);
+    statusMessage(std::string("Found services for namespace ")+ text.toStdString() + std::string("! Refresh log elements!") , MessageType::SUCCESS);
     refreshAll();
   }
 }
@@ -213,8 +232,16 @@ void SignalLoggerPlugin::shutdownROS() {
 }
 
 void SignalLoggerPlugin::changeAll() {
+  bool success = true;
+
   for (auto& elem : logElements_) {
-    elem->changeElement();
+    success = success && elem->changeElement();
+  }
+  if(success) {
+    statusMessage(std::string("Applied changes to all the logger elements!"), MessageType::STATUS);
+  }
+  else {
+    statusMessage(std::string("Could not apply changes to all the logger elements!"), MessageType::WARNING);
   }
 }
 
@@ -237,7 +264,7 @@ void SignalLoggerPlugin::refreshAll() {
     emit parametersChanged();
   }
   else {
-    ROS_WARN("Ros service: 'Get Logger Configuration' returned false!");
+    statusMessage(std::string("Could not get current logger configuration."), MessageType::WARNING);
   }
 }
 
@@ -248,7 +275,7 @@ void SignalLoggerPlugin::startLogger() {
     statusMessage("Successfully started logger!", MessageType::SUCCESS, 2.0);
   }
   else {
-    statusMessage("Could not start logger!", MessageType::ERROR, 2.0);
+    statusMessage("Could not start logger! Already running?", MessageType::WARNING, 2.0);
   }
   checkLoggerState();
 }
@@ -260,7 +287,7 @@ void SignalLoggerPlugin::stopLogger() {
     statusMessage("Successfully stopped logger!", MessageType::SUCCESS, 2.0);
   }
   else {
-    statusMessage("Could not stop logger!", MessageType::ERROR, 2.0);
+    statusMessage("Could not stop logger! Not running?", MessageType::WARNING, 2.0);
   }
   checkLoggerState();
 }
@@ -274,7 +301,7 @@ void SignalLoggerPlugin::saveLoggerData(int type) {
     statusMessage(msg, MessageType::SUCCESS, 2.0);
   }
   else {
-    statusMessage("Could not save logger data!", MessageType::ERROR, 2.0);
+    statusMessage("Could not save logger data!", MessageType::WARNING, 2.0);
   }
 }
 
@@ -289,12 +316,12 @@ void SignalLoggerPlugin::loadYamlFile() {
   signal_logger_msgs::LoadLoggerScriptResponse res;
   req.filepath = configureUi_.pathEdit->text().toStdString();
   if(loadLoggerScriptClient_.call(req, res) && res.success) {
-    statusMessage("Successfully loaded logger configuration file!", MessageType::SUCCESS, 2.0);
+    statusMessage(std::string("Successfully loaded logger configuration file: ") + req.filepath, MessageType::SUCCESS, 2.0);
+    refreshAll();
   }
   else {
-    statusMessage("Could not load logger configuration file!", MessageType::ERROR, 2.0);
+    statusMessage(std::string("Could not load logger configuration file: ") + req.filepath + std::string("! Is logger running?"), MessageType::WARNING, 2.0);
   }
-  refreshAll();
 }
 
 void SignalLoggerPlugin::saveYamlFile() {
@@ -310,7 +337,7 @@ void SignalLoggerPlugin::saveYamlFile() {
     msgBox.setDefaultButton(QMessageBox::Cancel);
     if(msgBox.exec() == QMessageBox::Cancel)
     {
-      statusMessage("Did not save logger configuration file!", MessageType::ERROR, 2.0);
+      statusMessage("Did not save logger configuration file!", MessageType::WARNING, 2.0);
       return;
     }
   }
@@ -336,11 +363,11 @@ void SignalLoggerPlugin::saveYamlFile() {
     outfile.close();
   }
   else {
-    statusMessage("Did not save logger configuration file! No data enabled!", MessageType::ERROR, 2.0);
+    statusMessage("Did not save logger configuration file! No elements enabled!", MessageType::WARNING, 2.0);
     return;
   }
 
-  statusMessage("Successfully saved logger configuration file!", MessageType::SUCCESS, 2.0);
+  statusMessage(std::string("Successfully saved logger configuration file: ") + filename, MessageType::SUCCESS, 2.0);
 }
 
 void SignalLoggerPlugin::taskChanged(int index) {
@@ -428,40 +455,68 @@ void SignalLoggerPlugin::applyButtonPressed() {
 
   switch(varsUi_.taskComboBox->currentIndex()) {
     case static_cast<int>(TaskList::ENABLE_ALL):
+    {
       for(auto & element : logElements_) {
         element->checkBoxIsLogging->setCheckState(Qt::CheckState::Checked);
       }
+      statusMessage("Enabled all elements. Press 'Change All' to apply.", MessageType::SUCCESS, 2.0);
       break;
+    }
     case static_cast<int>(TaskList::DISABLE_ALL):
+    {
       for(auto & element : logElements_) {
         element->checkBoxIsLogging->setCheckState(Qt::CheckState::Unchecked);
       }
+      statusMessage("Disabled all elements. Press 'Change All' to apply.", MessageType::SUCCESS, 2.0);
       break;
+    }
     case static_cast<int>(TaskList::SET_DIVIDER):
+    {
       for(auto & element : logElements_) {
         element->spinBoxDivider->setValue(varsUi_.valueSpinBox->value());
       }
+      statusMessage(std::string("Set all dividers to ") + std::to_string(varsUi_.valueSpinBox->value())
+                    + std::string(". Press 'Change All' to apply.") , MessageType::SUCCESS, 2.0);
       break;
+    }
     case static_cast<int>(TaskList::SET_ACTION):
+    {
       for(auto & element : logElements_) {
         element->comboBoxLogType->setCurrentIndex((int)varsUi_.valueSpinBox->value());
       }
+      std::string action = varsUi_.valueSpinBox->suffix().toStdString();
+      action = action.substr(2, action.size() - 2);
+      statusMessage(std::string("Set all dividers to ") + action + std::string(". Press 'Change All' to apply.") , MessageType::SUCCESS, 2.0);
       break;
+    }
     case static_cast<int>(TaskList::SET_BUFFER_TYPE):
+    {
       for(auto & element : logElements_) {
         element->comboBoxBufferType->setCurrentIndex((int)varsUi_.valueSpinBox->value());
       }
+      std::string type = varsUi_.valueSpinBox->suffix().toStdString();
+      type = type.substr(2, type.size() - 2);
+      statusMessage(std::string("Set all buffer types to ") + type + std::string(". Press 'Change All' to apply.") , MessageType::SUCCESS, 2.0);
       break;
+    }
     case static_cast<int>(TaskList::SET_BUFFER_SIZE):
+    {
       for(auto & element : logElements_) {
         element->spinBoxBufferSize->setValue(varsUi_.valueSpinBox->value());
       }
+      statusMessage(std::string("Set all buffer sizes to ") + std::to_string(varsUi_.valueSpinBox->value())
+                  + std::string(". Press 'Change All' to apply.") , MessageType::SUCCESS, 2.0);
       break;
+    }
     case static_cast<int>(TaskList::SET_BUFFER_SIZE_FROM_TIME):
+    {
       for(auto & element : logElements_) {
         element->spinBoxBufferSize->setValue(ceil((double) varsUi_.valueSpinBox->value() * updateFrequency_ / (double)element->spinBoxDivider->value()));
       }
+      statusMessage(std::string("Set all buffer sizes from time ") + std::to_string(varsUi_.valueSpinBox->value())
+                  + std::string(". Press 'Change All' to apply.") , MessageType::SUCCESS, 2.0);
       break;
+    }
     default:
       break;
   }
@@ -473,13 +528,13 @@ void SignalLoggerPlugin::checkLoggerState() {
   std_srvs::TriggerResponse res_islogging;
 
   if (isLoggerRunningClient_.call(req_islogging, res_islogging)) {
-    if(paramsWidget_)
-      paramsWidget_->setEnabled(!res_islogging.success);
-    varsUi_.applyButton->setEnabled(!res_islogging.success);
     varsUi_.pushButtonChangeAll->setEnabled(!res_islogging.success);
+    for(auto & element  : logElements_) {
+      element->pushButtonChangeParam->setEnabled(!res_islogging.success);
+    }
   }
   else {
-    ROS_WARN("Ros service : 'Is Logger Running' return false!");
+    statusMessage("Can not check if logger is running.", MessageType::WARNING, 2.0);
   }
 
   return;
@@ -582,19 +637,23 @@ void SignalLoggerPlugin::drawParamList() {
 void SignalLoggerPlugin::statusMessage(std::string message, MessageType type, double displaySeconds) {
   switch(type) {
     case MessageType::ERROR:
-      configureUi_.statusbar->setStyleSheet("color: red");
+      statusBar_->setStyleSheet("color: red");
+      ROS_ERROR_STREAM(message.c_str());
       break;
     case MessageType::WARNING:
-      configureUi_.statusbar->setStyleSheet("color: yellow");
+      statusBar_->setStyleSheet("color: orange");
+      ROS_WARN_STREAM(message.c_str());
       break;
     case MessageType::SUCCESS:
-      configureUi_.statusbar->setStyleSheet("color: green");
+      statusBar_->setStyleSheet("color: green");
+      ROS_INFO_STREAM(message.c_str());
       break;
     case MessageType::STATUS:
-      configureUi_.statusbar->setStyleSheet("color: black");
+      statusBar_->setStyleSheet("color: black");
+      ROS_INFO_STREAM(message.c_str());
       break;
   }
-  configureUi_.statusbar->showMessage(QString::fromStdString(message), displaySeconds*1000);
+  statusBar_->showMessage(QString::fromStdString(message), displaySeconds*1000);
 }
 
 }

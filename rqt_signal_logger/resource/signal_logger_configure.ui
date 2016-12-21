@@ -6,34 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>311</width>
-    <height>307</height>
+    <width>310</width>
+    <height>248</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Signal Logger</string>
   </property>
-  <widget class="QStatusBar" name="statusbar">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>300</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">background-color: rgb(255, 255, 255);</string>
-   </property>
-   <property name="sizeGripEnabled">
-    <bool>false</bool>
-   </property>
-  </widget>
   <widget class="QGroupBox" name="groupLogger">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>50</y>
+     <y>0</y>
      <width>300</width>
      <height>141</height>
     </rect>
@@ -137,7 +121,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>200</y>
+     <y>150</y>
      <width>291</width>
      <height>100</height>
     </rect>

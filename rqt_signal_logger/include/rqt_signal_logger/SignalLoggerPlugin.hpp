@@ -65,7 +65,7 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   virtual void shutdownPlugin();
   virtual void saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const;
   virtual void restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings);
-  void statusMessage(std::string message, MessageType type, double displaySeconds = 0.0);
+  void statusMessage(std::string message, MessageType type, double displaySeconds = 2.0);
   void shutdownROS();
   bool checkNamespace(const QString & text);
 
@@ -92,7 +92,9 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
  private:
   Ui::SignalLoggerVariables varsUi_;
   Ui::SignalLoggerConfigure configureUi_;
+  QWidget* widget_;
   QTabWidget* tabWidget_;
+  QStatusBar* statusBar_;
   QWidget* varsWidget_;
   QWidget* configureWidget_;
   QGridLayout* paramsGrid_;
