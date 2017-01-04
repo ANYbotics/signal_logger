@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>signal_logger_std</name>
+  <name>signal_logger_core</name>
   <version>0.0.0</version>
-  <description>The signal_logger_std package</description>
+  <description>The signal_logger_core package</description>
 
   <url type="website">https://bitbucket.org/ethz-asl-lr/signal_logger</url>
   <maintainer email="gehrinch@ethz.ch">Christian Gehring</maintainer>
@@ -14,7 +14,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>signal_logger_core</depend>
   <depend>message_logger</depend>
+  <depend>kindr</depend>
+  <build_export_depend>eigen</build_export_depend>
 
 </package>

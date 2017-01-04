@@ -1,0 +1,167 @@
+/*! \page page_extend_silo Extend the signal logger with additional log types
+
+<H3>Add a new data type to the logger</H3>
+In order to add a type you have to provide a complete set of traits in order to
+publish and save a log element of that type. The ros logger traits have to be added signal_logger_ros_traits.hpp and signal_logger_std_traits.hpp.
+Moreover it makes sense to add this new type to LogElementTypes.hpp.
+
+<i>NOTE</i>: The buffer is templated on the log type. If you use a type the buffer can not handle, you can also
+try to add your new type to the buffer customization in signal_logger/Buffer.hpp.
+
+<H3>Example: Add a Circle type to the signal logger</H3>
+
+<H5> 1. Add your type to the logger type header </H5>
+LogElementTypes.hpp :
+\code{c}
+struct Circle {
+  double diameter;
+  Eigen::Vector2d center;
+};
+\endcode
+
+<H5> 2. Add type to the std logger</H5>
+The std logger traits are written in a way, such that reusing the trait in other "wrapper"-types is possible.
+Every function receives an accessor function that returns a pointer to a value type (in this case signal_logger::Circle) from a pointer
+to a ContainerType_ type. In your custom trait you can therefore reuse built-in or custom traits. Provide a lambda that accesses the
+corresponding entry and pass it to the trait.
+
+signal_logger_std_traits.hpp :
+\code{c}
+template<typename ContainerType_>
+struct sls_traits<signal_logger::Circle, ContainerType_>
+{
+  static void writeLogElementToStreams(std::stringstream* header,
+                                       std::stringstream* binary,
+                                       const std::vector<ContainerType_> & data,
+                                       const std::string & name,
+                                       const std::size_t divider,
+                                       const bool isBufferLooping,
+                                       const std::function<const signal_logger::Circle *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+  {
+    // Use already defined double type trait to write the diameter
+    auto getDiameter = [accessor](const ContainerType_ * const v) { return &(accessor(v)->diameter); };
+    sls_traits<double, ContainerType_>::writeLogElementToStreams(
+        header, binary, data, name + "_diameter", divider, isBufferLooping, getDiameter);
+
+    // Use already defined eigen matrix type trait to write the center
+    auto getCenter = [accessor](const ContainerType_ * const v) { return &(accessor(v)->center); };
+    sls_traits<Eigen::Vector2d, ContainerType_>::writeLogElementToStreams(
+        header, binary, data, name + "_center", divider, isBufferLooping, getCenter);
+  }
+};
+\endcode
+
+<H5> 3. Add type to the ros logger</H5>
+For the ros logger we can add a custom msg type to signal_logger_msgs. Lets call it CircleStamped.msg.
+Don't forget to add this msg to the CMakeLists.txt of the signal_logger_msgs package.
+\code{yaml}
+# CircleStamped
+Header header
+float64 diameter
+float64 center_x
+float64 center_y
+\endcode
+
+signal_logger_ros_traits.hpp :
+\code{c}
+template<>
+struct slr_msg_traits<signal_logger::Circle>
+{
+  typedef signal_logger_msgs::CircleStamped         msgtype;
+  typedef signal_logger_msgs::CircleStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::CircleStampedConstPtr msgtypeConstPtr;
+};
+
+template <>
+struct slr_update_traits<signal_logger::Circle>
+{
+  static void updateMsg(const signal_logger::Circle* var,
+                        typename slr_msg_traits<signal_logger::Circle>::msgtypePtr msg,
+                        const ros::Time& timeStamp)
+  {
+    msg->header.stamp = timeStamp;
+    msg->diameter = var->diameter;
+    msg->center_x = var->center(0);
+    msg->center_y = var->center(1);
+  }
+};
+\endcode
+
+
+<H3>Add a new data type to the logger using the plugin macro</H3>
+When adding a type would add unnecessary dependencies to the signal_logger or the log type is very specific to your application, you should not add this type to
+the signal logger itself. Using a plugin macro it is possible to provide additional traits to the signal logger defined in another package (e.g. my_signal_logger_extension_package).
+
+First create the new package 'my_signal_logger_extension_package'.<BR>
+<B>my_signal_logger_extension_package</B> <BR>
+&nbsp;&nbsp;<I>include</I> <BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&ndash; my_std_traits.hpp <BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&ndash; my_ros_traits.hpp <BR>
+&nbsp;&nbsp;<I>cmake</I> <BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&ndash; my_signal_logger_extension_package-extras.cmake <BR>
+&nbsp;&nbsp;&ndash; package.xml <BR>
+&nbsp;&nbsp;&ndash; CMakeLists.txt <BR> <BR> <BR>
+
+
+The include files contain the additional traits for the signal logger (see Circle example from above).<BR>
+my_std_traits.hpp:
+\code{c}
+namespace signal_logger_std {
+  namespace traits {
+    // Trait from above example
+  }
+}
+\endcode
+
+my_ros_traits.hpp:
+\code{c}
+namespace signal_logger_ros {
+  namespace traits {
+    // Trait from above example
+  }
+}
+\endcode
+
+<B>NOTE:</B> The message must not necessarily be defined in this package.<BR><BR><BR>
+
+The cmake folder is required to register the include files as plugins to the signal logger.<BR>
+my_signal_logger_extension_package-extras.cmake:
+\code{txt}
+set(SILO_STD_TRAITS_PLUGIN_PATH "my_signal_logger_extension_package/my_std_traits.hpp")
+if (SILO_STD_TRAITS_PLUGIN)
+  if (NOT SILO_STD_TRAITS_PLUGIN STREQUAL SILO_STD_TRAITS_PLUGIN_PATH)
+    MESSAGE(FATAL_ERROR "SILO_STD_TRAITS_PLUGIN already defined!")
+  endif ()
+else (SILO_STD_TRAITS_PLUGIN)
+    add_definitions(-DSILO_STD_TRAITS_PLUGIN=\"${SILO_STD_TRAITS_PLUGIN_PATH}\")
+endif (SILO_STD_TRAITS_PLUGIN)
+
+set(SILO_ROS_TRAITS_PLUGIN_PATH "my_signal_logger_extension_package/my_ros_traits.hpp")
+if (SILO_ROS_TRAITS_PLUGIN)
+  if (NOT SILO_ROS_TRAITS_PLUGIN STREQUAL SILO_ROS_TRAITS_PLUGIN_PATH)
+    MESSAGE(FATAL_ERROR "SILO_ROS_TRAITS_PLUGIN already defined!")
+  endif ()
+else (SILO_ROS_TRAITS_PLUGIN)
+  add_definitions(-DSILO_ROS_TRAITS_PLUGIN=\"${SILO_ROS_TRAITS_PLUGIN_PATH}\")
+endif (SILO_ROS_TRAITS_PLUGIN)
+\endcode
+
+<B>NOTE:</B> It is checked whether another plugin is already defined, then compilation fails.<BR><BR><BR>
+CMakeLists.txt:
+\code{txt}
+cmake_minimum_required(VERSION 2.8.3)
+project(my_signal_logger_extension_package)
+
+include(cmake/${PROJECT_NAME}-extras.cmake)
+
+find_package(catkin REQUIRED COMPONENTS
+  my_dependency1
+  my_dependency2
+)
+catkin_package(
+  INCLUDE_DIRS include
+  CATKIN_DEPENDS my_dependency1 my_dependency2
+  CFG_EXTRAS ${PROJECT_NAME}-extras.cmake
+)
+\endcode
+*/

@@ -1,28 +1,26 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>signal_logger_ros</name>
   <version>0.0.0</version>
   <description>The signal_logger_ros package</description>
+
+  <url type="website">https://bitbucket.org/ethz-asl-lr/signal_logger</url>
   <maintainer email="gehrinch@ethz.ch">Christian Gehring</maintainer>
   <maintainer email="bellicoso@mavt.ethz.ch">Dario Bellicoso</maintainer>
-  <license>BSD</license>
-  <url type="website">https://bitbucket.org/ethz-asl-lr/signal_logger</url>
+  <author email="gabriel.hottiger@mavt.ethz.ch">Gabriel Hottiger</author>
   <author email="gehrinch@ethz.ch">Christian Gehring</author>
   <author email="bellicoso@mavt.ethz.ch">Dario Bellicoso</author>
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>signal_logger</build_depend>
-  <build_depend>message_logger</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>kindr_msgs</build_depend>
-  <build_depend>signal_logger_msgs</build_depend>
+  <license>BSD</license>
 
-  <run_depend>signal_logger</run_depend>
-  <run_depend>message_logger</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>kindr_msgs</run_depend>
-  <run_depend>signal_logger_msgs</run_depend>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>message_logger</depend>
+  <depend>signal_logger_core</depend>
+  <depend>signal_logger_std</depend>
+  <depend>signal_logger_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>rosbag</depend>
+  <depend>kindr_msgs</depend>
+
 </package>

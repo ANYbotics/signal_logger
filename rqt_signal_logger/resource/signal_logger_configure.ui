@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SignalLoggerConfigure</class>
+ <widget class="QWidget" name="SignalLoggerConfigure">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>310</width>
+    <height>248</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Signal Logger</string>
+  </property>
+  <widget class="QGroupBox" name="groupLogger">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>0</y>
+     <width>300</width>
+     <height>141</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Logger</string>
+   </property>
+   <widget class="QPushButton" name="startLoggerButton">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>30</y>
+      <width>90</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Start Logger</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="stopLoggerButton">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>30</y>
+      <width>90</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Stop Logger</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="saveBinButton">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>70</y>
+      <width>90</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save Binary</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="saveBagButton">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>70</y>
+      <width>90</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save Bag</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="saveBothButton">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>70</y>
+      <width>90</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save Both</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="namespaceComboBox">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>110</y>
+      <width>191</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="editable">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>110</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Namespace: </string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupScript">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>150</y>
+     <width>291</width>
+     <height>100</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Script</string>
+   </property>
+   <widget class="QLineEdit" name="pathEdit">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>24</y>
+      <width>251</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="pathButton">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>24</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="loadScriptButton">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>60</y>
+      <width>90</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Load Script</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="saveScriptButton">
+    <property name="geometry">
+     <rect>
+      <x>105</x>
+      <y>60</y>
+      <width>90</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save Script</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

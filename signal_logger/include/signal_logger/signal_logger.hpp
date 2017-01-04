@@ -1,46 +1,117 @@
-/************************************************************************
- * Software License Agreement (BSD License)
- *
- * Copyright (c) 2014,  Christian Gehring, Michael Bloesch,
- * Peter Fankhauser, C. Dario Bellicoso
- * All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of Autonomous Systems Lab nor ETH Zurich
- *     nor the names of its contributors may be used to endorse or
- *     promote products derived from this software without specific
- *     prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- */
-/*!
+/**
 * @file 	  signal_logger.hpp
-* @author 	Christian Gehring
-* @date		  Jsept, 2016
-* @version 	1.0
-* @ingroup 	signal_logger
-* @brief    Header file for convenience
+* @author 	  Christian Gehring, C. Dario Bellicoso, Gabriel Hottiger
+* @date		  June 26, 2013
 */
+
 #pragma once
 
-#include <signal_logger/logger.hpp>
+#ifdef E
+#undef E
+#endif
+
+#include "signal_logger_core/SignalLoggerBase.hpp"
+#include "signal_logger_std/SignalLoggerStd.hpp"
+#include "signal_logger/SignalLoggerNone.hpp"
+
+#ifdef SILO_USE_ROS
+  #include "signal_logger_ros/SignalLoggerRos.hpp"
+#endif
+
+#include <memory>
+#include "assert.h"
+
+namespace signal_logger {
+
+//! Reference to the logger
+extern std::shared_ptr<SignalLoggerBase> logger;
+
+void setSignalLoggerNone();
+
+void setSignalLoggerStd();
+
+#ifdef SILO_USE_ROS
+void setSignalLoggerRos(ros::NodeHandle* nh);
+#endif
+
+/** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
+  * @tparam ValueType_       Data type of the logger element
+  * @param  var              Pointer to log variable
+  * @param  name             name of the log variable
+  * @param  group            logger group the variable belongs to
+  * @param  unit             unit of the log variable
+  * @param  divider          divider is defining the update frequency of the logger element (ctrl_freq/divider)
+  * @param  action           log action of the log variable
+  * @param  bufferSize       size of the buffer storing log elements
+  * @param  bufferType       determines the buffer type
+  */
+template<typename ValueType_>
+void add( const ValueType_ & var,
+          const std::string & name,
+          const std::string & group       = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME,
+          const std::string & unit        = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
+          const std::size_t divider       = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
+          const LogElementAction action   = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
+          const std::size_t bufferSize    = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
+          const BufferType bufferType     = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
+{
+    #ifdef SILO_USE_ROS
+      signal_logger_ros::SignalLoggerRos* slRos = dynamic_cast<signal_logger_ros::SignalLoggerRos*>(logger.get());
+      if(slRos) {
+        slRos->add<ValueType_>(&var, name, group, unit, divider, action, bufferSize, bufferType);
+        return;
+      }
+    #endif
+
+    signal_logger_std::SignalLoggerStd* slStd = dynamic_cast<signal_logger_std::SignalLoggerStd*>(logger.get());
+    if(slStd) {
+      slStd->add<ValueType_>(&var, name, group, unit, divider, action, bufferSize, bufferType);
+      return;
+    }
+
+    signal_logger::SignalLoggerNone* slNone = dynamic_cast<signal_logger::SignalLoggerNone*>(logger.get());
+    if(slNone) {
+      slNone->add<ValueType_>(&var, name, group, unit, divider, action, bufferSize, bufferType);
+      return;
+    }
+}
+
+/** Function implementation to add eigen matrices as their underlying type to the logger.
+  *@param var            pointer to log matrix
+  *@param names          name of every entry of the matrix
+  *@param group          logger group the variable belongs to
+  *@param unit           unit of the log variable
+  *@param divider        divider is defining the update frequency of the logger element (ctrl_freq/divider)
+  *@param action         log action of the log variable
+  *@param bufferSize     size of the buffer storing log elements
+  *@param bufferType     determines type of buffer
+  */
+template<typename ValueType_>
+typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value>::type
+add(const ValueType_ & var,
+    Eigen::Ref<signal_logger::MatrixXstring> names,
+    const std::string & group       = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME,
+    const std::string & unit        = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
+    const std::size_t divider       = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
+    const LogElementAction action   = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
+    const std::size_t bufferSize    = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
+    const BufferType bufferType     = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
+{
+  assert(names.rows() == var.rows() && "rows() have different size in add");
+  assert(names.cols() == var.cols() && "cols() have different size in add");
+
+  for(std::size_t i = 0; i < var.size(); ++i)
+  {
+    add<typename ValueType_::Scalar>(*static_cast<const typename ValueType_::Scalar * const>(var.data() + i),
+                                     static_cast<std::string>(*(names.data() + i)),
+                                     group,
+                                     unit,
+                                     divider,
+                                     action,
+                                     bufferSize,
+                                     bufferType);
+  }
+}
+
+
+} // end namespace
