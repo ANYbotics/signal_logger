@@ -302,6 +302,18 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
     return false;
   }
 
+  // Check filename size
+  std::string ending = ".yaml";
+  if ( (ending.size() + 1) > scriptName.size()) {
+    MELO_ERROR_STREAM("Scriptname must be a yaml file : *.yaml");
+    return false;
+  }
+  // Check file ending
+  if(!std::equal(ending.rbegin(), ending.rend(), scriptName.rbegin())) {
+    MELO_ERROR_STREAM("Scriptname must be a yaml file : *.yaml");
+    return false;
+  }
+
   // Lock script
   std::lock_guard<std::mutex> lockScript(scriptMutex_);
 
@@ -385,9 +397,20 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
     return false;
   }
 
+  // Check filename size
+  std::string ending = ".yaml";
+  if ( (ending.size() + 1) > scriptName.size()) {
+    MELO_ERROR_STREAM("Scriptname must be a yaml file : *.yaml");
+    return false;
+  }
+  // Check file ending
+  if(!std::equal(ending.rbegin(), ending.rend(), scriptName.rbegin())) {
+    MELO_ERROR_STREAM("Scriptname must be a yaml file : *.yaml");
+    return false;
+  }
+
   // Lock script
   std::lock_guard<std::mutex> lockScript(scriptMutex_);
-
 
   // Push back all data to node
   YAML::Node node;
