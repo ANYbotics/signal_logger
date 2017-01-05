@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>310</width>
+    <width>316</width>
     <height>248</height>
    </rect>
   </property>
@@ -90,19 +90,6 @@
      <string>Save Both</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="namespaceComboBox">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>110</y>
-      <width>191</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="editable">
-     <bool>true</bool>
-    </property>
-   </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
@@ -116,6 +103,24 @@
      <string>Namespace: </string>
     </property>
    </widget>
+   <widget class="QLineEdit" name="namespaceEdit">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>110</y>
+      <width>191</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <zorder>startLoggerButton</zorder>
+   <zorder>stopLoggerButton</zorder>
+   <zorder>saveBinButton</zorder>
+   <zorder>saveBagButton</zorder>
+   <zorder>saveBothButton</zorder>
+   <zorder>label</zorder>
+   <zorder>groupScript</zorder>
+   <zorder>namespaceEdit</zorder>
   </widget>
   <widget class="QGroupBox" name="groupScript">
    <property name="geometry">
