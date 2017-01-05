@@ -249,32 +249,8 @@ bool SignalLoggerBase::saveLoggerData(LogFileType logfileType)
     return false;
   }
 
-  // Read suffix number from file
-  int suffixNumber = 0;
-  std::ifstream ifs(".last_data", std::ifstream::in);
-  if(ifs.is_open()) { ifs >> suffixNumber; }
-  ifs.close();
-  ++suffixNumber;
-
-  // Write next suffix number to file
-  std::ofstream ofs(".last_data", std::ofstream::out | std::ofstream::trunc);
-  if(ofs.is_open()) { ofs << suffixNumber; }
-  ofs.close();
-
-  // To string with format 00000 (e.g 00223)
-  std::string suffixString = std::to_string(suffixNumber);
-  while(suffixString.length() != 5 ) { suffixString.insert(0, "0"); }
-
-  // Get local time
-  char dateTime[21];
-  std::time_t now = std::chrono::system_clock::to_time_t ( std::chrono::system_clock::now() );
-  strftime(dateTime, sizeof dateTime, "%Y%m%d_%H-%M-%S_", std::localtime(&now));
-
-  // Filename format (e.g. d_13Sep2016_12-13-49_00011)
-  std::string filename = std::string{"d_"} + std::string{dateTime} + suffixString;
-
   // Save data in different thread
-  std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this,  std::string{filename}, logfileType);
+  std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this, logfileType);
   t1.detach();
 
   return true;
@@ -456,16 +432,42 @@ signal_logger::TimestampPair SignalLoggerBase::getCurrentTime() {
   return timeStamp;
 }
 
-bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName, LogFileType logfileType) {
+bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
   // Check if data already saved
   if(isSavingData_) {
     MELO_WARN("Is already saving data!");
     return false;
   }
 
+  // set save flag
+  isSavingData_ = true;
+
+  // Read suffix number from file
+  int suffixNumber = 0;
+  std::ifstream ifs(".last_data", std::ifstream::in);
+  if(ifs.is_open()) { ifs >> suffixNumber; }
+  ifs.close();
+  ++suffixNumber;
+
+  // Write next suffix number to file
+  std::ofstream ofs(".last_data", std::ofstream::out | std::ofstream::trunc);
+  if(ofs.is_open()) { ofs << suffixNumber; }
+  ofs.close();
+
+  // To string with format 00000 (e.g 00223)
+  std::string suffixString = std::to_string(suffixNumber);
+  while(suffixString.length() != 5 ) { suffixString.insert(0, "0"); }
+
+  // Get local time
+  char dateTime[21];
+  std::time_t now = std::chrono::system_clock::to_time_t ( std::chrono::system_clock::now() );
+  strftime(dateTime, sizeof dateTime, "%Y%m%d_%H-%M-%S_", std::localtime(&now));
+
+  // Filename format (e.g. d_13Sep2016_12-13-49_00011)
+  std::string filename = std::string{"d_"} + std::string{dateTime} + suffixString;
+
   // Set flag
   isCopyingBuffer_ = true;
-  isSavingData_ = true;
 
   // Wait for collecting to be done
   // Note: is collecting data remains untouched
@@ -507,7 +509,7 @@ bool SignalLoggerBase::workerSaveDataWrapper(const std::string & logFileName, Lo
   }
 
   // Start saving copy to file
-  bool success = this->workerSaveData(logFileName, logfileType);
+  bool success = this->workerSaveData(filename, logfileType);
 
   // Set flag, notify user
   isSavingData_ = false;

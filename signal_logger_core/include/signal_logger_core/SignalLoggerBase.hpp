@@ -147,10 +147,9 @@ class SignalLoggerBase {
 
  private:
   /** Wraps function workerSaveData to do common preparations and shutdown
-   * @param logFileName filename of the log file
    * @param logFileType type of the log file
    */
-  bool workerSaveDataWrapper(const std::string & logFileName, LogFileType logfileType);
+  bool workerSaveDataWrapper(LogFileType logfileType);
 
   /** Wait until logger can be started and start logger
    */
