@@ -73,8 +73,7 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
     void refreshAll();
     void changeAll();
     void drawParamList();
-    void setNamespace(const QString & text);
-    void addNamespace();
+    void setNamespace();
     void startLogger();
     void stopLogger();
     void saveLoggerData(int type);
@@ -101,6 +100,8 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   QWidget* paramsWidget_;
   QWidget* paramsScrollHelperWidget_;
   QVBoxLayout* paramsScrollLayout_;
+  QStringList namespaceList_;
+
 
   // ROS services
   ros::ServiceClient getLoggerConfigurationClient_;

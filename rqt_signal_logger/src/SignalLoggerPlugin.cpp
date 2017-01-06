@@ -24,6 +24,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QSignalMapper>
+#include <QCompleter>
 
 // STL
 #include <fstream>
@@ -136,8 +137,7 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   connect(configureUi_.pathButton, SIGNAL(pressed()), this, SLOT(selectYamlFile()));
   connect(configureUi_.loadScriptButton, SIGNAL(pressed()), this, SLOT(loadYamlFile()));
   connect(configureUi_.saveScriptButton, SIGNAL(pressed()), this, SLOT(saveYamlFile()));
-  connect(configureUi_.namespaceComboBox, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(setNamespace(const QString&)));
-  connect(configureUi_.namespaceComboBox->lineEdit(), SIGNAL(returnPressed()), this, SLOT(addNamespace()));
+  connect(configureUi_.namespaceEdit, SIGNAL(returnPressed()), this, SLOT(setNamespace()));
 
   QSignalMapper* signalMapper = new QSignalMapper (this) ;
   connect(configureUi_.saveBinButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
@@ -148,64 +148,59 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   signalMapper -> setMapping (configureUi_.saveBothButton, signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BINARY_AND_BAG) ;
   connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(saveLoggerData(int))) ;
 
+  // Those are fixed in signal_logger_ros
   getLoggerConfigurationServiceName_ = "/silo_ros/get_logger_configuration";
-  getNodeHandle().getParam("get_logger_configuration_service", getLoggerConfigurationServiceName_);
-
   getParameterServiceName_  = "/silo_ros/get_logger_element";
-  getNodeHandle().getParam("get_logger_element_service", getParameterServiceName_);
-
   setParameterServiceName_ = "/silo_ros/set_logger_element";
-  getNodeHandle().getParam("set_logger_element_service", setParameterServiceName_);
-
   startLoggerServiceName_  = "/silo_ros/start_logger";
-  getNodeHandle().getParam("start_logger_service", startLoggerServiceName_);
-
   stopLoggerServiceName_ = "/silo_ros/stop_logger";
-  getNodeHandle().getParam("stop_logger_service", stopLoggerServiceName_);
-
   saveLoggerDataServiceName_  = "/silo_ros/save_logger_data";
-  getNodeHandle().getParam("save_logger_data_service", saveLoggerDataServiceName_);
-
   loadLoggerScriptServiceName_  = "/silo_ros/load_logger_script";
-  getNodeHandle().getParam("load_logger_script_service", loadLoggerScriptServiceName_);
-
   isLoggerRunningServiceName_ = "/silo_ros/is_logger_running";
-  getNodeHandle().getParam("is_logger_running_service", isLoggerRunningServiceName_);
 
+  //! Get namespace from rosparam server and add it to the parameter list
+  std::string namespaceParameterName = "/user_interface/rqt_signal_logger/logger_namespace";
+  if(getNodeHandle().hasParam(namespaceParameterName)) {
+    std::string loggerNamespace;
+    getNodeHandle().getParam(namespaceParameterName, loggerNamespace);
+    if(checkNamespace(QString::fromStdString(loggerNamespace))) {
+      configureUi_.namespaceEdit->setText(QString::fromStdString(loggerNamespace));
+    }
+    else {
+      ROS_WARN_STREAM("Invalid logger namespace. Set last used namespace.");
+    }
+  }
+  else {
+    ROS_WARN_STREAM("Ros parameter: " << namespaceParameterName << "not found. Set last used namespace.");
+  }
 }
 
 bool SignalLoggerPlugin::checkNamespace(const QString & text) {
-  return ( ros::service::exists(text.toStdString()+getLoggerConfigurationServiceName_, false) &&
-           ros::service::exists(text.toStdString()+getParameterServiceName_, false) &&
-           ros::service::exists(text.toStdString()+setParameterServiceName_, false) &&
-           ros::service::exists(text.toStdString()+startLoggerServiceName_, false) &&
-           ros::service::exists(text.toStdString()+stopLoggerServiceName_, false) &&
-           ros::service::exists(text.toStdString()+saveLoggerDataServiceName_, false) &&
-           ros::service::exists(text.toStdString()+loadLoggerScriptServiceName_, false) &&
-           ros::service::exists(text.toStdString()+isLoggerRunningServiceName_, false) );
-}
-
-void SignalLoggerPlugin::addNamespace() {
-  QString text = configureUi_.namespaceComboBox->lineEdit()->text();
-
-  if(text == QString("clear")) {
-    statusMessage(std::string("Clear all namespaces!"), MessageType::STATUS);
-    configureUi_.namespaceComboBox->clear();
-    configureUi_.namespaceComboBox->lineEdit()->clear();
-    return;
+  try {
+    return ( ros::service::exists(text.toStdString()+getLoggerConfigurationServiceName_, false) &&
+             ros::service::exists(text.toStdString()+getParameterServiceName_, false) &&
+             ros::service::exists(text.toStdString()+setParameterServiceName_, false) &&
+             ros::service::exists(text.toStdString()+startLoggerServiceName_, false) &&
+             ros::service::exists(text.toStdString()+stopLoggerServiceName_, false) &&
+             ros::service::exists(text.toStdString()+saveLoggerDataServiceName_, false) &&
+             ros::service::exists(text.toStdString()+loadLoggerScriptServiceName_, false) &&
+             ros::service::exists(text.toStdString()+isLoggerRunningServiceName_, false) );
   }
-
-  if(!checkNamespace(text)) {
-    statusMessage(std::string("Services were not found for namespace ") + text.toStdString(), MessageType::ERROR);
-    configureUi_.namespaceComboBox->removeItem(configureUi_.namespaceComboBox->findText(text));
+  catch(...)
+  {
+    return false;
   }
 }
 
-
-void SignalLoggerPlugin::setNamespace(const QString & text) {
+void SignalLoggerPlugin::setNamespace() {
   shutdownROS();
+  QString text = configureUi_.namespaceEdit->displayText();
+
   if(checkNamespace(text))
   {
+    if( !namespaceList_.contains(text, Qt::CaseSensitive) ) {
+      namespaceList_.append(text);
+    }
     // ROS services
     getLoggerConfigurationClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerConfiguration>(text.toStdString()+getLoggerConfigurationServiceName_);
     getLoggerElementClient_ = getNodeHandle().serviceClient<signal_logger_msgs::GetLoggerElement>(text.toStdString()+getParameterServiceName_);
@@ -218,6 +213,13 @@ void SignalLoggerPlugin::setNamespace(const QString & text) {
     statusMessage(std::string("Found services for namespace ")+ text.toStdString() + std::string("! Refresh log elements!") , MessageType::SUCCESS);
     refreshAll();
   }
+  else {
+    statusMessage(std::string("Could not find services for namespace ")+ text.toStdString() + std::string("!") , MessageType::ERROR);
+  }
+
+  QCompleter *completer = new QCompleter(namespaceList_, this);
+  completer->setCaseSensitivity(Qt::CaseSensitive);
+  configureUi_.namespaceEdit->setCompleter(completer);
 }
 
 void SignalLoggerPlugin::shutdownROS() {
@@ -541,35 +543,26 @@ void SignalLoggerPlugin::checkLoggerState() {
 }
 
 void SignalLoggerPlugin::shutdownPlugin() {
-  getLoggerConfigurationClient_.shutdown();
-  getLoggerElementClient_.shutdown();
-  setLoggerElementClient_.shutdown();
-  startLoggerClient_.shutdown();
-  stopLoggerClient_.shutdown();
-  saveLoggerDataClient_.shutdown();
-  loadLoggerScriptClient_.shutdown();
+  shutdownROS();
 }
 
 void SignalLoggerPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const {
+  plugin_settings.setValue("namespaceEdit", configureUi_.namespaceEdit->displayText());
+  plugin_settings.setValue("namespaceList", namespaceList_);
   plugin_settings.setValue("lineEditFilter", varsUi_.lineEditFilter->displayText());
   plugin_settings.setValue("pathEdit", configureUi_.pathEdit->displayText());
-  plugin_settings.setValue("nrNamespaces", configureUi_.namespaceComboBox->count());
-  plugin_settings.setValue("currentNamespace", configureUi_.namespaceComboBox->currentIndex());
-
-  for(int i = 0; i<configureUi_.namespaceComboBox->count(); ++i) {
-    plugin_settings.setValue(QString::fromStdString("ns" + std::to_string(i)), configureUi_.namespaceComboBox->itemText(i));
-  }
 }
 
 void SignalLoggerPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings) {
   varsUi_.lineEditFilter->setText(plugin_settings.value("lineEditFilter").toString());
   configureUi_.pathEdit->setText(plugin_settings.value("pathEdit").toString());
-  for(int i = 0; i<plugin_settings.value("nrNamespaces").toInt(); ++i) {
-    configureUi_.namespaceComboBox->insertItem(i, plugin_settings.value(QString::fromStdString("ns" + std::to_string(i))).toString());
+  namespaceList_ = plugin_settings.value("namespaceList").toStringList();
+
+  if(configureUi_.namespaceEdit->displayText().isEmpty()) {
+    configureUi_.namespaceEdit->setText(plugin_settings.value("namespaceEdit").toString());
   }
-  int currIdx = plugin_settings.value("currentNamespace").toInt();
-  configureUi_.namespaceComboBox->setCurrentIndex(currIdx);
-  setNamespace(configureUi_.namespaceComboBox->itemText(currIdx));
+
+  setNamespace();
 }
 
 // Try to find the Needle in the Haystack - ignore case
