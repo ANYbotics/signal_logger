@@ -183,7 +183,7 @@ class LogElementBase: public LogElementInterface
    *   @return    Timestamp-pair at position n in buffer
    */
   template<typename V = ValueType_>
-  V getTimeStampAtPosition(std::size_t n, typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const final
+  V getTimeStampAtPosition(std::size_t n, typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
   {
     return buffer_.readElementAtPosition(n);
   }
@@ -193,7 +193,7 @@ class LogElementBase: public LogElementInterface
    *   @return    buffer copy
    */
   template<typename V = ValueType_>
-  const std::vector<V> & getTimeBufferCopy(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const final
+  const std::vector<V> & getTimeBufferCopy(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
   {
     std::unique_lock<std::mutex> lock(copyMutex_);
     return bufferCopy_;
