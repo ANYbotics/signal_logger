@@ -19,6 +19,7 @@
   <depend>signal_logger_std</depend>
   <depend>signal_logger_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
   <depend>geometry_msgs</depend>
   <depend>rosbag</depend>
   <depend>kindr_msgs</depend>
