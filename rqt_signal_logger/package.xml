@@ -17,6 +17,7 @@
   <depend>rqt_gui_cpp</depend>
   <depend>signal_logger_msgs</depend>
   <depend>std_srvs</depend>
+  <depend>yaml-cpp</depend>
   
   <export>
   <architecture_inent/>
