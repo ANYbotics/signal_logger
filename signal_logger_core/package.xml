@@ -16,6 +16,7 @@
 
   <depend>message_logger</depend>
   <depend>kindr</depend>
+  <depend>yaml-cpp</depend>
   <build_export_depend>eigen</build_export_depend>
 
 </package>
