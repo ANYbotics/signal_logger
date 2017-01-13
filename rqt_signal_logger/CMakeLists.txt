@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
     rqt_gui
     rqt_gui_cpp
     signal_logger_msgs
+    std_srvs
 )
 find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 include(${QT_USE_FILE})
@@ -59,7 +60,7 @@ set(rqt_signal_logger_INCLUDE_DIRECTORIES
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES rqt_signal_logger
-    CATKIN_DEPENDS roscpp rqt_gui rqt_gui_cpp signal_logger_msgs
+    CATKIN_DEPENDS roscpp rqt_gui rqt_gui_cpp signal_logger_msgs std_srvs
 )
 
 
