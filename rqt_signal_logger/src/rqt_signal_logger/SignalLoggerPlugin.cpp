@@ -651,4 +651,4 @@ void SignalLoggerPlugin::statusMessage(std::string message, MessageType type, do
 
 }
 
-PLUGINLIB_DECLARE_CLASS(rqt_signal_logger, SignalLoggerPlugin, rqt_signal_logger::SignalLoggerPlugin, rqt_gui_cpp::Plugin)
+PLUGINLIB_EXPORT_CLASS(rqt_signal_logger::SignalLoggerPlugin, rqt_gui_cpp::Plugin)

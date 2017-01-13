@@ -11,10 +11,10 @@ find_package(catkin REQUIRED COMPONENTS
     signal_logger_msgs
     std_srvs
 )
-find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
+
+find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
 include(${QT_USE_FILE})
 
-find_package(OpenGL REQUIRED)
 
 catkin_python_setup()
 
@@ -22,8 +22,8 @@ catkin_python_setup()
 # sources #
 ###########
 set(rqt_signal_logger_SRCS
-    src/SignalLoggerPlugin.cpp
-    src/BufferIndicator.cpp
+  src/rqt_signal_logger/SignalLoggerPlugin.cpp
+  src/rqt_signal_logger/BufferIndicator.cpp
 )
 ###########
 
@@ -33,9 +33,9 @@ set(rqt_signal_logger_SRCS
 # headers #
 ###########
 set(rqt_signal_logger_HDRS
-    include/rqt_signal_logger/SignalLoggerPlugin.hpp
-    include/rqt_signal_logger/LogElement.hpp
-    include/rqt_signal_logger/BufferIndicator.hpp
+  include/rqt_signal_logger/SignalLoggerPlugin.hpp
+  include/rqt_signal_logger/LogElement.hpp
+  include/rqt_signal_logger/BufferIndicator.hpp
 )
 ###########
 
@@ -45,22 +45,29 @@ set(rqt_signal_logger_HDRS
 # ui files #
 ############
 set(rqt_signal_logger_UIS
-    resource/signal_logger_configure.ui
-    resource/signal_logger_variables.ui
+  resource/signal_logger_configure.ui
+  resource/signal_logger_variables.ui
 )
 ############
 
 
 
 set(rqt_signal_logger_INCLUDE_DIRECTORIES
-    include
-    ${CMAKE_CURRENT_BINARY_DIR}
+  include
+  ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 catkin_package(
-    INCLUDE_DIRS include
-    LIBRARIES rqt_signal_logger
-    CATKIN_DEPENDS roscpp rqt_gui rqt_gui_cpp signal_logger_msgs std_srvs
+  INCLUDE_DIRS include
+  LIBRARIES rqt_signal_logger
+  CATKIN_DEPENDS
+    roscpp
+    rqt_gui
+    rqt_gui_cpp
+    signal_logger_msgs
+    std_srvs
+  DEPENDS
+    yaml-cpp
 )
 
 
@@ -86,9 +93,7 @@ target_link_libraries(rqt_signal_logger
     ${catkin_LIBRARIES}
     ${QT_QTCORE_LIBRARY}
     ${QT_QTGUI_LIBRARY}
-    ${QT_QTOPENGL_LIBRARY}
-    ${OPENGL_LIBRARIES}
-    glut GL GLU GLEW yaml-cpp
+    yaml-cpp
 )
 
 
@@ -104,12 +109,7 @@ install(FILES plugin.xml
 install(TARGETS rqt_signal_logger
     ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-)
-
-
-install(PROGRAMS scripts/rqt_signal_logger
-    DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 install(PROGRAMS scripts/rqt_signal_logger
@@ -118,4 +118,16 @@ install(PROGRAMS scripts/rqt_signal_logger
 
 install(DIRECTORY include/${PROJECT_NAME}/
     DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+  FILES_MATCHING
+  PATTERN "*.launch"
+)
+
+install(DIRECTORY params/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/params
+  FILES_MATCHING
+  PATTERN "*.yaml"
 )
