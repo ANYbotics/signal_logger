@@ -8,6 +8,7 @@ set(SILOROS_CATKIN_PACKAGES
   signal_logger_std
   signal_logger_msgs
   std_msgs
+  std_srvs
   geometry_msgs
   rosbag
 )
