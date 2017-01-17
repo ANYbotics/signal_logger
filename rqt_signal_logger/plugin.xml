@@ -5,9 +5,9 @@
         </description>
         <qtgui>
             <group>
-                <label>Starleth</label>
+                <label>Any</label>
                 <icon type="theme">folder</icon>
-                <statustip>Plugins related to starleth</statustip>
+                <statustip>Plugins related to any</statustip>
             </group>
             <label>SignalLogger</label>
             <icon type="theme">applications-graphics</icon>
