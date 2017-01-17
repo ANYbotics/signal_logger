@@ -9,7 +9,7 @@
                 <icon type="theme">folder</icon>
                 <statustip>Plugins related to any</statustip>
             </group>
-            <label>SignalLogger</label>
+            <label>Signal Logger</label>
             <icon type="theme">applications-graphics</icon>
             <statustip>An interface for signal_logger.</statustip>
         </qtgui>
