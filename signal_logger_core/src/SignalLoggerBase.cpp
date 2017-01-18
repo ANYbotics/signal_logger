@@ -392,13 +392,13 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
   YAML::Node node;
   std::size_t j = 0;
 
-  for (auto elem : enabledElements_)
+  for (auto elem : logElements_)
   {
-    node["log_elements"][j]["name"] = elem.second->second->getName();
-    node["log_elements"][j]["divider"] = elem.second->second->getDivider();
-    node["log_elements"][j]["action"] = static_cast<int>(elem.second->second->getAction());
-    node["log_elements"][j]["buffer"]["size"] = elem.second->second->getBufferSize();
-    node["log_elements"][j]["buffer"]["type"] = static_cast<int>(elem.second->second->getBufferType());
+    node["log_elements"][j]["name"] = elem.second->getName();
+    node["log_elements"][j]["divider"] = elem.second->getDivider();
+    node["log_elements"][j]["action"] = static_cast<int>(elem.second->getAction());
+    node["log_elements"][j]["buffer"]["size"] = elem.second->getBufferSize();
+    node["log_elements"][j]["buffer"]["type"] = static_cast<int>(elem.second->getBufferType());
     j++;
   }
 
