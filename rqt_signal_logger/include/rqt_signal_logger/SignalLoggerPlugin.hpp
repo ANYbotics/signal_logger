@@ -24,8 +24,9 @@
 
 // QT
 #include <rqt_gui_cpp/plugin.h>
-#include <ui_signal_logger_variables.h>
-#include <ui_signal_logger_configure.h>
+#include <ui_SignalLoggerPlugin.h>
+#include <ui_SignalLoggerConfigure.h>
+#include <ui_SignalLoggerVariables.h>
 #include <QWidget>
 #include <QTabWidget>
 #include <QDoubleSpinBox>
@@ -89,6 +90,7 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
     void parametersChanged();
 
  private:
+  Ui::SignalLoggerPlugin ui_;
   Ui::SignalLoggerVariables varsUi_;
   Ui::SignalLoggerConfigure configureUi_;
   QWidget* widget_;
