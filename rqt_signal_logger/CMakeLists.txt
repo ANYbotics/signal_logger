@@ -48,8 +48,9 @@ set(rqt_signal_logger_HDRS
 # ui files #
 ############
 set(rqt_signal_logger_UIS
-  resource/signal_logger_configure.ui
-  resource/signal_logger_variables.ui
+  resource/SignalLoggerPlugin.ui
+  resource/SignalLoggerConfigure.ui
+  resource/SignalLoggerVariables.ui
 )
 ############
 
@@ -89,6 +90,7 @@ include_directories(
 
 add_library(rqt_signal_logger
     ${rqt_signal_logger_SRCS}
+    ${rqt_signal_logger_HDRS}
     ${rqt_signal_logger_MOCS}
     ${rqt_signal_logger_UIS_H}
 )

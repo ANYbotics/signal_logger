@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>422</width>
-    <height>264</height>
+    <width>487</width>
+    <height>285</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,9 +17,18 @@
    <string notr="true"/>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="2" column="0" colspan="2">
-    <layout class="QGridLayout" name="gridParams"/>
-   </item>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item row="0" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout1">
      <item>
@@ -73,7 +82,26 @@
       <widget class="QComboBox" name="taskComboBox"/>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="valueSpinBox"/>
+      <widget class="QDoubleSpinBox" name="valueSpinBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="applyButton">
@@ -117,7 +145,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>40</width>
+         <width>0</width>
          <height>20</height>
         </size>
        </property>
@@ -137,6 +165,9 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <layout class="QGridLayout" name="gridParams"/>
    </item>
   </layout>
  </widget>

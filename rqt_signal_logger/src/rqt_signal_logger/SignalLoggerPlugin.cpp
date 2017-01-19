@@ -59,7 +59,7 @@ static size_t getMaxParamNameWidth(std::vector<std::string> const &lines) {
 
 SignalLoggerPlugin::SignalLoggerPlugin() :
                             rqt_gui_cpp::Plugin(),
-                            widget_(),
+                            widget_(0),
                             tabWidget_(),
                             statusBar_(),
                             varsWidget_(0),
@@ -68,46 +68,39 @@ SignalLoggerPlugin::SignalLoggerPlugin() :
                             paramsWidget_(0),
                             paramsScrollHelperWidget_(0),
                             paramsScrollLayout_(0),
-                            updateFrequency_(0.0)
-{
-  // Constructor is called first before initPlugin function, needless to say.
-  // give QObjects reasonable names
+                            updateFrequency_(0.0) {
   setObjectName("SignalLoggerPlugin");
 }
 
 void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
-  // access standalone command line arguments
-  QStringList argv = context.argv();
-
-  // create the main widget
   widget_ = new QWidget();
-  tabWidget_ = new QTabWidget(widget_);
-  statusBar_ = new QStatusBar(widget_);
+  ui_.setupUi(widget_);
+  if (context.serialNumber() > 1) {
+    widget_->setWindowTitle(widget_->windowTitle() +
+        " (" + QString::number(context.serialNumber()) + ")");
+  }
+  context.addWidget(widget_);
 
   // set black background
+  statusBar_ = new QStatusBar(widget_);
   QPalette pal = statusBar_->palette();
   pal.setColor(QPalette::Background, Qt::white);
   statusBar_->setAutoFillBackground(true);
   statusBar_->setPalette(pal);
   statusBar_->show();
 
-  // Add to main widget
-  widget_->setLayout(new QVBoxLayout());
-  widget_->layout()->addWidget(statusBar_);
-  widget_->layout()->addWidget(tabWidget_);
+  ui_.statusBarLayout->addWidget(statusBar_);
 
   // create the vars widget add it as first tab
   varsWidget_ = new QWidget(tabWidget_);
   varsUi_.setupUi(varsWidget_);
-  tabWidget_->addTab(varsWidget_, QString::fromUtf8("Variables"));
 
   // create the configure widget add it as second tab
   configureWidget_ = new QWidget(tabWidget_);
   configureUi_.setupUi(configureWidget_);
-  tabWidget_->addTab(configureWidget_, QString::fromUtf8("Configure"));
 
-  // Set it up and add it to the user interface
-  context.addWidget(widget_);
+  ui_.tabVariables->layout()->addWidget(varsWidget_);
+  ui_.tabConfigure->layout()->addWidget(configureWidget_);
 
   // Do some configuration
   varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::ENABLE_ALL), "Enable all elements");
@@ -119,7 +112,7 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   varsUi_.taskComboBox->insertItem(static_cast<int>(TaskList::SET_BUFFER_SIZE_FROM_TIME), "Setup buffer size from time");
   varsUi_.taskComboBox->setCurrentIndex(static_cast<int>(TaskList::ENABLE_ALL));
   taskChanged(static_cast<int>(TaskList::ENABLE_ALL));
-  varsUi_.valueSpinBox->setMinimumWidth(varsUi_.valueSpinBox->fontMetrics().width(QString("(1) Save and Publish"))+30);
+  //varsUi_.valueSpinBox->setMinimumWidth(varsUi_.valueSpinBox->fontMetrics().width(QString("(1) Save and Publish"))+30);
 
   /******************************
    * Connect ui forms to actions *
