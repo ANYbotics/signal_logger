@@ -86,6 +86,7 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   QPalette pal = statusBar_->palette();
   pal.setColor(QPalette::Background, Qt::white);
   statusBar_->setAutoFillBackground(true);
+  statusBar_->setSizeGripEnabled(false);
   statusBar_->setPalette(pal);
   statusBar_->show();
 
