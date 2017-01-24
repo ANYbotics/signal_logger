@@ -341,21 +341,19 @@ void SignalLoggerPlugin::saveYamlFile() {
   }
 
   YAML::Node node;
-  std::size_t j = 0;
-  for ( std::size_t i = 0; i < logElements_.size(); ++i)
+  std::size_t i = 0;
+  for ( ; i < logElements_.size(); ++i)
   {
-    if(static_cast<bool>(logElements_[i]->checkBoxIsLogging->checkState())) {
-      node["log_elements"][j]["name"] = logElements_[i]->labelParamName->text().toStdString();
-      node["log_elements"][j]["divider"] = logElements_[i]->spinBoxDivider->value();
-      node["log_elements"][j]["action"] = logElements_[i]->comboBoxLogType->currentIndex();
-      node["log_elements"][j]["buffer"]["size"] = logElements_[i]->spinBoxBufferSize->value();
-      node["log_elements"][j]["buffer"]["type"] = logElements_[i]->comboBoxBufferType->currentIndex();
-      j++;
-    }
+    node["log_elements"][i]["name"] = logElements_[i]->labelParamName->text().toStdString();
+    node["log_elements"][i]["enabled"] = static_cast<bool>(logElements_[i]->checkBoxIsLogging->checkState());
+    node["log_elements"][i]["divider"] = logElements_[i]->spinBoxDivider->value();
+    node["log_elements"][i]["action"] = logElements_[i]->comboBoxLogType->currentIndex();
+    node["log_elements"][i]["buffer"]["size"] = logElements_[i]->spinBoxBufferSize->value();
+    node["log_elements"][i]["buffer"]["type"] = logElements_[i]->comboBoxBufferType->currentIndex();
   }
 
   // If there are logged elements save them to file
-  if(j!=0) {
+  if(i!=0) {
     std::ofstream outfile(filename);
     yaml_helper::writeYamlOrderedMaps(outfile, node);
     outfile.close();

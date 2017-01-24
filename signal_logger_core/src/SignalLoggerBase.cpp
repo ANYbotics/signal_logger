@@ -12,6 +12,9 @@
 #include <yaml-cpp/yaml.h>
 #include "signal_logger_core/yaml_helper.hpp"
 
+// boost
+#include <boost/iterator/counting_iterator.hpp>
+
 // stl
 #include "assert.h"
 #include <thread>
@@ -160,13 +163,9 @@ bool SignalLoggerBase::updateLogger(bool updateScript) {
     return false;
   }
 
+  // Store a complete script file to current directory
   if(updateScript) {
-    // Enable all log data to update script
-    for(auto & elem : logElements_)
-    {
-      elem.second->setIsEnabled(true);
-    }
-    if( !saveDataCollectScript(collectScriptFileName_) ){
+    if( !saveDataCollectScript( std::string(LOGGER_DEFAULT_SCRIPT_FILENAME) ) ){
       MELO_ERROR("Could not save logger script!");
       return false;
     }
@@ -285,6 +284,7 @@ bool SignalLoggerBase::cleanup()
 bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
 {
   if (!isInitialized_ || isCollectingData_) {
+    MELO_WARN("Not initialized or collecting!");
     return false;
   }
 
@@ -311,10 +311,9 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
     for(auto & elem : enabledElements_) { elem.second->second->setIsEnabled(false); }
     enabledElements_.clear();
 
-    // List of iterator offsets
-    std::vector<unsigned int> iteratorOffsets(logElements_.size());
-    // Get list of numbers from 0...(size-1)
-    std::iota (std::begin(iteratorOffsets), std::end(iteratorOffsets), 0);
+    // Get set of numbers from 0...(size-1)
+    std::set<unsigned int> iteratorOffsets(boost::counting_iterator<unsigned int>(0),
+                                           boost::counting_iterator<unsigned int>(logElements_.size()));
 
     // Save loading of yaml config file
     try {
@@ -331,7 +330,7 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
             if(elem != logElements_.end())
             {
               // Erase the iterator offset that belongs to elem since it was found in the yaml
-              iteratorOffsets.erase( std::next(iteratorOffsets.begin(), std::distance(logElements_.begin(), elem) ) );
+              iteratorOffsets.erase( std::distance(logElements_.begin(), elem) );
 
               // Overwrite defaults if specified in yaml file
               if (YAML::Node parameter = logElementsNode[i]["enabled"])
@@ -378,7 +377,6 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
       }
       else {
         MELO_DEBUG_STREAM("Parameter file is ill-formatted. Log elements is no sequence.");
-        return false;
       }
     }
     catch(YAML::Exception & e) {
@@ -391,7 +389,7 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
       LogElementMapIterator elem = std::next(logElements_.begin(), iteratorOffset);
       elem->second->setIsEnabled(true);
       enabledElements_.insert(std::pair<std::string, LogElementMapIterator>(elem->first, elem));
-      MELO_INFO("Enable logger element %s. It was not specified in the logger file!", elem->first.c_str() );
+      MELO_DEBUG("Enable logger element %s. It was not specified in the logger file!", elem->first.c_str() );
     }
   }
   else {
