@@ -10,6 +10,7 @@
 
 // yaml
 #include <yaml-cpp/yaml.h>
+#include "signal_logger_core/yaml_helper.hpp"
 
 // stl
 #include "assert.h"
@@ -153,16 +154,25 @@ bool SignalLoggerBase::updateLogger(bool updateScript) {
     return false;
   }
 
+  // Read the script
+  if( !readDataCollectScript(collectScriptFileName_) ) {
+    MELO_ERROR("Could not load logger script!");
+    return false;
+  }
+
   if(updateScript) {
     // Enable all log data to update script
     for(auto & elem : logElements_)
     {
       elem.second->setIsEnabled(true);
     }
-    saveDataCollectScript(collectScriptFileName_);
+    if( !saveDataCollectScript(collectScriptFileName_) ){
+      MELO_ERROR("Could not save logger script!");
+      return false;
+    }
   }
 
-  return readDataCollectScript(collectScriptFileName_);
+  return true;
 
 }
 
@@ -301,6 +311,11 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
     for(auto & elem : enabledElements_) { elem.second->second->setIsEnabled(false); }
     enabledElements_.clear();
 
+    // List of iterator offsets
+    std::vector<unsigned int> iteratorOffsets(logElements_.size());
+    // Get list of numbers from 0...(size-1)
+    std::iota (std::begin(iteratorOffsets), std::end(iteratorOffsets), 0);
+
     // Save loading of yaml config file
     try {
       YAML::Node config = YAML::LoadFile(scriptName);
@@ -315,10 +330,18 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
             auto elem = logElements_.find(name);
             if(elem != logElements_.end())
             {
-              // Enable element
-              elem->second->setIsEnabled(true);
-              enabledElements_.insert(std::pair<std::string, LogElementMapIterator>(name, elem));
+              // Erase the iterator offset that belongs to elem since it was found in the yaml
+              iteratorOffsets.erase( std::next(iteratorOffsets.begin(), std::distance(logElements_.begin(), elem) ) );
 
+              // Overwrite defaults if specified in yaml file
+              if (YAML::Node parameter = logElementsNode[i]["enabled"])
+              {
+                elem->second->setIsEnabled(parameter.as<bool>());
+              }
+              else {
+                // Disable element if nothing is specified
+                elem->second->setIsEnabled(false);
+              }
               // Overwrite defaults if specified in yaml file
               if (YAML::Node parameter = logElementsNode[i]["divider"])
               {
@@ -339,6 +362,10 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
               {
                 elem->second->setBufferType( static_cast<BufferType>(parameter.as<int>()) );
               }
+              // Insert element
+              if(elem->second->isEnabled()) {
+                enabledElements_.insert(std::pair<std::string, LogElementMapIterator>(name, elem));
+              }
             }
             else {
               MELO_DEBUG_STREAM("Could not load " << name << "from config file. Var not logged.");
@@ -358,6 +385,14 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
       MELO_ERROR_STREAM("Could not load config file, because exception occurred: "<<e.what());
       return false;
     }
+
+    // Noisily add all elements that were not in the configuration file
+    for(auto iteratorOffset : iteratorOffsets) {
+      LogElementMapIterator elem = std::next(logElements_.begin(), iteratorOffset);
+      elem->second->setIsEnabled(true);
+      enabledElements_.insert(std::pair<std::string, LogElementMapIterator>(elem->first, elem));
+      MELO_INFO("Enable logger element %s. It was not specified in the logger file!", elem->first.c_str() );
+    }
   }
   else {
     MELO_ERROR_STREAM("Logger configuration file can not be opened!");
@@ -376,12 +411,12 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
   // Check filename size
   std::string ending = ".yaml";
   if ( (ending.size() + 1) > scriptName.size()) {
-    MELO_ERROR_STREAM("Scriptname must be a yaml file : *.yaml");
+    MELO_ERROR_STREAM("[Signal Logger] Scriptname must be a yaml file : *.yaml");
     return false;
   }
   // Check file ending
   if(!std::equal(ending.rbegin(), ending.rend(), scriptName.rbegin())) {
-    MELO_ERROR_STREAM("Scriptname must be a yaml file : *.yaml");
+    MELO_ERROR_STREAM("[Signal Logger] Scriptname must be a yaml file : *.yaml");
     return false;
   }
 
@@ -395,6 +430,7 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
   for (auto elem : logElements_)
   {
     node["log_elements"][j]["name"] = elem.second->getName();
+    node["log_elements"][j]["enabled"] = elem.second->isEnabled();
     node["log_elements"][j]["divider"] = elem.second->getDivider();
     node["log_elements"][j]["action"] = static_cast<int>(elem.second->getAction());
     node["log_elements"][j]["buffer"]["size"] = elem.second->getBufferSize();
@@ -405,7 +441,7 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
   // If there are logged elements save them to file
   if(j!=0) {
     std::ofstream outfile(scriptName);
-    outfile << node;
+    yaml_helper::writeYamlOrderedMaps(outfile, node);
     outfile.close();
   }
 

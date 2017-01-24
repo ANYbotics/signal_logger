@@ -7,7 +7,9 @@
 
 // rqt_signal_logger
 #include "rqt_signal_logger/SignalLoggerPlugin.hpp"
-#include "rqt_signal_logger/yaml_helper.hpp"
+
+// signal_logger_core
+#include "signal_logger_core/yaml_helper.hpp"
 
 // yaml-cpp
 #include <yaml-cpp/yaml.h>
@@ -355,7 +357,7 @@ void SignalLoggerPlugin::saveYamlFile() {
   // If there are logged elements save them to file
   if(j!=0) {
     std::ofstream outfile(filename);
-    writeYamlOrderedMaps(outfile, node);
+    yaml_helper::writeYamlOrderedMaps(outfile, node);
     outfile.close();
   }
   else {

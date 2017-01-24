@@ -197,7 +197,7 @@ class SignalLoggerBase {
  private:
   //! Comparison operator, get element with largest scaled buffer size
   struct maxScaledBufferSize {
-    /*** Defines the comaprison operator
+    /*** Defines the comparison operator
      *   @param i  first element to compare
      *   @param j  second element to compare
      *   @return fun(i) < fun(j)
