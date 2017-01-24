@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
     rqt_gui
     rqt_gui_cpp
     signal_logger_msgs
+    signal_logger_core
     std_srvs
 )
 
@@ -69,6 +70,7 @@ catkin_package(
     rqt_gui
     rqt_gui_cpp
     signal_logger_msgs
+    signal_logger_core
     std_srvs
   DEPENDS
     yaml-cpp

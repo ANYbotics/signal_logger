@@ -2,14 +2,19 @@
  * yaml_helper.hpp
  *
  *  Created on: Oct 3, 2016
- *      Author: gabrielhottiger
+ *      Author: Hersh(https://github.com/hersh), Gabriel Hottiger
  */
 // Resolves open issue on https://github.com/jbeder/yaml-cpp/issues/169
+// The following code is also taken from there!
+
 #pragma once
+
 #include <algorithm>
 #include <string>
 #include <vector>
 #include <yaml-cpp/yaml.h>
+
+namespace yaml_helper {
 
 // Recursive helper function that does all the work
 void writeNode(const YAML::Node& node, YAML::Emitter& emitter)
@@ -64,4 +69,6 @@ void writeYamlOrderedMaps(std::ostream& out, const YAML::Node& node)
   YAML::Emitter emitter;
   writeNode(node, emitter);
   out << emitter.c_str() << std::endl;
+}
+
 }
