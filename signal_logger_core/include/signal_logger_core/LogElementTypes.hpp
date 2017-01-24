@@ -47,6 +47,7 @@ typedef Eigen::Matrix< std::string ,Eigen::Dynamic, Eigen::Dynamic >    MatrixXs
   typedef kindr::Force3D                KindrForceD;
   typedef kindr::Torque3D               KindrTorqueD;
   typedef kindr::VectorTypeless3D       KindrVectorD;
+  typedef kindr::HomTransformQuatD      KindrHomTransformQuatD;
 
   //! Kindr vector at position type
   template<typename VectorType_>

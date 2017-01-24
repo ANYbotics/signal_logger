@@ -12,6 +12,7 @@
 
 #include "geometry_msgs/WrenchStamped.h"
 #include "geometry_msgs/QuaternionStamped.h"
+#include "geometry_msgs/PoseStamped.h"
 
 #include <std_msgs/Float32.h>
 
@@ -253,6 +254,15 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr:
   typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtypeConstPtr  msgtypeConstPtr;
 };
 
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_kindr_homogeneous_transformation<ValueType_>::value>::type>
+{
+  typedef geometry_msgs::PoseStamped         msgtype;
+  typedef geometry_msgs::PoseStampedPtr      msgtypePtr;
+  typedef geometry_msgs::PoseStampedConstPtr msgtypeConstPtr;
+};
+/*******
+
 /********************************/
 
 /***************************************************
@@ -402,6 +412,27 @@ struct slr_update_traits<ValueType_, typename std::enable_if<std::is_base_of<kin
     slr_update_traits<typename ValueType_::Implementation>::updateMsg(&vectorPtr_->toImplementation(), msg, timeStamp);
   }
 };
+
+template <typename ValueType_>
+struct slr_update_traits<ValueType_, typename std::enable_if<is_kindr_homogeneous_transformation<ValueType_>::value>::type> {
+  static void updateMsg(const ValueType_* vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtypePtr msg,
+                        const ros::Time& timeStamp)
+  {
+    msg->header.stamp = timeStamp;
+    const kindr::RotationQuaternion<typename ValueType_::Scalar> orientation(vectorPtr_->getRotation());
+    msg->pose.orientation.w = orientation.w();
+    msg->pose.orientation.x = orientation.x();
+    msg->pose.orientation.y = orientation.y();
+    msg->pose.orientation.z = orientation.z();
+    msg->pose.position.x = vectorPtr_->getPosition().x();
+    msg->pose.position.y = vectorPtr_->getPosition().y();
+    msg->pose.position.z = vectorPtr_->getPosition().z();
+  }
+
+
+};
+
 /********************************/
 
 /***************************************************

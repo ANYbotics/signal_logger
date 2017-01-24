@@ -93,6 +93,14 @@ struct is_kindr_vector_at_position : std::false_type {};
 template<enum kindr::PhysicalType PhysicalType_, typename PrimType_, int Dimension_>
 struct is_kindr_vector_at_position<signal_logger::KindrVectorAtPosition<kindr::Vector<PhysicalType_,PrimType_, Dimension_>>> : std::true_type {};
 
+//! isKindrHomogeneousTransformation false type
+template<typename>
+struct is_kindr_homogeneous_transformation : std::false_type {};
+
+//! isKindrHomogeneousTransformation true type
+template<typename PrimType_, typename Position_, typename Rotation_>
+struct is_kindr_homogeneous_transformation<kindr::HomogeneousTransformation<PrimType_, Position_, Rotation_>> : std::true_type {};
+
 #endif
 //-------------------------------------------------------------------------------------//
 

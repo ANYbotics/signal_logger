@@ -228,6 +228,32 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if< std::is_b
         header, binary, data, name, divider, isBufferLooping, getEigenType);
   }
 };
+
+
+template <typename ValueType_, typename ContainerType_>
+struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_homogeneous_transformation<ValueType_>::value>::type> {
+  static void writeLogElementToStreams(std::stringstream* header,
+                                       std::stringstream* binary,
+                                       const std::vector<ContainerType_> & data,
+                                       const std::string & name,
+                                       const std::size_t divider,
+                                       const bool isBufferLooping,
+                                       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+  {
+
+    // Get underlying position type
+    auto getPositionType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getPosition()); };
+    sls_traits<typename ValueType_::Position, ContainerType_>::writeLogElementToStreams(
+        header, binary, data, name + "_position", divider, isBufferLooping, getPositionType);
+
+    // Get underlying rotation type
+    auto getOrientationType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getRotation()); };
+    sls_traits<typename ValueType_::Rotation, ContainerType_>::writeLogElementToStreams(
+        header, binary, data, name + "_orientation", divider, isBufferLooping, getOrientationType);
+  }
+};
+
+
 /********************************/
 
 /***************************************************
@@ -255,6 +281,10 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_v
         header, binary, data, name + "_at_position_in_" + positionFrame + "_frame", divider, isBufferLooping, getKindrPosition);
   }
 };
+
+
+
+
 #endif
 
 } /* namespace traits */
