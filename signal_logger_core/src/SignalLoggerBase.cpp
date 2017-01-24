@@ -305,96 +305,94 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
 
   // Check file existance
   struct stat buffer;
-  if(stat(scriptName.c_str(), &buffer) == 0)
-  {
-    // Disable all log data and reallocate buffer
-    for(auto & elem : enabledElements_) { elem.second->second->setIsEnabled(false); }
-    enabledElements_.clear();
+  if(stat(scriptName.c_str(), &buffer) != 0) {
+    std::fstream fs;
+    fs.open(scriptName, std::fstream::out);
+    fs.close();
+  }
+  // Disable all log data and reallocate buffer
+  for(auto & elem : enabledElements_) { elem.second->second->setIsEnabled(false); }
+  enabledElements_.clear();
 
-    // Get set of numbers from 0...(size-1)
-    std::set<unsigned int> iteratorOffsets(boost::counting_iterator<unsigned int>(0),
-                                           boost::counting_iterator<unsigned int>(logElements_.size()));
+  // Get set of numbers from 0...(size-1)
+  std::set<unsigned int> iteratorOffsets(boost::counting_iterator<unsigned int>(0),
+                                         boost::counting_iterator<unsigned int>(logElements_.size()));
 
-    // Save loading of yaml config file
-    try {
-      YAML::Node config = YAML::LoadFile(scriptName);
-      if (config["log_elements"].IsSequence())
+  // Save loading of yaml config file
+  try {
+    YAML::Node config = YAML::LoadFile(scriptName);
+    if (config["log_elements"].IsSequence())
+    {
+      YAML::Node logElementsNode = config["log_elements"];
+      for( size_t i = 0; i < logElementsNode.size(); ++i)
       {
-        YAML::Node logElementsNode = config["log_elements"];
-        for( size_t i = 0; i < logElementsNode.size(); ++i)
+        if (YAML::Node parameter = logElementsNode[i]["name"])
         {
-          if (YAML::Node parameter = logElementsNode[i]["name"])
+          std::string name = logElementsNode[i]["name"].as<std::string>();
+          auto elem = logElements_.find(name);
+          if(elem != logElements_.end())
           {
-            std::string name = logElementsNode[i]["name"].as<std::string>();
-            auto elem = logElements_.find(name);
-            if(elem != logElements_.end())
-            {
-              // Erase the iterator offset that belongs to elem since it was found in the yaml
-              iteratorOffsets.erase( std::distance(logElements_.begin(), elem) );
+            // Erase the iterator offset that belongs to elem since it was found in the yaml
+            iteratorOffsets.erase( std::distance(logElements_.begin(), elem) );
 
-              // Overwrite defaults if specified in yaml file
-              if (YAML::Node parameter = logElementsNode[i]["enabled"])
-              {
-                elem->second->setIsEnabled(parameter.as<bool>());
-              }
-              else {
-                // Disable element if nothing is specified
-                elem->second->setIsEnabled(false);
-              }
-              // Overwrite defaults if specified in yaml file
-              if (YAML::Node parameter = logElementsNode[i]["divider"])
-              {
-                elem->second->setDivider(parameter.as<int>());
-              }
-              // Check for action
-              if (YAML::Node parameter = logElementsNode[i]["action"])
-              {
-                elem->second->setAction( static_cast<LogElementAction>(parameter.as<int>()) );
-              }
-              // Check for buffer size
-              if (YAML::Node parameter = logElementsNode[i]["buffer"]["size"])
-              {
-                elem->second->setBufferSize(parameter.as<int>());
-              }
-              // Check for buffer looping
-              if (YAML::Node parameter = logElementsNode[i]["buffer"]["type"])
-              {
-                elem->second->setBufferType( static_cast<BufferType>(parameter.as<int>()) );
-              }
-              // Insert element
-              if(elem->second->isEnabled()) {
-                enabledElements_.insert(std::pair<std::string, LogElementMapIterator>(name, elem));
-              }
+            // Overwrite defaults if specified in yaml file
+            if (YAML::Node parameter = logElementsNode[i]["enabled"])
+            {
+              elem->second->setIsEnabled(parameter.as<bool>());
             }
             else {
-              MELO_DEBUG_STREAM("Could not load " << name << "from config file. Var not logged.");
+              // Disable element if nothing is specified
+              elem->second->setIsEnabled(false);
+            }
+            // Overwrite defaults if specified in yaml file
+            if (YAML::Node parameter = logElementsNode[i]["divider"])
+            {
+              elem->second->setDivider(parameter.as<int>());
+            }
+            // Check for action
+            if (YAML::Node parameter = logElementsNode[i]["action"])
+            {
+              elem->second->setAction( static_cast<LogElementAction>(parameter.as<int>()) );
+            }
+            // Check for buffer size
+            if (YAML::Node parameter = logElementsNode[i]["buffer"]["size"])
+            {
+              elem->second->setBufferSize(parameter.as<int>());
+            }
+            // Check for buffer looping
+            if (YAML::Node parameter = logElementsNode[i]["buffer"]["type"])
+            {
+              elem->second->setBufferType( static_cast<BufferType>(parameter.as<int>()) );
+            }
+            // Insert element
+            if(elem->second->isEnabled()) {
+              enabledElements_.insert(std::pair<std::string, LogElementMapIterator>(name, elem));
             }
           }
           else {
-            MELO_DEBUG_STREAM("Could not load get name from config file. Ignore entry nr: ." << i << "!");
+            MELO_DEBUG_STREAM("Could not load " << name << "from config file. Var not logged.");
           }
         }
-      }
-      else {
-        MELO_DEBUG_STREAM("Parameter file is ill-formatted. Log elements is no sequence.");
+        else {
+          MELO_DEBUG_STREAM("Could not load get name from config file. Ignore entry nr: ." << i << "!");
+        }
       }
     }
-    catch(YAML::Exception & e) {
-      MELO_ERROR_STREAM("Could not load config file, because exception occurred: "<<e.what());
-      return false;
-    }
-
-    // Noisily add all elements that were not in the configuration file
-    for(auto iteratorOffset : iteratorOffsets) {
-      LogElementMapIterator elem = std::next(logElements_.begin(), iteratorOffset);
-      elem->second->setIsEnabled(true);
-      enabledElements_.insert(std::pair<std::string, LogElementMapIterator>(elem->first, elem));
-      MELO_DEBUG("Enable logger element %s. It was not specified in the logger file!", elem->first.c_str() );
+    else {
+      MELO_DEBUG_STREAM("Parameter file is ill-formatted. Log elements is no sequence.");
     }
   }
-  else {
-    MELO_ERROR_STREAM("Logger configuration file can not be opened!");
+  catch(YAML::Exception & e) {
+    MELO_ERROR_STREAM("Could not load config file, because exception occurred: "<<e.what());
     return false;
+  }
+
+  // Noisily add all elements that were not in the configuration file
+  for(auto iteratorOffset : iteratorOffsets) {
+    LogElementMapIterator elem = std::next(logElements_.begin(), iteratorOffset);
+    elem->second->setIsEnabled(true);
+    enabledElements_.insert(std::pair<std::string, LogElementMapIterator>(elem->first, elem));
+    MELO_DEBUG("Enable logger element %s. It was not specified in the logger file!", elem->first.c_str() );
   }
 
   return true;
@@ -497,8 +495,8 @@ bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
   std::time_t now = std::chrono::system_clock::to_time_t ( std::chrono::system_clock::now() );
   strftime(dateTime, sizeof dateTime, "%Y%m%d_%H-%M-%S_", std::localtime(&now));
 
-  // Filename format (e.g. d_13Sep2016_12-13-49_00011)
-  std::string filename = std::string{"d_"} + std::string{dateTime} + suffixString;
+  // Filename format (e.g. silo_13Sep2016_12-13-49_00011)
+  std::string filename = std::string{"silo_"} + std::string{dateTime} + suffixString;
 
   // Set flag
   isCopyingBuffer_ = true;
@@ -548,7 +546,7 @@ bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
   // Set flag, notify user
   isSavingData_ = false;
 
-  MELO_INFO( "All done, captain!" );
+  MELO_INFO_STREAM( "All done, captain! Stored logging data to file " << filename );
 
   return success;
 }
