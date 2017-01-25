@@ -21,10 +21,9 @@ namespace signal_logger {
 //! Enum containing possible logging actions
 enum class LogElementAction: unsigned int
 {
-  NONE = 0,/*!< 0 */
-  SAVE_AND_PUBLISH = 1,/*!< 1 */
-  SAVE = 2,/*!< 2 */
-  PUBLISH = 3/*!< 3 */
+  SAVE_AND_PUBLISH = 0,/*!< 0 */
+  SAVE = 1,/*!< 1 */
+  PUBLISH = 2/*!< 2 */
 };
 
 //! Enum containing possible log file types

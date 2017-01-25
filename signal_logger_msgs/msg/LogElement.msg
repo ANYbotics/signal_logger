@@ -9,10 +9,9 @@ string name
 bool is_logged
 uint32 divider
 
-uint8 ACTION_NONE 		      =  0
-uint8 ACTION_SAVE_AND_PUBLISH =  1
-uint8 ACTION_SAVE			  =  2
-uint8 ACTION_PUBLISH	      =  3
+uint8 ACTION_SAVE_AND_PUBLISH =  0
+uint8 ACTION_SAVE			  =  1
+uint8 ACTION_PUBLISH	      =  2
 uint8 action
 
 uint8 BUFFERTYPE_FIXED_SIZE 	 	   =  0

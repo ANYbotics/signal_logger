@@ -43,7 +43,7 @@ class SignalLoggerBase {
   static constexpr const char* LOG_ELEMENT_DEFAULT_GROUP_NAME   = "/log/";
   static constexpr const char* LOG_ELEMENT_DEFAULT_UNIT         = "-";
   static constexpr std::size_t LOG_ELEMENT_DEFAULT_DIVIDER      = 1;
-  static constexpr LogElementAction LOG_ELEMENT_DEFAULT_ACTION  = LogElementAction::NONE;
+  static constexpr LogElementAction LOG_ELEMENT_DEFAULT_ACTION  = LogElementAction::SAVE_AND_PUBLISH;
   static constexpr std::size_t LOG_ELEMENT_DEFAULT_BUFFER_SIZE  = 1000;
   static constexpr BufferType LOG_ELEMENT_DEFAULT_BUFFER_TYPE   = BufferType::LOOPING;
 
