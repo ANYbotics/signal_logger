@@ -121,7 +121,6 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
     {
       // Local vars
       signal_logger::TimestampPair tsp_now;
-      ros::Time now;
       ValueType_ data;
 
       {
@@ -139,12 +138,8 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
           }
 
           // get time stamp
-          signal_logger::TimestampPair tsp_now = time.getTimeStampAtPosition(idx);
-
+          tsp_now = time.getTimeStampAtPosition(idx);
         } // unlock time mutex
-
-        // convert to ros time
-        ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
 
         // Read from buffer and transform to message via trait
         this->buffer_.read(&data);
@@ -152,7 +147,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
       } // unlock elements mutex
 
       // publish over ros
-      traits::slr_update_traits<ValueType_>::updateMsg(&data, msg_, now);
+      traits::slr_update_traits<ValueType_>::updateMsg(&data, msg_, ros::Time(tsp_now.first, tsp_now.second));
       {
         std::unique_lock<std::mutex> lock(this->publishMutex_);
         pub_.publish(msg_);
