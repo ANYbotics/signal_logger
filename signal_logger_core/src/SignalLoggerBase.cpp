@@ -40,8 +40,7 @@ SignalLoggerBase::SignalLoggerBase(const std::string & loggerPrefix):
                                                 maxLoggingTime_(0.0),
                                                 loggerPrefix_(loggerPrefix),
                                                 logElements_(),
-                                                logTime_(),
-                                                scriptMutex_()
+                                                logTime_()
 {
 }
 
@@ -60,7 +59,7 @@ void SignalLoggerBase::initLogger(int updateFrequency, const double maxLogTime, 
   maxLoggingTime_ = maxLogTime;
   collectScriptFileName_ = collectScriptFileName;
 
-  // Get time buffer type and logging tome
+  // Get time buffer type and logging time
   if(maxLoggingTime_ == 0.0) {
     resetTimeLogElement(signal_logger::BufferType::EXPONENTIALLY_GROWING);
   }
@@ -75,18 +74,15 @@ void SignalLoggerBase::initLogger(int updateFrequency, const double maxLogTime, 
 
 bool SignalLoggerBase::startLogger()
 {
-
-  if(!isInitialized_  || isCollectingData_)
+  // Warn the user on invalid request
+  if(!isInitialized_  || isCollectingData_ || isStarting_)
   {
-    MELO_WARN("Signal logger could not be started!%s%s", !isInitialized_?" Not initialized!":"", isCollectingData_?" Already running!":"");
+    MELO_WARN("Signal logger could not be started!%s%s%s", !isInitialized_?" Not initialized!":"",
+        isCollectingData_?" Already running!":"", isStarting_?" Delay logger start already requested!":"");
     return false;
   }
 
-  if(isStarting_) {
-    MELO_WARN("Signal logger is already started in other thread.");
-    return true;
-  }
-
+  // Still copying the data from the buffer, Wait in other thread until logger can be started.
   if(isCopyingBuffer_) {
     // Save data in different thread
     std::thread t1(&SignalLoggerBase::workerStartLogger, this);
@@ -94,12 +90,16 @@ bool SignalLoggerBase::startLogger()
     return true;
   }
 
-  // Wait for publishing to end -> start logger
-  std::unique_lock<std::mutex> lockPublish(publishMutex_);
+  // Shared lock on elements for read access
+  boost::upgrade_lock<boost::shared_mutex> sharedLockElements(elementsMutex_);
 
   // If all elements are looping use a looping time buffer
   bool all_looping = enabledElements_.end() == std::find_if(enabledElements_.begin(), enabledElements_.end(),
                [] (const std::pair<std::string, LogElementMapIterator>& s) { return s.second->second->getBufferType() != BufferType::LOOPING; } );
+
+  // Unique lock on time since it is beeing changes
+  boost::unique_lock<boost::shared_mutex> uniqueLockTime(timeMutex_);
+
   if(all_looping) {
     timeElement_->setBufferType(BufferType::LOOPING);
     auto maxElement = std::max_element(enabledElements_.begin(), enabledElements_.end(), maxScaledBufferSize());
@@ -120,6 +120,8 @@ bool SignalLoggerBase::startLogger()
 
   // Reset elements
   timeElement_->restartElement();
+
+  boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLockElements(sharedLockElements);
   for(auto & elem : enabledElements_) { elem.second->second->restartElement(); }
 
   // Reset flags and data collection calls
@@ -149,12 +151,25 @@ bool SignalLoggerBase::restartLogger()
 }
 
 bool SignalLoggerBase::updateLogger(bool updateScript) {
-
   if(isUpdateLocked_ || !isInitialized_ || isCollectingData_ || isSavingData_)
   {
     MELO_WARN("Signal logger could not be updated!%s%s%s%s", isUpdateLocked_?" Update locked!":"",
         !isInitialized_?" Not initialized!":"", isSavingData_?" Saving data!":"", isCollectingData_?" Collecting data!":"");
     return false;
+  }
+
+  boost::unique_lock<boost::shared_mutex> uniqueLockElements(elementsMutex_);
+
+  // Add log elements from temporary list
+  {
+    boost::unique_lock<boost::shared_mutex> uniqueLockElementsToAdd(elementsToAddMutex_);
+
+    for(auto & elemToAdd : logElementsToAdd_ ) {
+      // Transfer ownership to logElements
+      logElements_[elemToAdd.first] = std::unique_ptr<LogElementInterface>(std::move(elemToAdd.second));
+    }
+    // Clear elements
+    logElementsToAdd_.clear();
   }
 
   // Read the script
@@ -205,6 +220,10 @@ bool SignalLoggerBase::collectLoggerData()
       return true;
     }
 
+    // Lock elements
+    boost::shared_lock<boost::shared_mutex> sharedLockElements(elementsMutex_);
+    boost::shared_lock<boost::shared_mutex> sharedLockTime(timeMutex_);
+
     // Lock all mutexes
     for(auto & elem : enabledElements_)
     {
@@ -234,17 +253,23 @@ bool SignalLoggerBase::collectLoggerData()
 
 bool SignalLoggerBase::publishData()
 {
-  // Lock publish mutex
-  std::unique_lock<std::mutex> lockPublish(publishMutex_);
+  // Try to lock elementsMutex
+  boost::shared_lock<boost::shared_mutex> lock(elementsMutex_, boost::try_to_lock);
+  if(lock) {
 
-  // Publish data from buffer
-  for(auto & elem : enabledElements_)
-  {
+    // Lock publish mutex
+    std::unique_lock<std::mutex> lockPublish(publishMutex_);
 
-    if(elem.second->second->isPublished())
+    // Publish data from buffer
+    for(auto & elem : enabledElements_)
     {
-      elem.second->second->publishData(*timeElement_, noCollectDataCalls_);
+
+      if(elem.second->second->isPublished())
+      {
+        elem.second->second->publishData(*timeElement_, noCollectDataCalls_);
+      }
     }
+
   }
 
   return true;
@@ -272,6 +297,8 @@ bool SignalLoggerBase::stopAndSaveLoggerData()
 
 bool SignalLoggerBase::cleanup()
 {
+  boost::unique_lock<boost::shared_mutex> lock(elementsMutex_);
+
   // Publish data from buffer
   for(auto & elem : enabledElements_)
   {
@@ -423,7 +450,7 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
   YAML::Node node;
   std::size_t j = 0;
 
-  for (auto elem : logElements_)
+  for (auto & elem : logElements_)
   {
     node["log_elements"][j]["name"] = elem.second->getName();
     node["log_elements"][j]["enabled"] = elem.second->isEnabled();
@@ -523,6 +550,8 @@ bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
   // Reset elements
   {
     // Wait for publish to complete
+    boost::unique_lock<boost::shared_mutex> elementlock(elementsMutex_);
+    boost::unique_lock<boost::shared_mutex> timeLock(timeMutex_);
     std::unique_lock<std::mutex> lockPublish(publishMutex_);
 
     // Reset buffers and counters

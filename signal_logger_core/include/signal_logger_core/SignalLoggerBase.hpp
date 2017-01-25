@@ -18,6 +18,9 @@
 // eigen
 #include <Eigen/Dense>
 
+// boost
+#include <boost/thread.hpp>
+
 // stl
 #include <mutex>
 #include <atomic>
@@ -51,8 +54,8 @@ class SignalLoggerBase {
   static constexpr const char* LOGGER_DEFAULT_PREFIX            = "/log";
 
   //! Log element map types
-  using LogPair = std::pair<std::string, std::shared_ptr<signal_logger::LogElementInterface>>;
-  using LogElementMap = std::unordered_map<std::string, std::shared_ptr<signal_logger::LogElementInterface>>;
+  using LogPair = std::pair<std::string, std::unique_ptr<signal_logger::LogElementInterface>>;
+  using LogElementMap = std::unordered_map<std::string, std::unique_ptr<signal_logger::LogElementInterface>>;
   using LogElementMapIterator = LogElementMap::iterator;
 
  public:
@@ -184,15 +187,19 @@ class SignalLoggerBase {
   std::unordered_map<std::string, LogElementMapIterator> enabledElements_;
   //! Map of all log elements
   LogElementMap logElements_;
+  //! Map of all log elements to add
+  LogElementMap logElementsToAdd_;
   //! Time variable
   TimestampPair logTime_;
   //! Corresponding time log element
   std::shared_ptr<signal_logger::LogElementBase<signal_logger::TimestampPair>> timeElement_;
   //! Mutexes
+  boost::shared_mutex elementsToAddMutex_;
+  boost::shared_mutex elementsMutex_;
+  boost::shared_mutex timeMutex_;
   std::mutex scriptMutex_;
   std::mutex collectMutex_;
   std::mutex publishMutex_;
-
 
  private:
   //! Comparison operator, get element with largest scaled buffer size
