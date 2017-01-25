@@ -404,11 +404,8 @@ void SignalLoggerPlugin::valueChanged(double value) {
   switch(varsUi_.taskComboBox->currentIndex()) {
      case static_cast<int>(TaskList::SET_ACTION):
        {
-         varsUi_.valueSpinBox->setValue(((int)roundf(value))%4);
-         switch(((int)roundf(value))%4) {
-           case static_cast<int>(LogElement::LogAction::NONE):
-              varsUi_.valueSpinBox->setSuffix(") None");
-              break;
+         varsUi_.valueSpinBox->setValue(((int)roundf(value))%3);
+         switch(((int)roundf(value))%3) {
            case static_cast<int>(LogElement::LogAction::SAVE_AND_PUBLISH):
               varsUi_.valueSpinBox->setSuffix(") Save and Publish");
               break;
@@ -578,13 +575,13 @@ void SignalLoggerPlugin::drawParamList() {
     // delete widget
     delete paramsWidget_->layout();
     delete paramsScrollHelperWidget_->layout();
-    varsUi_.gridLayout->removeWidget(paramsWidget_);
+    varsUi_.verticalLayout->removeWidget(paramsWidget_);
     delete paramsWidget_;
   }
 
   paramsWidget_ = new QWidget();
   paramsWidget_->setObjectName(QString::fromUtf8("paramsWidget"));
-  varsUi_.gridLayout->addWidget(paramsWidget_,2,0,10,1);
+  varsUi_.verticalLayout->insertWidget(2, paramsWidget_);
 
   paramsScrollHelperWidget_ = new QWidget(paramsWidget_);
   paramsGrid_= new QGridLayout(paramsScrollHelperWidget_);

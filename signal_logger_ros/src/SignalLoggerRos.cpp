@@ -177,9 +177,6 @@ bool SignalLoggerRos::logElementtoMsg(const std::string & name, signal_logger_ms
   msg.no_unread_items_in_buffer = logElements_.at(name)->noUnreadItemsInBuffer();
 
   switch(logElements_.at(name)->getAction()) {
-    case signal_logger::LogElementAction::NONE:
-      msg.action = signal_logger_msgs::LogElement::ACTION_NONE;
-      break;
     case signal_logger::LogElementAction::SAVE_AND_PUBLISH:
       msg.action = signal_logger_msgs::LogElement::ACTION_SAVE_AND_PUBLISH;
       break;
@@ -233,9 +230,6 @@ bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg
   logElements_.at(msg.name)->setBufferSize(msg.buffer_size);
 
   switch(msg.action) {
-    case signal_logger_msgs::LogElement::ACTION_NONE:
-      logElements_.at(msg.name)->setAction(signal_logger::LogElementAction::NONE);
-      break;
     case signal_logger_msgs::LogElement::ACTION_SAVE_AND_PUBLISH:
       logElements_.at(msg.name)->setAction(signal_logger::LogElementAction::SAVE_AND_PUBLISH);
       break;

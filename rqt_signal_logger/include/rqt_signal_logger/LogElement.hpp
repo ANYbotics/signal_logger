@@ -37,7 +37,6 @@ class LogElement: public QObject {
  public:
   //! Enum mapping defining possible log actions
   enum class LogAction : unsigned int {
-    NONE = signal_logger_msgs::LogElement::ACTION_NONE,
     SAVE_AND_PUBLISH = signal_logger_msgs::LogElement::ACTION_SAVE_AND_PUBLISH,
     SAVE = signal_logger_msgs::LogElement::ACTION_SAVE,
     PUBLISH = signal_logger_msgs::LogElement::ACTION_PUBLISH
@@ -87,7 +86,6 @@ class LogElement: public QObject {
     //! Add log type combobox
     comboBoxLogType = new QComboBox(widget);
     comboBoxLogType->setObjectName(QString::fromStdString(std::string{"comboBoxLogType"} + name));
-    comboBoxLogType->insertItem(static_cast<int>(LogAction::NONE), "None");
     comboBoxLogType->insertItem(static_cast<int>(LogAction::SAVE_AND_PUBLISH), "Save and Publish");
     comboBoxLogType->insertItem(static_cast<int>(LogAction::SAVE),"Save");
     comboBoxLogType->insertItem(static_cast<int>(LogAction::PUBLISH),"Publish");
