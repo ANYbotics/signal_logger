@@ -1,8 +1,8 @@
-/*
- * SignalLoggerBase.cpp
- *
- *  Created on: Sep 28, 2016
- *      Author: Gabriel Hottiger
+/*!
+ * @file     SignalLoggerBase.cpp
+ * @author   Gabriel Hottiger, Christian Gehring
+ * @date     Sep 28, 2016
+ * @brief    Base class for signal loggers.
  */
 
 // signal logger

@@ -1,8 +1,8 @@
-/*
- * LogElementBase.hpp
- *
- *  Created on: Sep 22, 2016
- *      Author: Gabriel Hottiger
+/*!
+ * @file     LogElementBase.hpp
+ * @author   Gabriel Hottiger
+ * @date     Sep 22, 2016
+ * @brief    Templated base class for log elements.
  */
 
 #pragma once

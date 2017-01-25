@@ -1,8 +1,8 @@
-/*
- * Buffer.hpp
- *
- *  Created on: Sep 21, 2016
- *      Author: Gabriel Hottiger
+/*!
+ * @file     Buffer.hpp
+ * @author   Gabriel Hottiger
+ * @date     Sep 21, 2016
+ * @brief    A class that implements a circular buffer for type ValueType_.
  */
 
 #pragma once

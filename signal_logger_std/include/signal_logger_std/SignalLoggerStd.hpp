@@ -1,8 +1,8 @@
-/*
- * SignalLoggerStd.hpp
- *
- *  Created on: Sep 23, 2016
- *      Author: Gabriel Hottiger
+/*!
+ * @file     SignalLoggerStd.hpp
+ * @author   Gabriel Hottiger
+ * @date     Sep 23, 2016
+ * @brief    Implementation of a Std signal logger. Provides binary file storing functionality.
  */
 
 #pragma once

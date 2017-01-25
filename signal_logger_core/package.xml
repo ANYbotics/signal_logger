@@ -3,10 +3,12 @@
   <name>signal_logger_core</name>
   <version>0.0.1</version>
   <description>The signal_logger_core package</description>
-
   <url type="website">https://bitbucket.org/leggedrobotics/signal_logger</url>
+  
   <maintainer email="gehrinch@ethz.ch">Christian Gehring</maintainer>
   <maintainer email="bellicoso@mavt.ethz.ch">Dario Bellicoso</maintainer>
+  <maintainer email="gabriel.hottiger@mavt.ethz.ch">Gabriel Hottiger</maintainer>
+  
   <author email="gabriel.hottiger@mavt.ethz.ch">Gabriel Hottiger</author>
   <author email="gehrinch@ethz.ch">Christian Gehring</author>
   <author email="bellicoso@mavt.ethz.ch">Dario Bellicoso</author>

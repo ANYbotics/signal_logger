@@ -1,11 +1,10 @@
-/*
- * yaml_helper.hpp
- *
- *  Created on: Oct 3, 2016
- *      Author: Hersh(https://github.com/hersh), Gabriel Hottiger
+/*!
+ * @file     yaml_helper.hpp
+ * @author   Hersh(https://github.com/hersh), Gabriel Hottiger
+ * @date     Oct 3, 2016
+ * @brief    Ordered yaml write. Resolves open issue on https://github.com/jbeder/yaml-cpp/issues/169.
  */
-// Resolves open issue on https://github.com/jbeder/yaml-cpp/issues/169
-// The following code is also taken from there!
+//! The following code is also taken from there!
 
 #pragma once
 

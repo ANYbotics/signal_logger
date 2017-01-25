@@ -1,8 +1,8 @@
-/*
- * SignalLoggerNone.hpp
- *
- *  Created on: Oct 10, 2016
- *      Author: Gabriel Hottiger
+/*!
+ * @file     SignalLoggerNone.hpp
+ * @author   Gabriel Hottiger
+ * @date     Oct 10, 2016
+ * @brief    Empty implementation of the signal logger
  */
 
 #pragma once

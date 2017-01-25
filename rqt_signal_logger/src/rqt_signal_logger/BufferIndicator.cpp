@@ -1,10 +1,9 @@
-/*
- * BufferIndicator.cpp
- *
- *  Created on: October 2016
- *      Author: Gabriel Hottiger
- */
-
+/*!
+* @file     BufferIndicator.cpp
+* @author   Gabriel Hottiger
+* @date     October 10, 2016
+* @brief    Indicator for number of read/unread items.
+*/
 // rqt_signal_logger
 #include "rqt_signal_logger/BufferIndicator.hpp"
 
