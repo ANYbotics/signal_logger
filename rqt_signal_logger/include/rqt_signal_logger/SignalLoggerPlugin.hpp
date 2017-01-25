@@ -1,9 +1,9 @@
-/*
- * SignalLoggerPlugin.hpp
- *
- *  Created on: September 2016
- *      Author: Gabriel Hottiger
- */
+/*!
+* @file     SignalLoggerPlugin.hpp
+* @author   Gabriel Hottiger, Samuel Bachmann
+* @date     October 10, 2016
+* @brief    Signal Logger Rqt plugin.
+*/
 
 #pragma once
 

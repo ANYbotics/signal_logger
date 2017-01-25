@@ -5,6 +5,7 @@
   <description>The signal_logger package</description>
 
   <url type="website">https://bitbucket.org/leggedrobotics/signal_logger</url>
+  <maintainer email="gabriel.hottiger@mavt.ethz.ch">Gabriel Hottiger</maintainer>
   <maintainer email="gehrinch@ethz.ch">Christian Gehring</maintainer>
   <maintainer email="bellicoso@mavt.ethz.ch">Dario Bellicoso</maintainer>
   <author email="gabriel.hottiger@mavt.ethz.ch">Gabriel Hottiger</author>

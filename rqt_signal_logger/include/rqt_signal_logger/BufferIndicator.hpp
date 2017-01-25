@@ -1,8 +1,8 @@
-/*
- * BufferIndicator.hpp
- *
- *  Created on: October 2016
- *      Author: Gabriel Hottiger
+ /*!
+ * @file     BufferIndicator.hpp
+ * @author   Gabriel Hottiger
+ * @date     October 10, 2016
+ * @brief    Indicator for number of read/unread items.
  */
 
 #pragma once

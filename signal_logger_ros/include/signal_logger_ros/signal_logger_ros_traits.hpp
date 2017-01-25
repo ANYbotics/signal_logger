@@ -1,8 +1,8 @@
-/*
- * signal_logger_ros_traits.hpp
- *
- *  Created on: Feb 21, 2015
- *      Author: C. Dario Bellicoso, Christian Gehring
+/*!
+ * @file     signal_logger_ros_traits.hpp
+ * @author   C. Dario Bellicoso, Gabriel Hottiger, Christian Gehring
+ * @date     Feb 21, 2015
+ * @brief    Message update traits for all supported types.
  */
 
 #pragma once

@@ -1,8 +1,9 @@
-/*
- * SignalLoggerRos.cpp
- *
- *  Created on: Sep 23, 2016
- *      Author: Gabriel Hottiger
+/*!
+ * @file     SignalLoggerRos.cpp
+ * @author   Gabriel Hottiger
+ * @date     Sep 23, 2016
+ * @brief    Implementation of a ROS signal logger. Provides necessary ROS communication.
+ *           Extends std logger with publishing and bag storing functionality.
  */
 
 #include "signal_logger_ros/SignalLoggerRos.hpp"
@@ -69,10 +70,14 @@ bool SignalLoggerRos::workerSaveData(const std::string & logFileName, signal_log
 
 bool SignalLoggerRos::getLoggerConfiguration(signal_logger_msgs::GetLoggerConfigurationRequest& req,
                                             signal_logger_msgs::GetLoggerConfigurationResponse& res) {
-  for(auto & elem : this->logElements_)
   {
-    res.log_element_names.push_back(elem.first);
+    boost::shared_lock<boost::shared_mutex> elementlock(elementsMutex_);
+    for(auto & elem : this->logElements_)
+    {
+      res.log_element_names.push_back(elem.first);
+    }
   }
+
   res.collect_frequency = updateFrequency_;
   res.logger_namespace = "/log";
   res.script_filepath = collectScriptFileName_;
@@ -160,6 +165,8 @@ bool SignalLoggerRos::loadLoggerScript(signal_logger_msgs::LoadLoggerScriptReque
 
 bool SignalLoggerRos::logElementtoMsg(const std::string & name, signal_logger_msgs::LogElement & msg)
 {
+  boost::shared_lock<boost::shared_mutex> elementlock(elementsMutex_);
+
   if( logElements_.find(name) == logElements_.end()) { return false; }
 
   msg.name = logElements_.at(name)->getName();
@@ -207,6 +214,8 @@ bool SignalLoggerRos::logElementtoMsg(const std::string & name, signal_logger_ms
 
 bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg)
 {
+  boost::unique_lock<boost::shared_mutex> elementlock(elementsMutex_);
+
   auto element_iterator  = logElements_.find(msg.name);
   if( element_iterator == logElements_.end()) { return false; }
 

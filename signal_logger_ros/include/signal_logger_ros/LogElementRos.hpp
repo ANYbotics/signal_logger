@@ -1,8 +1,8 @@
-/*
- * LogElementRos.hpp
- *
- *  Created on: Sep 22, 2016
- *      Author: Gabriel Hottiger
+/*!
+ * @file     LogElementRos.hpp
+ * @author   Gabriel Hottiger
+ * @date     Sep 22, 2016
+ * @brief    Implementation of a Log element for ros logging.
  */
 
 #pragma once
@@ -110,6 +110,13 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   //! Reads buffer and publishes data via ros
   void publishData(const signal_logger::LogElementBase<signal_logger::TimestampPair> & time, unsigned int nrCollectDataCalls) override
   {
+    {
+        std::unique_lock<std::mutex> lock(this->publishMutex_);
+        if (pub_.getNumSubscribers() == 0) {
+          return;
+        }
+    }
+
     if(this->noUnreadItemsInBuffer())
     {
       // Local vars
