@@ -2,7 +2,7 @@
  * signal_logger_std_traits.hpp
  *
  *  Created on: Sep 23, 2016
- *      Author: gabrielhottiger
+ *      Author: gabrielhottiger, Christian Gehring
  */
 
 #pragma once
@@ -228,6 +228,54 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if< std::is_b
         header, binary, data, name, divider, isBufferLooping, getEigenType);
   }
 };
+
+
+template <typename ValueType_, typename ContainerType_>
+struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_homogeneous_transformation<ValueType_>::value>::type> {
+  static void writeLogElementToStreams(std::stringstream* header,
+                                       std::stringstream* binary,
+                                       const std::vector<ContainerType_> & data,
+                                       const std::string & name,
+                                       const std::size_t divider,
+                                       const bool isBufferLooping,
+                                       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+  {
+
+    // Get underlying position type
+    auto getPositionType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getPosition()); };
+    sls_traits<typename ValueType_::Position, ContainerType_>::writeLogElementToStreams(
+        header, binary, data, name + "_position", divider, isBufferLooping, getPositionType);
+
+    // Get underlying rotation type
+    auto getOrientationType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getRotation()); };
+    sls_traits<typename ValueType_::Rotation, ContainerType_>::writeLogElementToStreams(
+        header, binary, data, name + "_orientation", divider, isBufferLooping, getOrientationType);
+  }
+};
+
+template <typename ValueType_, typename ContainerType_>
+struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_base_of<kindr::Twist<typename ValueType_::Scalar,typename ValueType_::PositionDiff,typename ValueType_::RotationDiff>,ValueType_>::value>::type> {
+  static void writeLogElementToStreams(std::stringstream* header,
+                                       std::stringstream* binary,
+                                       const std::vector<ContainerType_> & data,
+                                       const std::string & name,
+                                       const std::size_t divider,
+                                       const bool isBufferLooping,
+                                       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+  {
+
+    // Get underlying translational type
+    auto getPositionDiffType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getTranslationalVelocity()); };
+    sls_traits<typename ValueType_::PositionDiff, ContainerType_>::writeLogElementToStreams(
+        header, binary, data, name + "_linear", divider, isBufferLooping, getPositionDiffType);
+
+    // Get underlying rotational type
+    auto getRotationDiffType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getRotationalVelocity()); };
+    sls_traits<typename ValueType_::RotationDiff, ContainerType_>::writeLogElementToStreams(
+        header, binary, data, name + "_angular", divider, isBufferLooping, getRotationDiffType);
+  }
+};
+
 /********************************/
 
 /***************************************************
@@ -255,6 +303,10 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_v
         header, binary, data, name + "_at_position_in_" + positionFrame + "_frame", divider, isBufferLooping, getKindrPosition);
   }
 };
+
+
+
+
 #endif
 
 } /* namespace traits */

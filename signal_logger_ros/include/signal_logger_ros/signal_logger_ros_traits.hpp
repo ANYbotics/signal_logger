@@ -2,7 +2,7 @@
  * signal_logger_ros_traits.hpp
  *
  *  Created on: Feb 21, 2015
- *      Author: C. Dario Bellicoso
+ *      Author: C. Dario Bellicoso, Christian Gehring
  */
 
 #pragma once
@@ -12,6 +12,8 @@
 
 #include "geometry_msgs/WrenchStamped.h"
 #include "geometry_msgs/QuaternionStamped.h"
+#include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/TwistStamped.h"
 
 #include <std_msgs/Float32.h>
 
@@ -253,6 +255,23 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr:
   typedef typename slr_msg_traits<typename ValueType_::Implementation>::msgtypeConstPtr  msgtypeConstPtr;
 };
 
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_kindr_homogeneous_transformation<ValueType_>::value>::type>
+{
+  typedef geometry_msgs::PoseStamped         msgtype;
+  typedef geometry_msgs::PoseStampedPtr      msgtypePtr;
+  typedef geometry_msgs::PoseStampedConstPtr msgtypeConstPtr;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::Twist<typename ValueType_::Scalar,typename ValueType_::PositionDiff,typename ValueType_::RotationDiff>,ValueType_>::value>::type>
+{
+  typedef geometry_msgs::TwistStamped         msgtype;
+  typedef geometry_msgs::TwistStampedPtr      msgtypePtr;
+  typedef geometry_msgs::TwistStampedConstPtr msgtypeConstPtr;
+};
+/*******
+
 /********************************/
 
 /***************************************************
@@ -402,6 +421,42 @@ struct slr_update_traits<ValueType_, typename std::enable_if<std::is_base_of<kin
     slr_update_traits<typename ValueType_::Implementation>::updateMsg(&vectorPtr_->toImplementation(), msg, timeStamp);
   }
 };
+
+template <typename ValueType_>
+struct slr_update_traits<ValueType_, typename std::enable_if<is_kindr_homogeneous_transformation<ValueType_>::value>::type> {
+  static void updateMsg(const ValueType_* vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtypePtr msg,
+                        const ros::Time& timeStamp)
+  {
+    msg->header.stamp = timeStamp;
+    const kindr::RotationQuaternion<typename ValueType_::Scalar> orientation(vectorPtr_->getRotation());
+    msg->pose.orientation.w = orientation.w();
+    msg->pose.orientation.x = orientation.x();
+    msg->pose.orientation.y = orientation.y();
+    msg->pose.orientation.z = orientation.z();
+    msg->pose.position.x = vectorPtr_->getPosition().x();
+    msg->pose.position.y = vectorPtr_->getPosition().y();
+    msg->pose.position.z = vectorPtr_->getPosition().z();
+  }
+};
+
+template <typename ValueType_>
+struct slr_update_traits<ValueType_, typename std::enable_if<std::is_base_of<kindr::Twist<typename ValueType_::Scalar,typename ValueType_::PositionDiff,typename ValueType_::RotationDiff>,ValueType_>::value>::type> {
+  static void updateMsg(const ValueType_* vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtypePtr msg,
+                        const ros::Time& timeStamp)
+  {
+    msg->header.stamp = timeStamp;
+    msg->twist.linear.x = vectorPtr_->getTranslationalVelocity().x();
+    msg->twist.linear.y = vectorPtr_->getTranslationalVelocity().y();
+    msg->twist.linear.z = vectorPtr_->getTranslationalVelocity().z();
+    msg->twist.angular.x = vectorPtr_->getRotationalVelocity().x();
+    msg->twist.angular.y = vectorPtr_->getRotationalVelocity().y();
+    msg->twist.angular.z = vectorPtr_->getRotationalVelocity().z();
+  }
+
+};
+
 /********************************/
 
 /***************************************************
