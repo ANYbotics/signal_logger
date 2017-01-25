@@ -1,8 +1,8 @@
-/*
- * LogElementStd.hpp
- *
- *  Created on: Sep 22, 2016
- *      Author: Gabriel Hottiger
+/*!
+ * @file     LogElementStd.hpp
+ * @author   Gabriel Hottiger
+ * @date     Sep 22, 2016
+ * @brief    Implementation of a Log element for std logging. Save data to binary file.
  */
 
 #pragma once

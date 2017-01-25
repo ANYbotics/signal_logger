@@ -1,8 +1,9 @@
-/*
- * SignalLoggerRos.hpp
- *
- *  Created on: Sep 23, 2016
- *      Author: Gabriel Hottiger
+/*!
+ * @file     SignalLoggerRos.hpp
+ * @author   Gabriel Hottiger
+ * @date     Sep 23, 2016
+ * @brief    Implementation of a ROS signal logger. Provides necessary ROS communication.
+ *           Extends std logger with publishing and bag storing functionality.
  */
 
 #pragma once

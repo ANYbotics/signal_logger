@@ -1,7 +1,8 @@
-/**
- * @file 	  signal_logger.cpp
- * @author 	Christian Gehring, C. Dario Bellicoso, Gabriel Hottiger
- * @date		  June 26, 2013
+/*!
+ * @file     signal_logger.cpp
+ * @author   Christian Gehring, C. Dario Bellicoso, Gabriel Hottiger
+ * @date     June 23, 2013
+ * @brief    Providing add function depending on current logger type.
  */
 
 // signal_logger

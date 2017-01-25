@@ -1,8 +1,8 @@
-/*
- * SignalLoggerBase.hpp
- *
- *  Created on: Sep 26, 2016
- *      Author: Gabriel Hottiger
+/*!
+ * @file     SignalLoggerBase.hpp
+ * @author   Gabriel Hottiger, Christian Gehring
+ * @date     Sep 26, 2016
+ * @brief    Base class for signal loggers.
  */
 
 #pragma once

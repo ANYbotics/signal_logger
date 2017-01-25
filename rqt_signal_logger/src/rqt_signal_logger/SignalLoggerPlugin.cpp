@@ -1,10 +1,9 @@
-/*
- * SignalLoggerPlugin.cpp
- *
- *  Created on: August 2016
- *      Author: Christian Gehring
- */
-
+/*!
+* @file     SignalLoggerPlugin.cpp
+* @author   Gabriel Hottiger, Samuel Bachmann
+* @date     October 10, 2016
+* @brief    Signal Logger Rqt plugin.
+*/
 // rqt_signal_logger
 #include "rqt_signal_logger/SignalLoggerPlugin.hpp"
 

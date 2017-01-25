@@ -4,6 +4,7 @@
   <version>0.0.1</version>
   <description>The rqt_signal_logger package</description>
 
+  <maintainer email="gabriel.hottiger@mavt.ethz.ch">Gabriel Hottiger</maintainer>
   <maintainer email="gehrinch@ethz.ch">Christian Gehring</maintainer>
   <author email="gabriel.hottiger@mavt.ethz.ch">Gabriel Hottiger</author>
   <author email="gehrinch@ethz.ch">Christian Gehring</author>

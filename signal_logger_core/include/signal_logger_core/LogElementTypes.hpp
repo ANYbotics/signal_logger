@@ -1,8 +1,8 @@
-/*
- * LogElementTypes.hpp
- *
- *  Created on: Sep 28, 2016
- *      Author: Gabriel Hottiger
+/*!
+ * @file     LogElementTypes.hpp
+ * @author   Gabriel Hottiger
+ * @date     Sep 28, 2016
+ * @brief    List of supported non-STL types.
  */
 
 #pragma once

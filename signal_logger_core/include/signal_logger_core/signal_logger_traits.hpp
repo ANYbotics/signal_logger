@@ -1,3 +1,10 @@
+/*!
+ * @file     signal_logger_traits.hpp
+ * @author   Gabriel Hottiger, Christian Gehring
+ * @date     Sep 28, 2016
+ * @brief    Traits for the supported non-STL types.
+ */
+
 #pragma once
 
 // signal logger

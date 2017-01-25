@@ -1,8 +1,8 @@
-/*
- * signal_logger_std_traits.hpp
- *
- *  Created on: Sep 23, 2016
- *      Author: gabrielhottiger, Christian Gehring
+/*!
+ * @file     signal_logger_std_traits.hpp
+ * @author   Gabriel Hottiger, Christian Gehring
+ * @date     Sep 23, 2016
+ * @brief    Write to binary file traits for all supported types.
  */
 
 #pragma once

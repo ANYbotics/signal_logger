@@ -1,9 +1,10 @@
-/*
- * LogElement.hpp
- *
- *  Created on: October 2016
- *      Author: Gabriel Hottiger
+ /*!
+ * @file     LogElement.hpp
+ * @author   Gabriel Hottiger, Samuel Bachmann
+ * @date     October 10, 2016
+ * @brief    Log element entry in the list.
  */
+
 
 #pragma once
 

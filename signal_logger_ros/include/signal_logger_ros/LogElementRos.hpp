@@ -1,8 +1,8 @@
-/*
- * LogElementRos.hpp
- *
- *  Created on: Sep 22, 2016
- *      Author: Gabriel Hottiger
+/*!
+ * @file     LogElementRos.hpp
+ * @author   Gabriel Hottiger
+ * @date     Sep 22, 2016
+ * @brief    Implementation of a Log element for ros logging.
  */
 
 #pragma once
