@@ -194,12 +194,15 @@ class SignalLoggerBase {
   //! Corresponding time log element
   std::shared_ptr<signal_logger::LogElementBase<signal_logger::TimestampPair>> timeElement_;
   //! Mutexes
-  boost::shared_mutex elementsToAddMutex_;
-  boost::shared_mutex elementsMutex_;
-  boost::shared_mutex timeMutex_;
-  std::mutex scriptMutex_;
-  std::mutex collectMutex_;
-  std::mutex publishMutex_;
+  std::mutex startLoggerMutex_;
+  std::mutex updateLoggerMutex_;
+  std::mutex collectDataMutex_;
+  std::mutex saveDataMutex_;
+  std::mutex publishDataMutex_;
+
+  boost::shared_mutex elementsMapMutex_;
+  boost::shared_mutex newElementsMapMutex_;
+  boost::shared_mutex timeElementMutex_;
 
  private:
   //! Comparison operator, get element with largest scaled buffer size

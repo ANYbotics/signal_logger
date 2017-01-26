@@ -48,7 +48,7 @@ class SignalLoggerStd : public signal_logger::SignalLoggerBase
     std::string elementName = std::string{signal_logger::SignalLoggerBase::LOGGER_DEFAULT_PREFIX} + "/" + group + "/" + name;
     elementName.erase(std::unique(elementName.begin(), elementName.end(), signal_logger::both_slashes()), elementName.end());
     {
-      boost::unique_lock<boost::shared_mutex> elementlock(elementsToAddMutex_);
+      boost::unique_lock<boost::shared_mutex> lock(newElementsMapMutex_);
       logElementsToAdd_[elementName].reset(new signal_logger_std::LogElementStd<ValueType_>(var, elementName , unit, divider, action,
                                                                                             bufferSize, bufferType, &headerStream_, &dataStream_));
     }

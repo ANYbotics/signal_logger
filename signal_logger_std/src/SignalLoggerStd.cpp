@@ -71,7 +71,7 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, signal_log
 }
 
 bool SignalLoggerStd::resetTimeLogElement(signal_logger::BufferType buffertype, double maxLogTime) {
-
+  boost::unique_lock<boost::shared_mutex> uniqueTimeElementLock(timeElementMutex_);
   timeElement_.reset(new signal_logger_std::LogElementStd<signal_logger::TimestampPair>( &logTime_, loggerPrefix_ + std::string{"/time"},
                                                                                          "[s/ns]", 1, signal_logger::LogElementAction::SAVE,
                                                                                          maxLogTime*updateFrequency_, buffertype,

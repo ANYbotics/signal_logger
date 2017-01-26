@@ -71,7 +71,7 @@ bool SignalLoggerRos::workerSaveData(const std::string & logFileName, signal_log
 bool SignalLoggerRos::getLoggerConfiguration(signal_logger_msgs::GetLoggerConfigurationRequest& req,
                                             signal_logger_msgs::GetLoggerConfigurationResponse& res) {
   {
-    boost::shared_lock<boost::shared_mutex> elementlock(elementsMutex_);
+    boost::shared_lock<boost::shared_mutex> elementsMapLock(elementsMapMutex_);
     for(auto & elem : this->logElements_)
     {
       res.log_element_names.push_back(elem.first);
@@ -165,7 +165,7 @@ bool SignalLoggerRos::loadLoggerScript(signal_logger_msgs::LoadLoggerScriptReque
 
 bool SignalLoggerRos::logElementtoMsg(const std::string & name, signal_logger_msgs::LogElement & msg)
 {
-  boost::shared_lock<boost::shared_mutex> elementlock(elementsMutex_);
+  boost::shared_lock<boost::shared_mutex> elementsMapLock(elementsMapMutex_);
 
   if( logElements_.find(name) == logElements_.end()) { return false; }
 
@@ -211,7 +211,7 @@ bool SignalLoggerRos::logElementtoMsg(const std::string & name, signal_logger_ms
 
 bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg)
 {
-  boost::unique_lock<boost::shared_mutex> elementlock(elementsMutex_);
+  boost::unique_lock<boost::shared_mutex> elementsMapLock(elementsMapMutex_);
 
   auto element_iterator  = logElements_.find(msg.name);
   if( element_iterator == logElements_.end()) { return false; }
