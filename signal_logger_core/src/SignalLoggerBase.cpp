@@ -256,20 +256,18 @@ bool SignalLoggerBase::publishData()
   // Try to lock elementsMutex
   boost::shared_lock<boost::shared_mutex> lock(elementsMutex_, boost::try_to_lock);
   if(lock) {
-
-    // Lock publish mutex
-    std::unique_lock<std::mutex> lockPublish(publishMutex_);
-
-    // Publish data from buffer
-    for(auto & elem : enabledElements_)
-    {
-
-      if(elem.second->second->isPublished())
+    boost::shared_lock<boost::shared_mutex> lockTime(timeMutex_, boost::try_to_lock);
+    if(lockTime) {
+      // Publish data from buffer
+      for(auto & elem : enabledElements_)
       {
-        elem.second->second->publishData(*timeElement_, noCollectDataCalls_);
+
+        if(elem.second->second->isPublished())
+        {
+          elem.second->second->publishData(*timeElement_, noCollectDataCalls_);
+        }
       }
     }
-
   }
 
   return true;
@@ -537,45 +535,43 @@ bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
   // Copy general stuff
   noCollectDataCallsCopy_ = noCollectDataCalls_.load();
 
-  boost::upgrade_lock<boost::shared_mutex> upgradeElementlock(elementsMutex_);
-
-  // Copy data from buffer
-  for(auto & elem : enabledElements_)
   {
-    if(elem.second->second->isSaved())
+    boost::upgrade_lock<boost::shared_mutex> upgradeElementlock(elementsMutex_);
+
+    // Copy data from buffer
+    for(auto & elem : enabledElements_)
     {
-      elem.second->second->createLocalBufferCopy();
-    }
-  }
-
-  boost::upgrade_lock<boost::shared_mutex> upgradeTimeLock(timeMutex_);
-  timeElement_->createLocalBufferCopy();
-
-  // Reset elements
-  {
-    // Wait for publish to complete
-    boost::upgrade_to_unique_lock<boost::shared_mutex> elementLock(upgradeElementlock);
-    boost::upgrade_to_unique_lock<boost::shared_mutex> timeLock(upgradeTimeLock);
-    std::unique_lock<std::mutex> lockPublish(publishMutex_);
-
-    // Reset buffers and counters
-    noCollectDataCalls_ = 0;
-
-    // Clear buffer for log elements
-    for(auto & elem : enabledElements_) {
-      elem.second->second->restartElement();
+      if(elem.second->second->isSaved())
+      {
+        elem.second->second->createLocalBufferCopy();
+      }
     }
 
-    // Clear buffer for time elements
-    timeElement_->restartElement();
+    boost::upgrade_lock<boost::shared_mutex> upgradeTimeLock(timeMutex_);
+    timeElement_->createLocalBufferCopy();
 
-    // Set flag -> collection can restart
-    isCopyingBuffer_ = false;
+    // Reset elements
+    {
+      // Wait for publish to complete
+      boost::upgrade_to_unique_lock<boost::shared_mutex> elementLock(upgradeElementlock);
+      boost::upgrade_to_unique_lock<boost::shared_mutex> timeLock(upgradeTimeLock);
+
+      // Reset buffers and counters
+      noCollectDataCalls_ = 0;
+
+      // Clear buffer for log elements
+      for(auto & elem : enabledElements_) {
+        elem.second->second->restartElement();
+      }
+
+      // Clear buffer for time elements
+      timeElement_->restartElement();
+
+      // Set flag -> collection can restart
+      isCopyingBuffer_ = false;
+    }
+
   }
-
-  // Release lock
-  upgradeElementlock.release();
-  upgradeTimeLock.release();
 
   // Start saving copy to file
   bool success = this->workerSaveData(filename, logfileType);
