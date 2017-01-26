@@ -538,8 +538,6 @@ bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
   noCollectDataCallsCopy_ = noCollectDataCalls_.load();
 
   boost::upgrade_lock<boost::shared_mutex> upgradeElementlock(elementsMutex_);
-  boost::upgrade_lock<boost::shared_mutex> upgradeTimeLock(timeMutex_);
-
 
   // Copy data from buffer
   for(auto & elem : enabledElements_)
@@ -549,6 +547,8 @@ bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
       elem.second->second->createLocalBufferCopy();
     }
   }
+
+  boost::upgrade_lock<boost::shared_mutex> upgradeTimeLock(timeMutex_);
   timeElement_->createLocalBufferCopy();
 
   // Reset elements
