@@ -51,7 +51,7 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, signal_log
   file_.open(logFileName, std::ios::out | std::ios::trunc);
   file_ << "# Log File: " << logFileName << std::endl;
   file_ << "# Time synchronization offset: " << std::endl;
-  file_ << noCollectDataCalls_.load() << std::endl;
+  file_ << noCollectDataCallsCopy_.load() << std::endl;
   file_ << "# Number of Log Elements: " << std::endl;
   std::string headerString = headerStream_.str();
   file_ << std::count(headerString.begin(), headerString.end(), '\n') << std::endl;
