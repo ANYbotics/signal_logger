@@ -16,8 +16,17 @@
   <property name="styleSheet">
    <string notr="true"/>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="margin">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <item>
@@ -120,7 +129,7 @@
       <widget class="QPushButton" name="pushButtonChangeAll">
        <property name="maximumSize">
         <size>
-         <width>60</width>
+         <width>16777215</width>
          <height>16777215</height>
         </size>
        </property>
@@ -133,7 +142,7 @@
       <widget class="QPushButton" name="pushButtonRefreshAll">
        <property name="maximumSize">
         <size>
-         <width>60</width>
+         <width>16777215</width>
          <height>16777215</height>
         </size>
        </property>
@@ -143,9 +152,6 @@
       </widget>
      </item>
     </layout>
-   </item>
-   <item>
-    <layout class="QGridLayout" name="gridParams"/>
    </item>
    <item>
     <spacer name="verticalSpacer">

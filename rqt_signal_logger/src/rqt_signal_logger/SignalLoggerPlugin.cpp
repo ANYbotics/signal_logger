@@ -252,7 +252,8 @@ void SignalLoggerPlugin::refreshAll() {
     updateFrequency_ = res.collect_frequency;
     configureUi_.pathEdit->setText(QString::fromStdString(res.script_filepath));
     varsUi_.ns->setText(QString::fromStdString(res.logger_namespace));
-    varsUi_.freq->setText(QString::fromStdString(std::to_string(updateFrequency_)+std::string{" [Hz]"}));
+    varsUi_.freq->setText(QString::number(updateFrequency_, 'f', 2) +
+                              QString::fromStdString(" [Hz]"));
 
     // Sort names alphabetically.
     std::sort(logElementNames_.begin(), logElementNames_.end(), compareNoCase );
@@ -578,6 +579,8 @@ void SignalLoggerPlugin::drawParamList() {
     varsUi_.verticalLayout->removeWidget(paramsWidget_);
     delete paramsWidget_;
   }
+  varsUi_.verticalSpacer->changeSize(1, 1, QSizePolicy::Fixed,
+                                     QSizePolicy::Fixed);
 
   paramsWidget_ = new QWidget();
   paramsWidget_->setObjectName(QString::fromUtf8("paramsWidget"));
