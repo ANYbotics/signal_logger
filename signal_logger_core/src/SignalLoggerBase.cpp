@@ -537,6 +537,10 @@ bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
   // Copy general stuff
   noCollectDataCallsCopy_ = noCollectDataCalls_.load();
 
+  boost::upgrade_lock<boost::shared_mutex> upgradeElementlock(elementsMutex_);
+  boost::upgrade_lock<boost::shared_mutex> upgradeTimeLock(timeMutex_);
+
+
   // Copy data from buffer
   for(auto & elem : enabledElements_)
   {
@@ -550,8 +554,8 @@ bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
   // Reset elements
   {
     // Wait for publish to complete
-    boost::unique_lock<boost::shared_mutex> elementlock(elementsMutex_);
-    boost::unique_lock<boost::shared_mutex> timeLock(timeMutex_);
+    boost::upgrade_to_unique_lock<boost::shared_mutex> elementLock(upgradeElementlock);
+    boost::upgrade_to_unique_lock<boost::shared_mutex> timeLock(upgradeTimeLock);
     std::unique_lock<std::mutex> lockPublish(publishMutex_);
 
     // Reset buffers and counters
@@ -568,6 +572,10 @@ bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
     // Set flag -> collection can restart
     isCopyingBuffer_ = false;
   }
+
+  // Release lock
+  upgradeElementlock.release();
+  upgradeTimeLock.release();
 
   // Start saving copy to file
   bool success = this->workerSaveData(filename, logfileType);
