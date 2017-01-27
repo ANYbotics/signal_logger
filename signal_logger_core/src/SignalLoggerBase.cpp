@@ -91,6 +91,7 @@ bool SignalLoggerBase::startLogger()
       // Still copying the data from the buffer, Wait in other thread until logger can be started.
       std::thread t1(&SignalLoggerBase::workerStartLogger, this);
       t1.detach();
+      return true;
     }
 
     // Shared lock on elements for read access
