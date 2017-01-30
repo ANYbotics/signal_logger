@@ -11,28 +11,13 @@
 // signal logger
 #include "signal_logger_core/LogElementTypes.hpp"
 #include "signal_logger_core/Buffer.hpp"
+#include "signal_logger_core/typedefs.hpp"
 
 // STL
 #include <string>
 #include <mutex>
 
 namespace signal_logger {
-
-//! Enum containing possible logging actions
-enum class LogElementAction: unsigned int
-{
-  SAVE_AND_PUBLISH = 0,/*!< 0 */
-  SAVE = 1,/*!< 1 */
-  PUBLISH = 2/*!< 2 */
-};
-
-//! Enum containing possible log file types
-enum class LogFileType: unsigned int
-{
-  BINARY = 0,/*!< 0 */
-  BAG = 1, /*!< 1 */
-  BINARY_AND_BAG = 2/*!< 2 */
-};
 
 //! Forward declaration of LogElementBase
 template <typename ValueType_>

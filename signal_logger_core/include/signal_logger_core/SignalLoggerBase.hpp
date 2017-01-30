@@ -11,6 +11,8 @@
 #include "signal_logger_core/LogElementTypes.hpp"
 #include "signal_logger_core/LogElementBase.hpp"
 #include "signal_logger_core/LogElementInterface.hpp"
+#include "signal_logger_core/SignalLoggerOptions.hpp"
+#include "signal_logger_core/typedefs.hpp"
 
 // message logger
 #include "message_logger/message_logger.hpp"
@@ -29,58 +31,27 @@
 
 namespace signal_logger {
 
-//! Helper for subclass add functions
-struct both_slashes {
-  bool operator()(char a, char b) const {
-    return a == '/' && b == '/';
-  }
-};
-
 //! Class that severs as base class for all the loggers
 class SignalLoggerBase {
- public:
-  //! Some logger element defaults
-  static constexpr const char* LOG_ELEMENT_DEFAULT_GROUP_NAME   = "/log/";
-  static constexpr const char* LOG_ELEMENT_DEFAULT_UNIT         = "-";
-  static constexpr std::size_t LOG_ELEMENT_DEFAULT_DIVIDER      = 1;
-  static constexpr LogElementAction LOG_ELEMENT_DEFAULT_ACTION  = LogElementAction::SAVE_AND_PUBLISH;
-  static constexpr std::size_t LOG_ELEMENT_DEFAULT_BUFFER_SIZE  = 1000;
-  static constexpr BufferType LOG_ELEMENT_DEFAULT_BUFFER_TYPE   = BufferType::LOOPING;
-
-  //! Some logger defaults
-  static constexpr const double LOGGER_DEFAULT_MAXIMUM_LOG_TIME   = 0.0;
-  static constexpr const double LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME   = 10.0;
-  static constexpr const char* LOGGER_DEFAULT_SCRIPT_FILENAME   = "logger.yaml";
-  static constexpr const char* LOGGER_DEFAULT_PREFIX            = "/log";
-
+ protected:
   //! Log element map types
-  using LogPair = std::pair<std::string, std::unique_ptr<signal_logger::LogElementInterface>>;
-  using LogElementMap = std::unordered_map<std::string, std::unique_ptr<signal_logger::LogElementInterface>>;
+  using LogPair = std::pair<std::string, std::unique_ptr<LogElementInterface>>;
+  using LogElementMap = std::unordered_map<std::string, std::unique_ptr<LogElementInterface>>;
   using LogElementMapIterator = LogElementMap::iterator;
-
- public:
-  //! Get the logger type at runtime
-  enum class LoggerType: unsigned int {
-    TypeNone = 0,/*!< 0 */
-    TypeStd  = 1,/*!< 1 */
-    TypeRos  = 2/*!< 2 */
-  };
 
  public:
   /** Constructor
    * @param loggerPrefix prefix to the logger variables
    */
-  SignalLoggerBase(const std::string & loggerPrefix = LOGGER_DEFAULT_PREFIX);
+  SignalLoggerBase();
 
   //! Destructor
   virtual ~SignalLoggerBase();
 
   /** Initializes the logger
-   * @param updateFrequency   Update frequency of the controller (frequency of collectLoggerData being called)
-   * @param maxLogTime        If a maximal log time is set, then the time buffer has fixed size
-   * @param logScriptFileName Filename of the log script, this specifies which topics shall be logged
+   * @param options Signal logger options
    */
-  virtual void initLogger(int updateFrequency, const double maxLogTime = LOGGER_DEFAULT_MAXIMUM_LOG_TIME, const std::string& collectScriptFileName = std::string{LOGGER_DEFAULT_SCRIPT_FILENAME});
+  virtual void initLogger(const SignalLoggerOptions& options);
 
   //! Starts the logger (enable collecting)
   virtual bool startLogger();
@@ -92,10 +63,10 @@ class SignalLoggerBase {
   virtual bool restartLogger();
 
   /** Update the logger (added variables are added) */
-  virtual bool updateLogger(bool updateScript = false);
+  virtual bool updateLogger();
 
-  //! Lock or unlock update logger
-  virtual void lockUpdate(bool lock = true);
+  /** Save logger script **/
+  virtual bool saveLoggerScript();
 
   //! Collect log data, read data and push it into the buffer
   virtual bool collectLoggerData();
@@ -114,11 +85,8 @@ class SignalLoggerBase {
   //! Cleanup logger
   virtual bool cleanup();
 
-  //! @return the logger type
-  virtual LoggerType getLoggerType() const = 0;
-
   //! @return the update frequency
-  int getUpdateFrequency() const { return updateFrequency_.load(); }
+  unsigned int getUpdateFrequency() const;
 
  protected:
   /** Reads collect script and enables all log data
@@ -141,7 +109,7 @@ class SignalLoggerBase {
    * @param buffertype type of the time buffer
    * @param maxLogTime maximal time logging
    */
-  virtual bool resetTimeLogElement(signal_logger::BufferType buffertype, double maxLogTime = LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME);
+  virtual bool resetTimeLogElement(signal_logger::BufferType buffertype, double maxLogTime);
 
   /** Returns the current time
    * @return current time
@@ -160,10 +128,31 @@ class SignalLoggerBase {
 
 
  protected:
+  //! Logger Options
+  SignalLoggerOptions options_;
+  //! Nr of calls to collect data
+  std::atomic_uint noCollectDataCalls_;
+  //! Copy of nr of calls to collect data for saving
+  std::atomic_uint noCollectDataCallsCopy_;
+
+  //-- Log Elements
+
+  //! Map of log elements (excluding time, elements added after last updateLogger() call)
+  LogElementMap logElements_;
+  //! Vector of iterators in logElements_ map
+  std::vector<LogElementMapIterator> enabledElements_;
+  //! Map of all log elements added since last call to updateLogger()
+  LogElementMap logElementsToAdd_;
+
+  //! Time variable
+  TimestampPair logTime_;
+  //! Corresponding time log element
+  std::shared_ptr<LogElementBase<TimestampPair>> timeElement_;
+
+  //-- Execution Flags
+
   //! Flag to check if logger is initialized
   std::atomic_bool isInitialized_;
-  //! Flag to lock update
-  std::atomic_bool isUpdateLocked_;
   //! Flag to collect data
   std::atomic_bool isCollectingData_;
   //! Flag to save data
@@ -172,28 +161,8 @@ class SignalLoggerBase {
   std::atomic_bool isCopyingBuffer_;
   //! Flag is starting in different thread
   std::atomic_bool isStarting_;
-  //! Nr of calls to collect data
-  std::atomic_uint noCollectDataCalls_;
-  std::atomic_uint noCollectDataCallsCopy_;
-  //! Collected data script filename
-  std::string collectScriptFileName_;
-  //! Rate at which collectLoggerData() is called
-  std::atomic_uint updateFrequency_;
-  //! Logging length
-  double maxLoggingTime_;
-  //! Logger prefix
-  std::string loggerPrefix_;
-  //! List of enable iterators
-  std::unordered_map<std::string, LogElementMapIterator> enabledElements_;
-  //! Map of all log elements
-  LogElementMap logElements_;
-  //! Map of all log elements to add
-  LogElementMap logElementsToAdd_;
-  //! Time variable
-  TimestampPair logTime_;
-  //! Corresponding time log element
-  std::shared_ptr<signal_logger::LogElementBase<signal_logger::TimestampPair>> timeElement_;
-  //! Mutexes
+
+  //-- Mutexes
   std::mutex startLoggerMutex_;
   std::mutex updateLoggerMutex_;
   std::mutex collectDataMutex_;
@@ -212,10 +181,10 @@ class SignalLoggerBase {
      *   @param j  second element to compare
      *   @return fun(i) < fun(j)
      */
-    bool operator() (const std::pair<std::string, LogElementMapIterator> & i, const std::pair<std::string, LogElementMapIterator> & j)
+    bool operator() (const LogElementMapIterator& i, const LogElementMapIterator& j)
     {
-      return (i.second->second->getDivider()*i.second->second->getBufferSize()) <
-             (j.second->second->getDivider()*j.second->second->getBufferSize());
+      return (i->second->getDivider()*i->second->getBufferSize()) <
+             (j->second->getDivider()*j->second->getBufferSize());
     }
   };
 

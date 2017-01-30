@@ -11,8 +11,8 @@
 
 namespace signal_logger_std {
 
-SignalLoggerStd::SignalLoggerStd(const std::string & loggerPrefix):
-        signal_logger::SignalLoggerBase(loggerPrefix),
+SignalLoggerStd::SignalLoggerStd():
+        signal_logger::SignalLoggerBase(),
         file_(),
         headerStream_(std::ostringstream::in | std::ostringstream::out),
         dataStream_(std::ios::in | std::ios::out | std::ios::binary)
@@ -41,9 +41,9 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, signal_log
 
   for(auto & elem : enabledElements_) {
 
-    if(elem.second->second->isCopySaved())
+    if(elem->second->isCopySaved())
     {
-      elem.second->second->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_, signal_logger::LogFileType::BINARY);
+      elem->second->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_, signal_logger::LogFileType::BINARY);
     }
   }
 
@@ -72,9 +72,9 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, signal_log
 
 bool SignalLoggerStd::resetTimeLogElement(signal_logger::BufferType buffertype, double maxLogTime) {
   boost::unique_lock<boost::shared_mutex> uniqueTimeElementLock(timeElementMutex_);
-  timeElement_.reset(new signal_logger_std::LogElementStd<signal_logger::TimestampPair>( &logTime_, loggerPrefix_ + std::string{"/time"},
+  timeElement_.reset(new signal_logger_std::LogElementStd<signal_logger::TimestampPair>( &logTime_, options_.loggerPrefix_ + std::string{"/time"},
                                                                                          "[s/ns]", 1, signal_logger::LogElementAction::SAVE,
-                                                                                         maxLogTime*updateFrequency_, buffertype,
+                                                                                         maxLogTime*options_.updateFrequency_, buffertype,
                                                                                          &headerStream_, &dataStream_));
   return true;
 }

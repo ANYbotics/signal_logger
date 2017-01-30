@@ -10,6 +10,7 @@
 // Signal logger
 #include "signal_logger_core/LogElementTypes.hpp"
 #include "signal_logger_core/signal_logger_traits.hpp"
+#include "signal_logger_core/typedefs.hpp"
 
 // Message logger
 #include "message_logger/message_logger.hpp"
@@ -28,15 +29,6 @@
 
 
 namespace signal_logger {
-
-//! Enum containing possible buffer types
-enum class BufferType: unsigned int
-{
-  FIXED_SIZE = 0,/*!< 0 */
-  LOOPING = 1,/*!< 1 */
-  EXPONENTIALLY_GROWING = 2/*!< 2 */
-};
-
 /** Buffer that stores all elements in a circular manner. Allows looping, thus overwriting
  *  old entries with newer ones, keeps count of the unread items, push and pop influence this count.
  *  If buffer is empty no elements can be popped, if buffer is full and not looping

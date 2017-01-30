@@ -54,9 +54,9 @@ bool SignalLoggerRos::workerSaveData(const std::string & logFileName, signal_log
 
   // Write bag file
   for(auto & elem : enabledElements_) {
-    if(elem.second->second->isCopySaved())
+    if(elem->second->isCopySaved())
     {
-      elem.second->second->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_, signal_logger::LogFileType::BAG);
+      elem->second->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_, signal_logger::LogFileType::BAG);
     }
   }
 
@@ -78,10 +78,10 @@ bool SignalLoggerRos::getLoggerConfiguration(signal_logger_msgs::GetLoggerConfig
     }
   }
 
-  res.collect_frequency = updateFrequency_;
+  res.collect_frequency = options_.updateFrequency_;
   res.logger_namespace = "/log";
-  res.script_filepath = collectScriptFileName_;
-  if(collectScriptFileName_.compare(0,1,"/") != 0)
+  res.script_filepath = options_.collectScriptFileName_;
+  if(options_.collectScriptFileName_.compare(0,1,"/") != 0)
   {
     res.script_filepath.insert(0, boost::filesystem::current_path().string() + std::string{"/"});
   }
@@ -219,11 +219,14 @@ bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg
   logElements_.at(msg.name)->setIsEnabled(msg.is_logged);
   if(msg.is_logged)
   {
-    enabledElements_.insert(std::pair<std::string, signal_logger::SignalLoggerBase::LogElementMapIterator>(msg.name, element_iterator));
+    enabledElements_.push_back(element_iterator);
   }
   else
   {
-    enabledElements_.erase(msg.name);
+    auto it = std::find(enabledElements_.begin(), enabledElements_.end(), element_iterator);
+    if(it != enabledElements_.end()) {
+      enabledElements_.erase(it);
+    }
   }
 
   logElements_.at(msg.name)->setDivider(msg.divider);

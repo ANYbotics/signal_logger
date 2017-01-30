@@ -49,11 +49,11 @@ class SignalLoggerNone : public SignalLoggerBase
   //! Stop and then restart the logger
   virtual bool restartLogger() { return true; }
 
-  /** Update the logger (added variables are added) */
-  virtual bool updateLogger(bool updateScript = false) { return true; }
+  //! Update the logger
+  virtual bool updateLogger() { return true; }
 
-  //! Lock or unlock update logger
-  virtual void lockUpdate(bool lock = true) { }
+  //! Save logger script
+  virtual bool saveLoggerScript() { return true; }
 
   //! Collect log data, read data and push it into the buffer
   virtual bool collectLoggerData() { return true; }
@@ -66,9 +66,6 @@ class SignalLoggerNone : public SignalLoggerBase
 
   //! Stop the logger and save all the buffered data into a log file
   virtual bool stopAndSaveLoggerData() { return true; }
-
-  //! @return the logger type
-  virtual LoggerType getLoggerType() const { return SignalLoggerBase::LoggerType::TypeNone; }
 
  protected:
   //! Saves the logger data in a file in a seperate thread
