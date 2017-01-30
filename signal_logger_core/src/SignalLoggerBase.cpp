@@ -57,7 +57,7 @@ void SignalLoggerBase::initLogger(const SignalLoggerOptions& options)
   // If lock can not be acquired because of saving ignore the call
   boost::unique_lock<boost::shared_mutex> tryInitLoggerLock(loggerMutex_, boost::try_to_lock);
   if(!tryInitLoggerLock && isSavingData_) {
-    MELO_WARN("Saving data while trying to initialize. Do noting!");
+    MELO_WARN("Saving data while trying to initialize. Do nothing!");
     return;
   }
 
@@ -160,7 +160,7 @@ bool SignalLoggerBase::stopLogger()
   // If lock can not be acquired because of saving ignore the call
   boost::unique_lock<boost::shared_mutex> tryStopLoggerLock(loggerMutex_, boost::try_to_lock);
   if(!tryStopLoggerLock && isSavingData_) {
-    MELO_WARN("Saving data while trying to stop logger. Do noting!");
+    MELO_WARN("Saving data while trying to stop logger. Do nothing!");
     return false;
   }
 
@@ -191,7 +191,7 @@ bool SignalLoggerBase::updateLogger() {
   // If lock can not be acquired because of saving ignore the call
   boost::unique_lock<boost::shared_mutex> tryUpdateLoggerLock(loggerMutex_, boost::try_to_lock);
   if(!tryUpdateLoggerLock && isSavingData_) {
-    MELO_WARN("Saving data while trying to update logger. Do noting!");
+    MELO_WARN("Saving data while trying to update logger. Do nothing!");
     return false;
   }
 
@@ -229,7 +229,7 @@ bool SignalLoggerBase::saveLoggerScript() {
   // If lock can not be acquired because of saving ignore the call
   boost::unique_lock<boost::shared_mutex> trySaveLoggerScriptLock(loggerMutex_, boost::try_to_lock);
   if(!trySaveLoggerScriptLock && isSavingData_) {
-    MELO_WARN("Saving data while trying to save logger script. Do noting!");
+    MELO_WARN("Saving data while trying to save logger script. Do nothing!");
     return false;
   }
 
