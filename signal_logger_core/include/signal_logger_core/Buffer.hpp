@@ -220,6 +220,12 @@ class Buffer
     noItems_ = size_type(0);
   }
 
+  //! Clear the buffer
+  void resetUnreadItems() {
+    std::unique_lock<std::mutex> lock(mutex_);
+    noUnreadItems_ = size_type(0);
+  }
+
  private:
   //! Disabled copy constructor
   Buffer(const Buffer&);
