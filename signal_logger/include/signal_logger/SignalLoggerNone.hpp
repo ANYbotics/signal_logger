@@ -38,38 +38,38 @@ class SignalLoggerNone : public SignalLoggerBase
    * @param updateFrequency   Update frequency of the controller (frequency of collectLoggerData being called)
    * @param logScriptFileName Filename of the log script, this specifies which topics shall be logged
    */
-  virtual void initLogger(int updateFrequency, const std::string& collectScriptFileName) { }
+  virtual void initLogger(const SignalLoggerOptions& options) override { }
 
   //! Starts the logger (enable collecting)
-  virtual bool startLogger() { return true; }
+  virtual bool startLogger() override { return true; }
 
   //! Stop the logger (disable collecting)
-  virtual bool stopLogger() { return true; }
+  virtual bool stopLogger() override { return true; }
 
   //! Stop and then restart the logger
-  virtual bool restartLogger() { return true; }
+  virtual bool restartLogger() override { return true; }
 
   //! Update the logger
-  virtual bool updateLogger() { return true; }
+  virtual bool updateLogger() override { return true; }
 
   //! Save logger script
-  virtual bool saveLoggerScript() { return true; }
+  virtual bool saveLoggerScript() override { return true; }
 
   //! Collect log data, read data and push it into the buffer
-  virtual bool collectLoggerData() { return true; }
+  virtual bool collectLoggerData() override { return true; }
 
   //! Publish a single data point of every element from the buffer
-  virtual bool publishData() { return true; }
+  virtual bool publishData() override { return true; }
 
   //! Save all the buffered data into a log file
-  virtual bool saveLoggerData() { return true; }
+  virtual bool saveLoggerData(LogFileType logfileType) override { return true; }
 
   //! Stop the logger and save all the buffered data into a log file
-  virtual bool stopAndSaveLoggerData() { return true; }
+  virtual bool stopAndSaveLoggerData() override { return true; }
 
  protected:
   //! Saves the logger data in a file in a seperate thread
-  virtual bool workerSaveData(const std::string & logFileName, LogFileType logfileType) { return true; };
+  virtual bool workerSaveData(const std::string & logFileName, LogFileType logfileType) override { return true; };
 
 };
 
