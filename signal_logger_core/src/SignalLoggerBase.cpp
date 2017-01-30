@@ -299,7 +299,7 @@ bool SignalLoggerBase::collectLoggerData()
     }
   }
   else {
-    MELO_WARN("[Signal Logger] Dropping collect data call!");
+    MELO_DEBUG("[Signal Logger] Dropping collect data call!");
   }
 
   return true;
