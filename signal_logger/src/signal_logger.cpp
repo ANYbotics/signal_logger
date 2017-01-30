@@ -54,6 +54,25 @@ template void add( const Eigen::Vector3d & var,
 //! Initialize logger with standard logger.
 std::shared_ptr<SignalLoggerBase> logger(new SignalLoggerNone());
 
+
+LoggerType getLoggerType() {
+  #ifdef SILO_USE_ROS
+  if( dynamic_cast<signal_logger_ros::SignalLoggerRos*>(logger.get()) != nullptr ) {
+    return LoggerType::TypeRos;
+  }
+  #endif
+
+  if( dynamic_cast<signal_logger_std::SignalLoggerStd*>(logger.get()) != nullptr ) {
+    return LoggerType::TypeStd;
+  }
+
+  if( dynamic_cast<signal_logger::SignalLoggerNone*>(logger.get()) != nullptr ) {
+    return LoggerType::TypeNone;
+  }
+
+  return LoggerType::TypeUnknown;
+}
+
 void setSignalLoggerNone() {
   logger.reset(new signal_logger::SignalLoggerNone());
 }

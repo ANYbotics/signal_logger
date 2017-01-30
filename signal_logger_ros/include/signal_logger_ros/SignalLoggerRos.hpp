@@ -10,7 +10,8 @@
 
 // signal logger
 #include "signal_logger_std/SignalLoggerStd.hpp"
-#include <signal_logger_ros/LogElementRos.hpp>
+#include "signal_logger_ros/LogElementRos.hpp"
+#include "signal_logger_core/typedefs.hpp"
 
 // msgs
 #include "signal_logger_msgs/GetLoggerConfiguration.h"
@@ -52,27 +53,33 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
   template<typename ValueType_>
   void add( const ValueType_ * const var,
             const std::string & name,
-            const std::string & group       = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME,
-            const std::string & unit        = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
-            const std::size_t divider       = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
-            const signal_logger::LogElementAction action   = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
-            const std::size_t bufferSize    = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
-            const signal_logger::BufferType bufferType     = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
+            const std::string & group                     = signal_logger::LOG_ELEMENT_DEFAULT_GROUP_NAME,
+            const std::string & unit                      = signal_logger::LOG_ELEMENT_DEFAULT_UNIT,
+            const std::size_t divider                     = signal_logger::LOG_ELEMENT_DEFAULT_DIVIDER,
+            const signal_logger::LogElementAction action  = signal_logger::LOG_ELEMENT_DEFAULT_ACTION,
+            const std::size_t bufferSize                  = signal_logger::LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
+            const signal_logger::BufferType bufferType    = signal_logger::LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
   {
-    std::string elementName = std::string{signal_logger::SignalLoggerBase::LOGGER_DEFAULT_PREFIX} + "/" + group + "/" + name;
+    std::string elementName = std::string{signal_logger::LOGGER_DEFAULT_PREFIX} + "/" + group + "/" + name;
     elementName.erase(std::unique(elementName.begin(), elementName.end(), signal_logger::both_slashes()), elementName.end());
     {
-      boost::unique_lock<boost::shared_mutex> elementlock(elementsToAddMutex_);
+      // Lock the logger (blocking!)
+      boost::unique_lock<boost::shared_mutex> addLoggerLock(loggerMutex_);
       logElementsToAdd_[elementName].reset(new LogElementRos<ValueType_>(var, elementName , unit, divider, action, bufferSize,
                                                                          bufferType, &headerStream_, &dataStream_, nh_, bagWriter_));
     }
   }
 
-  //! @return the logger type
-  virtual LoggerType getLoggerType() const { return SignalLoggerBase::LoggerType::TypeRos; }
+  //! Shutdown ros communication
+  virtual bool cleanup() override;
+
+  /** Returns the current time
+   * @return current time
+   */
+  virtual signal_logger::TimestampPair getCurrentTime() override;
 
   //! Save all the buffered data into a log file
-  virtual bool workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType);
+  virtual bool workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType) override;
 
   /** Get current logger configuration
    *  @param  req empty request
@@ -150,14 +157,6 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
    *  @return true iff successful
    */
   bool msgToLogElement(const signal_logger_msgs::LogElement & msg);
-
-  //! Shutdown ros communication
-  virtual bool cleanup();
-
-  /** Returns the current time
-   * @return current time
-   */
-  virtual signal_logger::TimestampPair getCurrentTime();
 
  private:
   //! ROS nodehandle
