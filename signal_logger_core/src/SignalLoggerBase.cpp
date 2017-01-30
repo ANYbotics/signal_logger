@@ -28,22 +28,22 @@
 namespace signal_logger {
 
 SignalLoggerBase::SignalLoggerBase():
-              options_(),
-              noCollectDataCalls_(0u),
-              noCollectDataCallsCopy_(0u),
-              logElements_(),
-              enabledElements_(),
-              logElementsToAdd_(),
-              logTime_(),
-              timeElement_(),
-              isInitialized_(false),
-              isCollectingData_(false),
-              isSavingData_(false),
-              isCopyingBuffer_(false),
-              isStarting_(false),
-              shouldPublish_(false),
-              loggerMutex_(),
-              saveLoggerDataMutex_()
+                  options_(),
+                  noCollectDataCalls_(0u),
+                  noCollectDataCallsCopy_(0u),
+                  logElements_(),
+                  enabledElements_(),
+                  logElementsToAdd_(),
+                  logTime_(),
+                  timeElement_(),
+                  isInitialized_(false),
+                  isCollectingData_(false),
+                  isSavingData_(false),
+                  isCopyingBuffer_(false),
+                  isStarting_(false),
+                  shouldPublish_(false),
+                  loggerMutex_(),
+                  saveLoggerDataMutex_()
 {
 }
 
@@ -54,8 +54,16 @@ SignalLoggerBase::~SignalLoggerBase()
 
 void SignalLoggerBase::initLogger(const SignalLoggerOptions& options)
 {
-  // Lock the logger (blocking!)
-  boost::unique_lock<boost::shared_mutex> initLoggerLock(loggerMutex_);
+  // If lock can not be acquired because of saving ignore the call
+  boost::unique_lock<boost::shared_mutex> tryInitLoggerLock(loggerMutex_, boost::try_to_lock);
+  if(!tryInitLoggerLock && isSavingData_) {
+    MELO_WARN("Saving data while trying to initialize. Do noting!");
+    return;
+  }
+
+  // Lock the logger if not locked yet (blocking!)
+  boost::unique_lock<boost::shared_mutex> initLoggerLock(loggerMutex_, boost::defer_lock);
+  if(!tryInitLoggerLock) { initLoggerLock.lock(); }
 
   // Assert corrupted configuration
   assert(options.updateFrequency_ > 0);
@@ -79,8 +87,19 @@ void SignalLoggerBase::initLogger(const SignalLoggerOptions& options)
 
 bool SignalLoggerBase::startLogger()
 {
-  // Lock the logger (blocking!)
-  boost::unique_lock<boost::shared_mutex> startLoggerLock(loggerMutex_);
+
+  // Delayed logger start if saving prevents lock of mutex
+  boost::unique_lock<boost::shared_mutex> tryStartLoggerLock(loggerMutex_, boost::try_to_lock);
+  if(!tryStartLoggerLock && isSavingData_) {
+    // Still copying the data from the buffer, Wait in other thread until logger can be started.
+    std::thread t1(&SignalLoggerBase::workerStartLogger, this);
+    t1.detach();
+    return true;
+  }
+
+  // Lock the logger if not locked yet (blocking!)
+  boost::unique_lock<boost::shared_mutex> startLoggerLock(loggerMutex_, boost::defer_lock);
+  if(!tryStartLoggerLock) { startLoggerLock.lock(); }
 
   // Warn the user on invalid request
   if(!isInitialized_  || isCollectingData_ || isStarting_)
@@ -99,7 +118,7 @@ bool SignalLoggerBase::startLogger()
 
   // If all elements are looping use a looping time buffer
   auto loopingElement = std::find_if(enabledElements_.begin(), enabledElements_.end(),
-    [] (const LogElementMapIterator& s) { return s->second->getBufferType() != BufferType::LOOPING; } );
+                                     [] (const LogElementMapIterator& s) { return s->second->getBufferType() != BufferType::LOOPING; } );
 
   if( loopingElement == enabledElements_.end() ) {
     timeElement_->setBufferType(BufferType::LOOPING);
@@ -138,8 +157,16 @@ bool SignalLoggerBase::stopLogger()
   // If publishData is running notify stop
   shouldPublish_ = false;
 
-  // Lock the logger (blocking!)
-  boost::unique_lock<boost::shared_mutex> stopLoggerLock(loggerMutex_);
+  // If lock can not be acquired because of saving ignore the call
+  boost::unique_lock<boost::shared_mutex> tryStopLoggerLock(loggerMutex_, boost::try_to_lock);
+  if(!tryStopLoggerLock && isSavingData_) {
+    MELO_WARN("Saving data while trying to stop logger. Do noting!");
+    return false;
+  }
+
+  // Lock the logger if not locked yet (blocking!)
+  boost::unique_lock<boost::shared_mutex> stopLoggerLock(loggerMutex_, boost::defer_lock);
+  if(!tryStopLoggerLock) { stopLoggerLock.lock(); }
 
   if(!isInitialized_ || !isCollectingData_)
   {
@@ -160,8 +187,17 @@ bool SignalLoggerBase::restartLogger()
 }
 
 bool SignalLoggerBase::updateLogger() {
-  // Lock the logger (blocking!)
-  boost::unique_lock<boost::shared_mutex> updateLoggerLock(loggerMutex_);
+
+  // If lock can not be acquired because of saving ignore the call
+  boost::unique_lock<boost::shared_mutex> tryUpdateLoggerLock(loggerMutex_, boost::try_to_lock);
+  if(!tryUpdateLoggerLock && isSavingData_) {
+    MELO_WARN("Saving data while trying to update logger. Do noting!");
+    return false;
+  }
+
+  // Lock the logger if not locked yet (blocking!)
+  boost::unique_lock<boost::shared_mutex> updateLoggerLock(loggerMutex_, boost::defer_lock);
+  if(!tryUpdateLoggerLock) { updateLoggerLock.lock(); }
 
   // Check if update logger call is valid
   if(!isInitialized_ || isCollectingData_ || isSavingData_)
@@ -190,8 +226,16 @@ bool SignalLoggerBase::updateLogger() {
 }
 
 bool SignalLoggerBase::saveLoggerScript() {
-  // Lock the logger (blocking!)
-  boost::unique_lock<boost::shared_mutex> saveLoggerScriptLock(loggerMutex_);
+  // If lock can not be acquired because of saving ignore the call
+  boost::unique_lock<boost::shared_mutex> trySaveLoggerScriptLock(loggerMutex_, boost::try_to_lock);
+  if(!trySaveLoggerScriptLock && isSavingData_) {
+    MELO_WARN("Saving data while trying to save logger script. Do noting!");
+    return false;
+  }
+
+  // Lock the logger if not locked yet (blocking!)
+  boost::unique_lock<boost::shared_mutex> saveLoggerScriptLock(loggerMutex_, boost::defer_lock);
+  if(!trySaveLoggerScriptLock) { saveLoggerScriptLock.lock(); }
 
   if( !saveDataCollectScript( std::string(LOGGER_DEFAULT_SCRIPT_FILENAME) ) ){
     MELO_ERROR("[Signal logger] Could not save logger script!");
@@ -293,11 +337,13 @@ bool SignalLoggerBase::publishData()
 
 bool SignalLoggerBase::saveLoggerData(LogFileType logfileType)
 {
+  // Make sure start stop are not called in the meantime
+  boost::shared_lock<boost::shared_mutex> saveLoggerDataLock(loggerMutex_);
+
   // Allow only single call to save logger data
   std::unique_lock<std::mutex> lockSaveData(saveLoggerDataMutex_, std::try_to_lock);
 
   if(lockSaveData) {
-
     if(!isInitialized_ || isSavingData_)
     {
       MELO_WARN("[Signal logger] Could not save data! %s%s", isSavingData_?" Already saving data!":"",
@@ -549,7 +595,7 @@ bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
 
   {
     // Lock the logger (blocking!)
-    boost::unique_lock<boost::shared_mutex> updateLoggerLock(loggerMutex_);
+    boost::unique_lock<boost::shared_mutex> workerSaveDataWrapperLock(loggerMutex_);
 
     // Copy general stuff
     noCollectDataCallsCopy_ = noCollectDataCalls_.load();

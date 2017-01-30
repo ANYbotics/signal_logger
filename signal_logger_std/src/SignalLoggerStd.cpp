@@ -36,14 +36,17 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, signal_log
   headerStream_.str(std::string());
   dataStream_.str(std::string());
 
-  // Fill streams
-  timeElement_->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_, signal_logger::LogFileType::BINARY);
+  {
+    boost::unique_lock<boost::shared_mutex> saveLoggerLock(loggerMutex_);
+    // Fill streams
+    timeElement_->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_, signal_logger::LogFileType::BINARY);
 
-  for(auto & elem : enabledElements_) {
+    for(auto & elem : enabledElements_) {
 
-    if(elem->second->isCopySaved())
-    {
-      elem->second->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_, signal_logger::LogFileType::BINARY);
+      if(elem->second->isCopySaved())
+      {
+        elem->second->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_, signal_logger::LogFileType::BINARY);
+      }
     }
   }
 
