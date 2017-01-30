@@ -57,7 +57,8 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
                   signal_logger_std::LogElementStd<ValueType_>(ptr, name, unit, divider, action, bufferSize, bufferType, headerStream, dataStream),
                   nh_(nh),
                   bagWriter_(bagWriter),
-                  pub_()
+                  pub_(),
+                  wasPublished_(false)
   {
     msg_.reset(new MsgType());
     msgSave_.reset(new MsgType());
@@ -111,10 +112,16 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   void publishData(const signal_logger::LogElementBase<signal_logger::TimestampPair> & time, unsigned int nrCollectDataCalls) override
   {
     {
-        std::unique_lock<std::mutex> lock(this->publishMutex_);
-        if (pub_.getNumSubscribers() == 0) {
-          return;
-        }
+      std::unique_lock<std::mutex> lock(this->publishMutex_);
+      if (pub_.getNumSubscribers() == 0) {
+        wasPublished_ = false;
+        return;
+      }
+    }
+
+    if(!wasPublished_) {
+      wasPublished_ = true;
+      this->buffer_.resetUnreadItems();
     }
 
     if(this->noUnreadItemsInBuffer())
@@ -180,6 +187,8 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   const std::shared_ptr<rosbag::Bag> & bagWriter_;
   //! ros publisher
   ros::Publisher pub_;
+  //! published before
+  std::atomic_bool wasPublished_;
   //! publisher mutex
   std::mutex publishMutex_;
   //! message pointer
