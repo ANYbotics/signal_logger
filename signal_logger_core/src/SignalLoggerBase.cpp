@@ -28,15 +28,22 @@
 namespace signal_logger {
 
 SignalLoggerBase::SignalLoggerBase():
-      options_(),
-      isInitialized_(false),
-      isCollectingData_(false),
-      isSavingData_(false),
-      isCopyingBuffer_(false),
-      isStarting_(false),
-      noCollectDataCalls_(0),
-      logElements_(),
-      logTime_()
+              options_(),
+              noCollectDataCalls_(0u),
+              noCollectDataCallsCopy_(0u),
+              logElements_(),
+              enabledElements_(),
+              logElementsToAdd_(),
+              logTime_(),
+              timeElement_(),
+              isInitialized_(false),
+              isCollectingData_(false),
+              isSavingData_(false),
+              isCopyingBuffer_(false),
+              isStarting_(false),
+              shouldPublish_(false),
+              loggerMutex_(),
+              saveLoggerDataMutex_()
 {
 }
 
@@ -47,14 +54,14 @@ SignalLoggerBase::~SignalLoggerBase()
 
 void SignalLoggerBase::initLogger(const SignalLoggerOptions& options)
 {
+  // Lock the logger (blocking!)
+  boost::unique_lock<boost::shared_mutex> initLoggerLock(loggerMutex_);
+
   // Assert corrupted configuration
   assert(options.updateFrequency_ > 0);
 
   // Set configuration
-  {
-    boost::unique_lock<boost::shared_mutex> lock(options_.mutex_);
-    options_ = options;
-  }
+  options_ = options;
 
   // Get time buffer type and logging time
   if(options_.maxLoggingTime_ == 0.0) {
@@ -67,81 +74,76 @@ void SignalLoggerBase::initLogger(const SignalLoggerOptions& options)
   // Notify user
   MELO_INFO("[Signal Logger] Initialized!");
   isInitialized_ = true;
+
 }
 
 bool SignalLoggerBase::startLogger()
 {
-  // Only allow one logger start at the same time
-  std::unique_lock<std::mutex> startLoggerLock(startLoggerMutex_, std::try_to_lock);
+  // Lock the logger (blocking!)
+  boost::unique_lock<boost::shared_mutex> startLoggerLock(loggerMutex_);
 
-  if(startLoggerLock) {
-
-    // Warn the user on invalid request
-    if(!isInitialized_  || isCollectingData_ || isStarting_)
-    {
-      MELO_WARN("[Signal logger] Could not starte!%s%s%s", !isInitialized_?" Not initialized!":"",
-          isCollectingData_?" Already running!":"", isStarting_?" Delayed logger start was already requested!":"");
-      return false;
-    }
-
-    if(isSavingData_) {
-      // Still copying the data from the buffer, Wait in other thread until logger can be started.
-      std::thread t1(&SignalLoggerBase::workerStartLogger, this);
-      t1.detach();
-      return true;
-    }
-
-    // Shared lock on elements for read access
-    boost::shared_lock<boost::shared_mutex> sharedLockElementsMap(elementsMapMutex_);
-
-    // If all elements are looping use a looping time buffer
-    auto loopingElement = std::find_if(enabledElements_.begin(), enabledElements_.end(),
-                                       [] (const LogElementMapIterator& s) { return s->second->getBufferType() != BufferType::LOOPING; } );
-    bool all_looping = ( loopingElement == enabledElements_.end());
-    {
-      // Unique lock on time since it is being changed, keep a shared lock on the elements map
-      boost::shared_lock<boost::shared_mutex> sharedLockTimeElement(timeElementMutex_);
-
-      if(all_looping) {
-        timeElement_->setBufferType(BufferType::LOOPING);
-        auto maxElement = std::max_element(enabledElements_.begin(), enabledElements_.end(), maxScaledBufferSize());
-        if(maxElement != enabledElements_.end()) {
-          const unsigned int timeBufferSize = (*maxElement)->second->getDivider() * (*maxElement)->second->getBufferSize();
-          timeElement_->setBufferSize(timeBufferSize);
-          MELO_INFO_STREAM("[Signal logger] Use Looping Buffer of size:" << timeBufferSize);
-        }
-      }
-      else {
-        if(options_.maxLoggingTime_ == 0.0) {
-          resetTimeLogElement(signal_logger::BufferType::EXPONENTIALLY_GROWING, LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME);
-        }
-        else {
-          resetTimeLogElement(signal_logger::BufferType::FIXED_SIZE, options_.maxLoggingTime_);
-        }
-      }
-
-      // Reset elements
-      timeElement_->restartElement();
-    }
-
-    for(auto & elem : enabledElements_) { elem->second->restartElement(); }
-
-    // Reset flags and data collection calls
-    isCollectingData_ = true;
-    noCollectDataCalls_ = 0;
-
+  // Warn the user on invalid request
+  if(!isInitialized_  || isCollectingData_ || isStarting_)
+  {
+    MELO_WARN("[Signal logger] Could not start!%s%s%s", !isInitialized_?" Not initialized!":"",
+        isCollectingData_?" Already running!":"", isStarting_?" Delayed logger start was already requested!":"");
+    return false;
   }
+
+  if(isSavingData_) {
+    // Still copying the data from the buffer, Wait in other thread until logger can be started.
+    std::thread t1(&SignalLoggerBase::workerStartLogger, this);
+    t1.detach();
+    return true;
+  }
+
+  // If all elements are looping use a looping time buffer
+  auto loopingElement = std::find_if(enabledElements_.begin(), enabledElements_.end(),
+    [] (const LogElementMapIterator& s) { return s->second->getBufferType() != BufferType::LOOPING; } );
+
+  if( loopingElement == enabledElements_.end() ) {
+    timeElement_->setBufferType(BufferType::LOOPING);
+    auto maxElement = std::max_element(enabledElements_.begin(), enabledElements_.end(), maxScaledBufferSize());
+    if(maxElement != enabledElements_.end()) {
+      const unsigned int timeBufferSize = (*maxElement)->second->getDivider() * (*maxElement)->second->getBufferSize();
+      timeElement_->setBufferSize(timeBufferSize);
+      MELO_INFO_STREAM("[Signal logger] Use Looping Buffer of size:" << timeBufferSize);
+    }
+  }
+  else {
+    if(options_.maxLoggingTime_ == 0.0) {
+      resetTimeLogElement(signal_logger::BufferType::EXPONENTIALLY_GROWING, LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME);
+    }
+    else {
+      resetTimeLogElement(signal_logger::BufferType::FIXED_SIZE, options_.maxLoggingTime_);
+    }
+  }
+
+  // Reset elements
+  timeElement_->restartElement();
+
+
+  for(auto & elem : enabledElements_) { elem->second->restartElement(); }
+
+  // Reset flags and data collection calls
+  isCollectingData_ = true;
+  shouldPublish_ = true;
+  noCollectDataCalls_ = 0;
 
   return true;
 }
 
 bool SignalLoggerBase::stopLogger()
 {
-  // Since we are only operating on atomic booleans this is thread save by default.
+  // If publishData is running notify stop
+  shouldPublish_ = false;
+
+  // Lock the logger (blocking!)
+  boost::unique_lock<boost::shared_mutex> stopLoggerLock(loggerMutex_);
+
   if(!isInitialized_ || !isCollectingData_)
   {
-    MELO_WARN("[Signal logger] Could not stop!%s%s", !isInitialized_?" Not initialized!":"",
-        !isCollectingData_?" Not running!":"");
+    MELO_WARN("[Signal logger] Could not stop!%s%s", !isInitialized_?" Not initialized!":"", !isCollectingData_?" Not running!":"");
     return false;
   }
 
@@ -152,49 +154,35 @@ bool SignalLoggerBase::stopLogger()
 
 bool SignalLoggerBase::restartLogger()
 {
-  return this->stopLogger() && this->startLogger();
+  // Mutex is locked internally
+  bool stopped = stopLogger();
+  return startLogger() && stopped;
 }
 
 bool SignalLoggerBase::updateLogger() {
+  // Lock the logger (blocking!)
+  boost::unique_lock<boost::shared_mutex> updateLoggerLock(loggerMutex_);
 
-  // Only allow one logger update at the same time
-  std::unique_lock<std::mutex> updateLoggerLock(updateLoggerMutex_, std::try_to_lock);
-
-  if(updateLoggerLock) {
-
-    // Check if update logger call is valid
-    if(!isInitialized_ || isCollectingData_ || isSavingData_)
-    {
-      MELO_WARN("[Signal logger] Could not update!%s%s%s", !isInitialized_?" Not initialized!":"",
-          isSavingData_?" Saving data!":"", isCollectingData_?" Collecting data!":"");
-      return false;
-    }
-
-    // Lock the element map while reading the file etc
-    boost::unique_lock<boost::shared_mutex> uniqueLockElements(elementsMapMutex_);
-
-    // Add log elements from temporary list
-    {
-      // Lock temporary element map
-      boost::unique_lock<boost::shared_mutex> uniqueLockElementsToAdd(newElementsMapMutex_);
-
-      for(auto & elemToAdd : logElementsToAdd_ ) {
-        // Transfer ownership to logElements
-        logElements_[elemToAdd.first] = std::unique_ptr<LogElementInterface>(std::move(elemToAdd.second));
-      }
-      // Clear elements
-      logElementsToAdd_.clear();
-    }
-
-    // Read the script
-    if( !readDataCollectScript(options_.collectScriptFileName_) ) {
-      MELO_ERROR("[Signal logger] Could not load logger script!");
-      return false;
-    }
+  // Check if update logger call is valid
+  if(!isInitialized_ || isCollectingData_ || isSavingData_)
+  {
+    MELO_WARN("[Signal logger] Could not update!%s%s%s", !isInitialized_?" Not initialized!":"",
+        isSavingData_?" Saving data!":"", isCollectingData_?" Collecting data!":"");
+    return false;
   }
-  else {
-    MELO_WARN_STREAM("[Signal Logger] The signal logger is already being updated by another thread." << std::endl <<
-                     " This update call is ignored, new elements are not added to the logger.");
+
+  // Add elements to list
+  for(auto & elemToAdd : logElementsToAdd_ ) {
+    // Transfer ownership to logElements
+    logElements_[elemToAdd.first] = std::unique_ptr<LogElementInterface>(std::move(elemToAdd.second));
+  }
+  // Clear elements
+  logElementsToAdd_.clear();
+
+  // Read the script
+  if( !readDataCollectScript(options_.collectScriptFileName_) ) {
+    MELO_ERROR("[Signal logger] Could not load logger script!");
+    return false;
   }
 
   return true;
@@ -202,6 +190,9 @@ bool SignalLoggerBase::updateLogger() {
 }
 
 bool SignalLoggerBase::saveLoggerScript() {
+  // Lock the logger (blocking!)
+  boost::unique_lock<boost::shared_mutex> saveLoggerScriptLock(loggerMutex_);
+
   if( !saveDataCollectScript( std::string(LOGGER_DEFAULT_SCRIPT_FILENAME) ) ){
     MELO_ERROR("[Signal logger] Could not save logger script!");
     return false;
@@ -211,10 +202,10 @@ bool SignalLoggerBase::saveLoggerScript() {
 
 bool SignalLoggerBase::collectLoggerData()
 {
-  // If you can not log at the given rate / collect logger data is called when the old collecting is still running drop the request
-  std::unique_lock<std::mutex> collectLock(collectDataMutex_, std::try_to_lock);
+  // Try lock logger for read (non blocking!)
+  boost::shared_lock<boost::shared_mutex> collectLoggerDataLock(loggerMutex_, boost::try_to_lock);
 
-  if(collectLock)
+  if(collectLoggerDataLock)
   {
     //! Check if logger is initialized
     if(!isInitialized_) { return false; }
@@ -225,19 +216,18 @@ bool SignalLoggerBase::collectLoggerData()
     // Is logger started?
     if(isCollectingData_)
     {
-      // Set current time
+      // Set current time (thread safe, since only used in init, start which have unique locks on the logger)
       logTime_ = this->getCurrentTime();
 
       // Check if time buffer is full when using a fixed size buffer
       if(timeElement_->getBufferType() == BufferType::FIXED_SIZE && timeElement_->noItemsInBuffer() == timeElement_->getBufferSize())
       {
         MELO_WARN("[Signal Logger] Stopped. Time buffer is full!");
+        // Free lock and stop logger
+        collectLoggerDataLock.unlock();
         this->stopLogger();
         return true;
       }
-
-      // Shared lock on elements
-      boost::shared_lock<boost::shared_mutex> sharedLockElementsMap(elementsMapMutex_);
 
       // Lock all mutexes for time synchronization
       for(auto & elem : enabledElements_)
@@ -247,7 +237,6 @@ bool SignalLoggerBase::collectLoggerData()
 
       // Update time
       {
-        boost::shared_lock<boost::shared_mutex> sharedLockTimeElement(timeElementMutex_);
         std::unique_lock<std::mutex> uniqueTimeElementLock(timeElement_->acquireMutex());
         timeElement_->collectData();
       }
@@ -261,6 +250,7 @@ bool SignalLoggerBase::collectLoggerData()
         elem->second->acquireMutex().unlock();
       }
 
+      // Iterate
       ++noCollectDataCalls_;
     }
   }
@@ -273,34 +263,38 @@ bool SignalLoggerBase::collectLoggerData()
 
 bool SignalLoggerBase::publishData()
 {
-  std::unique_lock<std::mutex> publishDataLock(publishDataMutex_, std::try_to_lock);
+  // Check if publishing is desired
+  if(!shouldPublish_) {
+    return true;
+  }
 
-  if(publishDataLock) {
-    // Only publish when shared access to element map is possible
-    boost::shared_lock<boost::shared_mutex> sharedElementMapLock(elementsMapMutex_, boost::try_to_lock);
-    if(sharedElementMapLock) {
+  // Try lock logger for read (non blocking!)
+  boost::shared_lock<boost::shared_mutex> publishDataLock(loggerMutex_, boost::try_to_lock);
 
-      // Publish data from buffer
-      for(auto & elem : enabledElements_)
-      {
-        if(elem->second->isPublished())
-        {
-          // Only publish as long time element can be locked
-          boost::shared_lock<boost::shared_mutex> sharedTimeElementLock(timeElementMutex_, boost::try_to_lock);
-          if(sharedTimeElementLock) {
-            elem->second->publishData(*timeElement_, noCollectDataCalls_);
-          }
+  if(publishDataLock)
+  {
+    // Publish data from buffer
+    for(auto & elem : enabledElements_)
+    {
+      // Publishing blocks the mutex for quite a long time, allow interference by stopLogger using atomic bool
+      if(shouldPublish_) {
+        if(elem->second->isPublished()) {
+          elem->second->publishData(*timeElement_, noCollectDataCalls_);
         }
+      }
+      else {
+        return true;
       }
     }
   }
+
   return true;
 }
 
 bool SignalLoggerBase::saveLoggerData(LogFileType logfileType)
 {
   // Allow only single call to save logger data
-  std::unique_lock<std::mutex> lockSaveData(saveDataMutex_, std::try_to_lock);
+  std::unique_lock<std::mutex> lockSaveData(saveLoggerDataMutex_, std::try_to_lock);
 
   if(lockSaveData) {
 
@@ -318,20 +312,24 @@ bool SignalLoggerBase::saveLoggerData(LogFileType logfileType)
     std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this, logfileType);
     t1.detach();
   }
+  else {
+    MELO_WARN("[Signal logger] Already saving to file!");
+  }
 
   return true;
 }
 
 bool SignalLoggerBase::stopAndSaveLoggerData()
 {
-  return this->stopLogger() && this->saveLoggerData();
+  // Mutex is locked internally
+  bool stopped = stopLogger();
+  return saveLoggerData() && stopped;
 }
 
 bool SignalLoggerBase::cleanup()
 {
-  // Wait until a unique access is guaranteed
-  boost::unique_lock<boost::shared_mutex> elementsMapLock(elementsMapMutex_);
-  boost::unique_lock<boost::shared_mutex> newElementsMapLock(newElementsMapMutex_);
+  // Lock the logger (blocking!)
+  boost::unique_lock<boost::shared_mutex> updateLoggerLock(loggerMutex_);
 
   // Publish data from buffer
   for(auto & elem : logElements_) { elem.second->cleanupElement(); }
@@ -343,12 +341,6 @@ bool SignalLoggerBase::cleanup()
   logElementsToAdd_.clear();
 
   return true;
-}
-
-
-unsigned int SignalLoggerBase::getUpdateFrequency() const {
-  boost::shared_lock<boost::shared_mutex> lock(options_.mutex_);
-  return options_.updateFrequency_;
 }
 
 bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
@@ -507,9 +499,7 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
 }
 
 bool SignalLoggerBase::resetTimeLogElement(signal_logger::BufferType buffertype, double maxLogTime) {
-
   // Reset time element
-  boost::unique_lock<boost::shared_mutex> uniqueTimeElementLock(timeElementMutex_);
   timeElement_.reset(new LogElementBase<TimestampPair>(&logTime_, options_.loggerPrefix_ + std::string{"/time"}, "[s/ns]", 1,
                                                        LogElementAction::SAVE, maxLogTime*options_.updateFrequency_, buffertype));
   return true;
@@ -558,32 +548,24 @@ bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
   isCopyingBuffer_ = true;
 
   {
-    // Synchronize with collect data thread
-    std::unique_lock<std::mutex> collectDataLock(collectDataMutex_);
-  }
+    // Lock the logger (blocking!)
+    boost::unique_lock<boost::shared_mutex> updateLoggerLock(loggerMutex_);
 
-  // Stop publishing dont allow update of the logger because at this stage it makes no sense
-  std::unique_lock<std::mutex> publishDataLock(publishDataMutex_);
-  std::unique_lock<std::mutex> updateLoggerLock(updateLoggerMutex_);
+    // Copy general stuff
+    noCollectDataCallsCopy_ = noCollectDataCalls_.load();
 
-  // Copy general stuff
-  noCollectDataCallsCopy_ = noCollectDataCalls_.load();
-
-  // Copy data from buffer
-  boost::shared_lock<boost::shared_mutex> sharedLockElementsMap(elementsMapMutex_);
-  for(auto & elem : enabledElements_)
-  {
-    if(elem->second->isSaved())
+    // Copy data from buffer
+    for(auto & elem : enabledElements_)
     {
-      elem->second->createLocalBufferCopy();
+      if(elem->second->isSaved())
+      {
+        elem->second->createLocalBufferCopy();
+      }
     }
-  }
 
-  boost::shared_lock<boost::shared_mutex> sharedLockTimeElement(timeElementMutex_);
-  timeElement_->createLocalBufferCopy();
+    // Copy time
+    timeElement_->createLocalBufferCopy();
 
-  // Reset elements
-  {
     // Reset buffers and counters
     noCollectDataCalls_ = 0;
 
@@ -619,7 +601,7 @@ bool SignalLoggerBase::workerStartLogger() {
       MELO_INFO("[Signal logger] Delayed logger start!");
       return startLogger();
     }
-    // Sleep for one timestep
+    // Sleep for one timestep (init is only allowed once. access of updateFrequency is ok)
     usleep( (1.0/options_.updateFrequency_) * 1e6 );
   }
 }

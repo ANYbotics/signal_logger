@@ -9,9 +9,6 @@
 // signal logger
 #include "signal_logger_core/typedefs.hpp"
 
-// Boost
-#include <boost/thread.hpp>
-
 // STL
 #include <string>
 
@@ -28,8 +25,7 @@ struct SignalLoggerOptions {
   : updateFrequency_(updateFrequency),
     maxLoggingTime_(maxLoggingTime),
     collectScriptFileName_(collectScriptFileName),
-    loggerPrefix_(loggerPrefix),
-    mutex_()
+    loggerPrefix_(loggerPrefix)
   {
 
   }
@@ -41,16 +37,16 @@ struct SignalLoggerOptions {
 
   }
 
-  //! Overload equals operator
-  SignalLoggerOptions& operator=(const SignalLoggerOptions& other)
-  {
-    // Leave mutex as is!
-    this->updateFrequency_ = other.updateFrequency_;
-    this->maxLoggingTime_ = other.maxLoggingTime_;
-    this->collectScriptFileName_ = other.collectScriptFileName_;
-    this->loggerPrefix_ = other.loggerPrefix_;
-    return *this;
-  }
+//  //! Overload equals operator
+//  SignalLoggerOptions& operator=(const SignalLoggerOptions& other)
+//  {
+//    // Leave mutex as is!
+//    this->updateFrequency_ = other.updateFrequency_;
+//    this->maxLoggingTime_ = other.maxLoggingTime_;
+//    this->collectScriptFileName_ = other.collectScriptFileName_;
+//    this->loggerPrefix_ = other.loggerPrefix_;
+//    return *this;
+//  }
 
   //! Rate at which collectLoggerData() is called
   unsigned int updateFrequency_;
@@ -60,8 +56,6 @@ struct SignalLoggerOptions {
   std::string collectScriptFileName_;
   //! Logger prefix
   std::string loggerPrefix_;
-  //! Mutex protecting logger options
-  mutable boost::shared_mutex mutex_;
 };
 
 }

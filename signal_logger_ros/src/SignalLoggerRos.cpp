@@ -31,6 +31,31 @@ SignalLoggerRos::~SignalLoggerRos()
   this->cleanup();
 }
 
+bool SignalLoggerRos::cleanup() {
+  signal_logger_std::SignalLoggerStd::cleanup();
+  getLoggerConfigurationService_.shutdown();
+  getLoggerElementService_.shutdown();
+  setLoggerElementService_.shutdown();
+  startLoggerService_.shutdown();
+  stopLoggerService_.shutdown();
+  saveLoggerDataService_.shutdown();
+  loadLoggerScriptService_.shutdown();
+  isLoggerRunningService_.shutdown();
+  nh_ = nullptr;
+  return true;
+}
+
+
+signal_logger::TimestampPair SignalLoggerRos::getCurrentTime() {
+  signal_logger::TimestampPair timeStamp;
+
+  // Get time in seconds and nanoseconds
+  ros::Time curr_time = ros::Time::now();
+  timeStamp.first = curr_time.sec;
+  timeStamp.second = curr_time.nsec;
+
+  return timeStamp;
+}
 
 bool SignalLoggerRos::workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType) {
 
@@ -71,17 +96,18 @@ bool SignalLoggerRos::workerSaveData(const std::string & logFileName, signal_log
 bool SignalLoggerRos::getLoggerConfiguration(signal_logger_msgs::GetLoggerConfigurationRequest& req,
                                             signal_logger_msgs::GetLoggerConfigurationResponse& res) {
   {
-    boost::shared_lock<boost::shared_mutex> elementsMapLock(elementsMapMutex_);
+    boost::shared_lock<boost::shared_mutex> getLoggerConfigurationLock(loggerMutex_);
     for(auto & elem : this->logElements_)
     {
       res.log_element_names.push_back(elem.first);
     }
+
+    res.collect_frequency = options_.updateFrequency_;
+    res.logger_namespace = "/log";
+    res.script_filepath = options_.collectScriptFileName_;
   }
 
-  res.collect_frequency = options_.updateFrequency_;
-  res.logger_namespace = "/log";
-  res.script_filepath = options_.collectScriptFileName_;
-  if(options_.collectScriptFileName_.compare(0,1,"/") != 0)
+  if(res.script_filepath.compare(0,1,"/") != 0)
   {
     res.script_filepath.insert(0, boost::filesystem::current_path().string() + std::string{"/"});
   }
@@ -165,7 +191,8 @@ bool SignalLoggerRos::loadLoggerScript(signal_logger_msgs::LoadLoggerScriptReque
 
 bool SignalLoggerRos::logElementtoMsg(const std::string & name, signal_logger_msgs::LogElement & msg)
 {
-  boost::shared_lock<boost::shared_mutex> elementsMapLock(elementsMapMutex_);
+  // Shared lock not modifying logger
+  boost::shared_lock<boost::shared_mutex> logElementtoMsgLock(loggerMutex_);
 
   if( logElements_.find(name) == logElements_.end()) { return false; }
 
@@ -211,7 +238,7 @@ bool SignalLoggerRos::logElementtoMsg(const std::string & name, signal_logger_ms
 
 bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg)
 {
-  boost::unique_lock<boost::shared_mutex> elementsMapLock(elementsMapMutex_);
+  boost::unique_lock<boost::shared_mutex> msgToLogElementLock(loggerMutex_);
 
   auto element_iterator  = logElements_.find(msg.name);
   if( element_iterator == logElements_.end()) { return false; }
@@ -264,34 +291,5 @@ bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg
 
   return true;
 }
-
-bool SignalLoggerRos::cleanup() {
-  signal_logger_std::SignalLoggerStd::cleanup();
-
-  getLoggerConfigurationService_.shutdown();
-  getLoggerElementService_.shutdown();
-  setLoggerElementService_.shutdown();
-  startLoggerService_.shutdown();
-  stopLoggerService_.shutdown();
-  saveLoggerDataService_.shutdown();
-  loadLoggerScriptService_.shutdown();
-  isLoggerRunningService_.shutdown();
-  nh_ = nullptr;
-  return true;
-}
-
-
-signal_logger::TimestampPair SignalLoggerRos::getCurrentTime() {
-  signal_logger::TimestampPair timeStamp;
-
-  // Get time in seconds and nanoseconds
-  ros::Time curr_time = ros::Time::now();
-  timeStamp.first = curr_time.sec;
-  timeStamp.second = curr_time.nsec;
-
-  return timeStamp;
-}
-
-
 
 } /* namespace signal_logger */

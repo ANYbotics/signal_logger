@@ -25,6 +25,7 @@
 
 // stl
 #include <mutex>
+#include <condition_variable>
 #include <atomic>
 #include <memory>
 #include <unordered_map>
@@ -85,9 +86,6 @@ class SignalLoggerBase {
   //! Cleanup logger
   virtual bool cleanup();
 
-  //! @return the update frequency
-  unsigned int getUpdateFrequency() const;
-
  protected:
   /** Reads collect script and enables all log data
    * @param scriptName filename of the logging script
@@ -126,6 +124,19 @@ class SignalLoggerBase {
    */
   bool workerStartLogger();
 
+  //! Comparison operator, get element with largest scaled buffer size
+  struct maxScaledBufferSize {
+    /*** Defines the comparison operator
+     *   @param i  first element to compare
+     *   @param j  second element to compare
+     *   @return fun(i) < fun(j)
+     */
+    bool operator() (const LogElementMapIterator& i, const LogElementMapIterator& j)
+    {
+      return (i->second->getDivider()*i->second->getBufferSize()) <
+             (j->second->getDivider()*j->second->getBufferSize());
+    }
+  };
 
  protected:
   //! Logger Options
@@ -161,32 +172,14 @@ class SignalLoggerBase {
   std::atomic_bool isCopyingBuffer_;
   //! Flag is starting in different thread
   std::atomic_bool isStarting_;
+  //! Flag if data should be published
+  std::atomic_bool shouldPublish_;
 
   //-- Mutexes
-  std::mutex startLoggerMutex_;
-  std::mutex updateLoggerMutex_;
-  std::mutex collectDataMutex_;
-  std::mutex saveDataMutex_;
-  std::mutex publishDataMutex_;
-
-  boost::shared_mutex elementsMapMutex_;
-  boost::shared_mutex newElementsMapMutex_;
-  boost::shared_mutex timeElementMutex_;
-
- private:
-  //! Comparison operator, get element with largest scaled buffer size
-  struct maxScaledBufferSize {
-    /*** Defines the comparison operator
-     *   @param i  first element to compare
-     *   @param j  second element to compare
-     *   @return fun(i) < fun(j)
-     */
-    bool operator() (const LogElementMapIterator& i, const LogElementMapIterator& j)
-    {
-      return (i->second->getDivider()*i->second->getBufferSize()) <
-             (j->second->getDivider()*j->second->getBufferSize());
-    }
-  };
+  //! Init, add, update, start, stop and cleanup should be called in sequence
+  boost::shared_mutex loggerMutex_;
+  //! Allow call to save logger data only once
+  std::mutex saveLoggerDataMutex_;
 
 };
 

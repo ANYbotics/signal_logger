@@ -63,14 +63,23 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
     std::string elementName = std::string{signal_logger::LOGGER_DEFAULT_PREFIX} + "/" + group + "/" + name;
     elementName.erase(std::unique(elementName.begin(), elementName.end(), signal_logger::both_slashes()), elementName.end());
     {
-      boost::unique_lock<boost::shared_mutex> lock(newElementsMapMutex_);
+      // Lock the logger (blocking!)
+      boost::unique_lock<boost::shared_mutex> addLoggerLock(loggerMutex_);
       logElementsToAdd_[elementName].reset(new LogElementRos<ValueType_>(var, elementName , unit, divider, action, bufferSize,
                                                                          bufferType, &headerStream_, &dataStream_, nh_, bagWriter_));
     }
   }
 
+  //! Shutdown ros communication
+  virtual bool cleanup() override;
+
+  /** Returns the current time
+   * @return current time
+   */
+  virtual signal_logger::TimestampPair getCurrentTime() override;
+
   //! Save all the buffered data into a log file
-  virtual bool workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType);
+  virtual bool workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType) override;
 
   /** Get current logger configuration
    *  @param  req empty request
@@ -148,14 +157,6 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
    *  @return true iff successful
    */
   bool msgToLogElement(const signal_logger_msgs::LogElement & msg);
-
-  //! Shutdown ros communication
-  virtual bool cleanup();
-
-  /** Returns the current time
-   * @return current time
-   */
-  virtual signal_logger::TimestampPair getCurrentTime();
 
  private:
   //! ROS nodehandle
