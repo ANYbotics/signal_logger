@@ -9,8 +9,8 @@ The log variable configuration GUI has several functionalities:
   <li> 'Freq'-Label ("500 Hz" in figure); the collect frequency of the logger </li>
   <li> 'Ns'-Label "/log" in figure); the namespace of the logger </li>
   <li> 'Logger Element List'; a list of all elements added to the logger</li>
-  <li> 'Change'-Button; Changes all elements in the logger.  </li>
-  <li> 'Refresh'-Button; Gets element information for all elements from the logger.  </li>
+  <li> 'Change All'-Button; Changes all elements in the logger.  </li>
+  <li> 'Refresh All'-Button; Gets element information for all elements from the logger.  </li>
 </ul>
 
 An element of the Logger Element List has the following entries:
@@ -39,11 +39,8 @@ The logger can be interfaced with three buttons:
   <li> 'Save Binary'-Button; Saves the logger data to a binary log file.</li>
   <li> 'Save Bag'-Button; Saves the logger data to a bag file.</li>
   <li> 'Save Both'-Button; Saves the logger data to both bag and binary file.</li>
-  <li> 'Namespace'-ComboBox; Namespace of the logger you want to edit.</li>
+  <li> 'Namespace'-LineEdit; Namespace of the logger you want to edit.</li>
 </ul>
-Note: The 'Namespace'-ComboBox is an editable combo box which allows adding of valid namespaces, this
-means that all services must be provided under that namespace. The list of valid
-namespaces is also stored when closing the plugin. Enter 'clear' to clear all namespaces.
 
 The second part of this GUI can be used to load/save data to a logger script.
 <ul>

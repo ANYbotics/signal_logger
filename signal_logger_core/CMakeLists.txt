@@ -29,7 +29,7 @@ catkin_package(
 ###########
 ## Build ##
 ###########
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_definitions(--std=c++11)
 include_directories(include)
 include_directories(${EIGEN3_INCLUDE_DIR})

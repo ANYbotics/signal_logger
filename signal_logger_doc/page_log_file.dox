@@ -2,7 +2,7 @@
 <H3>Naming convention</H3>
 The files are stored in the current working directory (when using ros, /home/$user/.ros/ ) with the following naming convention.
 \code{txt}
-d_#y#m#d_#H-#M-#S_#NR
+silo_#y#m#d_#H-#M-#S_#NR
 \endcode
 <ul>
   <li> <B>#y</B> year as a four-digit number</li>
@@ -16,15 +16,17 @@ d_#y#m#d_#H-#M-#S_#NR
 
 Example: The 113th dataset overall, recorded at September 13th 2016 at 12:13:49, would be stored as:
 \code{txt}
-d_20160913_12-13-49_00113
+silo_20160913_12-13-49_00113
 \endcode
 
 <H3>File structure</H3>
 
 <H4>Header</H4>
-The first line states the file name.
+The file starts with a warning that you should not edit the log file in a text-editor, since this could corrupt the binary data.
+
+The next line states the file name.
 \code{txt}
-# Log File: d_20160913_12-13-49_00113
+# Log File: silo_20160913_12-13-49_00113
 \endcode
 
 Then the total number of collect calls is provided for time synchronization of data originating from a looping buffer.
@@ -78,9 +80,5 @@ Considering our header:
   <li> The next 40 bytes are myDataC </li>
   <li> The last 50 bytes are myDataD </li>
 </ul>
-
-
-
-
 
 */

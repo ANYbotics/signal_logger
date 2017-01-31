@@ -4,7 +4,7 @@ project(signal_logger_doc)
 #--------------------------#
 # Documentation
 
-set(CMAKE_CXX_FLAGS "-std=c++11")
+add_definitions(-std=c++11)
 
 find_package(Doxygen)
 

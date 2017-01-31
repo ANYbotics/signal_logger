@@ -37,17 +37,26 @@ Three types of loggers are provided:
        /* Resetting the logger to type ros
         * -> Needs a pointer to a nodehandle (e.g. to advertise publishers)
         */
-       signal_logger::setSignalLoggerRos(&nh);
+        signal_logger::setSignalLoggerRos(&nh);
     \endcode
   </li>
 </ul>
 
-To initialize the logger you have to specify the collect frequency (frequency with which collectData() is called). Furthermore a
-maximal log time can be specified, s.t. the logger can allocate sufficient memory for the time log element. If 'maxLogTime' is zero
+
+
+To initialize the logger you have to call signal_logger::SignalLoggerBase::initLogger() with options of type signal_logger::SignalLoggerOptions.
+<ul>
+  <li>updateFrequency_: Frequency at which collectLoggerData() is called. (default: 0u)</li>
+  <li>maxLoggingTime_: Maximal log time for fixed size time buffer. If set to 0.0 expontentially growing time buffer is used. (default: signal_logger::LOGGER_DEFAULT_MAXIMUM_LOG_TIME)</li>
+  <li>collectScriptFileName_: File name of the data collection yaml script. Format is specified in the documentation (default: signal_logger::LOGGER_DEFAULT_SCRIPT_FILENAME)</li>
+  <li>loggerPrefix_: Prefix of the logger element names. (e.g. /log in /log/elementA)  (default: signal_logger::LOGGER_DEFAULT_PREFIX) </li>
+</ul>
+The maximal logging time is necessary s.t. the logger can allocate sufficient memory for the time log element. If 'maxLogTime' is zero
 a growing time buffer is initialized, else a fixed size time buffer of size (collectFrequency*maxLogTime) is allocated. If all elements
-are stored in buffers of looping type the time element is stored in a looping buffer. The third argument specifies a configuration yaml file.
+are stored in buffers of looping type the time element is stored in a looping buffer.
+
 \code{c}
-signal_logger::logger->initLogger(collectFrequency, maxLogTime, collectScriptFileName);
+signal_logger::logger->initLogger(options);
 \endcode
 
 <H3>Add variables to the logger</H3>
@@ -67,24 +76,25 @@ signal_logger::add(myVar, name, group, unit, divider, action, bufferSize, buffer
   <li> <I><B>bufferType:</B></I> The type of the buffer. (see signal_logger::BufferType)</li>
 </ul>
 
-However, this will have no effect until the update function signal_logger::SignalLoggerBase::updateLogger() is called.
+However, this will have no effect until the update function signal_logger::SignalLoggerBase::updateLogger() is called. Try to call this function at the end of the
+configuration, since this function will open a file stream and parse (a potentially big) yaml file. If you are using the signal_logger in combination with
+<a href="https://bitbucket.org/leggedrobotics/rocoma">rocoma</a> it is worthwhile to know that updateLogger() is called after the initialization of every "normal" controller.
 \code{c}
-signal_logger::logger->updateLogger(updateScript);
+signal_logger::logger->updateLogger();
 \endcode
-The update function loads the configuration yaml script (registered in the init function) and activates all the log elements specified in the file. The default configuration of the element is overwritten by the
-configuration specified by the yaml script. If <I>updateScript</I> is true, the yaml script is updated with all previously added logger elements, thus all elements are activated.
-
 
 <H3>Collect logger data</H3>
 The activated/enabled elements of the logger are collected when signal_logger::SignalLoggerBase::collectLoggerData() is called and the logger was started. It is required that this function is called with the 'collectFrequency'
-specified in the init function.
+specified in the init function. If you are using the signal_logger in combination with <a href="https://bitbucket.org/leggedrobotics/rocoma">rocoma</a> collectLoggerData is called after the advancing of every "normal" or
+"emergency" controller.
 \code{c}
 signal_logger::logger->collectLoggerData();
 \endcode
 
 
 <H3>Start/Stop the logger</H3>
-To start and stop the logger following functions are provided. When starting the logger the buffers are cleared.
+To start and stop the logger following functions are provided. When starting the logger the buffers are cleared. If you are using the signal_logger in combination with <a href="https://bitbucket.org/leggedrobotics/rocoma">rocoma</a>
+the logger is started on initialization and stopped in the pre-stop of every "normal" or "emergency" controller.
 \code{c}
 signal_logger::logger->startLogger();
 signal_logger::logger->stopLogger();
@@ -92,10 +102,11 @@ signal_logger::logger->restartLogger();
 \endcode
 
 <H3>Save the logger data</H3>
-The standard logger implements saving the data to a binary file. The saving is done in a different, detached thread.
-During the saving procedure no data is collected, when done, the buffer is flushed.
+The standard logger implements saving the data to a binary/bag file. The type of file can be selected by passing a signal_logger::LogFileType.
+The saving is done in a different, detached thread. As a first step the complete buffer data is copied and flushed.
+Then the logger can continue to collect data, while the copies are saved into a binary/bag file.
 \code{c}
-signal_logger::logger->saveLoggerData();
+signal_logger::logger->saveLoggerData(LogFileType::BINARY);
 signal_logger::logger->stopAndSaveLoggerData();
 \endcode
 
@@ -111,6 +122,13 @@ You should shutdown the signal logger in the destructor of your main application
 E.g the signal logger ros should shutdown all ros communication as long as the nodehandle is still valid.
 \code{c}
 signal_logger::logger->cleanup();
+\endcode
+
+<H3>Save logger script</H3>
+To generate a logger script you can call this function when the logger is setup properly.
+It will store the current logger configuration into a file located at the default location(signal_logger::LOGGER_DEFAULT_SCRIPT_FILENAME).
+\code{c}
+signal_logger::logger->saveLoggerScript();
 \endcode
 
 */

@@ -17,7 +17,12 @@ namespace signal_logger {
 //! Struct containing logger options
 struct SignalLoggerOptions {
 
-  //! Constructor
+  /** Constructor
+   * @param updateFrequency       Frequency at which collectLoggerData() is called. (default: 0u)
+   * @param maxLoggingTime        Maximal log time for fixed size time buffer. If set to 0.0 expontentially growing time buffer is used. (default: LOGGER_DEFAULT_MAXIMUM_LOG_TIME)
+   * @param collectScriptFileName File name of the data collection yaml script. Format is specified in the documentation (default: LOGGER_DEFAULT_SCRIPT_FILENAME)
+   * @param loggerPrefix          Prefix of the logger element names. (e.g. /log in /log/elementA)  (default: LOGGER_DEFAULT_PREFIX)
+  */
   SignalLoggerOptions(const unsigned int updateFrequency,
                       const double maxLoggingTime,
                       const std::string& collectScriptFileName,
@@ -37,20 +42,9 @@ struct SignalLoggerOptions {
 
   }
 
-//  //! Overload equals operator
-//  SignalLoggerOptions& operator=(const SignalLoggerOptions& other)
-//  {
-//    // Leave mutex as is!
-//    this->updateFrequency_ = other.updateFrequency_;
-//    this->maxLoggingTime_ = other.maxLoggingTime_;
-//    this->collectScriptFileName_ = other.collectScriptFileName_;
-//    this->loggerPrefix_ = other.loggerPrefix_;
-//    return *this;
-//  }
-
   //! Rate at which collectLoggerData() is called
   unsigned int updateFrequency_;
-  //! Logging length
+  //! Maximal log time for fixed size time buffer
   double maxLoggingTime_;
   //! Collected data script filename
   std::string collectScriptFileName_;
