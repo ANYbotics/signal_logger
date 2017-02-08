@@ -1,0 +1,25 @@
+function [ ] = genIndexVariables( logElements )
+%GENINDEXVARIABLES Summary of this function goes here
+%   Detailed explanation goes here
+% % generate index variables
+for k=1:length(logElements)
+    completeName = char(logElements(k).name);
+    completeName = completeName(5:end);
+    [startIndex,endIndex] = regexp(completeName ,'/');
+    
+    if ~isempty(endIndex)
+        strippedName = completeName(endIndex(end)+1:end);
+    else
+        strippedName = completeName;
+    end
+    
+    % hack
+    strippedName = strrep(completeName, '/', '_');
+    idxName = ['idx' strippedName];
+    disp([num2str(k) ' ' idxName]);
+    evalin('base', [' global ' idxName]);
+    evalin('base', [idxName '=' num2str(k) ';']);
+end
+
+end
+
