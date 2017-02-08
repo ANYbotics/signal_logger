@@ -20,7 +20,7 @@ function [logElements, timeSyncOffset] = loadLogFile(fname)
 %       time:    time vector matching a time to every data element. Left
 %                empty by this function
 %
-% Gabriel Hottiger, October 2016
+% Gabriel Hottiger, October 2016
 
 % read in the file name
 if ~exist('fname') || isempty(fname),
@@ -54,7 +54,7 @@ noElements = str2double(currentLine);
 fid = skipComments(fid, true);
 
 % read header
-header = textscan(fid,'%s %d %d %d %d', noElements);
+header = textscan(fid,'%s %d %d %d %d %s', noElements);
 
 % skip header comments
 fid = skipComments(fid, true);
@@ -68,11 +68,13 @@ for i=1:noElements
     logElements(i).noData = header{3}(i);
     logElements(i).divider = header{4}(i);
     logElements(i).isBufferLooping = header{5}(i);
-    logElements(i).dataType = strcat('uint', num2str( 8*logElements(i).noBytes ) );
+    logElements(i).dataType = header{6}{i};
     logElements(i).data = typecast( fread(fid, logElements(i).noData ,...
-        strcat('*uint', num2str( 8*logElements(i).noBytes ) ) ), ...
+        strcat('*', logElements(i).dataType) ), ...
          logElements(i).dataType);
-    logElements(i).time = struct('seconds', [], 'nanoseconds', []);
+    logElements(i).timeStruct = struct('seconds', [], 'nanoseconds', []);
+    logElements(i).systime = zeros(logElements(i).noData, 1);
+    logElements(i).time = zeros(logElements(i).noData, 1);
 end
 
 fclose(fid);

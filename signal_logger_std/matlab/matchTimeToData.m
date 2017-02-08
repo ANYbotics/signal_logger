@@ -23,8 +23,10 @@ for i=1:length(leOut)
         stopIdx = startIdx + leOut(i).divider*(leOut(i).noData - 1);
     end
 
-    leOut(i).time.seconds = leOut(sTimeIdx).data(startIdx:leOut(i).divider:stopIdx);
-    leOut(i).time.nanoseconds = leOut(nsTimeIdx).data(startIdx:leOut(i).divider:stopIdx);
+    leOut(i).timeStruct.seconds = leOut(sTimeIdx).data(startIdx:leOut(i).divider:stopIdx);
+    leOut(i).timeStruct.nanoseconds = leOut(nsTimeIdx).data(startIdx:leOut(i).divider:stopIdx);
+    leOut(i).systime = double(leOut(i).timeStruct.seconds) + double(leOut(i).timeStruct.nanoseconds)*1.0e-9;
+    leOut(i).time = leOut(i).systime - leOut(i).systime(1);
 end
 
 end
