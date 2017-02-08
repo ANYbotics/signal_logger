@@ -19,6 +19,51 @@ namespace traits {
 
 using namespace signal_logger::traits;
 
+// unknown types (such as long double)
+template<typename ValueType_, typename Enable_ = void>
+struct sls_typename_traits
+{
+  static std::string getTypeName() {
+    return std::string("unknown");
+  }
+};
+
+// double
+template<typename ValueType_>
+struct sls_typename_traits<ValueType_, typename std::enable_if<std::is_same<double, typename std::remove_cv<ValueType_>::type>::value>::type>
+{
+  static std::string getTypeName() {
+    return std::string("double");
+  }
+};
+
+// float
+template<typename ValueType_>
+struct sls_typename_traits<ValueType_, typename std::enable_if<std::is_same<float, typename std::remove_cv<ValueType_>::type>::value>::type>
+{
+  static std::string getTypeName() {
+    return std::string("single");
+  }
+};
+
+// integral unsigned types
+template<typename ValueType_>
+struct sls_typename_traits<ValueType_, typename std::enable_if<std::is_unsigned<ValueType_>::value && std::is_integral<ValueType_>::value>::type>
+{
+  static std::string getTypeName() {
+    return(std::string("uint") + std::to_string(8 * sizeof(ValueType_)));
+  }
+};
+
+// integral signed types
+template<typename ValueType_>
+struct sls_typename_traits<ValueType_, typename std::enable_if<std::is_signed<ValueType_>::value && std::is_integral<ValueType_>::value>::type>
+{
+  static std::string getTypeName() {
+    return(std::string("int") + std::to_string(8 * sizeof(ValueType_)));
+  }
+};
+
 // generic interface
 template<typename ValueType_, typename ContainerType_, typename Enable_ = void> struct sls_traits;
 
@@ -37,7 +82,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
     (*header) << name     << " " << sizeof(ValueType_) << " " << data.size() << " "
-              << divider  << " " << isBufferLooping         << std::endl;
+              << divider  << " " << isBufferLooping    << " " << sls_typename_traits<ValueType_>::getTypeName() << std::endl;
     for (const auto & value : data)
     {
       binary->write(reinterpret_cast<const char*>(accessor(&value)), sizeof(ValueType_) );

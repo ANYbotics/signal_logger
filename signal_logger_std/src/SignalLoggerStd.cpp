@@ -61,7 +61,7 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, signal_log
   file_ << "# Number of Log Elements: " << std::endl;
   std::string headerString = headerStream_.str();
   file_ << std::count(headerString.begin(), headerString.end(), '\n') << std::endl;
-  file_ << "# (Element Name) (Data Size In Bytes) (No Data Points) (Divider) (Buffer looping (1 or 0))" << std::endl;
+  file_ << "# (Element Name) (Data Size In Bytes) (No Data Points) (Divider) (Buffer looping (1 or 0)) (Data Type)" << std::endl;
   file_ << headerString; // Has and endl from the last element
   file_ << "# Binary Data" << std::endl;
   file_.close();
