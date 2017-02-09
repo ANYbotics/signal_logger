@@ -4,7 +4,7 @@ fName = getFilenameFromNumber(fNumber, ['/home/', getenv('LOGNAME'), '/.ros']);
 fprintf(['\nGot filename: ', fName, ' from number: ', num2str(fNumber)]);
 
 % Read data
-logElements = loadLogFile(fileName);
+logElements = loadLogFile(fName);
 fprintf(['\n\nLoaded data from binary file:', fName]);
 
 % Generate Index Variables
