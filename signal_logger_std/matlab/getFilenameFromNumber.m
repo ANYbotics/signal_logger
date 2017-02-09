@@ -18,6 +18,12 @@ for k=1:length(listingDirs)
         end
     end
 end
+
+if( isempty(fname) )
+    msg = strcat('File with number: ', fileNumberString ,' not found in directory: ', fileDir);
+    error(msg)
+end
+
 fname = [fileDir  '/' fname];
 
 end
