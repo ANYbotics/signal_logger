@@ -1,4 +1,4 @@
-function [logElements, timeSyncOffset] = loadLogFile(fname)
+function [logElements] = loadLogFile(fname)
 % [logElements] = loadLogFile(fname)
 %
 % This function loads a log data file and stores it into a vector of
@@ -17,8 +17,7 @@ function [logElements, timeSyncOffset] = loadLogFile(fname)
 %                        to be matched in inverse manor
 %       data:    uint64 vector containing the data (typecast this to
 %                correct type)
-%       time:    time vector matching a time to every data element. Left
-%                empty by this function
+%       time:    time vector matching a time to every data element.
 %
 % Gabriel Hottiger, October 2016
 
@@ -26,7 +25,8 @@ function [logElements, timeSyncOffset] = loadLogFile(fname)
 if ~exist('fname') || isempty(fname),
 	[fname, pathname] = uigetfile('*','Select Data File');
 	if (fname == 0),
-		return;
+		msg = 'No file selected.';
+        error(msg)
 	end;
 	% concatenate pathname and filename and open file
 	fname=strcat(pathname, fname);
@@ -35,7 +35,8 @@ end;
 % open as little-endian ("ieee-be" for big endian)
 fid=fopen(fname, 'r', 'ieee-le');
 if fid == -1,
-	return;
+    msg = strcat('File does not exist: ', fname);
+    error(msg)
 end;
 
 % skip comments
@@ -78,4 +79,8 @@ for i=1:noElements
 end
 
 fclose(fid);
+
+% Match time to data
+logElements = matchTimeToData(logElements, timeSyncOffset);
+
 end
