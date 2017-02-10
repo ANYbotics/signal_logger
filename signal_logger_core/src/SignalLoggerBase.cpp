@@ -109,7 +109,7 @@ bool SignalLoggerBase::startLogger()
     return false;
   }
 
-  if(isSavingData_) {
+  if(isCopyingBuffer_) {
     // Still copying the data from the buffer, Wait in other thread until logger can be started.
     std::thread t1(&SignalLoggerBase::workerStartLogger, this);
     t1.detach();
@@ -642,7 +642,7 @@ bool SignalLoggerBase::workerStartLogger() {
   isStarting_ = true;
 
   while(true) {
-    if(!isSavingData_) {
+    if(!isCopyingBuffer_) {
       isStarting_ = false;
       MELO_INFO("[Signal logger] Delayed logger start!");
       return startLogger();
