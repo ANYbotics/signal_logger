@@ -27,7 +27,11 @@ add_message_files(
    Float32Stamped.msg
    Int64Stamped.msg
    Int32Stamped.msg
+   Int16Stamped.msg
    Int8Stamped.msg
+   UInt64Stamped.msg
+   UInt32Stamped.msg
+   UInt16Stamped.msg
    UInt8Stamped.msg
    BoolStamped.msg
    CharStamped.msg
