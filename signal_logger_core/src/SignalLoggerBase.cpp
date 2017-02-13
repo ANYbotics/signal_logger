@@ -355,6 +355,7 @@ bool SignalLoggerBase::saveLoggerData(LogFileType logfileType)
     }
 
     // set save flag
+    isCopyingBuffer_ = true;
     isSavingData_ = true;
 
     // Save data in different thread
@@ -592,9 +593,6 @@ bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
 
   // Filename format (e.g. silo_13Sep2016_12-13-49_00011)
   std::string filename = std::string{"silo_"} + std::string{dateTime} + suffixString;
-
-  //-- Copy the data
-  isCopyingBuffer_ = true;
 
   {
     // Lock the logger (blocking!)
