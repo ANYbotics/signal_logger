@@ -27,12 +27,16 @@
 #include <signal_logger_msgs/Int32MultiArrayStamped.h>
 #include <signal_logger_msgs/Int64MultiArrayStamped.h>
 
-#include <signal_logger_msgs/Float32Stamped.h>
 #include <signal_logger_msgs/Float64Stamped.h>
-#include <signal_logger_msgs/Int8Stamped.h>
-#include <signal_logger_msgs/UInt8Stamped.h>
-#include <signal_logger_msgs/Int32Stamped.h>
+#include <signal_logger_msgs/Float32Stamped.h>
 #include <signal_logger_msgs/Int64Stamped.h>
+#include <signal_logger_msgs/Int32Stamped.h>
+#include <signal_logger_msgs/Int16Stamped.h>
+#include <signal_logger_msgs/Int8Stamped.h>
+#include <signal_logger_msgs/UInt64Stamped.h>
+#include <signal_logger_msgs/UInt32Stamped.h>
+#include <signal_logger_msgs/UInt16Stamped.h>
+#include <signal_logger_msgs/UInt8Stamped.h>
 #include <signal_logger_msgs/BoolStamped.h>
 #include <signal_logger_msgs/CharStamped.h>
 #include <signal_logger_msgs/UnsignedCharStamped.h>
@@ -68,31 +72,10 @@ struct slr_msg_traits<float> {
 };
 
 template<>
-struct slr_msg_traits<int> {
-  typedef signal_logger_msgs::Int32Stamped         msgtype;
-  typedef signal_logger_msgs::Int32StampedPtr      msgtypePtr;
-  typedef signal_logger_msgs::Int32StampedConstPtr msgtypeConstPtr;
-};
-
-template<>
-struct slr_msg_traits<short> {
-  typedef signal_logger_msgs::Int8Stamped         msgtype;
-  typedef signal_logger_msgs::Int8StampedPtr      msgtypePtr;
-  typedef signal_logger_msgs::Int8StampedConstPtr msgtypeConstPtr;
-};
-
-template<>
-struct slr_msg_traits<short unsigned int> {
-  typedef signal_logger_msgs::UInt8Stamped         msgtype;
-  typedef signal_logger_msgs::UInt8StampedPtr      msgtypePtr;
-  typedef signal_logger_msgs::UInt8StampedConstPtr msgtypeConstPtr;
-};
-
-template<>
-struct slr_msg_traits<long> {
-  typedef signal_logger_msgs::Int64Stamped         msgtype;
-  typedef signal_logger_msgs::Int64StampedPtr      msgtypePtr;
-  typedef signal_logger_msgs::Int64StampedConstPtr msgtypeConstPtr;
+struct slr_msg_traits<bool> {
+  typedef signal_logger_msgs::BoolStamped msgtype;
+  typedef signal_logger_msgs::BoolStampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::BoolStampedConstPtr msgtypeConstPtr;
 };
 
 template<>
@@ -110,11 +93,47 @@ struct slr_msg_traits<unsigned char> {
 };
 
 template<>
-struct slr_msg_traits<bool> {
-  typedef signal_logger_msgs::BoolStamped msgtype;
-  typedef signal_logger_msgs::BoolStampedPtr      msgtypePtr;
-  typedef signal_logger_msgs::BoolStampedConstPtr msgtypeConstPtr;
+struct slr_msg_traits<short> {
+  typedef signal_logger_msgs::Int16Stamped         msgtype;
+  typedef signal_logger_msgs::Int16StampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int16StampedConstPtr msgtypeConstPtr;
 };
+
+template<>
+struct slr_msg_traits<unsigned short> {
+  typedef signal_logger_msgs::UInt16Stamped         msgtype;
+  typedef signal_logger_msgs::UInt16StampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::UInt16StampedConstPtr msgtypeConstPtr;
+};
+
+template<>
+struct slr_msg_traits<int> {
+  typedef signal_logger_msgs::Int32Stamped         msgtype;
+  typedef signal_logger_msgs::Int32StampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int32StampedConstPtr msgtypeConstPtr;
+};
+
+template<>
+struct slr_msg_traits<unsigned int> {
+  typedef signal_logger_msgs::UInt32Stamped         msgtype;
+  typedef signal_logger_msgs::UInt32StampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::UInt32StampedConstPtr msgtypeConstPtr;
+};
+
+template<>
+struct slr_msg_traits<long> {
+  typedef signal_logger_msgs::Int64Stamped         msgtype;
+  typedef signal_logger_msgs::Int64StampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::Int64StampedConstPtr msgtypeConstPtr;
+};
+
+template<>
+struct slr_msg_traits<unsigned long> {
+  typedef signal_logger_msgs::UInt64Stamped         msgtype;
+  typedef signal_logger_msgs::UInt64StampedPtr      msgtypePtr;
+  typedef signal_logger_msgs::UInt64StampedConstPtr msgtypeConstPtr;
+};
+
 /********************************/
 
 /*******************************
