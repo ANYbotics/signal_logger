@@ -90,7 +90,7 @@ bool SignalLoggerBase::startLogger()
 
   // Delayed logger start if saving prevents lock of mutex
   boost::unique_lock<boost::shared_mutex> tryStartLoggerLock(loggerMutex_, boost::try_to_lock);
-  if(!tryStartLoggerLock && isSavingData_) {
+  if(!tryStartLoggerLock && isCopyingBuffer_) {
     // Still copying the data from the buffer, Wait in other thread until logger can be started.
     std::thread t1(&SignalLoggerBase::workerStartLogger, this);
     t1.detach();
@@ -109,7 +109,7 @@ bool SignalLoggerBase::startLogger()
     return false;
   }
 
-  if(isSavingData_) {
+  if(isCopyingBuffer_) {
     // Still copying the data from the buffer, Wait in other thread until logger can be started.
     std::thread t1(&SignalLoggerBase::workerStartLogger, this);
     t1.detach();
@@ -121,20 +121,23 @@ bool SignalLoggerBase::startLogger()
                                      [] (const LogElementMapIterator& s) { return s->second->getBufferType() != BufferType::LOOPING; } );
 
   if( loopingElement == enabledElements_.end() ) {
-    timeElement_->setBufferType(BufferType::LOOPING);
+    unsigned int timeBufferSize = 0;
     auto maxElement = std::max_element(enabledElements_.begin(), enabledElements_.end(), maxScaledBufferSize());
     if(maxElement != enabledElements_.end()) {
-      const unsigned int timeBufferSize = (*maxElement)->second->getDivider() * (*maxElement)->second->getBufferSize();
-      timeElement_->setBufferSize(timeBufferSize);
-      MELO_INFO_STREAM("[Signal logger] Use Looping Buffer of size:" << timeBufferSize);
+      timeBufferSize = (*maxElement)->second->getDivider() * (*maxElement)->second->getBufferSize();
     }
+    timeElement_->setBufferType(BufferType::LOOPING);
+    timeElement_->setBufferSize(timeBufferSize);
+    MELO_INFO_STREAM("[Signal logger] Use Looping Buffer of size:" << timeBufferSize);
   }
   else {
     if(options_.maxLoggingTime_ == 0.0) {
-      resetTimeLogElement(signal_logger::BufferType::EXPONENTIALLY_GROWING, LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME);
+      timeElement_->setBufferType(signal_logger::BufferType::EXPONENTIALLY_GROWING);
+      timeElement_->setBufferSize(LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME*options_.updateFrequency_);
     }
     else {
-      resetTimeLogElement(signal_logger::BufferType::FIXED_SIZE, options_.maxLoggingTime_);
+      timeElement_->setBufferType(signal_logger::BufferType::FIXED_SIZE);
+      timeElement_->setBufferSize(options_.maxLoggingTime_*options_.updateFrequency_);
     }
   }
 
@@ -642,7 +645,7 @@ bool SignalLoggerBase::workerStartLogger() {
   isStarting_ = true;
 
   while(true) {
-    if(!isSavingData_) {
+    if(!isCopyingBuffer_) {
       isStarting_ = false;
       MELO_INFO("[Signal logger] Delayed logger start!");
       return startLogger();
