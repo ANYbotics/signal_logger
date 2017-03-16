@@ -265,9 +265,9 @@ class Buffer
   pushElementFront(const ValueType_ * const item) {
     if(item->rows() != rows_ || item->cols() != cols_) {
       // Error output -> don't push back
-      MELO_ERROR_THROTTLE_STREAM(1.0, "Matrix size not consistent" << std::endl << "init_rows = " << rows_ <<
-                                      "item_rows = " << item->rows() << std::endl << "init_cols = " << cols_ <<
-                                      "item_cols = " << item->cols());
+      MELO_ERROR_THROTTLE_STREAM(100.0, "[SILO:Buffer]: Matrix size not consistent" << std::endl << " init_rows = " << rows_ <<
+                                        " item_rows = " << item->rows() << std::endl << " init_cols = " << cols_ <<
+                                        " item_cols = " << item->cols());
       return;
     }
     for(std::size_t i = 0; i < item->size(); ++i) {
