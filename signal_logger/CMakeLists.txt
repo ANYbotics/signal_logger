@@ -30,7 +30,7 @@ catkin_package(
 ###########
 ## Build ##
 ###########
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+#set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_definitions(--std=c++11)
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})

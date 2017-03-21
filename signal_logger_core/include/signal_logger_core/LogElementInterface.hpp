@@ -51,7 +51,7 @@ class LogElementInterface
    *  @param noCollectDataCalls   number of collectLoggerData calls, this allows time synchronization of the log file
    *  @param type                 type of the log file
    */
-  virtual void saveDataToLogFile(const std::vector<TimestampPair> & times, unsigned int noCollectDataCalls, LogFileType type = LogFileType::BINARY) = 0;
+  virtual void saveDataToLogFile(const std::vector<TimestampPair, Eigen::aligned_allocator<TimestampPair>> & times, unsigned int noCollectDataCalls, LogFileType type = LogFileType::BINARY) = 0;
 
   //! Stores a copy of the current buffer, file is saved from this
   virtual void createLocalBufferCopy() = 0;
