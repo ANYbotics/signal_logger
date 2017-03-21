@@ -7,8 +7,6 @@
 
 #pragma once
 
-#define BOOST_CB_DISABLE_DEBUG 0
-
 // Signal logger
 #include "signal_logger_core/LogElementTypes.hpp"
 #include "signal_logger_core/signal_logger_traits.hpp"
@@ -241,7 +239,7 @@ class Buffer
       bufferType_(BufferType::LOOPING),
       noUnreadItems_(0),
       noItems_(0),
-      container_(bufferSize_),
+      container_(0),
       mutex_(),
       rows_(rows),
       cols_(cols)
