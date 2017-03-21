@@ -7,6 +7,8 @@
 
 #pragma once
 
+#define BOOST_CB_DISABLE_DEBUG
+
 // Signal logger
 #include "signal_logger_core/LogElementTypes.hpp"
 #include "signal_logger_core/signal_logger_traits.hpp"
