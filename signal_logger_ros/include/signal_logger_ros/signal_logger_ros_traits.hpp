@@ -437,7 +437,7 @@ struct slr_update_traits<ValueType_, typename std::enable_if<std::is_base_of<kin
                         typename slr_msg_traits<ValueType_>::msgtypePtr msg,
                         const ros::Time& timeStamp)
   {
-    slr_update_traits<typename ValueType_::Implementation>::updateMsg(&vectorPtr_->toImplementation(), msg, timeStamp);
+    // slr_update_traits<typename ValueType_::Implementation>::updateMsg(&vectorPtr_->toImplementation(), msg, timeStamp);
   }
 };
 
@@ -447,15 +447,15 @@ struct slr_update_traits<ValueType_, typename std::enable_if<is_kindr_homogeneou
                         typename slr_msg_traits<ValueType_>::msgtypePtr msg,
                         const ros::Time& timeStamp)
   {
-    msg->header.stamp = timeStamp;
-    const kindr::RotationQuaternion<typename ValueType_::Scalar> orientation(vectorPtr_->getRotation());
-    msg->pose.orientation.w = orientation.w();
-    msg->pose.orientation.x = orientation.x();
-    msg->pose.orientation.y = orientation.y();
-    msg->pose.orientation.z = orientation.z();
-    msg->pose.position.x = vectorPtr_->getPosition().x();
-    msg->pose.position.y = vectorPtr_->getPosition().y();
-    msg->pose.position.z = vectorPtr_->getPosition().z();
+    // msg->header.stamp = timeStamp;
+    // const kindr::RotationQuaternion<typename ValueType_::Scalar> orientation(vectorPtr_->getRotation());
+    // msg->pose.orientation.w = orientation.w();
+    // msg->pose.orientation.x = orientation.x();
+    // msg->pose.orientation.y = orientation.y();
+    // msg->pose.orientation.z = orientation.z();
+    // msg->pose.position.x = vectorPtr_->getPosition().x();
+    // msg->pose.position.y = vectorPtr_->getPosition().y();
+    // msg->pose.position.z = vectorPtr_->getPosition().z();
   }
 };
 
@@ -465,13 +465,13 @@ struct slr_update_traits<ValueType_, typename std::enable_if<std::is_base_of<kin
                         typename slr_msg_traits<ValueType_>::msgtypePtr msg,
                         const ros::Time& timeStamp)
   {
-    msg->header.stamp = timeStamp;
-    msg->twist.linear.x = vectorPtr_->getTranslationalVelocity().x();
-    msg->twist.linear.y = vectorPtr_->getTranslationalVelocity().y();
-    msg->twist.linear.z = vectorPtr_->getTranslationalVelocity().z();
-    msg->twist.angular.x = vectorPtr_->getRotationalVelocity().x();
-    msg->twist.angular.y = vectorPtr_->getRotationalVelocity().y();
-    msg->twist.angular.z = vectorPtr_->getRotationalVelocity().z();
+    // msg->header.stamp = timeStamp;
+    // msg->twist.linear.x = vectorPtr_->getTranslationalVelocity().x();
+    // msg->twist.linear.y = vectorPtr_->getTranslationalVelocity().y();
+    // msg->twist.linear.z = vectorPtr_->getTranslationalVelocity().z();
+    // msg->twist.angular.x = vectorPtr_->getRotationalVelocity().x();
+    // msg->twist.angular.y = vectorPtr_->getRotationalVelocity().y();
+    // msg->twist.angular.z = vectorPtr_->getRotationalVelocity().z();
   }
 
 };
@@ -487,29 +487,29 @@ struct slr_update_traits<ValueType_, typename std::enable_if<is_kindr_vector_at_
                         typename slr_msg_traits<ValueType_>::msgtypePtr msg,
                         const ros::Time& timeStamp)
   {
-    msg->header.stamp = timeStamp;
-    msg->header.frame_id = vectorPtr_->vectorFrame;
-    msg->vector.x = vectorPtr_->vector.x();
-    msg->vector.y = vectorPtr_->vector.y();
-    msg->vector.z = vectorPtr_->vector.z();
-    msg->position.x = vectorPtr_->position.x();
-    msg->position.y = vectorPtr_->position.y();
-    msg->position.z = vectorPtr_->position.z();
-    msg->position_frame_id = vectorPtr_->positionFrame;
-    msg->name = " ";
-    msg->type = getType();
+    // msg->header.stamp = timeStamp;
+    // msg->header.frame_id = vectorPtr_->vectorFrame;
+    // msg->vector.x = vectorPtr_->vector.x();
+    // msg->vector.y = vectorPtr_->vector.y();
+    // msg->vector.z = vectorPtr_->vector.z();
+    // msg->position.x = vectorPtr_->position.x();
+    // msg->position.y = vectorPtr_->position.y();
+    // msg->position.z = vectorPtr_->position.z();
+    // msg->position_frame_id = vectorPtr_->positionFrame;
+    // msg->name = " ";
+    // msg->type = getType();
   }
 
   static int getType()
   {
-    if( typeid(ValueType_) == typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrLinearAccelerationD>) )
-      return kindr_msgs::VectorAtPosition::TYPE_ACCELERATION;
-    if( typeid(ValueType_) == typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrLinearVelocityD>) )
-      return kindr_msgs::VectorAtPosition::TYPE_VELOCITY;
-    if( typeid(ValueType_) == typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrForceD>) )
-      return kindr_msgs::VectorAtPosition::TYPE_FORCE;
-    if( typeid(ValueType_) == typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrTorqueD>) )
-      return kindr_msgs::VectorAtPosition::TYPE_TORQUE;
+    // if( typeid(ValueType_) == typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrLinearAccelerationD>) )
+    //   return kindr_msgs::VectorAtPosition::TYPE_ACCELERATION;
+    // if( typeid(ValueType_) == typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrLinearVelocityD>) )
+    //   return kindr_msgs::VectorAtPosition::TYPE_VELOCITY;
+    // if( typeid(ValueType_) == typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrForceD>) )
+    //   return kindr_msgs::VectorAtPosition::TYPE_FORCE;
+    // if( typeid(ValueType_) == typeid(signal_logger::KindrVectorAtPosition<signal_logger::KindrTorqueD>) )
+    //   return kindr_msgs::VectorAtPosition::TYPE_TORQUE;
 
     return kindr_msgs::VectorAtPosition::TYPE_TYPELESS;
   }

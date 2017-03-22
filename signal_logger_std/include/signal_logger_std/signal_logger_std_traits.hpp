@@ -268,9 +268,9 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if< std::is_b
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
     // Get underlying eigen type
-    auto getEigenType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->toImplementation()); };
-    sls_traits<typename ValueType_::Implementation, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name, divider, isBufferLooping, getEigenType);
+    // auto getEigenType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->toImplementation()); };
+    // sls_traits<typename ValueType_::Implementation, ContainerType_>::writeLogElementToStreams(
+    //     header, binary, data, name, divider, isBufferLooping, getEigenType);
   }
 };
 
@@ -287,14 +287,14 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_h
   {
 
     // Get underlying position type
-    auto getPositionType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getPosition()); };
-    sls_traits<typename ValueType_::Position, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_position", divider, isBufferLooping, getPositionType);
+    // auto getPositionType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getPosition()); };
+    // sls_traits<typename ValueType_::Position, ContainerType_>::writeLogElementToStreams(
+    //     header, binary, data, name + "_position", divider, isBufferLooping, getPositionType);
 
     // Get underlying rotation type
-    auto getOrientationType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getRotation()); };
-    sls_traits<typename ValueType_::Rotation, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_orientation", divider, isBufferLooping, getOrientationType);
+    // auto getOrientationType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getRotation()); };
+    // sls_traits<typename ValueType_::Rotation, ContainerType_>::writeLogElementToStreams(
+    //     header, binary, data, name + "_orientation", divider, isBufferLooping, getOrientationType);
   }
 };
 
@@ -310,14 +310,14 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ba
   {
 
     // Get underlying translational type
-    auto getPositionDiffType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getTranslationalVelocity()); };
-    sls_traits<typename ValueType_::PositionDiff, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_linear", divider, isBufferLooping, getPositionDiffType);
+    // auto getPositionDiffType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getTranslationalVelocity()); };
+    // sls_traits<typename ValueType_::PositionDiff, ContainerType_>::writeLogElementToStreams(
+    //     header, binary, data, name + "_linear", divider, isBufferLooping, getPositionDiffType);
 
     // Get underlying rotational type
-    auto getRotationDiffType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getRotationalVelocity()); };
-    sls_traits<typename ValueType_::RotationDiff, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_angular", divider, isBufferLooping, getRotationDiffType);
+    // auto getRotationDiffType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getRotationalVelocity()); };
+    // sls_traits<typename ValueType_::RotationDiff, ContainerType_>::writeLogElementToStreams(
+    //     header, binary, data, name + "_angular", divider, isBufferLooping, getRotationDiffType);
   }
 };
 
@@ -337,15 +337,15 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_v
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
     // Get kindr vector
-    std::string vectorFrame = data.size() ? data.front().vectorFrame : "unknown";
-    auto getKindrVector = [accessor](const ContainerType_ * const v) { return &(accessor(v)->vector); };
-    sls_traits<typename ValueType_::VectorType, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_vector_in_" + vectorFrame + "_frame", divider, isBufferLooping, getKindrVector);
+    // std::string vectorFrame = data.size() ? data.front().vectorFrame : "unknown";
+    // auto getKindrVector = [accessor](const ContainerType_ * const v) { return &(accessor(v)->vector); };
+    // sls_traits<typename ValueType_::VectorType, ContainerType_>::writeLogElementToStreams(
+    //     header, binary, data, name + "_vector_in_" + vectorFrame + "_frame", divider, isBufferLooping, getKindrVector);
 
-    std::string positionFrame = data.size() ? data.front().positionFrame : "unknown";
-    auto getKindrPosition = [accessor](const ContainerType_ * const v) { return &(accessor(v)->position); };
-    sls_traits<typename signal_logger::KindrPositionD, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_at_position_in_" + positionFrame + "_frame", divider, isBufferLooping, getKindrPosition);
+    // std::string positionFrame = data.size() ? data.front().positionFrame : "unknown";
+    // auto getKindrPosition = [accessor](const ContainerType_ * const v) { return &(accessor(v)->position); };
+    // sls_traits<typename signal_logger::KindrPositionD, ContainerType_>::writeLogElementToStreams(
+    //     header, binary, data, name + "_at_position_in_" + positionFrame + "_frame", divider, isBufferLooping, getKindrPosition);
   }
 };
 
