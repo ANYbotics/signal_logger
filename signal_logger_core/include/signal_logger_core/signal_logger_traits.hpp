@@ -32,8 +32,8 @@ template<typename>
 struct is_eigen_quaternion : std::false_type {};
 
 //! isEigenQuaternion true type
-template<typename PrimType_>
-struct is_eigen_quaternion<Eigen::Quaternion<PrimType_>> : std::true_type {};
+template<typename PrimType_, int Options_>
+struct is_eigen_quaternion<Eigen::Quaternion<PrimType_, Options_>> : std::true_type {};
 
 //! isEigenAngleAxis false type
 template<typename>
