@@ -8,6 +8,8 @@
 
 #include <cstddef>
 
+#include "signal_logger_core/signal_logger_traits.hpp"
+
 namespace signal_logger {
 
 //! Enum containing possible buffer types
@@ -63,4 +65,8 @@ struct both_slashes {
   }
 };
 
+//! Vector type
+template <typename T>
+using vector_type = typename std::conditional<traits::is_eigen_matrix<T>::value || std::is_base_of<kindr::RotationBase<T>,T>::value,
+  std::vector<T, Eigen::aligned_allocator<T>>, std::vector<T>>::type;
 }

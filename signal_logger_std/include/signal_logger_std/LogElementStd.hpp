@@ -54,7 +54,7 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
   }
 
   //! Save Data to file
-  void saveDataToLogFile(const std::vector<signal_logger::TimestampPair> & times,
+  void saveDataToLogFile(const signal_logger::vector_type<signal_logger::TimestampPair> & times,
                          unsigned int nrCollectDataCalls,
                          signal_logger::LogFileType type = signal_logger::LogFileType::BINARY) override
   {

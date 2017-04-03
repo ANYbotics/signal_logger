@@ -65,7 +65,7 @@ class LogElementBase: public LogElementInterface
   virtual void publishData(const LogElementBase<TimestampPair> & time, unsigned int nrCollectDataCalls) override { }
 
   //! Writes local buffer copy to a file
-  virtual void saveDataToLogFile(const std::vector<TimestampPair> & times, unsigned int nrCollectDataCalls, LogFileType type = LogFileType::BINARY) override {}
+  virtual void saveDataToLogFile(const signal_logger::vector_type<TimestampPair> & times, unsigned int nrCollectDataCalls, LogFileType type = LogFileType::BINARY) override {}
 
   //! Stores a copy of the current buffer, file is saved from this
   virtual void createLocalBufferCopy() {
@@ -193,7 +193,7 @@ class LogElementBase: public LogElementInterface
    *   @return    buffer copy
    */
   template<typename V = ValueType_>
-  const std::vector<V> & getTimeBufferCopy(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
+  const signal_logger::vector_type<V> & getTimeBufferCopy(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
   {
     std::unique_lock<std::mutex> lock(copyMutex_);
     return bufferCopy_;
@@ -219,7 +219,7 @@ class LogElementBase: public LogElementInterface
   //! Mutex
   mutable std::mutex mutex_;
   //! Local copy
-  std::vector<ValueType_> bufferCopy_;
+  signal_logger::vector_type<ValueType_> bufferCopy_;
   //! Local name copy
   std::string nameCopy_;
   //! Local divider copy
