@@ -181,17 +181,12 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_eigen_q
                                        const bool isBufferLooping,
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
-    // Get w part of quaternion
-    auto getW = [accessor](const ContainerType_ * const v) {  const typename ValueType_::Scalar & val = accessor(v)->w();  return &val; };
-    sls_traits<typename ValueType_::Scalar, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_w", divider, isBufferLooping, getW);
-
-    // Get xyz of the vector
-    std::vector<std::string> suffix = {"_x", "_y", "_z"};
-    for (int r = 0; r < 3; ++r)  {
-      auto getXYZ = [r, accessor](const ContainerType_ * const v) { const typename ValueType_::Scalar & val = accessor(v)->vec()(r); return &val; };
+    // Get wxyz of the vector
+    std::vector<std::string> suffix = {"_x", "_y", "_z", "_w"};
+    for (int r = 0; r < 4; ++r)  {
+      auto getXYZW = [r, accessor](const ContainerType_ * const v) { const typename ValueType_::Scalar & val = accessor(v)->coeffs()(r); return &val; };
       sls_traits<typename ValueType_::Scalar, ContainerType_>::writeLogElementToStreams(
-          header, binary, data, name + suffix.at(r), divider, isBufferLooping, getXYZ);
+          header, binary, data, name + suffix.at(r), divider, isBufferLooping, getXYZW);
     }
   }
 };

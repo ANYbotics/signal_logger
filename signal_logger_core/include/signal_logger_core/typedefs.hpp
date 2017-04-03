@@ -67,6 +67,6 @@ struct both_slashes {
 
 //! Vector type
 template <typename T>
-using vector_type = typename std::conditional<traits::is_eigen_matrix<T>::value || std::is_base_of<kindr::RotationBase<T>,T>::value,
+using vector_type = typename std::conditional<traits::is_eigen_matrix<T>::value,
   std::vector<T, Eigen::aligned_allocator<T>>, std::vector<T>>::type;
 }
