@@ -71,7 +71,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   }
 
   //! Save Data to file
-  void saveDataToLogFile(const std::vector<signal_logger::TimestampPair> & times,
+  void saveDataToLogFile(const signal_logger::vector_type<signal_logger::TimestampPair> & times,
                          unsigned int nrCollectDataCalls,
                          signal_logger::LogFileType type = signal_logger::LogFileType::BINARY) override
   {
@@ -94,7 +94,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
          */
         startIdx = (times.size() - 1) - (nrCollectDataCalls - 1) % this->dividerCopy_ - (this->bufferCopy_.size()-1) * this->dividerCopy_;
       }
-      
+
       for(std::size_t i = 0; i < this->bufferCopy_.size(); ++i) {
         // Get time at data point
         signal_logger::TimestampPair tsp_now = times.at(startIdx + i*this->dividerCopy_);

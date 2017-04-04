@@ -152,13 +152,13 @@ class Buffer
    *  unchanged, it copies the last noItmes_ items into a vector of value_type.
    *  @return vector containing all buffered items
    */
-  std::vector<ValueType_> copyBuffer() const
+  vector_type<ValueType_> copyBuffer() const
   {
     // Lock circular buffer
     std::unique_lock<std::mutex> lock(mutex_);
 
     // Fill vector
-    std::vector<ValueType_> data_vector(noItems_);
+    vector_type<ValueType_> data_vector(noItems_);
     for(int j = 0; j < noItems_; ++j) {
       // In this way no specialization for vector bool is necessary
       ValueType_ read;
