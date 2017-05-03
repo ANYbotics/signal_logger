@@ -12,44 +12,30 @@
 
 // Stl
 #include <math.h>
+#include <iostream>
 
 namespace rqt_signal_logger {
 
 BufferIndicator::BufferIndicator(QWidget* parent) :
   QWidget(parent),
   alignment_(Qt::AlignCenter),
-  diameter_(7),
+  diameter_(std::min(30, parent->height())),
   nrUnreadElements_(0),
   nrTotalElements_(0),
   bufferSize_(0),
   colorUnread_(QColor(85, 117, 168)),
   colorTotal_(QColor(170, 196, 237,150))
 {
-  setDiameter(diameter_);
+  diamX_ = diameter_;
+  diamY_ = diameter_;
+  update();
+
   // Enable this to refresh on mouse over
   //  this->setMouseTracking(true);
 }
 
 BufferIndicator::~BufferIndicator()
 {
-}
-
-double BufferIndicator::diameter() const
-{
-  return diameter_;
-}
-
-void BufferIndicator::setDiameter(double diameter)
-{
-  diameter_ = diameter;
-
-  pixX_ = round(double(height())/heightMM());
-  pixY_ = round(double(width())/widthMM());
-
-  diamX_ = diameter_*pixX_;
-  diamY_ = diameter_*pixY_;
-
-  update();
 }
 
 Qt::Alignment BufferIndicator::alignment() const

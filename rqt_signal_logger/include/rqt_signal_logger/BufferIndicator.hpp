@@ -16,7 +16,6 @@ namespace rqt_signal_logger {
 class QDESIGNER_WIDGET_EXPORT BufferIndicator : public QWidget
 {
   Q_OBJECT
-  Q_PROPERTY(double diameter READ diameter WRITE setDiameter) //mm
   Q_PROPERTY(Qt::Alignment alignment READ alignment WRITE setAlignment)
 
  public:
@@ -24,7 +23,7 @@ class QDESIGNER_WIDGET_EXPORT BufferIndicator : public QWidget
   ~BufferIndicator();
 
   double diameter() const;
-  void setDiameter(double diameter);
+  void setDiameter();
 
   Qt::Alignment alignment() const;
   void setAlignment(Qt::Alignment alignment);
