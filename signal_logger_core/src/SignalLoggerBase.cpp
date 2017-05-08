@@ -118,34 +118,34 @@ bool SignalLoggerBase::startLogger()
 
   // If all elements are looping use a looping time buffer
   auto loopingElement = std::find_if(enabledElements_.begin(), enabledElements_.end(),
-                                     [] (const LogElementMapIterator& s) { return s->second->getBufferType() != BufferType::LOOPING; } );
+                                     [] (const LogElementMapIterator& s) { return s->second->getBuffer().getBufferType() != BufferType::LOOPING; } );
 
   if( loopingElement == enabledElements_.end() ) {
     unsigned int timeBufferSize = 0;
     auto maxElement = std::max_element(enabledElements_.begin(), enabledElements_.end(), maxScaledBufferSize());
     if(maxElement != enabledElements_.end()) {
-      timeBufferSize = (*maxElement)->second->getDivider() * (*maxElement)->second->getBufferSize();
+      timeBufferSize = (*maxElement)->second->getOptions().getDivider() * (*maxElement)->second->getBuffer().getBufferSize();
     }
-    timeElement_->setBufferType(BufferType::LOOPING);
-    timeElement_->setBufferSize(timeBufferSize);
+    timeElement_->getBuffer().setBufferType(BufferType::LOOPING);
+    timeElement_->getBuffer().setBufferSize((timeBufferSize);
     MELO_INFO_STREAM("[Signal logger] Use Looping Buffer of size:" << timeBufferSize);
   }
   else {
     if(options_.maxLoggingTime_ == 0.0) {
-      timeElement_->setBufferType(signal_logger::BufferType::EXPONENTIALLY_GROWING);
-      timeElement_->setBufferSize(LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME*options_.updateFrequency_);
+      timeElement_->getBuffer().setBufferType(signal_logger::BufferType::EXPONENTIALLY_GROWING);
+      timeElement_->getBuffer().setBufferSize(LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME*options_.updateFrequency_);
     }
     else {
-      timeElement_->setBufferType(signal_logger::BufferType::FIXED_SIZE);
-      timeElement_->setBufferSize(options_.maxLoggingTime_*options_.updateFrequency_);
+      timeElement_->getBuffer().setBufferType(signal_logger::BufferType::FIXED_SIZE);
+      timeElement_->getBuffer().setBufferSize(options_.maxLoggingTime_*options_.updateFrequency_);
     }
   }
 
   // Reset elements
-  timeElement_->restartElement();
+  timeElement_->reset();
 
 
-  for(auto & elem : enabledElements_) { elem->second->restartElement(); }
+  for(auto & elem : enabledElements_) { elem->second->reset(); }
 
   // Reset flags and data collection calls
   isCollectingData_ = true;
@@ -267,7 +267,7 @@ bool SignalLoggerBase::collectLoggerData()
       logTime_ = this->getCurrentTime();
 
       // Check if time buffer is full when using a fixed size buffer
-      if(timeElement_->getBufferType() == BufferType::FIXED_SIZE && timeElement_->noItemsInBuffer() == timeElement_->getBufferSize())
+      if(timeElement_->getBuffer().getBufferType() == BufferType::FIXED_SIZE && timeElement_->getBuffer().noTotalItems() == timeElement_->getBuffer().getBufferSize())
       {
         MELO_WARN("[Signal Logger] Stopped. Time buffer is full!");
         // Free lock and stop logger
@@ -291,7 +291,7 @@ bool SignalLoggerBase::collectLoggerData()
       // Collect element into buffer and unlock element mutexes (time/value pair is valid now)
       for(auto & elem : enabledElements_)
       {
-        if((noCollectDataCalls_ % elem->second->getDivider()) == 0) {
+        if((noCollectDataCalls_ % elem->second->getOptions().getDivider()) == 0) {
           elem->second->collectData();
         }
         elem->second->acquireMutex().unlock();
@@ -325,7 +325,7 @@ bool SignalLoggerBase::publishData()
     {
       // Publishing blocks the mutex for quite a long time, allow interference by stopLogger using atomic bool
       if(shouldPublish_) {
-        if(elem->second->isPublished()) {
+        if(elem->second->getOptions().isPublished()) {
           elem->second->publishData(*timeElement_, noCollectDataCalls_);
         }
       }
@@ -382,8 +382,8 @@ bool SignalLoggerBase::cleanup()
   boost::unique_lock<boost::shared_mutex> updateLoggerLock(loggerMutex_);
 
   // Publish data from buffer
-  for(auto & elem : logElements_) { elem.second->cleanupElement(); }
-  for(auto & elem : logElementsToAdd_) { elem.second->cleanupElement(); }
+  for(auto & elem : logElements_) { elem.second->cleanup(); }
+  for(auto & elem : logElementsToAdd_) { elem.second->cleanup(); }
 
   // Clear maps
   enabledElements_.clear();

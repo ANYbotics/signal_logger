@@ -133,8 +133,8 @@ class SignalLoggerBase {
      */
     bool operator() (const LogElementMapIterator& i, const LogElementMapIterator& j)
     {
-      return (i->second->getDivider()*i->second->getBufferSize()) <
-             (j->second->getDivider()*j->second->getBufferSize());
+      return (i->second->getOptions().getDivider()*i->second->getBuffer().getBufferSize()) <
+             (j->second->getOptions().getDivider()*j->second->getBuffer().getBufferSize());
     }
   };
 

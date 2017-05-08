@@ -8,9 +8,10 @@
 #pragma once
 
 // Signal logger
+#include "signal_logger_core/BufferInterface.hpp"
 #include "signal_logger_core/LogElementTypes.hpp"
-#include "signal_logger_core/signal_logger_traits.hpp"
 #include "signal_logger_core/typedefs.hpp"
+#include "signal_logger_core/signal_logger_traits.hpp"
 
 // Message logger
 #include "message_logger/message_logger.hpp"
@@ -39,7 +40,7 @@ namespace signal_logger {
  */
 //! Thread-safe circular buffer
 template <typename ValueType_>
-class Buffer
+class Buffer: public BufferInterface
 {
  public:
   //! CircularBuffer typedef (Eigen matrices are stored as buffer of the underlying type)
@@ -152,7 +153,7 @@ class Buffer
    *  unchanged, it copies the last noItmes_ items into a vector of value_type.
    *  @return vector containing all buffered items
    */
-  vector_type<ValueType_> copyBuffer() const
+/*  vector_type<ValueType_> copyBuffer() const
   {
     // Lock circular buffer
     std::unique_lock<std::mutex> lock(mutex_);
@@ -166,50 +167,54 @@ class Buffer
       data_vector[j] = read;
     }
     return data_vector;
-  }
+  }*/
 
   //! Allocate buffer size of memory
-  void allocate(bool enabled) {
+/*  virtual void elementChanged(const LogElementOptions& options, Event event) {
     std::unique_lock<std::mutex> lock(mutex_);
-    std::size_t new_capacity = enabled ? (bufferSize_ * rows_ * cols_) : 0;
+
+    //! Set new capacity if element is enabled
+    std::size_t new_capacity = options.isEnabled_ ? (options.bufferSize_ * rows_ * cols_) : 0;
     container_.set_capacity(new_capacity);
+    clear();
+
+    //! Update buffer type
+    bufferType_ = options.bufferType_;
+  }*/
+
+  virtual std::size_t getBufferSize() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return bufferSize_;
   }
 
+  virtual void setBufferSize(std::size_t bufferSize) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    bufferSize_ = bufferSize;
+    container_.set_capacity(bufferSize_ * rows_ * cols_);
+    clear();
+  }
+
+  virtual BufferType getBufferType() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return bufferType_;
+  }
+
+  virtual void setBufferType(const BufferType bufferType) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    bufferType_ = bufferType;
+  }
+
+
   //! @return number of unread elements
-  std::size_t noUnreadItems() const {
+  virtual std::size_t noUnreadItems() const {
     std::unique_lock<std::mutex> lock(mutex_);
     return noUnreadItems_;
   }
 
   //! @return number of items stored in the buffer (read and unread)
-  std::size_t noItems() const {
+  virtual std::size_t noItems() const {
     std::unique_lock<std::mutex> lock(mutex_);
     return noItems_;
-  }
-
-  //! @return size of the buffer
-  std::size_t getBufferSize() const {
-    std::unique_lock<std::mutex> lock(mutex_);
-    return bufferSize_;
-  }
-
-  //! @param bufferSize new buffer size
-  void setBufferSize(const std::size_t bufferSize) {
-    std::unique_lock<std::mutex> lock(mutex_);
-    bufferSize_ = bufferSize;
-    container_.set_capacity(bufferSize_ * rows_ * cols_);
-  }
-
-  //! @return type of the buffer
-  BufferType getType() const {
-    std::unique_lock<std::mutex> lock(mutex_);
-    return bufferType_;
-  }
-
-  //! @param bufferType type of the buffer
-  void setType(const BufferType bufferType) {
-    std::unique_lock<std::mutex> lock(mutex_);
-    bufferType_ = bufferType;
   }
 
   //! Clear the buffer
@@ -284,7 +289,7 @@ class Buffer
   typename std::enable_if<is_buffer_default_type<V>::value>::type
   readElementAtPosition(ValueType_ * item, size_t position)  const {
     if(position < 0 || position >= noItems_) {
-      throw std::out_of_range("Can not read element at position " + std::to_string(position));
+      throw std::out_of_range("[SILO:Buffer]: Can not read element at position " + std::to_string(position));
     }
     *item = container_[position];
   }
@@ -298,7 +303,7 @@ class Buffer
   typename std::enable_if<traits::is_eigen_matrix<V>::value>::type
   readElementAtPosition(ValueType_ * item, size_t position)  const {
     if(position < 0 || position >= noItems_) {
-      throw std::out_of_range("Can not read element at position " + std::to_string(position));
+      throw std::out_of_range("[SILO:Buffer]: Can not read element at position " + std::to_string(position));
     }
     item->resize(rows_, cols_);
     // (position+1)*cols_*rows_ -1  refers to the last element of the buffered matrix
@@ -310,16 +315,16 @@ class Buffer
  private:
   //! Pointer to value
   const ValueType_* const ptr_;
-  //! Buffer size w.r.t. to ValueType_ (bufferSize_ is not necessary equal to container_.capacity())
-  size_type bufferSize_;
+  //! Circular buffer
+  circular_buffer_type container_;
   //! Is the buffer "circulating", refreshing old entries with new ones
   BufferType bufferType_;
+  //! Size of the buffer (no elements, can differ from buffer capacity)
+  std::size_t bufferSize_;
   //! Number of unread items
   size_type noUnreadItems_;
   //! Number of items in the buffer (read and unread)
   size_type noItems_;
-  //! Circular buffer
-  circular_buffer_type container_;
   //! Mutex protecting accessing this container
   mutable std::mutex mutex_;
   //! Eigen specific entries (1 in other cases)
