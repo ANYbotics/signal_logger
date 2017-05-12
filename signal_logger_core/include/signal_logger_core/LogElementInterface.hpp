@@ -59,7 +59,16 @@ class LogElementInterface
   virtual void cleanup() = 0;
 
   //! @return options of the log element
-  virtual LogElementOptions & getOptions() const = 0;
+  virtual LogElementOptions & getOptions() = 0;
+
+  //! @return options of the log element
+  virtual const LogElementOptions & getOptions() const = 0;
+
+  //! @return options of the log element copy
+  virtual const LogElementOptions & getCopyOptions() const = 0;
+
+  //! @return buffer of the log element
+  virtual BufferInterface & getBuffer() = 0;
 
   //! @return buffer of the log element
   virtual const BufferInterface & getBuffer() const = 0;

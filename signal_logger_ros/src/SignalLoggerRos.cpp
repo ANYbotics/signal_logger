@@ -79,9 +79,9 @@ bool SignalLoggerRos::workerSaveData(const std::string & logFileName, signal_log
 
   // Write bag file
   for(auto & elem : enabledElements_) {
-    if(elem->second->isCopySaved())
+    if(elem->second->getCopyOptions().isSaved())
     {
-      elem->second->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_, signal_logger::LogFileType::BAG);
+      elem->second->saveDataToLogFile(*timeElement_, noCollectDataCallsCopy_, signal_logger::LogFileType::BAG);
     }
   }
 
@@ -138,13 +138,13 @@ bool SignalLoggerRos::setLoggerElement(signal_logger_msgs::SetLoggerElement::Req
 
 bool SignalLoggerRos::startLogger(std_srvs::TriggerRequest& req,
                                   std_srvs::TriggerResponse& res) {
-  res.success =  SignalLoggerBase::startLogger();
+  res.success =  signal_logger::SignalLoggerBase::startLogger();
   return true;
 }
 
 bool SignalLoggerRos::stopLogger(std_srvs::TriggerRequest& req,
                                  std_srvs::TriggerResponse& res) {
-  res.success =  SignalLoggerBase::stopLogger();
+  res.success =  signal_logger::SignalLoggerBase::stopLogger();
   return true;
 }
 
@@ -166,7 +166,7 @@ bool SignalLoggerRos::saveLoggerData(signal_logger_msgs::SaveLoggerDataRequest& 
       res.success = false;
       return true;
   }
-  res.success = SignalLoggerBase::saveLoggerData(type);
+  res.success = signal_logger::SignalLoggerBase::saveLoggerData(type);
   return true;
 }
 
@@ -183,7 +183,7 @@ bool SignalLoggerRos::loadLoggerScript(signal_logger_msgs::LoadLoggerScriptReque
   {
     res.success = false;
   } else {
-    res.success = SignalLoggerBase::readDataCollectScript(req.filepath);
+    res.success = signal_logger::SignalLoggerBase::readDataCollectScript(req.filepath);
   }
 
   return true;
@@ -196,14 +196,14 @@ bool SignalLoggerRos::logElementtoMsg(const std::string & name, signal_logger_ms
 
   if( logElements_.find(name) == logElements_.end()) { return false; }
 
-  msg.name = logElements_.at(name)->getName();
-  msg.is_logged = logElements_.at(name)->isEnabled();
-  msg.divider = logElements_.at(name)->getDivider();
-  msg.buffer_size = logElements_.at(name)->getBufferSize();
-  msg.no_items_in_buffer = logElements_.at(name)->noItemsInBuffer();
-  msg.no_unread_items_in_buffer = logElements_.at(name)->noUnreadItemsInBuffer();
+  msg.name = logElements_.at(name)->getOptions().getName();
+  msg.is_logged = logElements_.at(name)->getOptions().isEnabled();
+  msg.divider = logElements_.at(name)->getOptions().getDivider();
+  msg.buffer_size = logElements_.at(name)->getBuffer().getBufferSize();
+  msg.no_items_in_buffer = logElements_.at(name)->getBuffer().noTotalItems();
+  msg.no_unread_items_in_buffer = logElements_.at(name)->getBuffer().noUnreadItems();
 
-  switch(logElements_.at(name)->getAction()) {
+  switch(logElements_.at(name)->getOptions().getAction()) {
     case signal_logger::LogElementAction::SAVE_AND_PUBLISH:
       msg.action = signal_logger_msgs::LogElement::ACTION_SAVE_AND_PUBLISH;
       break;
@@ -218,7 +218,7 @@ bool SignalLoggerRos::logElementtoMsg(const std::string & name, signal_logger_ms
       break;
   }
 
-  switch(logElements_.at(name)->getBufferType()) {
+  switch(logElements_.at(name)->getBuffer().getBufferType()) {
     case signal_logger::BufferType::FIXED_SIZE:
       msg.buffer_type = signal_logger_msgs::LogElement::BUFFERTYPE_FIXED_SIZE;
       break;
@@ -243,7 +243,7 @@ bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg
   auto element_iterator  = logElements_.find(msg.name);
   if( element_iterator == logElements_.end()) { return false; }
 
-  logElements_.at(msg.name)->setIsEnabled(msg.is_logged);
+  logElements_.at(msg.name)->getOptions().setIsEnabled(msg.is_logged);
   if(msg.is_logged)
   {
     enabledElements_.push_back(element_iterator);
@@ -256,18 +256,18 @@ bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg
     }
   }
 
-  logElements_.at(msg.name)->setDivider(msg.divider);
-  logElements_.at(msg.name)->setBufferSize(msg.buffer_size);
+  logElements_.at(msg.name)->getOptions().setDivider(msg.divider);
+  logElements_.at(msg.name)->getBuffer().setBufferSize(msg.buffer_size);
 
   switch(msg.action) {
     case signal_logger_msgs::LogElement::ACTION_SAVE_AND_PUBLISH:
-      logElements_.at(msg.name)->setAction(signal_logger::LogElementAction::SAVE_AND_PUBLISH);
+      logElements_.at(msg.name)->getOptions().setAction(signal_logger::LogElementAction::SAVE_AND_PUBLISH);
       break;
     case signal_logger_msgs::LogElement::ACTION_SAVE:
-      logElements_.at(msg.name)->setAction(signal_logger::LogElementAction::SAVE);
+      logElements_.at(msg.name)->getOptions().setAction(signal_logger::LogElementAction::SAVE);
       break;
     case signal_logger_msgs::LogElement::ACTION_PUBLISH:
-      logElements_.at(msg.name)->setAction(signal_logger::LogElementAction::PUBLISH);
+      logElements_.at(msg.name)->getOptions().setAction(signal_logger::LogElementAction::PUBLISH);
       break;
     default:
       MELO_ERROR("Undefined action!");
@@ -276,13 +276,13 @@ bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg
 
   switch(msg.buffer_type) {
     case signal_logger_msgs::LogElement::BUFFERTYPE_FIXED_SIZE:
-      logElements_.at(msg.name)->setBufferType(signal_logger::BufferType::FIXED_SIZE);
+      logElements_.at(msg.name)->getBuffer().setBufferType(signal_logger::BufferType::FIXED_SIZE);
       break;
     case signal_logger_msgs::LogElement::BUFFERTYPE_LOOPING:
-      logElements_.at(msg.name)->setBufferType(signal_logger::BufferType::LOOPING);
+      logElements_.at(msg.name)->getBuffer().setBufferType(signal_logger::BufferType::LOOPING);
       break;
     case signal_logger_msgs::LogElement::BUFFERTYPE_EXPONENTIALLY_GROWING:
-      logElements_.at(msg.name)->setBufferType(signal_logger::BufferType::EXPONENTIALLY_GROWING);
+      logElements_.at(msg.name)->getBuffer().setBufferType(signal_logger::BufferType::EXPONENTIALLY_GROWING);
       break;
     default:
       MELO_ERROR("Undefined buffer type!");

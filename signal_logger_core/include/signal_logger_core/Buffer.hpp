@@ -43,7 +43,7 @@ template <typename ValueType_>
 class Buffer: public BufferInterface
 {
  public:
-  //! CircularBuffer typedef (Eigen matrices are stored as buffer of the underlying type)
+/*  //! CircularBuffer typedef (Eigen matrices are stored as buffer of the underlying type)
   template<typename T , typename Enable = void>
   struct CircularBuffer {
     typedef boost::circular_buffer<ValueType_> type;
@@ -52,10 +52,10 @@ class Buffer: public BufferInterface
   struct CircularBuffer<T, typename std::enable_if<traits::is_eigen_matrix<T>::value>::type>
   {
     typedef boost::circular_buffer<typename ValueType_::Scalar> type;
-  };
+  };*/
 
   //! Forward typedef as circular_buffer_type
-  typedef typename CircularBuffer<ValueType_>::type circular_buffer_type;
+  typedef boost::circular_buffer<ValueType_> circular_buffer_type;
 
   //! Forward typedef for size_type
   typedef typename circular_buffer_type::size_type size_type;
@@ -84,6 +84,19 @@ class Buffer: public BufferInterface
   explicit Buffer(const V * const ptr, typename std::enable_if<traits::is_eigen_matrix<V>::value>::type* = 0 /* eigen-type */ ) :
     Buffer(ptr, ptr->rows(), ptr->cols())
   {
+  }
+
+  /** transfer to new buffer
+   *  @param other  Lvalue to other buffer
+   *  @brief basically a copy constructor however, the container entries are moved
+   */
+  void transfer(Buffer & other)
+  {
+    container_.swap(other.container_);
+    bufferType_ = other.bufferType_;
+    bufferSize_ = other.bufferSize_;
+    noUnreadItems_ = other.noUnreadItems_;
+    noItems_ = other.noItems_;
   }
 
   //! Push data into the buffer (if looping or not full).
@@ -149,6 +162,16 @@ class Buffer: public BufferInterface
     return val;
   }
 
+  const ValueType_ * const getPointerAtPosition(std::size_t idx)  const {
+    // Lock the circular buffer
+    std::unique_lock<std::mutex> lock(mutex_);
+
+    if(idx < 0 || idx >= noItems_) {
+      throw std::out_of_range("[SILO:Buffer]: Can not read element at position " + std::to_string(idx));
+    }
+    return &container_[idx];
+  }
+
   /** Make a copy of the complete (valid) buffer entries. The unread counter remains
    *  unchanged, it copies the last noItmes_ items into a vector of value_type.
    *  @return vector containing all buffered items
@@ -212,7 +235,7 @@ class Buffer: public BufferInterface
   }
 
   //! @return number of items stored in the buffer (read and unread)
-  virtual std::size_t noItems() const {
+  virtual std::size_t noTotalItems() const {
     std::unique_lock<std::mutex> lock(mutex_);
     return noItems_;
   }
@@ -275,9 +298,11 @@ class Buffer: public BufferInterface
                                         " item_cols = " << item->cols());
       return;
     }
-    for(std::size_t i = 0; i < item->size(); ++i) {
-      container_.push_front( *(item->data() + i) );
-    }
+    container_.push_front(*item);
+//
+//    for(std::size_t i = 0; i < item->size(); ++i) {
+//      container_.push_front( *(item->data() + i) );
+//    }
   }
 
   /** Push an element at front for default types
@@ -305,11 +330,12 @@ class Buffer: public BufferInterface
     if(position < 0 || position >= noItems_) {
       throw std::out_of_range("[SILO:Buffer]: Can not read element at position " + std::to_string(position));
     }
-    item->resize(rows_, cols_);
-    // (position+1)*cols_*rows_ -1  refers to the last element of the buffered matrix
-    for(std::size_t i = 0; i < item->size(); ++i) {
-      *(item->data() + i) = container_[ (position+1)*cols_*rows_ - 1 - i ];
-    }
+    *item = container_[position];
+//    item->resize(rows_, cols_);
+//    // (position+1)*cols_*rows_ -1  refers to the last element of the buffered matrix
+//    for(std::size_t i = 0; i < item->size(); ++i) {
+//      *(item->data() + i) = container_[ (position+1)*cols_*rows_ - 1 - i ];
+//    }
   }
 
  private:

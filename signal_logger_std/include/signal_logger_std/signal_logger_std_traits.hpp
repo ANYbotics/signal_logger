@@ -75,17 +75,17 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::vector_type<ContainerType_> & data,
+                                       const signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const bool isBufferLooping,
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
-    (*header) << name     << " " << sizeof(ValueType_) << " " << data.size() << " "
+    (*header) << name     << " " << sizeof(ValueType_) << " " << buffer.noTotalItems() << " "
               << divider  << " " << isBufferLooping    << " " << sls_typename_traits<ValueType_>::getTypeName() << std::endl;
-    for (const auto & value : data)
+    for (unsigned int i = 0; i<buffer.noTotalItems(); ++i)
     {
-      binary->write(reinterpret_cast<const char*>(accessor(&value)), sizeof(ValueType_) );
+      binary->write(reinterpret_cast<const char*>(accessor(buffer.getPointerAtPosition((buffer.noTotalItems() - 1) - i))), sizeof(ValueType_) );
     }
   }
 };
@@ -99,7 +99,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_en
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::vector_type<ContainerType_> & data,
+                                       const signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const bool isBufferLooping,
@@ -108,7 +108,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_en
     // Lambda accessing the underlying type #TODO reinterpret_cast is kind of a hack
     auto getUnderlyingType = [accessor](const ContainerType_ * const v) { return reinterpret_cast<const typename std::underlying_type<ValueType_>::type *>(accessor(v)); };
     sls_traits<typename std::underlying_type<ValueType_>::type, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name, divider, isBufferLooping, getUnderlyingType);
+        header, binary, buffer, name, divider, isBufferLooping, getUnderlyingType);
   }
 };
 /********************************/
@@ -121,7 +121,7 @@ struct sls_traits<signal_logger::TimestampPair, ContainerType_>
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::vector_type<ContainerType_> & data,
+                                       const signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const bool isBufferLooping,
@@ -131,12 +131,12 @@ struct sls_traits<signal_logger::TimestampPair, ContainerType_>
     // Get seconds from timestamp pair
     auto getSeconds = [accessor](const ContainerType_ * const v) { return &(accessor(v)->first); };
     sls_traits<typename signal_logger::TimestampPair::first_type, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_s", divider, isBufferLooping, getSeconds);
+        header, binary, buffer, name + "_s", divider, isBufferLooping, getSeconds);
 
     // Get nanoseconds from timestamp pair
     auto getNanoSeconds = [accessor](const ContainerType_ * const v) { return &(accessor(v)->second); };
     sls_traits<typename signal_logger::TimestampPair::second_type, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_ns", divider, isBufferLooping, getNanoSeconds);
+        header, binary, buffer, name + "_ns", divider, isBufferLooping, getNanoSeconds);
   }
 };
 /********************************/
@@ -149,7 +149,7 @@ struct sls_traits<Eigen::Vector3d, ContainerType_>
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::vector_type<ContainerType_> & data,
+                                       const signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const bool isBufferLooping,
@@ -164,7 +164,7 @@ struct sls_traits<Eigen::Vector3d, ContainerType_>
       // Get xyz of the vector
       auto getXYZ = [r, accessor](const ContainerType_ * const v) { return &((*accessor(v))(r)); };
       sls_traits<double, ContainerType_>::writeLogElementToStreams(
-          header, binary, data, name + suffix.at(r), divider, isBufferLooping, getXYZ);
+          header, binary, buffer, name + suffix.at(r), divider, isBufferLooping, getXYZ);
     }
 
   }
@@ -175,7 +175,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_eigen_q
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::vector_type<ContainerType_> & data,
+                                       const signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const bool isBufferLooping,
@@ -186,7 +186,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_eigen_q
     for (int r = 0; r < 4; ++r)  {
       auto getXYZW = [r, accessor](const ContainerType_ * const v) { const typename ValueType_::Scalar & val = accessor(v)->coeffs()(r); return &val; };
       sls_traits<typename ValueType_::Scalar, ContainerType_>::writeLogElementToStreams(
-          header, binary, data, name + suffix.at(r), divider, isBufferLooping, getXYZW);
+          header, binary, buffer, name + suffix.at(r), divider, isBufferLooping, getXYZW);
     }
   }
 };
@@ -196,7 +196,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_eigen_a
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::vector_type<ContainerType_> & data,
+                                       const signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const bool isBufferLooping,
@@ -205,14 +205,14 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_eigen_a
     // Get angle of angle-axis
     auto getAngle = [accessor](const ContainerType_ * const v) { const typename ValueType_::Scalar & val = accessor(v)->angle();  return &val; };
     sls_traits<typename ValueType_::Scalar, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_angle", divider, isBufferLooping, getAngle);
+        header, binary, buffer, name + "_angle", divider, isBufferLooping, getAngle);
 
     // Get xyz of the vector
     std::vector<std::string> suffix = {"_x", "_y", "_z"};
     for (int r = 0; r < 3; ++r)  {
       auto getXYZ = [r, accessor](const ContainerType_ * const v) { return &(accessor(v)->axis()(r)); };
       sls_traits<typename ValueType_::Scalar, ContainerType_>::writeLogElementToStreams(
-          header, binary, data, name + suffix.at(r), divider, isBufferLooping, getXYZ);
+          header, binary, buffer, name + suffix.at(r), divider, isBufferLooping, getXYZ);
     }
 
   }
@@ -223,23 +223,23 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if< is_eigen_
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::vector_type<ContainerType_> & data,
+                                       const signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const bool isBufferLooping,
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
-    for (int r = 0; r < accessor(&data.front())->rows(); ++r)
+    for (int r = 0; r < accessor(&buffer.readElementAtPosition(0))->rows(); ++r)
     {
-      for (int c = 0; c < accessor(&data.front())->cols(); ++c)
+      for (int c = 0; c < accessor(&buffer.readElementAtPosition(0))->cols(); ++c)
       {
         std::string nameWithSuffix = name;
-        if(accessor(&data.front())->rows() > 1) nameWithSuffix += ("_" + std::to_string(r));
-        if(accessor(&data.front())->cols() > 1) nameWithSuffix += ("_" + std::to_string(c));
+        if(accessor(&buffer.readElementAtPosition(0))->rows() > 1) nameWithSuffix += ("_" + std::to_string(r));
+        if(accessor(&buffer.readElementAtPosition(0))->cols() > 1) nameWithSuffix += ("_" + std::to_string(c));
         // Get matrix entry
         auto getMatrixEntryRC = [r, c, accessor](const ContainerType_ * const v) { return &((*accessor(v))(r,c)); };
         sls_traits<typename ValueType_::Scalar, ContainerType_>::writeLogElementToStreams(
-            header, binary, data, nameWithSuffix, divider, isBufferLooping, getMatrixEntryRC);
+            header, binary, buffer, nameWithSuffix, divider, isBufferLooping, getMatrixEntryRC);
       }
     }
   }
@@ -256,7 +256,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if< std::is_b
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::vector_type<ContainerType_> & data,
+                                       const signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const bool isBufferLooping,
@@ -265,7 +265,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if< std::is_b
     // Get underlying eigen type
     auto getEigenType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->toImplementation()); };
     sls_traits<typename ValueType_::Implementation, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name, divider, isBufferLooping, getEigenType);
+        header, binary, buffer, name, divider, isBufferLooping, getEigenType);
   }
 };
 
@@ -274,7 +274,7 @@ template <typename ValueType_, typename ContainerType_>
 struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_homogeneous_transformation<ValueType_>::value>::type> {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::vector_type<ContainerType_> & data,
+                                       const signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const bool isBufferLooping,
@@ -284,12 +284,12 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_h
     // Get underlying position type
     auto getPositionType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getPosition()); };
     sls_traits<typename ValueType_::Position, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_position", divider, isBufferLooping, getPositionType);
+        header, binary, buffer, name + "_position", divider, isBufferLooping, getPositionType);
 
     // Get underlying rotation type
     auto getOrientationType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getRotation()); };
     sls_traits<typename ValueType_::Rotation, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_orientation", divider, isBufferLooping, getOrientationType);
+        header, binary, buffer, name + "_orientation", divider, isBufferLooping, getOrientationType);
   }
 };
 
@@ -297,7 +297,7 @@ template <typename ValueType_, typename ContainerType_>
 struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_base_of<kindr::Twist<typename ValueType_::Scalar,typename ValueType_::PositionDiff,typename ValueType_::RotationDiff>,ValueType_>::value>::type> {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::vector_type<ContainerType_> & data,
+                                       const signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const bool isBufferLooping,
@@ -307,12 +307,12 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ba
     // Get underlying translational type
     auto getPositionDiffType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getTranslationalVelocity()); };
     sls_traits<typename ValueType_::PositionDiff, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_linear", divider, isBufferLooping, getPositionDiffType);
+        header, binary, buffer, name + "_linear", divider, isBufferLooping, getPositionDiffType);
 
     // Get underlying rotational type
     auto getRotationDiffType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->getRotationalVelocity()); };
     sls_traits<typename ValueType_::RotationDiff, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_angular", divider, isBufferLooping, getRotationDiffType);
+        header, binary, buffer, name + "_angular", divider, isBufferLooping, getRotationDiffType);
   }
 };
 
@@ -325,22 +325,22 @@ template <typename ValueType_, typename ContainerType_>
 struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_vector_at_position<ValueType_>::value>::type> {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::vector_type<ContainerType_> & data,
+                                       const signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const bool isBufferLooping,
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
     // Get kindr vector
-    std::string vectorFrame = data.size() ? data.front().vectorFrame : "unknown";
+    std::string vectorFrame = buffer.noTotalItems() ? buffer.readElementAtPosition(0).vectorFrame : "unknown";
     auto getKindrVector = [accessor](const ContainerType_ * const v) { return &(accessor(v)->vector); };
     sls_traits<typename ValueType_::VectorType, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_vector_in_" + vectorFrame + "_frame", divider, isBufferLooping, getKindrVector);
+        header, binary, buffer, name + "_vector_in_" + vectorFrame + "_frame", divider, isBufferLooping, getKindrVector);
 
-    std::string positionFrame = data.size() ? data.front().positionFrame : "unknown";
+    std::string positionFrame = buffer.noTotalItems() ? buffer.readElementAtPosition(0).positionFrame : "unknown";
     auto getKindrPosition = [accessor](const ContainerType_ * const v) { return &(accessor(v)->position); };
     sls_traits<typename signal_logger::KindrPositionD, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_at_position_in_" + positionFrame + "_frame", divider, isBufferLooping, getKindrPosition);
+        header, binary, buffer, name + "_at_position_in_" + positionFrame + "_frame", divider, isBufferLooping, getKindrPosition);
   }
 };
 

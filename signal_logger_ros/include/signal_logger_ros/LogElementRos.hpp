@@ -30,31 +30,31 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
 
  public:
   /** Constructor
-   *  @param ptr          pointer to the log var
-   *  @param name         name of the log var
-   *  @param unit         unit of the log var
-   *  @param divider      log_freq = ctrl_freq/divider
-   *  @param action       save, publish or save and publish
-   *  @param bufferSize   size of the buffer (bufferSize elements of type ValueType_)
-   *  @param bufferType   type of the buffer
-   *  @param headerStream pointer to the header stream of the binary log file
-   *  @param dataStream   pointer to the data stream of the binary log file
+   *  @param ptr        pointer to the log var
+   *  @param bufferType buffer type of the log var
+   *  @param bufferSize buffer size of the log var
+   *  @param name       name of the log var
+   *  @param unit       unit of the log var
+   *  @param divider    log_freq = ctrl_freq/divider
+   *  @param action     save, publish or save and publish
+   *  @param headerStream string stream for log file header
+   *  @param dataStream   type of the buffer
    *  @param nh           ros nodehandle for the ros publisher
    *  @param bagWriter    reference to the bagfile writer object
    *  @param saveToBag    flag if elemt shall be save to bag
    */
   LogElementRos(const ValueType_ * const ptr,
+                const signal_logger::BufferType bufferType,
+                const std::size_t bufferSize,
                 const std::string & name,
                 const std::string & unit,
                 const std::size_t divider,
                 const signal_logger::LogElementAction action,
-                const std::size_t bufferSize,
-                const signal_logger::BufferType bufferType,
                 std::stringstream * headerStream,
                 std::stringstream * dataStream,
                 ros::NodeHandle * nh,
                 const std::shared_ptr<rosbag::Bag> & bagWriter) :
-                  signal_logger_std::LogElementStd<ValueType_>(ptr, name, unit, divider, action, bufferSize, bufferType, headerStream, dataStream),
+                  signal_logger_std::LogElementStd<ValueType_>(ptr, bufferType, bufferSize, name, unit, divider, action, headerStream, dataStream),
                   nh_(nh),
                   bagWriter_(bagWriter),
                   pub_(),
@@ -71,7 +71,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   }
 
   //! Save Data to file
-  void saveDataToLogFile(const signal_logger::vector_type<signal_logger::TimestampPair> & times,
+  void saveDataToLogFile(const signal_logger::TimeElement & times,
                          unsigned int nrCollectDataCalls,
                          signal_logger::LogFileType type = signal_logger::LogFileType::BINARY) override
   {
@@ -82,34 +82,35 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
     }
     else if(type == signal_logger::LogFileType::BAG) {
       // Lock the copy mutex
-      std::unique_lock<std::mutex> lock(this->copyMutex_);
+      std::unique_lock<std::mutex> lock(this->mutexCopy_);
 
       // Oldest entry in the time buffer
       std::size_t startIdx = 0;
 
-      if(this->isBufferLoopingCopy_) {
+      if(this->buffer_.getBufferType() == signal_logger::BufferType::LOOPING) {
         /* Last index of time: (times.size() - 1)
          * Index of newest time corresponding to a data point:  (nrCollectDataCalls - 1) % this->dividerCopy_
          * Offset of oldest time that corresponds to a data point: (this->bufferCopy_.size()-1) * this->dividerCopy_
          */
-        startIdx = (times.size() - 1) - (nrCollectDataCalls - 1) % this->dividerCopy_ - (this->bufferCopy_.size()-1) * this->dividerCopy_;
+        startIdx = (times.getTimeBufferCopy().noTotalItems() - 1) - (nrCollectDataCalls - 1) % this->optionsCopy_.getDivider()
+                   - (this->bufferCopy_.noTotalItems()-1) * this->optionsCopy_.getDivider();
       }
 
-      for(std::size_t i = 0; i < this->bufferCopy_.size(); ++i) {
+      for(std::size_t i = 0; i < this->bufferCopy_.noTotalItems(); ++i) {
         // Get time at data point
-        signal_logger::TimestampPair tsp_now = times.at(startIdx + i*this->dividerCopy_);
+        signal_logger::TimestampPair tsp_now =
+          times.getTimeBufferCopy().readElementAtPosition((this->bufferCopy_.noTotalItems() - 1) - (startIdx + i*this->optionsCopy_.getDivider()) );
         ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
         // Update msg
-        ValueType_ data = this->bufferCopy_.at(i);
-        traits::slr_update_traits<ValueType_>::updateMsg(&data, msgSave_, now);
+        traits::slr_update_traits<ValueType_>::updateMsg(this->bufferCopy_.getPointerAtPosition( (this->bufferCopy_.noTotalItems() - 1) - i), msgSave_, now);
         // Write to bag
-        bagWriter_->write(this->nameCopy_, now, *msgSave_);
+        bagWriter_->write(this->optionsCopy_.getName(), now, *msgSave_);
       }
     }
   }
 
   //! Reads buffer and publishes data via ros
-  void publishData(const signal_logger::LogElementBase<signal_logger::TimestampPair> & time, unsigned int nrCollectDataCalls) override
+  void publishData(const signal_logger::TimeElement & time, unsigned int nrCollectDataCalls) override
   {
     {
       std::unique_lock<std::mutex> lock(this->publishMutex_);
@@ -124,7 +125,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
       this->buffer_.resetUnreadItems();
     }
 
-    if(this->noUnreadItemsInBuffer())
+    if(this->buffer_.noUnreadItems())
     {
       // Local vars
       signal_logger::TimestampPair tsp_now;
@@ -137,15 +138,16 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
           std::unique_lock<std::mutex> timeLock(time.acquireMutex());
 
           // Define time index depending on buffer type
-          std::size_t idx = (time.noItemsInBuffer() - 1) - (this->noItemsInBuffer()-this->noUnreadItemsInBuffer())*this->divider_;
+          std::size_t idx = (time.getBuffer().noTotalItems() - 1) - (this->buffer_.noTotalItems() -
+          this->buffer_.noUnreadItems())*this->options_.getDivider();
 
-          if(this->buffer_.getType() == signal_logger::BufferType::LOOPING) {
-            idx = (time.noItemsInBuffer() - 1) - (nrCollectDataCalls - 1) % this->divider_
-                - (this->noItemsInBuffer()-this->noUnreadItemsInBuffer())*this->divider_;
+          if(this->buffer_.getBufferType() == signal_logger::BufferType::LOOPING) {
+            idx = (time.getBuffer().noTotalItems() - 1) - (nrCollectDataCalls - 1) % this->options_.getDivider()
+                - (this->buffer_.noTotalItems()-this->buffer_.noUnreadItems())*this->options_.getDivider();
           }
 
           // get time stamp
-          tsp_now = time.getTimeStampAtPosition(idx);
+          tsp_now = time.getTimeBuffer().readElementAtPosition(idx);
         } // unlock time mutex
 
         // Read from buffer and transform to message via trait
@@ -164,18 +166,18 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   }
 
   //! Update the element, shutdown/advertise the ros publisher
-  void updateElement() override {
+  void reset() override {
     std::unique_lock<std::mutex> lock(this->publishMutex_);
-    if(this->isPublished() && this->isEnabled()) {
-      pub_ = nh_->advertise<MsgType>(this->getName(), 1);
+    if(this->options_.isPublished() && this->options_.isEnabled()) {
+      pub_ = nh_->advertise<MsgType>(this->options_.getName(), 1);
     }  else {
       pub_.shutdown();
     }
   }
 
   //! Cleanup the element (shutdown ros publisher)
-  void cleanupElement() override {
-    signal_logger_std::LogElementStd<ValueType_>::cleanupElement();
+  void cleanup() override {
+    signal_logger_std::LogElementStd<ValueType_>::cleanup();
     std::unique_lock<std::mutex> lock(this->publishMutex_);
     pub_.shutdown();
   }

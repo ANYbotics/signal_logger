@@ -23,6 +23,29 @@ class LogElementBase: public LogElementInterface
  public:
   /** Constructor
    *  @param ptr        pointer to the log var
+   *  @param bufferType buffer type of the log var
+   *  @param bufferSize buffer size of the log var
+   *  @param name       name of the log var
+   *  @param unit       unit of the log var
+   *  @param divider    log_freq = ctrl_freq/divider
+   *  @param action     save, publish or save and publish
+   */
+  LogElementBase(const ValueType_ * const ptr,
+                 const BufferType  bufferType,
+                 const std::size_t bufferSize,
+                 const std::string & name,
+                 const std::string & unit,
+                 const std::size_t divider,
+                 const LogElementAction action) :
+    LogElementBase(ptr, bufferType, bufferSize, LogElementOptions(name, unit, divider, action))
+  {
+
+  }
+
+  /** Constructor
+   *  @param ptr        pointer to the log var
+   *  @param bufferType buffer type of the log var
+   *  @param bufferSize buffer size of the log var
    *  @param options    options of the log var
    */
   LogElementBase(const ValueType_ * const ptr,
@@ -33,12 +56,12 @@ class LogElementBase: public LogElementInterface
    buffer_(ptr), // Zero buffer size log element not enabled
    options_(options),
    mutex_(),
-   bufferCopy_(),
-   optionsCopy_(),
+   bufferCopy_(ptr),
+   optionsCopy_(options),
    mutexCopy_()
  {
     // Initialize the buffer with the given options
-    buffer_.setType(bufferType);
+    buffer_.setBufferType(bufferType);
     buffer_.setBufferSize(bufferSize);
  }
 
@@ -62,8 +85,8 @@ class LogElementBase: public LogElementInterface
     // Lock all mutexes and copy the buffer
     std::unique_lock<std::mutex> lock(mutex_);
     std::unique_lock<std::mutex> lockCopy(mutexCopy_);
-    bufferCopy_ = std::move(buffer_);
-    optionsCopy_ = options_;
+    bufferCopy_.transfer(buffer_);
+    optionsCopy_.transfer(options_);
   }
 
   //! Reset logger element called before logger start
@@ -71,6 +94,9 @@ class LogElementBase: public LogElementInterface
 
   //! Cleanup logger element
   virtual void cleanup() override { }
+
+  //! @return options of the copy of log element
+  const LogElementOptions & getCopyOptions() const { return optionsCopy_; }
 
   //! @return options of the log element
   const LogElementOptions & getOptions() const { return options_; }
@@ -87,29 +113,30 @@ class LogElementBase: public LogElementInterface
   //! @return mutex of the log element
   std::mutex& acquireMutex() const { return mutex_; }
 
-  /*** Get the timestamp at position in the buffer
-   *   @tparam V  log element type (ValueType_)
-   *   @param  n  position in the buffer
-   *   @return    Timestamp-pair at position n in buffer
-   */
-  template<typename V = ValueType_>
-  V getTimeStampAtPosition(std::size_t n, typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
-  {
-    return buffer_.readElementAtPosition(n);
-  }
-
-  /*** Get the timestamp at position in the buffer
+  /*** Get access to the buffer copy
    *   @tparam V  log element type (ValueType_)
    *   @return    buffer copy
    */
   template<typename V = ValueType_>
-  const signal_logger::vector_type<V> & getTimeBufferCopy(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
+  const Buffer<V>& getTimeBufferCopy(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
   {
     std::unique_lock<std::mutex> lock(mutexCopy_);
     return bufferCopy_;
   }
 
- protected:
+  /*** Get access to the buffer
+ *   @tparam V  log element type (ValueType_)
+ *   @return    buffer copy
+ */
+  template<typename V = ValueType_>
+  const Buffer<V>& getTimeBuffer(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
+  {
+    std::unique_lock<std::mutex> lock(mutexCopy_);
+    return buffer_;
+  }
+
+
+protected:
   //! Update the element
   virtual void updateElement() { };
 
@@ -119,14 +146,14 @@ class LogElementBase: public LogElementInterface
   //! Options of the log element
   LogElementOptions options_;
   //! Mutex protecting element
-  std::mutex mutex_;
+  mutable std::mutex mutex_;
 
   //! Buffer copy (actually the buffer is moved during saving)
   Buffer<ValueType_> bufferCopy_;
   //! Options copy of the log element
   LogElementOptions optionsCopy_;
   //! Mutex protecting element copy
-  std::mutex mutexCopy_;
+  mutable std::mutex mutexCopy_;
 
 };
 

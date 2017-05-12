@@ -15,9 +15,6 @@
 
 namespace signal_logger {
 
-//! Forward declare options
-class LogElementOptions;
-
 class LogElementOptions
 {
  public:
@@ -38,6 +35,22 @@ class LogElementOptions
      isEnabled_(false)
   {
 
+  }
+
+  LogElementOptions(const LogElementOptions& other):
+    name_(other.name_),
+    unit_(other.unit_)
+  {
+    divider_.store(other.divider_.load());
+    action_.store(other.action_.load());
+    isEnabled_.store(other.isEnabled_.load());
+  }
+
+  void transfer(const LogElementOptions& other)
+  {
+    divider_.store(other.getDivider());
+    action_.store(other.getAction());
+    isEnabled_.store(other.isEnabled());
   }
 
   std::string getName() const { return name_; }
