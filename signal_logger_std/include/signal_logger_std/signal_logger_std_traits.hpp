@@ -229,13 +229,13 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if< is_eigen_
                                        const bool isBufferLooping,
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
-    for (int r = 0; r < accessor(&buffer.readElementAtPosition(0))->rows(); ++r)
+    for (int r = 0; r < accessor(buffer.getPointerAtPosition(0))->rows(); ++r)
     {
-      for (int c = 0; c < accessor(&buffer.readElementAtPosition(0))->cols(); ++c)
+      for (int c = 0; c < accessor(buffer.getPointerAtPosition(0))->cols(); ++c)
       {
         std::string nameWithSuffix = name;
-        if(accessor(&buffer.readElementAtPosition(0))->rows() > 1) nameWithSuffix += ("_" + std::to_string(r));
-        if(accessor(&buffer.readElementAtPosition(0))->cols() > 1) nameWithSuffix += ("_" + std::to_string(c));
+        if(accessor(buffer.getPointerAtPosition(0))->rows() > 1) nameWithSuffix += ("_" + std::to_string(r));
+        if(accessor(buffer.getPointerAtPosition(0))->cols() > 1) nameWithSuffix += ("_" + std::to_string(c));
         // Get matrix entry
         auto getMatrixEntryRC = [r, c, accessor](const ContainerType_ * const v) { return &((*accessor(v))(r,c)); };
         sls_traits<typename ValueType_::Scalar, ContainerType_>::writeLogElementToStreams(
@@ -332,12 +332,12 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_v
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
     // Get kindr vector
-    std::string vectorFrame = buffer.noTotalItems() ? buffer.readElementAtPosition(0).vectorFrame : "unknown";
+    std::string vectorFrame = buffer.noTotalItems() ? accessor(buffer.getPointerAtPosition(0))->vectorFrame : "unknown";
     auto getKindrVector = [accessor](const ContainerType_ * const v) { return &(accessor(v)->vector); };
     sls_traits<typename ValueType_::VectorType, ContainerType_>::writeLogElementToStreams(
         header, binary, buffer, name + "_vector_in_" + vectorFrame + "_frame", divider, isBufferLooping, getKindrVector);
 
-    std::string positionFrame = buffer.noTotalItems() ? buffer.readElementAtPosition(0).positionFrame : "unknown";
+    std::string positionFrame = buffer.noTotalItems() ? accessor(buffer.getPointerAtPosition(0))->positionFrame : "unknown";
     auto getKindrPosition = [accessor](const ContainerType_ * const v) { return &(accessor(v)->position); };
     sls_traits<typename signal_logger::KindrPositionD, ContainerType_>::writeLogElementToStreams(
         header, binary, buffer, name + "_at_position_in_" + positionFrame + "_frame", divider, isBufferLooping, getKindrPosition);
