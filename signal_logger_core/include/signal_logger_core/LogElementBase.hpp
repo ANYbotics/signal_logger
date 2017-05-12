@@ -73,14 +73,16 @@ class LogElementBase: public LogElementInterface
   virtual void cleanup() override { }
 
   //! @return options of the log element
-  LogElementOptions & getOptions() final { return options_; }
+  const LogElementOptions & getOptions() const { return options_; }
+
+  //! @return options of the log element
+  LogElementOptions & getOptions() { return options_; }
 
   //! @return buffer of the log element
-  const BufferInterface & getBuffer() const final { return buffer_; }
+  const BufferInterface & getBuffer() const { return buffer_; }
 
   //! @return non const buffer interface
   BufferInterface & getBuffer() { return buffer_; }
-
 
   //! @return mutex of the log element
   std::mutex& acquireMutex() const { return mutex_; }
