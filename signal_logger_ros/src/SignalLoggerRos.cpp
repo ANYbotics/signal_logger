@@ -197,7 +197,7 @@ bool SignalLoggerRos::logElementtoMsg(const std::string & name, signal_logger_ms
   if( logElements_.find(name) == logElements_.end()) { return false; }
 
   msg.name = logElements_.at(name)->getOptions().getName();
-  msg.is_logged = logElements_.at(name)->getOptions().isEnabled();
+  msg.is_logged = logElements_.at(name)->isEnabled();
   msg.divider = logElements_.at(name)->getOptions().getDivider();
   msg.buffer_size = logElements_.at(name)->getBuffer().getBufferSize();
   msg.no_items_in_buffer = logElements_.at(name)->getBuffer().noTotalItems();
@@ -243,7 +243,7 @@ bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg
   auto element_iterator  = logElements_.find(msg.name);
   if( element_iterator == logElements_.end()) { return false; }
 
-  logElements_.at(msg.name)->getOptions().setIsEnabled(msg.is_logged);
+  logElements_.at(msg.name)->setIsEnabled(msg.is_logged);
   if(msg.is_logged)
   {
     enabledElements_.push_back(element_iterator);

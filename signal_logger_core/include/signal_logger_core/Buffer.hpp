@@ -205,6 +205,13 @@ class Buffer: public BufferInterface
     bufferType_ = options.bufferType_;
   }*/
 
+  //! Allocate buffer size of memory
+  void allocate(bool enabled) {
+    std::unique_lock<std::mutex> lock(mutex_);
+    std::size_t new_capacity = enabled ? (bufferSize_) : 0;
+    container_.set_capacity(new_capacity);
+  }
+
   virtual std::size_t getBufferSize() const {
     std::lock_guard<std::mutex> lock(mutex_);
     return bufferSize_;

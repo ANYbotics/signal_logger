@@ -419,7 +419,7 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
 
   // Disable all log data and reallocate buffer
   // Thread-safe since these methods are only called by update logger which owns a unique lock of the elements map
-  for(auto & elem : enabledElements_) { elem->second->getOptions().setIsEnabled(false); }
+  for(auto & elem : enabledElements_) { elem->second->setIsEnabled(false); }
   enabledElements_.clear();
 
   // Get set of numbers from 0...(size-1)
@@ -446,11 +446,11 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
             // Overwrite defaults if specified in yaml file
             if (YAML::Node parameter = logElementsNode[i]["enabled"])
             {
-              elem->second->getOptions().setIsEnabled(parameter.as<bool>());
+              elem->second->setIsEnabled(parameter.as<bool>());
             }
             else {
               // Disable element if nothing is specified
-              elem->second->getOptions().setIsEnabled(false);
+              elem->second->setIsEnabled(false);
             }
             // Overwrite defaults if specified in yaml file
             if (YAML::Node parameter = logElementsNode[i]["divider"])
@@ -473,7 +473,7 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
               elem->second->getBuffer().setBufferType( static_cast<BufferType>(parameter.as<int>()) );
             }
             // Insert element
-            if(elem->second->getOptions().isEnabled()) {
+            if(elem->second->isEnabled()) {
               enabledElements_.push_back(elem);
             }
           }
@@ -498,7 +498,7 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
   // Noisily add all elements that were not in the configuration file
   for(auto iteratorOffset : iteratorOffsets) {
     LogElementMapIterator elem = std::next(logElements_.begin(), iteratorOffset);
-    elem->second->getOptions().setIsEnabled(true);
+    elem->second->setIsEnabled(true);
     enabledElements_.push_back(elem);
     MELO_DEBUG("[Signal logger] Enable logger element %s. It was not specified in the logger file!", elem->first.c_str() );
   }
@@ -530,7 +530,7 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
   for (auto & elem : logElements_)
   {
     node["log_elements"][j]["name"] = elem.second->getOptions().getName();
-    node["log_elements"][j]["enabled"] = elem.second->getOptions().isEnabled();
+    node["log_elements"][j]["enabled"] = elem.second->isEnabled();
     node["log_elements"][j]["divider"] = elem.second->getOptions().getDivider();
     node["log_elements"][j]["action"] = static_cast<int>(elem.second->getOptions().getAction());
     node["log_elements"][j]["buffer"]["size"] = elem.second->getBuffer().getBufferSize();

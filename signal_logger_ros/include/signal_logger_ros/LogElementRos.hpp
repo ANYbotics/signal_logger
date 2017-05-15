@@ -168,7 +168,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   //! Update the element, shutdown/advertise the ros publisher
   void update() override {
     std::unique_lock<std::mutex> lock(this->publishMutex_);
-    if(this->options_.isPublished() && this->options_.isEnabled()) {
+    if(this->options_.isPublished() && this->isEnabled()) {
       pub_ = nh_->advertise<MsgType>(this->options_.getName(), 1);
     }  else {
       pub_.shutdown();

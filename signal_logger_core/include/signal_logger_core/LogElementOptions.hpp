@@ -15,6 +15,8 @@
 
 namespace signal_logger {
 
+class LogElementInterface;
+
 class LogElementOptions
 {
  public:
@@ -31,8 +33,7 @@ class LogElementOptions
      name_(name),
      unit_(unit),
      divider_(divider),
-     action_(action),
-     isEnabled_(false)
+     action_(action)
   {
 
   }
@@ -43,14 +44,12 @@ class LogElementOptions
   {
     divider_.store(other.divider_.load());
     action_.store(other.action_.load());
-    isEnabled_.store(other.isEnabled_.load());
   }
 
   void transfer(const LogElementOptions& other)
   {
     divider_.store(other.getDivider());
     action_.store(other.getAction());
-    isEnabled_.store(other.isEnabled());
   }
 
   std::string getName() const { return name_; }
@@ -63,10 +62,6 @@ class LogElementOptions
   LogElementAction getAction() const { return action_.load(); }
   // todo update element on action change
   void setAction(const LogElementAction action) { action_.store(action); }
-
-  bool isEnabled() const { return isEnabled_.load(); }
-  // todo allocate memory if newly enabled and update
-  void setIsEnabled(const bool isEnabled) { isEnabled_.store(isEnabled); }
 
   //! @return check action for publishing
   bool isPublished() const {
@@ -87,8 +82,6 @@ class LogElementOptions
   std::atomic_size_t divider_;
   //! Action
   std::atomic<LogElementAction> action_;
-  //! Indicates if log element is currently active
-  std::atomic_bool isEnabled_;
 };
 
 } /* namespace signal_logger */

@@ -73,6 +73,12 @@ class LogElementInterface
   //! @return buffer of the log element
   virtual const BufferInterface & getBuffer() const = 0;
 
+  //! @return is log element enabled
+  virtual bool isEnabled() const = 0;
+
+  //! @param enabled log element
+  virtual void setIsEnabled(const bool isEnabled) = 0;
+
   //! @return mutex of the log element
   virtual std::mutex& acquireMutex() const = 0;
 

@@ -65,8 +65,7 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
       // Write to file
       if(this->bufferCopy_.noTotalItems() > 0 ) {
         signal_logger_std::traits::sls_traits<ValueType_, ValueType_>::writeLogElementToStreams(
-            headerStream_, dataStream_, this->bufferCopy_, this->optionsCopy_.getName(), this->optionsCopy_.getDivider(),
-            this->bufferCopy_.getBufferType() == signal_logger::BufferType::LOOPING);
+            headerStream_, dataStream_, this->bufferCopy_, this->optionsCopy_.getName(), this->optionsCopy_.getDivider());
       }
     }
   }

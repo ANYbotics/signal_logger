@@ -55,6 +55,7 @@ class LogElementBase: public LogElementInterface
    LogElementInterface(),
    buffer_(ptr), // Zero buffer size log element not enabled
    options_(options),
+   isEnabled_(false),
    mutex_(),
    bufferCopy_(ptr),
    optionsCopy_(options),
@@ -87,6 +88,7 @@ class LogElementBase: public LogElementInterface
     std::unique_lock<std::mutex> lockCopy(mutexCopy_);
     bufferCopy_.transfer(buffer_);
     optionsCopy_.transfer(options_);
+    buffer_.allocate(isEnabled());
   }
 
   //! Reset logger element called before logger start
@@ -112,6 +114,14 @@ class LogElementBase: public LogElementInterface
 
   //! @return mutex of the log element
   std::mutex& acquireMutex() const { return mutex_; }
+
+  bool isEnabled() const { return isEnabled_.load(); }
+
+  void setIsEnabled(const bool isEnabled) {
+    isEnabled_.store(isEnabled);
+    buffer_.allocate(isEnabled_);
+    update();
+  }
 
   /*** Get access to the buffer copy
    *   @tparam V  log element type (ValueType_)
@@ -145,6 +155,8 @@ protected:
   Buffer<ValueType_> buffer_;
   //! Options of the log element
   LogElementOptions options_;
+  //! Indicates if log element is currently active
+  std::atomic_bool isEnabled_;
   //! Mutex protecting element
   mutable std::mutex mutex_;
 
