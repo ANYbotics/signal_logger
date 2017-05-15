@@ -11,7 +11,7 @@
 #include "rqt_signal_logger/LogElement.hpp"
 
 // custom msgs/srvs
-#include "signal_logger_msgs/LoadLoggerScript.h"
+#include "signal_logger_msgs/EditLoggerScript.h"
 #include "signal_logger_msgs/SetLoggerElement.h"
 #include "signal_logger_msgs/GetLoggerElement.h"
 #include "signal_logger_msgs/GetLoggerConfiguration.h"
@@ -113,6 +113,7 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   ros::ServiceClient stopLoggerClient_;
   ros::ServiceClient saveLoggerDataClient_;
   ros::ServiceClient loadLoggerScriptClient_;
+  ros::ServiceClient saveLoggerScriptClient_;
   ros::ServiceClient isLoggerRunningClient_;
 
   std::string getLoggerConfigurationServiceName_;
@@ -122,6 +123,7 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   std::string stopLoggerServiceName_;
   std::string saveLoggerDataServiceName_;
   std::string loadLoggerScriptServiceName_;
+  std::string saveLoggerScriptServiceName_;
   std::string isLoggerRunningServiceName_;
 
   std::vector<std::shared_ptr<LogElement>> logElements_;

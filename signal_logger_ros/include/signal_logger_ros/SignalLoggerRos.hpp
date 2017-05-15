@@ -17,7 +17,7 @@
 #include "signal_logger_msgs/GetLoggerConfiguration.h"
 #include "signal_logger_msgs/GetLoggerElement.h"
 #include "signal_logger_msgs/SetLoggerElement.h"
-#include "signal_logger_msgs/LoadLoggerScript.h"
+#include "signal_logger_msgs/EditLoggerScript.h"
 #include "signal_logger_msgs/SaveLoggerData.h"
 
 // rosbag
@@ -142,8 +142,17 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
    *  @param  res success status
    *  @return true iff successful
    */
-  bool loadLoggerScript(signal_logger_msgs::LoadLoggerScriptRequest& req,
-                        signal_logger_msgs::LoadLoggerScriptResponse& res);
+  bool loadLoggerScript(signal_logger_msgs::EditLoggerScriptRequest& req,
+                        signal_logger_msgs::EditLoggerScriptResponse& res);
+
+
+  /** Save logger script
+   *  @param  req file path
+   *  @param  res success status
+   *  @return true iff successful
+   */
+  bool saveLoggerScript(signal_logger_msgs::EditLoggerScriptRequest& req,
+                        signal_logger_msgs::EditLoggerScriptResponse& res);
 
   /** Write log element to msg
    *  @param  name log element name
@@ -177,6 +186,8 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
   ros::ServiceServer saveLoggerDataService_;
   //! Load logger script service
   ros::ServiceServer loadLoggerScriptService_;
+  //! Save logger script service
+  ros::ServiceServer saveLoggerScriptService_;
   //! Is logger running service
   ros::ServiceServer isLoggerRunningService_;
 
