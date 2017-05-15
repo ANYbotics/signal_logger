@@ -131,14 +131,14 @@ class LogElementBase: public LogElementInterface
   template<typename V = ValueType_>
   const Buffer<V>& getTimeBuffer(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
   {
-    std::unique_lock<std::mutex> lock(mutexCopy_);
+    std::unique_lock<std::mutex> lock(mutex_);
     return buffer_;
   }
 
 
 protected:
   //! Update the element
-  virtual void updateElement() { };
+  virtual void update() { };
 
  protected:
   //! Buffer (threadsafe)

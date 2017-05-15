@@ -109,7 +109,7 @@ class Buffer: public BufferInterface
     if( bufferType_ == BufferType::EXPONENTIALLY_GROWING && noItems_ >= bufferSize_)
     {
       bufferSize_ = std::max(size_type(100), 2*bufferSize_);
-      container_.set_capacity(bufferSize_* rows_ * cols_);
+      container_.set_capacity(bufferSize_);
     }
     else {
       // Non-looping buffers don't allow filling a full buffer
@@ -213,8 +213,10 @@ class Buffer: public BufferInterface
   virtual void setBufferSize(std::size_t bufferSize) {
     std::lock_guard<std::mutex> lock(mutex_);
     bufferSize_ = bufferSize;
-    container_.set_capacity(bufferSize_ * rows_ * cols_);
-    clear();
+    container_.set_capacity(bufferSize_);
+    container_.clear();
+    noUnreadItems_ = size_type(0);
+    noItems_ = size_type(0);
   }
 
   virtual BufferType getBufferType() const {

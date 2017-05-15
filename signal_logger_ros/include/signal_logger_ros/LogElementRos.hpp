@@ -87,7 +87,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
       // Oldest entry in the time buffer
       std::size_t startIdx = 0;
 
-      if(this->buffer_.getBufferType() == signal_logger::BufferType::LOOPING) {
+      if(this->bufferCopy_.getBufferType() == signal_logger::BufferType::LOOPING) {
         /* Last index of time: (times.size() - 1)
          * Index of newest time corresponding to a data point:  (nrCollectDataCalls - 1) % this->dividerCopy_
          * Offset of oldest time that corresponds to a data point: (this->bufferCopy_.size()-1) * this->dividerCopy_
@@ -99,7 +99,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
       for(std::size_t i = 0; i < this->bufferCopy_.noTotalItems(); ++i) {
         // Get time at data point
         signal_logger::TimestampPair tsp_now =
-          times.getTimeBufferCopy().readElementAtPosition((this->bufferCopy_.noTotalItems() - 1) - (startIdx + i*this->optionsCopy_.getDivider()) );
+          times.getTimeBufferCopy().readElementAtPosition((times.getTimeBufferCopy().noTotalItems() - 1) - (startIdx + i*this->optionsCopy_.getDivider()) );
         ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
         // Update msg
         traits::slr_update_traits<ValueType_>::updateMsg(this->bufferCopy_.getPointerAtPosition( (this->bufferCopy_.noTotalItems() - 1) - i), msgSave_, now);
@@ -166,7 +166,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
   }
 
   //! Update the element, shutdown/advertise the ros publisher
-  void reset() override {
+  void update() override {
     std::unique_lock<std::mutex> lock(this->publishMutex_);
     if(this->options_.isPublished() && this->options_.isEnabled()) {
       pub_ = nh_->advertise<MsgType>(this->options_.getName(), 1);
