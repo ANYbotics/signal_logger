@@ -92,7 +92,7 @@ class Buffer: public BufferInterface
    */
   void transfer(Buffer & other)
   {
-    container_.swap(other.container_);
+    container_ = other.container_;
     bufferType_ = other.bufferType_;
     bufferSize_ = other.bufferSize_;
     noUnreadItems_ = other.noUnreadItems_;

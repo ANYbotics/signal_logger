@@ -88,7 +88,6 @@ class LogElementBase: public LogElementInterface
     std::unique_lock<std::mutex> lockCopy(mutexCopy_);
     bufferCopy_.transfer(buffer_);
     optionsCopy_.transfer(options_);
-    buffer_.allocate(isEnabled());
   }
 
   //! Reset logger element called before logger start
@@ -130,7 +129,6 @@ class LogElementBase: public LogElementInterface
   template<typename V = ValueType_>
   const Buffer<V>& getTimeBufferCopy(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
   {
-    std::unique_lock<std::mutex> lock(mutexCopy_);
     return bufferCopy_;
   }
 
@@ -141,7 +139,6 @@ class LogElementBase: public LogElementInterface
   template<typename V = ValueType_>
   const Buffer<V>& getTimeBuffer(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
   {
-    std::unique_lock<std::mutex> lock(mutex_);
     return buffer_;
   }
 
