@@ -229,7 +229,6 @@ class Buffer: public BufferInterface
     bufferType_ = bufferType;
   }
 
-
   //! @return number of unread elements
   virtual std::size_t noUnreadItems() const {
     std::unique_lock<std::mutex> lock(mutex_);
@@ -265,14 +264,14 @@ class Buffer: public BufferInterface
  private:
   Buffer(const ValueType_ * const ptr, const std::size_t rows, const std::size_t cols):
       ptr_(ptr),
-      bufferSize_(0),
       bufferType_(BufferType::LOOPING),
+      bufferSize_(0),
+      container_(bufferSize_),
       noUnreadItems_(0),
       noItems_(0),
-      container_(bufferSize_),
-      mutex_(),
       rows_(rows),
-      cols_(cols)
+      cols_(cols),
+      mutex_()
   {
   }
 
@@ -343,21 +342,21 @@ class Buffer: public BufferInterface
  private:
   //! Pointer to value
   const ValueType_* const ptr_;
-  //! Circular buffer
-  circular_buffer_type container_;
   //! Is the buffer "circulating", refreshing old entries with new ones
   BufferType bufferType_;
   //! Size of the buffer (no elements, can differ from buffer capacity)
   std::size_t bufferSize_;
+  //! Circular buffer
+  circular_buffer_type container_;
   //! Number of unread items
   size_type noUnreadItems_;
   //! Number of items in the buffer (read and unread)
   size_type noItems_;
-  //! Mutex protecting accessing this container
-  mutable std::mutex mutex_;
   //! Eigen specific entries (1 in other cases)
   const std::size_t rows_;
   const std::size_t cols_;
+  //! Mutex protecting accessing this container
+  mutable std::mutex mutex_;
 };
 
 } /* namespace signal_logger */
