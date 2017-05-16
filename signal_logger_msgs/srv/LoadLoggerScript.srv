@@ -1,7 +1,0 @@
-## This service tries to load a logger configuration file
-## at location 'filepath'. If the config file exists and
-## can be loaded successfully 'success' is set to true.
-
-string filepath
----
-bool success

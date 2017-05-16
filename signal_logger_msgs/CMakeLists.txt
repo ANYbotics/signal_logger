@@ -44,7 +44,7 @@ add_service_files(
     FILES
     GetLoggerElement.srv
     GetLoggerConfiguration.srv
-    LoadLoggerScript.srv
+    EditLoggerScript.srv
     SetLoggerElement.srv
     SaveLoggerData.srv
 )

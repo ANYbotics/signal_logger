@@ -7,9 +7,6 @@
 // rqt_signal_logger
 #include "rqt_signal_logger/SignalLoggerPlugin.hpp"
 
-// signal_logger_core
-#include "signal_logger_core/yaml_helper.hpp"
-
 // yaml-cpp
 #include <yaml-cpp/yaml.h>
 
@@ -151,6 +148,7 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   stopLoggerServiceName_ = "/silo_ros/stop_logger";
   saveLoggerDataServiceName_  = "/silo_ros/save_logger_data";
   loadLoggerScriptServiceName_  = "/silo_ros/load_logger_script";
+  saveLoggerScriptServiceName_  = "/silo_ros/save_logger_script";
   isLoggerRunningServiceName_ = "/silo_ros/is_logger_running";
 
   //! Get namespace from rosparam server and add it to the parameter list
@@ -179,6 +177,7 @@ bool SignalLoggerPlugin::checkNamespace(const QString & text) {
              ros::service::exists(text.toStdString()+stopLoggerServiceName_, false) &&
              ros::service::exists(text.toStdString()+saveLoggerDataServiceName_, false) &&
              ros::service::exists(text.toStdString()+loadLoggerScriptServiceName_, false) &&
+             ros::service::exists(text.toStdString()+saveLoggerScriptServiceName_, false) &&
              ros::service::exists(text.toStdString()+isLoggerRunningServiceName_, false) );
   }
   catch(...)
@@ -203,7 +202,8 @@ void SignalLoggerPlugin::setNamespace() {
     startLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(text.toStdString()+startLoggerServiceName_);
     stopLoggerClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(text.toStdString()+stopLoggerServiceName_);
     saveLoggerDataClient_ = getNodeHandle().serviceClient<signal_logger_msgs::SaveLoggerData>(text.toStdString()+saveLoggerDataServiceName_);
-    loadLoggerScriptClient_ = getNodeHandle().serviceClient<signal_logger_msgs::LoadLoggerScript>(text.toStdString()+loadLoggerScriptServiceName_);
+    loadLoggerScriptClient_ = getNodeHandle().serviceClient<signal_logger_msgs::EditLoggerScript>(text.toStdString()+loadLoggerScriptServiceName_);
+    saveLoggerScriptClient_ = getNodeHandle().serviceClient<signal_logger_msgs::EditLoggerScript>(text.toStdString()+saveLoggerScriptServiceName_);
     isLoggerRunningClient_ = getNodeHandle().serviceClient<std_srvs::Trigger>(text.toStdString()+isLoggerRunningServiceName_);
     statusMessage(std::string("Found services for namespace ")+ text.toStdString() + std::string("! Refresh log elements!") , MessageType::SUCCESS);
     refreshAll();
@@ -225,6 +225,7 @@ void SignalLoggerPlugin::shutdownROS() {
   stopLoggerClient_.shutdown();
   saveLoggerDataClient_.shutdown();
   loadLoggerScriptClient_.shutdown();
+  saveLoggerScriptClient_.shutdown();
   isLoggerRunningClient_.shutdown();
 }
 
@@ -310,8 +311,8 @@ void SignalLoggerPlugin::selectYamlFile() {
 }
 
 void SignalLoggerPlugin::loadYamlFile() {
-  signal_logger_msgs::LoadLoggerScriptRequest req;
-  signal_logger_msgs::LoadLoggerScriptResponse res;
+  signal_logger_msgs::EditLoggerScriptRequest req;
+  signal_logger_msgs::EditLoggerScriptResponse res;
   req.filepath = configureUi_.pathEdit->text().toStdString();
   if(loadLoggerScriptClient_.call(req, res) && res.success) {
     statusMessage(std::string("Successfully loaded logger configuration file: ") + req.filepath, MessageType::SUCCESS, 2.0);
@@ -324,7 +325,7 @@ void SignalLoggerPlugin::loadYamlFile() {
 
 void SignalLoggerPlugin::saveYamlFile() {
   // Check for file existance and ask user for overwrite
-  std::string filename = configureUi_.pathEdit->text().toStdString();
+/*  std::string filename = configureUi_.pathEdit->text().toStdString();
   struct stat buffer;
   if(stat(filename.c_str(), &buffer) == 0)
   {
@@ -338,32 +339,19 @@ void SignalLoggerPlugin::saveYamlFile() {
       statusMessage("Did not save logger configuration file!", MessageType::WARNING, 2.0);
       return;
     }
-  }
+  }*/
 
-  YAML::Node node;
-  std::size_t i = 0;
-  for ( ; i < logElements_.size(); ++i)
-  {
-    node["log_elements"][i]["name"] = logElements_[i]->labelParamName->text().toStdString();
-    node["log_elements"][i]["enabled"] = static_cast<bool>(logElements_[i]->checkBoxIsLogging->checkState());
-    node["log_elements"][i]["divider"] = logElements_[i]->spinBoxDivider->value();
-    node["log_elements"][i]["action"] = logElements_[i]->comboBoxLogType->currentIndex();
-    node["log_elements"][i]["buffer"]["size"] = logElements_[i]->spinBoxBufferSize->value();
-    node["log_elements"][i]["buffer"]["type"] = logElements_[i]->comboBoxBufferType->currentIndex();
-  }
-
-  // If there are logged elements save them to file
-  if(i!=0) {
-    std::ofstream outfile(filename);
-    yaml_helper::writeYamlOrderedMaps(outfile, node);
-    outfile.close();
+  signal_logger_msgs::EditLoggerScriptRequest req;
+  signal_logger_msgs::EditLoggerScriptResponse res;
+  req.filepath = configureUi_.pathEdit->text().toStdString();
+  if(saveLoggerScriptClient_.call(req, res) && res.success) {
+    statusMessage(std::string("Successfully saved logger configuration file: ") + req.filepath, MessageType::SUCCESS, 2.0);
+    refreshAll();
   }
   else {
-    statusMessage("Did not save logger configuration file! No elements enabled!", MessageType::WARNING, 2.0);
-    return;
+    statusMessage(std::string("Could not save logger configuration file: ") + req.filepath + std::string("! Is logger running?"), MessageType::WARNING, 2.0);
   }
 
-  statusMessage(std::string("Successfully saved logger configuration file: ") + filename, MessageType::SUCCESS, 2.0);
 }
 
 void SignalLoggerPlugin::taskChanged(int index) {

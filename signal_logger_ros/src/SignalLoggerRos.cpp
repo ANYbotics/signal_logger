@@ -23,6 +23,7 @@ SignalLoggerRos::SignalLoggerRos(ros::NodeHandle * nh):
   stopLoggerService_ = nh_->advertiseService("silo_ros/stop_logger", &SignalLoggerRos::stopLogger, this);
   saveLoggerDataService_ = nh_->advertiseService("silo_ros/save_logger_data", &SignalLoggerRos::saveLoggerData, this);
   loadLoggerScriptService_ = nh_->advertiseService("silo_ros/load_logger_script", &SignalLoggerRos::loadLoggerScript, this);
+  saveLoggerScriptService_ = nh_->advertiseService("silo_ros/save_logger_script", &SignalLoggerRos::saveLoggerScript, this);
   isLoggerRunningService_  =  nh_->advertiseService("silo_ros/is_logger_running", &SignalLoggerRos::isLoggerRunning, this);
 }
 
@@ -40,6 +41,7 @@ bool SignalLoggerRos::cleanup() {
   stopLoggerService_.shutdown();
   saveLoggerDataService_.shutdown();
   loadLoggerScriptService_.shutdown();
+  saveLoggerScriptService_.shutdown();
   isLoggerRunningService_.shutdown();
   nh_ = nullptr;
   return true;
@@ -177,13 +179,25 @@ bool SignalLoggerRos::isLoggerRunning(std_srvs::TriggerRequest& req,
   return true;
 }
 
-bool SignalLoggerRos::loadLoggerScript(signal_logger_msgs::LoadLoggerScriptRequest& req,
-                                       signal_logger_msgs::LoadLoggerScriptResponse& res) {
+bool SignalLoggerRos::loadLoggerScript(signal_logger_msgs::EditLoggerScriptRequest& req,
+                                       signal_logger_msgs::EditLoggerScriptResponse& res) {
   if(isCollectingData_)
   {
     res.success = false;
   } else {
     res.success = SignalLoggerBase::readDataCollectScript(req.filepath);
+  }
+
+  return true;
+}
+
+bool SignalLoggerRos::saveLoggerScript(signal_logger_msgs::EditLoggerScriptRequest& req,
+                                       signal_logger_msgs::EditLoggerScriptResponse& res) {
+  if(isCollectingData_)
+  {
+    res.success = false;
+  } else {
+    res.success = SignalLoggerBase::saveDataCollectScript(req.filepath);
   }
 
   return true;
