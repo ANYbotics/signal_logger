@@ -43,17 +43,6 @@ template <typename ValueType_>
 class Buffer: public BufferInterface
 {
  public:
-/*  //! CircularBuffer typedef (Eigen matrices are stored as buffer of the underlying type)
-  template<typename T , typename Enable = void>
-  struct CircularBuffer {
-    typedef boost::circular_buffer<ValueType_> type;
-  };
-  template<typename T>
-  struct CircularBuffer<T, typename std::enable_if<traits::is_eigen_matrix<T>::value>::type>
-  {
-    typedef boost::circular_buffer<typename ValueType_::Scalar> type;
-  };*/
-
   //! Forward typedef as circular_buffer_type
   typedef boost::circular_buffer<ValueType_> circular_buffer_type;
 
@@ -172,39 +161,6 @@ class Buffer: public BufferInterface
     return &container_[idx];
   }
 
-  /** Make a copy of the complete (valid) buffer entries. The unread counter remains
-   *  unchanged, it copies the last noItmes_ items into a vector of value_type.
-   *  @return vector containing all buffered items
-   */
-/*  vector_type<ValueType_> copyBuffer() const
-  {
-    // Lock circular buffer
-    std::unique_lock<std::mutex> lock(mutex_);
-
-    // Fill vector
-    vector_type<ValueType_> data_vector(noItems_);
-    for(int j = 0; j < noItems_; ++j) {
-      // In this way no specialization for vector bool is necessary
-      ValueType_ read;
-      readElementAtPosition( &read , (noItems_ - 1) - j);
-      data_vector[j] = read;
-    }
-    return data_vector;
-  }*/
-
-  //! Allocate buffer size of memory
-/*  virtual void elementChanged(const LogElementOptions& options, Event event) {
-    std::unique_lock<std::mutex> lock(mutex_);
-
-    //! Set new capacity if element is enabled
-    std::size_t new_capacity = options.isEnabled_ ? (options.bufferSize_ * rows_ * cols_) : 0;
-    container_.set_capacity(new_capacity);
-    clear();
-
-    //! Update buffer type
-    bufferType_ = options.bufferType_;
-  }*/
-
   //! Allocate buffer size of memory
   void allocate(bool enabled) {
     std::unique_lock<std::mutex> lock(mutex_);
@@ -307,10 +263,6 @@ class Buffer: public BufferInterface
       return;
     }
     container_.push_front(*item);
-//
-//    for(std::size_t i = 0; i < item->size(); ++i) {
-//      container_.push_front( *(item->data() + i) );
-//    }
   }
 
   /** Push an element at front for default types
@@ -339,11 +291,6 @@ class Buffer: public BufferInterface
       throw std::out_of_range("[SILO:Buffer]: Can not read element at position " + std::to_string(position));
     }
     *item = container_[position];
-//    item->resize(rows_, cols_);
-//    // (position+1)*cols_*rows_ -1  refers to the last element of the buffered matrix
-//    for(std::size_t i = 0; i < item->size(); ++i) {
-//      *(item->data() + i) = container_[ (position+1)*cols_*rows_ - 1 - i ];
-//    }
   }
 
  private:
