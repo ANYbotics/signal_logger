@@ -258,15 +258,19 @@ bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg
   if( element_iterator == logElements_.end()) { return false; }
 
   logElements_.at(msg.name)->setIsEnabled(msg.is_logged);
+
+  auto enabled_iterator = std::find(enabledElements_.begin(), enabledElements_.end(), element_iterator);
+
   if(msg.is_logged)
   {
-    enabledElements_.push_back(element_iterator);
+    if(enabled_iterator == enabledElements_.end()) {
+      enabledElements_.push_back(element_iterator);
+    }
   }
   else
   {
-    auto it = std::find(enabledElements_.begin(), enabledElements_.end(), element_iterator);
-    if(it != enabledElements_.end()) {
-      enabledElements_.erase(it);
+    if(enabled_iterator != enabledElements_.end()) {
+      enabledElements_.erase(enabled_iterator);
     }
   }
 
