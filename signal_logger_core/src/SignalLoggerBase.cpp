@@ -406,6 +406,7 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
   std::string ending = ".yaml";
   if ( ( (ending.size() + 1) > scriptName.size() ) || !std::equal(ending.rbegin(), ending.rend(), scriptName.rbegin()) ) {
     MELO_ERROR_STREAM("[Signal logger] Script must be a yaml file : *.yaml");
+    for(auto & elem : enabledElements_) { elem->second->setIsEnabled(true); }
     return false;
   }
 
