@@ -118,34 +118,34 @@ bool SignalLoggerBase::startLogger()
 
   // If all elements are looping use a looping time buffer
   auto loopingElement = std::find_if(enabledElements_.begin(), enabledElements_.end(),
-                                     [] (const LogElementMapIterator& s) { return s->second->getBufferType() != BufferType::LOOPING; } );
+                                     [] (const LogElementMapIterator& s) { return s->second->getBuffer().getBufferType() != BufferType::LOOPING; } );
 
   if( loopingElement == enabledElements_.end() ) {
     unsigned int timeBufferSize = 0;
     auto maxElement = std::max_element(enabledElements_.begin(), enabledElements_.end(), maxScaledBufferSize());
     if(maxElement != enabledElements_.end()) {
-      timeBufferSize = (*maxElement)->second->getDivider() * (*maxElement)->second->getBufferSize();
+      timeBufferSize = (*maxElement)->second->getOptions().getDivider() * (*maxElement)->second->getBuffer().getBufferSize();
     }
-    timeElement_->setBufferType(BufferType::LOOPING);
-    timeElement_->setBufferSize(timeBufferSize);
+    timeElement_->getBuffer().setBufferType(BufferType::LOOPING);
+    timeElement_->getBuffer().setBufferSize(timeBufferSize);
     MELO_INFO_STREAM("[Signal logger] Use Looping Buffer of size:" << timeBufferSize);
   }
   else {
     if(options_.maxLoggingTime_ == 0.0) {
-      timeElement_->setBufferType(signal_logger::BufferType::EXPONENTIALLY_GROWING);
-      timeElement_->setBufferSize(LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME*options_.updateFrequency_);
+      timeElement_->getBuffer().setBufferType(signal_logger::BufferType::EXPONENTIALLY_GROWING);
+      timeElement_->getBuffer().setBufferSize(LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME*options_.updateFrequency_);
     }
     else {
-      timeElement_->setBufferType(signal_logger::BufferType::FIXED_SIZE);
-      timeElement_->setBufferSize(options_.maxLoggingTime_*options_.updateFrequency_);
+      timeElement_->getBuffer().setBufferType(signal_logger::BufferType::FIXED_SIZE);
+      timeElement_->getBuffer().setBufferSize(options_.maxLoggingTime_*options_.updateFrequency_);
     }
   }
 
   // Reset elements
-  timeElement_->restartElement();
+  timeElement_->reset();
 
 
-  for(auto & elem : enabledElements_) { elem->second->restartElement(); }
+  for(auto & elem : enabledElements_) { elem->second->reset(); }
 
   // Reset flags and data collection calls
   isCollectingData_ = true;
@@ -267,7 +267,7 @@ bool SignalLoggerBase::collectLoggerData()
       logTime_ = this->getCurrentTime();
 
       // Check if time buffer is full when using a fixed size buffer
-      if(timeElement_->getBufferType() == BufferType::FIXED_SIZE && timeElement_->noItemsInBuffer() == timeElement_->getBufferSize())
+      if(timeElement_->getBuffer().getBufferType() == BufferType::FIXED_SIZE && timeElement_->getBuffer().noTotalItems() == timeElement_->getBuffer().getBufferSize())
       {
         MELO_WARN("[Signal Logger] Stopped. Time buffer is full!");
         // Free lock and stop logger
@@ -291,7 +291,7 @@ bool SignalLoggerBase::collectLoggerData()
       // Collect element into buffer and unlock element mutexes (time/value pair is valid now)
       for(auto & elem : enabledElements_)
       {
-        if((noCollectDataCalls_ % elem->second->getDivider()) == 0) {
+        if((noCollectDataCalls_ % elem->second->getOptions().getDivider()) == 0) {
           elem->second->collectData();
         }
         elem->second->acquireMutex().unlock();
@@ -325,7 +325,7 @@ bool SignalLoggerBase::publishData()
     {
       // Publishing blocks the mutex for quite a long time, allow interference by stopLogger using atomic bool
       if(shouldPublish_) {
-        if(elem->second->isPublished()) {
+        if(elem->second->getOptions().isPublished()) {
           elem->second->publishData(*timeElement_, noCollectDataCalls_);
         }
       }
@@ -382,8 +382,8 @@ bool SignalLoggerBase::cleanup()
   boost::unique_lock<boost::shared_mutex> updateLoggerLock(loggerMutex_);
 
   // Publish data from buffer
-  for(auto & elem : logElements_) { elem.second->cleanupElement(); }
-  for(auto & elem : logElementsToAdd_) { elem.second->cleanupElement(); }
+  for(auto & elem : logElements_) { elem.second->cleanup(); }
+  for(auto & elem : logElementsToAdd_) { elem.second->cleanup(); }
 
   // Clear maps
   enabledElements_.clear();
@@ -456,22 +456,22 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
             // Overwrite defaults if specified in yaml file
             if (YAML::Node parameter = logElementsNode[i]["divider"])
             {
-              elem->second->setDivider(parameter.as<int>());
+              elem->second->getOptions().setDivider(parameter.as<int>());
             }
             // Check for action
             if (YAML::Node parameter = logElementsNode[i]["action"])
             {
-              elem->second->setAction( static_cast<LogElementAction>(parameter.as<int>()) );
+              elem->second->getOptions().setAction( static_cast<LogElementAction>(parameter.as<int>()) );
             }
             // Check for buffer size
             if (YAML::Node parameter = logElementsNode[i]["buffer"]["size"])
             {
-              elem->second->setBufferSize(parameter.as<int>());
+              elem->second->getBuffer().setBufferSize(parameter.as<int>());
             }
             // Check for buffer looping
             if (YAML::Node parameter = logElementsNode[i]["buffer"]["type"])
             {
-              elem->second->setBufferType( static_cast<BufferType>(parameter.as<int>()) );
+              elem->second->getBuffer().setBufferType( static_cast<BufferType>(parameter.as<int>()) );
             }
             // Insert element
             if(elem->second->isEnabled()) {
@@ -530,12 +530,12 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
   // Update logger owns a unique lock for the log element map -> thread-safe
   for (auto & elem : logElements_)
   {
-    node["log_elements"][j]["name"] = elem.second->getName();
+    node["log_elements"][j]["name"] = elem.second->getOptions().getName();
     node["log_elements"][j]["enabled"] = elem.second->isEnabled();
-    node["log_elements"][j]["divider"] = elem.second->getDivider();
-    node["log_elements"][j]["action"] = static_cast<int>(elem.second->getAction());
-    node["log_elements"][j]["buffer"]["size"] = elem.second->getBufferSize();
-    node["log_elements"][j]["buffer"]["type"] = static_cast<int>(elem.second->getBufferType());
+    node["log_elements"][j]["divider"] = elem.second->getOptions().getDivider();
+    node["log_elements"][j]["action"] = static_cast<int>(elem.second->getOptions().getAction());
+    node["log_elements"][j]["buffer"]["size"] = elem.second->getBuffer().getBufferSize();
+    node["log_elements"][j]["buffer"]["type"] = static_cast<int>(elem.second->getBuffer().getBufferType());
     j++;
   }
 
@@ -551,8 +551,8 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
 
 bool SignalLoggerBase::resetTimeLogElement(signal_logger::BufferType buffertype, double maxLogTime) {
   // Reset time element
-  timeElement_.reset(new LogElementBase<TimestampPair>(&logTime_, options_.loggerPrefix_ + std::string{"/time"}, "[s/ns]", 1,
-                                                       LogElementAction::SAVE, maxLogTime*options_.updateFrequency_, buffertype));
+  LogElementOptions options(options_.loggerPrefix_ + std::string{"/time"}, "[s/ns]", 1, LogElementAction::SAVE);
+  timeElement_.reset( new LogElementBase<TimestampPair>( &logTime_, buffertype, maxLogTime*options_.updateFrequency_, std::move(options) ) );
   return true;
 }
 
@@ -605,25 +605,25 @@ bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
     // Copy data from buffer
     for(auto & elem : enabledElements_)
     {
-      if(elem->second->isSaved())
+      if(elem->second->getOptions().isSaved())
       {
-        elem->second->createLocalBufferCopy();
+        elem->second->copy();
       }
     }
 
     // Copy time
-    timeElement_->createLocalBufferCopy();
+    timeElement_->copy();
 
     // Reset buffers and counters
     noCollectDataCalls_ = 0;
 
     // Clear buffer for log elements
     for(auto & elem : enabledElements_) {
-      elem->second->restartElement();
+      elem->second->reset();
     }
 
     // Clear buffer for time elements
-    timeElement_->restartElement();
+    timeElement_->reset();
 
     // Set flag -> collection can restart
     isCopyingBuffer_ = false;
@@ -653,6 +653,5 @@ bool SignalLoggerBase::workerStartLogger() {
     usleep( (1.0/options_.updateFrequency_) * 1e6 );
   }
 }
-
 
 }

@@ -13,6 +13,7 @@
 
 // STL
 #include <atomic>
+#include <mutex>
 
 namespace signal_logger {
 
@@ -22,37 +23,47 @@ class LogElementBase: public LogElementInterface
  public:
   /** Constructor
    *  @param ptr        pointer to the log var
+   *  @param bufferType buffer type of the log var
+   *  @param bufferSize buffer size of the log var
    *  @param name       name of the log var
    *  @param unit       unit of the log var
    *  @param divider    log_freq = ctrl_freq/divider
    *  @param action     save, publish or save and publish
-   *  @param bufferSize size of the buffer (bufferSize elements of type ValueType_)
-   *  @param bufferType type of the buffer
    */
   LogElementBase(const ValueType_ * const ptr,
+                 const BufferType  bufferType,
+                 const std::size_t bufferSize,
                  const std::string & name,
                  const std::string & unit,
                  const std::size_t divider,
-                 const LogElementAction action,
+                 const LogElementAction action) :
+    LogElementBase(ptr, bufferType, bufferSize, LogElementOptions(name, unit, divider, action))
+  {
+
+  }
+
+  /** Constructor
+   *  @param ptr        pointer to the log var
+   *  @param bufferType buffer type of the log var
+   *  @param bufferSize buffer size of the log var
+   *  @param options    options of the log var
+   */
+  LogElementBase(const ValueType_ * const ptr,
+                 const BufferType  bufferType,
                  const std::size_t bufferSize,
-                 const BufferType bufferType) :
-                   LogElementInterface(),
-                   buffer_(ptr), // Zero buffer size log element not enabled
-                   name_(name),
-                   unit_(unit),
-                   divider_(divider),
-                   action_(action),
-                   isEnabled_(false),
-                   mutex_(),
-                   bufferCopy_(),
-                   nameCopy_(),
-                   dividerCopy_(),
-                   isBufferLoopingCopy_(),
-                   copyMutex_()
+                 const LogElementOptions & options) :
+   LogElementInterface(),
+   buffer_(ptr), // Zero buffer size log element not enabled
+   options_(options),
+   isEnabled_(false),
+   mutex_(),
+   bufferCopy_(ptr),
+   optionsCopy_(options),
+   mutexCopy_()
  {
-    buffer_.setType(bufferType);
+    // Initialize the buffer with the given options
+    buffer_.setBufferType(bufferType);
     buffer_.setBufferSize(bufferSize);
-    buffer_.clear();
  }
 
   //! Destructor
@@ -62,174 +73,97 @@ class LogElementBase: public LogElementInterface
   void collectData() override final { buffer_.collect(); }
 
   //! Reads buffer and processes data (probably called from different thread)
-  virtual void publishData(const LogElementBase<TimestampPair> & time, unsigned int nrCollectDataCalls) override { }
+  virtual void publishData(const TimeElement & time,
+                           unsigned int nrCollectDataCalls) override { }
 
   //! Writes local buffer copy to a file
-  virtual void saveDataToLogFile(const signal_logger::vector_type<TimestampPair> & times, unsigned int nrCollectDataCalls, LogFileType type = LogFileType::BINARY) override {}
+  virtual void saveDataToLogFile(const TimeElement & times,
+                                 unsigned int nrCollectDataCalls,
+                                 LogFileType type = LogFileType::BINARY) override { }
 
   //! Stores a copy of the current buffer, file is saved from this
-  virtual void createLocalBufferCopy() {
+  virtual void copy() {
     // Lock all mutexes and copy the buffer
     std::unique_lock<std::mutex> lock(mutex_);
-    std::unique_lock<std::mutex> lockCopy(copyMutex_);
-    bufferCopy_ = buffer_.copyBuffer();
-    nameCopy_ = name_;
-    dividerCopy_ = divider_.load();
-    actionCopy_ = action_.load();
-    isBufferLoopingCopy_ = (buffer_.getType() == BufferType::LOOPING);
+    std::unique_lock<std::mutex> lockCopy(mutexCopy_);
+    bufferCopy_.transfer(buffer_);
+    optionsCopy_.transfer(options_);
   }
 
   //! Reset logger element called before logger start
-  virtual void restartElement()    override {
-    this->clearBuffer();
-  }
+  virtual void reset() override { buffer_.clear(); }
 
   //! Cleanup logger element
-  virtual void cleanupElement()    override { }
+  virtual void cleanup() override { }
 
-  //! @return flag indicating if log element is enabled
-  bool isEnabled() const final {
-    return isEnabled_;
-  }
+  //! @return options of the copy of log element
+  const LogElementOptions & getCopyOptions() const { return optionsCopy_; }
 
-  //! @param flag indicating if log element should be enabled
-  void setIsEnabled(const bool isEnabled) override final {
-    isEnabled_ = isEnabled;
-    buffer_.allocate(isEnabled_);
-    updateElement();
-  }
+  //! @return options of the log element
+  const LogElementOptions & getOptions() const { return options_; }
 
-  //! @return name of the log element
-  std::string getName() const override final {
-    std::unique_lock<std::mutex> lock(mutex_);
-    return name_;
-  }
+  //! @return options of the log element
+  LogElementOptions & getOptions() { return options_; }
 
-  //! @return unit of the log element
-  std::string getUnit() const override final {
-    std::unique_lock<std::mutex> lock(mutex_);
-    return unit_;
-  }
+  //! @return buffer of the log element
+  const BufferInterface & getBuffer() const { return buffer_; }
 
-  //! @param desired unit of the log element
-  void setUnit(const std::string & unit) override final {
-    std::unique_lock<std::mutex> lock(mutex_);
-    unit_ = unit;
-  }
-
-  //! @return get frequency divider
-  unsigned int getDivider() const override final {
-    return divider_;
-  }
-
-  //! @param desired update frequency divider
-  void setDivider(unsigned int divider) override final {
-    divider_ = divider;
-  }
-
-  //! @return check action for publishing
-  bool isPublished() const override final {
-    return (action_ == LogElementAction::SAVE_AND_PUBLISH || action_ == LogElementAction::PUBLISH);
-  }
-
-  //! @return check action for saving
-  bool isSaved() const override final {
-    return (action_ == LogElementAction::SAVE_AND_PUBLISH || action_ == LogElementAction::SAVE);
-  }
-
-  //! @return check action for saving
-  bool isCopySaved() const override final {
-    return (actionCopy_ == LogElementAction::SAVE_AND_PUBLISH || actionCopy_ == LogElementAction::SAVE);
-  }
-
-  //! @return action log element takes
-  LogElementAction getAction() const override final {
-    return action_;
-  }
-
-  //! @param desired action log element takes
-  void setAction(LogElementAction action) override final {
-    action_ = action;
-    updateElement();
-  }
-
-  //! @return buffer size of the log element
-  std::size_t getBufferSize() const override final { return buffer_.getBufferSize(); }
-
-  //! @param desired buffer size of the log element
-  void setBufferSize(const std::size_t bufferSize) override final { buffer_.setBufferSize(bufferSize); buffer_.clear(); }
-
-  //! @return type of the buffer
-  BufferType getBufferType() const override final { return buffer_.getType(); }
-
-  //! @param desired type of the buffer
-  void setBufferType(const BufferType bufferType) override final { buffer_.setType(bufferType); }
-
-  //! @return number of total items in buffer
-  std::size_t noItemsInBuffer() const override final { return buffer_.noItems(); }
-
-  //! @return number of unread items in buffer
-  std::size_t noUnreadItemsInBuffer() const override final { return buffer_.noUnreadItems(); }
-
-  //! Clear buffer
-  void clearBuffer() override final { buffer_.clear(); }
+  //! @return non const buffer interface
+  BufferInterface & getBuffer() { return buffer_; }
 
   //! @return mutex of the log element
   std::mutex& acquireMutex() const { return mutex_; }
 
-  /*** Get the timestamp at position in the buffer
-   *   @tparam V  log element type (ValueType_)
-   *   @param  n  position in the buffer
-   *   @return    Timestamp-pair at position n in buffer
-   */
-  template<typename V = ValueType_>
-  V getTimeStampAtPosition(std::size_t n, typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
-  {
-    return buffer_.readElementAtPosition(n);
+  bool isEnabled() const { return isEnabled_.load(); }
+
+  void setIsEnabled(const bool isEnabled) {
+    isEnabled_.store(isEnabled);
+    buffer_.allocate(isEnabled_);
+    update();
   }
 
-  /*** Get the timestamp at position in the buffer
+  /*** Get access to the buffer copy
    *   @tparam V  log element type (ValueType_)
    *   @return    buffer copy
    */
   template<typename V = ValueType_>
-  const signal_logger::vector_type<V> & getTimeBufferCopy(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
+  const Buffer<V>& getTimeBufferCopy(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
   {
-    std::unique_lock<std::mutex> lock(copyMutex_);
     return bufferCopy_;
   }
 
- protected:
+  /*** Get access to the buffer
+ *   @tparam V  log element type (ValueType_)
+ *   @return    buffer copy
+ */
+  template<typename V = ValueType_>
+  const Buffer<V>& getTimeBuffer(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
+  {
+    return buffer_;
+  }
+
+
+protected:
   //! Update the element
-  virtual void updateElement() { };
+  virtual void update() { };
 
  protected:
   //! Buffer (threadsafe)
   Buffer<ValueType_> buffer_;
-  //! Name of the log element
-  std::string name_;
-  //! Unit of the log element
-  std::string unit_;
-  //! Defines log element collection frequency = updateFrequency/divider
-  std::atomic<std::size_t> divider_;
-  //! Action
-  std::atomic<LogElementAction> action_;
+  //! Options of the log element
+  LogElementOptions options_;
   //! Indicates if log element is currently active
   std::atomic_bool isEnabled_;
-  //! Mutex
+  //! Mutex protecting element
   mutable std::mutex mutex_;
-  //! Local copy
-  signal_logger::vector_type<ValueType_> bufferCopy_;
-  //! Local name copy
-  std::string nameCopy_;
-  //! Local divider copy
-  std::atomic<std::size_t> dividerCopy_;
-  //! Action
-  std::atomic<LogElementAction> actionCopy_;
-  //! Looping buffer local copy
-  std::atomic_bool isBufferLoopingCopy_;
-  //! Local copy mutex
-  mutable std::mutex copyMutex_;
+
+  //! Buffer copy (actually the buffer is moved during saving)
+  Buffer<ValueType_> bufferCopy_;
+  //! Options copy of the log element
+  LogElementOptions optionsCopy_;
+  //! Mutex protecting element copy
+  mutable std::mutex mutexCopy_;
+
 };
 
 } /* namespace signal_logger */

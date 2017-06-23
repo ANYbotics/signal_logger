@@ -12,6 +12,13 @@
 
 namespace signal_logger {
 
+//! Forward declaration of LogElementBase
+template <typename ValueType_>
+class LogElementBase;
+
+using TimeElement = LogElementBase<TimestampPair>;
+
+
 //! Enum containing possible buffer types
 enum class BufferType: unsigned int
 {

@@ -65,8 +65,8 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
     {
       // Lock the logger (blocking!)
       boost::unique_lock<boost::shared_mutex> addLoggerLock(loggerMutex_);
-      logElementsToAdd_[elementName].reset(new LogElementRos<ValueType_>(var, elementName , unit, divider, action, bufferSize,
-                                                                         bufferType, &headerStream_, &dataStream_, nh_, bagWriter_));
+      logElementsToAdd_[elementName].reset(new LogElementRos<ValueType_>(var, bufferType, bufferSize, elementName , unit, divider, action,
+                                                                         &headerStream_, &dataStream_, nh_, bagWriter_));
     }
   }
 

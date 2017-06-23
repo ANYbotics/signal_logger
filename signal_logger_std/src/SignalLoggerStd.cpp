@@ -39,13 +39,13 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, signal_log
   {
     boost::unique_lock<boost::shared_mutex> saveLoggerLock(loggerMutex_);
     // Fill streams
-    timeElement_->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_, signal_logger::LogFileType::BINARY);
+    timeElement_->saveDataToLogFile(*timeElement_, noCollectDataCallsCopy_, signal_logger::LogFileType::BINARY);
 
     for(auto & elem : enabledElements_) {
 
-      if(elem->second->isCopySaved())
+      if(elem->second->getCopyOptions().isSaved())
       {
-        elem->second->saveDataToLogFile(timeElement_->getTimeBufferCopy(), noCollectDataCallsCopy_, signal_logger::LogFileType::BINARY);
+        elem->second->saveDataToLogFile(*timeElement_, noCollectDataCallsCopy_, signal_logger::LogFileType::BINARY);
       }
     }
   }
@@ -77,10 +77,10 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, signal_log
 }
 
 bool SignalLoggerStd::resetTimeLogElement(signal_logger::BufferType buffertype, double maxLogTime) {
-  timeElement_.reset(new signal_logger_std::LogElementStd<signal_logger::TimestampPair>( &logTime_, options_.loggerPrefix_ + std::string{"/time"},
-                                                                                         "[s/ns]", 1, signal_logger::LogElementAction::SAVE,
-                                                                                         maxLogTime*options_.updateFrequency_, buffertype,
-                                                                                         &headerStream_, &dataStream_));
+  timeElement_.reset( new signal_logger_std::LogElementStd<signal_logger::TimestampPair>(
+    &logTime_, buffertype, maxLogTime*options_.updateFrequency_, options_.loggerPrefix_ + std::string{"/time"},
+    "[s/ns]", 1, signal_logger::LogElementAction::SAVE , &headerStream_, &dataStream_ ) );
+
   return true;
 }
 
