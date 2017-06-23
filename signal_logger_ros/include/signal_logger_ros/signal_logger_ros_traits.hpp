@@ -86,6 +86,13 @@ struct slr_msg_traits<char> {
 };
 
 template<>
+struct slr_msg_traits<signed char> {
+  typedef signal_logger_msgs::Int8Stamped          msgtype;
+  typedef signal_logger_msgs::Int8StampedPtr       msgtypePtr;
+  typedef signal_logger_msgs::Int8StampedConstPtr  msgtypeConstPtr;
+};
+
+template<>
 struct slr_msg_traits<unsigned char> {
   typedef signal_logger_msgs::UnsignedCharStamped          msgtype;
   typedef signal_logger_msgs::UnsignedCharStampedPtr       msgtypePtr;
