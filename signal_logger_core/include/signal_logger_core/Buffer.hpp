@@ -151,7 +151,7 @@ class Buffer: public BufferInterface
     return val;
   }
 
-  const ValueType_ * const getPointerAtPosition(std::size_t idx)  const {
+  const ValueType_ * const getPointerAtPosition(std::size_t idx) {
     // Lock the circular buffer
     std::unique_lock<std::mutex> lock(mutex_);
 

@@ -75,7 +75,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::Buffer<ContainerType_> & buffer,
+                                       signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
@@ -98,7 +98,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_en
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::Buffer<ContainerType_> & buffer,
+                                       signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
@@ -119,7 +119,7 @@ struct sls_traits<signal_logger::TimestampPair, ContainerType_>
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::Buffer<ContainerType_> & buffer,
+                                       signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const std::function<const signal_logger::TimestampPair * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
@@ -146,7 +146,7 @@ struct sls_traits<Eigen::Vector3d, ContainerType_>
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::Buffer<ContainerType_> & buffer,
+                                       signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const std::function<const Eigen::Vector3d *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
@@ -171,7 +171,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_eigen_q
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::Buffer<ContainerType_> & buffer,
+                                       signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
@@ -191,7 +191,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_eigen_a
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::Buffer<ContainerType_> & buffer,
+                                       signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
@@ -217,7 +217,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if< is_eigen_
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::Buffer<ContainerType_> & buffer,
+                                       signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
@@ -249,7 +249,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if< std::is_b
 {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::Buffer<ContainerType_> & buffer,
+                                       signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
@@ -266,7 +266,7 @@ template <typename ValueType_, typename ContainerType_>
 struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_homogeneous_transformation<ValueType_>::value>::type> {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::Buffer<ContainerType_> & buffer,
+                                       signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
@@ -288,7 +288,7 @@ template <typename ValueType_, typename ContainerType_>
 struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_base_of<kindr::Twist<typename ValueType_::Scalar,typename ValueType_::PositionDiff,typename ValueType_::RotationDiff>,ValueType_>::value>::type> {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::Buffer<ContainerType_> & buffer,
+                                       signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
@@ -315,7 +315,7 @@ template <typename ValueType_, typename ContainerType_>
 struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_vector_at_position<ValueType_>::value>::type> {
   static void writeLogElementToStreams(std::stringstream* header,
                                        std::stringstream* binary,
-                                       const signal_logger::Buffer<ContainerType_> & buffer,
+                                       signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
