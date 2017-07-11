@@ -1,5 +1,5 @@
 % Get filename from directory
-fNumber = 1146;
+fNumber = 5;
 fName = getFilenameFromNumber(fNumber, ['/home/', getenv('LOGNAME'), '/.ros']);
 fprintf(['\nGot filename: ', fName, ' from number: ', num2str(fNumber)]);
 
