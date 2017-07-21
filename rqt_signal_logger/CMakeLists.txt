@@ -63,8 +63,11 @@ set(rqt_signal_logger_INCLUDE_DIRECTORIES
 )
 
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES rqt_signal_logger
+  INCLUDE_DIRS
+    include
+  LIBRARIES
+    rqt_signal_logger
+    yaml-cpp
   CATKIN_DEPENDS
     roscpp
     rqt_gui
@@ -72,8 +75,6 @@ catkin_package(
     signal_logger_msgs
     signal_logger_core
     std_srvs
-  DEPENDS
-    yaml-cpp
 )
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")

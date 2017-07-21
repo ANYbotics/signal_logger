@@ -22,8 +22,8 @@
   <depend>yaml-cpp</depend>
 
   <export>
-  <architecture_inent/>
-  <rqt_gui plugin="${prefix}/plugin.xml"/>
+    <architecture_inent/>
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
   </export>
 
 </package>
