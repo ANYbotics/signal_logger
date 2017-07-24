@@ -53,11 +53,11 @@ class LogElementBase: public LogElementInterface
                  const std::size_t bufferSize,
                  const LogElementOptions & options) :
    LogElementInterface(),
-   buffer_(ptr), // Zero buffer size log element not enabled
+   buffer_(ptr, options.getName()), // Zero buffer size log element not enabled
    options_(options),
    isEnabled_(false),
    mutex_(),
-   bufferCopy_(ptr),
+   bufferCopy_(ptr, options.getName()),
    optionsCopy_(options),
    mutexCopy_()
  {
