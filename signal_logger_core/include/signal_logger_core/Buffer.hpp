@@ -61,8 +61,8 @@ class Buffer: public BufferInterface
    *  @param ptr  pointer to the data to be buffered
    */
   template<typename V = ValueType_>
-  explicit Buffer(const V * const ptr, typename std::enable_if<is_buffer_default_type<V>::value>::type* = 0 /* default-type */ ) :
-      Buffer(ptr, 1, 1)
+  explicit Buffer(const V * const ptr, const std::string & name, typename std::enable_if<is_buffer_default_type<V>::value>::type* = 0 /* default-type */ ) :
+      Buffer(ptr, name, 1, 1)
   {
   }
 
@@ -70,8 +70,8 @@ class Buffer: public BufferInterface
    *  @param ptr  pointer to the data to be buffered
    */
   template<typename V = ValueType_>
-  explicit Buffer(const V * const ptr, typename std::enable_if<traits::is_eigen_matrix<V>::value>::type* = 0 /* eigen-type */ ) :
-    Buffer(ptr, ptr->rows(), ptr->cols())
+  explicit Buffer(const V * const ptr,  const std::string & name, typename std::enable_if<traits::is_eigen_matrix<V>::value>::type* = 0 /* eigen-type */ ) :
+    Buffer(ptr, name, ptr->rows(), ptr->cols())
   {
   }
 
@@ -109,13 +109,13 @@ class Buffer: public BufferInterface
     }
 
     // Add value to the buffer
-    pushElementFront(ptr_);
-
-    /*  noUnreadItems -> increases on push decreased on pop, max out at capacity
-     *  noItems -> increases on push, max out at capacity
-     */
-    noUnreadItems_ = std::min(++noUnreadItems_, bufferSize_);
-    noItems_ = std::min(++noItems_, bufferSize_);
+    if(pushElementFront(ptr_)) {
+      /*  noUnreadItems -> increases on push decreased on pop, max out at capacity
+       *  noItems -> increases on push, max out at capacity
+       */
+      noUnreadItems_ = std::min(++noUnreadItems_, bufferSize_);
+      noItems_ = std::min(++noItems_, bufferSize_);
+    }
 
     return true;
   }
@@ -155,9 +155,14 @@ class Buffer: public BufferInterface
     // Lock the circular buffer
     std::unique_lock<std::mutex> lock(mutex_);
 
-    if(idx < 0 || idx >= noItems_) {
-      throw std::out_of_range("[SILO:Buffer]: Can not read element at position " + std::to_string(idx));
+    if(container_.size() < 1 ) {
+      throw std::out_of_range("[SILO:Buffer]: Can not read element " + name_ + " at position " + std::to_string(idx) + ". Size is " + std::to_string(container_.size()) + "!");
     }
+
+    if(idx < 0 || idx >= noItems_) {
+      throw std::out_of_range("[SILO:Buffer]: Can not read element " + name_ + " at position " + std::to_string(idx));
+    }
+
     return &container_[idx];
   }
 
@@ -225,8 +230,9 @@ class Buffer: public BufferInterface
   Buffer& operator = (const Buffer&);
 
  private:
-  Buffer(const ValueType_ * const ptr, const std::size_t rows, const std::size_t cols):
+  Buffer(const ValueType_ * const ptr,  const std::string & name, const std::size_t rows, const std::size_t cols):
       ptr_(ptr),
+      name_(name),
       bufferType_(BufferType::LOOPING),
       bufferSize_(0),
       container_(bufferSize_),
@@ -243,9 +249,9 @@ class Buffer: public BufferInterface
    *  @return template specialization by return type
    */
   template<typename V = ValueType_>
-  typename std::enable_if<is_buffer_default_type<V>::value>::type
-  pushElementFront(const ValueType_ * const item) {
+  bool pushElementFront(const ValueType_ * const item, typename std::enable_if<is_buffer_default_type<V>::value>::type* = 0) {
     container_.push_front(*item);
+    return true;
   }
 
   /** Push an element at front for eigen types
@@ -253,16 +259,16 @@ class Buffer: public BufferInterface
    *  @return template specialization by return type
    */
   template<typename V = ValueType_>
-  typename std::enable_if<traits::is_eigen_matrix<V>::value>::type
-  pushElementFront(const ValueType_ * const item) {
+  bool pushElementFront(const ValueType_ * const item, typename std::enable_if<traits::is_eigen_matrix<V>::value>::type * = 0) {
     if(item->rows() != rows_ || item->cols() != cols_) {
       // Error output -> don't push back
-      MELO_ERROR_THROTTLE_STREAM(100.0, "[SILO:Buffer]: Matrix size not consistent" << std::endl << " init_rows = " << rows_ <<
-                                        " item_rows = " << item->rows() << std::endl << " init_cols = " << cols_ <<
-                                        " item_cols = " << item->cols());
-      return;
+      MELO_ERROR_STREAM("[SILO:Buffer]: Matrix size of element " << name_ << " not consistent" << std::endl <<
+                        " init_rows = " << rows_ << " item_rows = " << item->rows() << std::endl <<
+                        " init_cols = " << cols_ << " item_cols = " << item->cols());
+      return false;
     }
     container_.push_front(*item);
+    return true;
   }
 
   /** Push an element at front for default types
@@ -274,7 +280,7 @@ class Buffer: public BufferInterface
   typename std::enable_if<is_buffer_default_type<V>::value>::type
   readElementAtPosition(ValueType_ * item, size_t position)  const {
     if(position < 0 || position >= noItems_) {
-      throw std::out_of_range("[SILO:Buffer]: Can not read element at position " + std::to_string(position));
+      throw std::out_of_range("[SILO:Buffer]: Can not read element " + name_ + " at position " + std::to_string(position));
     }
     *item = container_[position];
   }
@@ -288,7 +294,7 @@ class Buffer: public BufferInterface
   typename std::enable_if<traits::is_eigen_matrix<V>::value>::type
   readElementAtPosition(ValueType_ * item, size_t position)  const {
     if(position < 0 || position >= noItems_) {
-      throw std::out_of_range("[SILO:Buffer]: Can not read element at position " + std::to_string(position));
+      throw std::out_of_range("[SILO:Buffer]: Can not read element " + name_ + " at position " + std::to_string(position));
     }
     *item = container_[position];
   }
@@ -296,6 +302,8 @@ class Buffer: public BufferInterface
  private:
   //! Pointer to value
   const ValueType_* const ptr_;
+  //! Name
+  const std::string name_;
   //! Is the buffer "circulating", refreshing old entries with new ones
   BufferType bufferType_;
   //! Size of the buffer (no elements, can differ from buffer capacity)
