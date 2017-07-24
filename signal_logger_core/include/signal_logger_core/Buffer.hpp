@@ -162,8 +162,8 @@ class Buffer: public BufferInterface
     if(idx < 0 || idx >= noItems_) {
       throw std::out_of_range("[SILO:Buffer]: Can not read element " + name_ + " at position " + std::to_string(idx));
     }
-
-    return &container_[idx];
+    const ValueType_& value = container_[idx];
+    return &value;
   }
 
   //! Allocate buffer size of memory
