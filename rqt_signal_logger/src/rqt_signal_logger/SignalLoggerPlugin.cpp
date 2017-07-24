@@ -164,7 +164,7 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
     }
   }
   else {
-    ROS_WARN_STREAM("Ros parameter: " << namespaceParameterName << "not found. Set last used namespace.");
+    ROS_WARN_STREAM("Ros parameter: " << namespaceParameterName << " not found. Set last used namespace.");
   }
 }
 
