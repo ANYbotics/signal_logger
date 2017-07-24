@@ -109,13 +109,13 @@ class Buffer: public BufferInterface
     }
 
     // Add value to the buffer
-    pushElementFront(ptr_);
-
-    /*  noUnreadItems -> increases on push decreased on pop, max out at capacity
-     *  noItems -> increases on push, max out at capacity
-     */
-    noUnreadItems_ = std::min(++noUnreadItems_, bufferSize_);
-    noItems_ = std::min(++noItems_, bufferSize_);
+    if(pushElementFront(ptr_)) {
+      /*  noUnreadItems -> increases on push decreased on pop, max out at capacity
+       *  noItems -> increases on push, max out at capacity
+       */
+      noUnreadItems_ = std::min(++noUnreadItems_, bufferSize_);
+      noItems_ = std::min(++noItems_, bufferSize_);
+    }
 
     return true;
   }
@@ -155,9 +155,14 @@ class Buffer: public BufferInterface
     // Lock the circular buffer
     std::unique_lock<std::mutex> lock(mutex_);
 
+    if(container_.size() < 1 ) {
+      throw std::out_of_range("[SILO:Buffer]: Can not read element at position " + std::to_string(idx) + " size ist " + std::to_string(container_.size()));
+    }
+
     if(idx < 0 || idx >= noItems_) {
       throw std::out_of_range("[SILO:Buffer]: Can not read element at position " + std::to_string(idx));
     }
+
     return &container_[idx];
   }
 
@@ -243,9 +248,9 @@ class Buffer: public BufferInterface
    *  @return template specialization by return type
    */
   template<typename V = ValueType_>
-  typename std::enable_if<is_buffer_default_type<V>::value>::type
-  pushElementFront(const ValueType_ * const item) {
+  bool pushElementFront(const ValueType_ * const item, typename std::enable_if<is_buffer_default_type<V>::value>::type* = 0) {
     container_.push_front(*item);
+    return true;
   }
 
   /** Push an element at front for eigen types
@@ -253,16 +258,16 @@ class Buffer: public BufferInterface
    *  @return template specialization by return type
    */
   template<typename V = ValueType_>
-  typename std::enable_if<traits::is_eigen_matrix<V>::value>::type
-  pushElementFront(const ValueType_ * const item) {
+  bool pushElementFront(const ValueType_ * const item, typename std::enable_if<traits::is_eigen_matrix<V>::value>::type * = 0) {
     if(item->rows() != rows_ || item->cols() != cols_) {
       // Error output -> don't push back
-      MELO_ERROR_THROTTLE_STREAM(100.0, "[SILO:Buffer]: Matrix size not consistent" << std::endl << " init_rows = " << rows_ <<
-                                        " item_rows = " << item->rows() << std::endl << " init_cols = " << cols_ <<
-                                        " item_cols = " << item->cols());
-      return;
+      MELO_ERROR_STREAM("[SILO:Buffer]: Matrix size not consistent" << std::endl << " init_rows = " << rows_ <<
+                        " item_rows = " << item->rows() << std::endl << " init_cols = " << cols_ <<
+                        " item_cols = " << item->cols());
+      return false;
     }
     container_.push_front(*item);
+    return true;
   }
 
   /** Push an element at front for default types
