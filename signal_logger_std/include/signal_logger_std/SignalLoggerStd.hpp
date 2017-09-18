@@ -52,12 +52,12 @@ class SignalLoggerStd : public signal_logger::SignalLoggerBase
       // Lock the logger (blocking!)
       boost::unique_lock<boost::shared_mutex> addLoggerLock(loggerMutex_);
       logElementsToAdd_[elementName].reset(new signal_logger_std::LogElementStd<ValueType_>(var, bufferType, bufferSize, elementName ,
-                                                                                            unit, divider, action, &headerStream_, &dataStream_));
+                                                                                            unit, divider, action, &textStream_, &binaryStream_));
     }
   }
 
   //! Save all the buffered data into a log file
-  virtual bool workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType) override;
+  virtual bool workerSaveData(const std::string & logFileName, const signal_logger::LogFileTypeSet & logfileTypes) override;
 
   /** Resets the pointer to the logelement
    * @param buffertype type of the time buffer
@@ -66,12 +66,12 @@ class SignalLoggerStd : public signal_logger::SignalLoggerBase
   virtual bool resetTimeLogElement(signal_logger::BufferType buffertype, double maxLogTime) override;
 
  protected:
-  //! Binary log file
+  //! Log file
   std::ofstream file_;
-  //! Header stream
-  std::stringstream headerStream_;
-  //! Data stream
-  std::stringstream dataStream_;
+  //! Text stream
+  std::stringstream textStream_;
+  //! Binary stream
+  std::stringstream binaryStream_;
 };
 
 } /* namespace signal_logger_std */

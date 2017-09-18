@@ -62,14 +62,14 @@ class SignalLoggerNone : public SignalLoggerBase
   virtual bool publishData() override { return true; }
 
   //! Save all the buffered data into a log file
-  virtual bool saveLoggerData(LogFileType logfileType) override { return true; }
+  virtual bool saveLoggerData(const signal_logger::LogFileTypeSet & logfileTypes) override { return true; }
 
   //! Stop the logger and save all the buffered data into a log file
-  virtual bool stopAndSaveLoggerData() override { return true; }
+  virtual bool stopAndSaveLoggerData(const signal_logger::LogFileTypeSet & logfileTypes) override { return true; }
 
  protected:
   //! Saves the logger data in a file in a seperate thread
-  virtual bool workerSaveData(const std::string & logFileName, LogFileType logfileType) override { return true; };
+  virtual bool workerSaveData(const std::string & logFileName, const signal_logger::LogFileTypeSet & logfileTypes) override { return true; };
 
 };
 

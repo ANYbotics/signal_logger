@@ -59,39 +59,45 @@ signal_logger::TimestampPair SignalLoggerRos::getCurrentTime() {
   return timeStamp;
 }
 
-bool SignalLoggerRos::workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType) {
+bool SignalLoggerRos::workerSaveData(const std::string & logFileName, const signal_logger::LogFileTypeSet & logfileTypes) {
 
-  if(noCollectDataCallsCopy_ == 0) { return true; }
-
-  // Save binary data and return
-  if(logfileType == signal_logger::LogFileType::BINARY) {
-    return signal_logger_std::SignalLoggerStd::workerSaveData(logFileName, signal_logger::LogFileType::BINARY);
+  if(noCollectDataCallsCopy_ == 0) {
+    MELO_WARN_STREAM("[SignalLoggerRos] Could not save logger data! Data count is zero.");
+    return true;
   }
 
-  // Save binary data
   bool success = true;
-  if(logfileType == signal_logger::LogFileType::BINARY_AND_BAG) {
-    success = success && signal_logger_std::SignalLoggerStd::workerSaveData(logFileName, signal_logger::LogFileType::BINARY);
+
+  // Loop through file types and store data
+  for(const auto fileType : logfileTypes) {
+      if(fileType == signal_logger::LogFileType::BAG) {
+        // Open a new file
+        std::string bagFileName = logFileName + std::string{".bag"};
+        bagWriter_.reset(new rosbag::Bag);
+        try{
+          bagWriter_->open(bagFileName, rosbag::BagMode::Write);
+        } catch(rosbag::BagException& exception) {
+          MELO_WARN_STREAM("[SignalLoggerRos] Could not save bag file! Could not open file " << bagFileName << ".");
+          success = false;
+        }
+
+        // Write bag file
+        for(auto & elem : enabledElements_) {
+          if(elem->second->getCopyOptions().isSaved())
+          {
+            elem->second->saveDataToLogFile(*timeElement_, noCollectDataCallsCopy_, fileType);
+          }
+        }
+
+        // Close file
+        bagWriter_->close();
+        bagWriter_.reset();
+      } else {
+        success = success && signal_logger_std::SignalLoggerStd::workerSaveData(logFileName, { fileType });
+      }
   }
 
-  // Open a new file
-  std::string bagFileName = logFileName + std::string{".bag"};
-  bagWriter_.reset(new rosbag::Bag);
-  bagWriter_->open(bagFileName, rosbag::BagMode::Write);
-
-  // Write bag file
-  for(auto & elem : enabledElements_) {
-    if(elem->second->getCopyOptions().isSaved())
-    {
-      elem->second->saveDataToLogFile(*timeElement_, noCollectDataCallsCopy_, signal_logger::LogFileType::BAG);
-    }
-  }
-
-  // Close file
-  bagWriter_->close();
-  bagWriter_.reset();
-
-  return true;
+  return success;
 }
 
 
@@ -152,23 +158,26 @@ bool SignalLoggerRos::stopLogger(std_srvs::TriggerRequest& req,
 
 bool SignalLoggerRos::saveLoggerData(signal_logger_msgs::SaveLoggerDataRequest& req,
                                      signal_logger_msgs::SaveLoggerDataResponse& res) {
-  signal_logger::LogFileType type;
-  switch(req.logfileType) {
-    case signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BINARY:
-      type = signal_logger::LogFileType::BINARY;
-      break;
-    case signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BAG:
-      type = signal_logger::LogFileType::BAG;
-      break;
-    case signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BINARY_AND_BAG:
-      type = signal_logger::LogFileType::BINARY_AND_BAG;
-      break;
-    default:
+  signal_logger::LogFileTypeSet types;
+  for(const auto filetype : req.logfileTypes){
+    switch(filetype) {
+      case signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BINARY:
+        types.insert(signal_logger::LogFileType::BINARY);
+        break;
+      case signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_CSV:
+        types.insert(signal_logger::LogFileType::CSV);
+        break;
+      case signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BAG:
+        types.insert(signal_logger::LogFileType::BAG);
+        break;
+      default:
       MELO_WARN("Log file type is not known. Do nothing.");
-      res.success = false;
-      return true;
+        res.success = false;
+        return true;
+    }
   }
-  res.success = signal_logger::SignalLoggerBase::saveLoggerData(type);
+
+  res.success = signal_logger::SignalLoggerBase::saveLoggerData(types);
   return true;
 }
 

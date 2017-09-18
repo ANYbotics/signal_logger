@@ -338,7 +338,7 @@ bool SignalLoggerBase::publishData()
   return true;
 }
 
-bool SignalLoggerBase::saveLoggerData(LogFileType logfileType)
+bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes)
 {
   // Make sure start stop are not called in the meantime
   boost::shared_lock<boost::shared_mutex> saveLoggerDataLock(loggerMutex_);
@@ -359,7 +359,7 @@ bool SignalLoggerBase::saveLoggerData(LogFileType logfileType)
     isSavingData_ = true;
 
     // Save data in different thread
-    std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this, logfileType);
+    std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this, logfileTypes);
     t1.detach();
   }
   else {
@@ -369,11 +369,11 @@ bool SignalLoggerBase::saveLoggerData(LogFileType logfileType)
   return true;
 }
 
-bool SignalLoggerBase::stopAndSaveLoggerData()
+bool SignalLoggerBase::stopAndSaveLoggerData(const LogFileTypeSet & logfileTypes)
 {
   // Mutex is locked internally
   bool stopped = stopLogger();
-  return saveLoggerData() && stopped;
+  return saveLoggerData(logfileTypes) && stopped;
 }
 
 bool SignalLoggerBase::cleanup()
@@ -568,7 +568,7 @@ signal_logger::TimestampPair SignalLoggerBase::getCurrentTime() {
   return timeStamp;
 }
 
-bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
+bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes) {
   //-- Produce file name, this can be done in series to every other process
 
   // Read suffix number from file
@@ -630,7 +630,7 @@ bool SignalLoggerBase::workerSaveDataWrapper(LogFileType logfileType) {
   }
 
   // Start saving copy to file
-  bool success = this->workerSaveData(filename, logfileType);
+  bool success = this->workerSaveData(filename, logfileTypes);
 
   // Set flag, notify user
   isSavingData_ = false;

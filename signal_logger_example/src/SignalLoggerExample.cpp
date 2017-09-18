@@ -14,7 +14,7 @@ SignalLoggerExample::SignalLoggerExample(NodeHandlePtr nh):
   publishThread_(),
   shouldPublish_(true),
   logVar_(0.0),
-  time_(0.0)
+  time_(ros::TIME_MIN)
 {
   ros::Time::setNow(time_);
 }
@@ -23,7 +23,7 @@ void SignalLoggerExample::init()
 {
   // Initialize logger
   signal_logger::setSignalLoggerRos(&getNodeHandle());
-  signal_logger::logger->initLogger(signal_logger::SignalLoggerOptions(1000, 10, "loggingScript.yaml", "/log"));
+  signal_logger::logger->initLogger(signal_logger::SignalLoggerOptions(1000, 10, "loggerScript.yaml", "/log"));
 
   // Add logger vars and update logger
   signal_logger::add(logVar_, "logVar1", "ns", "[m]", 1, signal_logger::LogElementAction::SAVE,
@@ -51,11 +51,11 @@ void SignalLoggerExample::init()
 void SignalLoggerExample::cleanup()
 {
   // Stop and save logger data
-  signal_logger::logger->saveLoggerData();
+  signal_logger::logger->saveLoggerData( { signal_logger::LogFileType::CSV, signal_logger::LogFileType::BAG, signal_logger::LogFileType::BINARY } );
   signal_logger::logger->stopLogger();
 
   // Let logger save data
-  sleep(1.0);
+  sleep(3.0);
 
   // Joint publisher thread
   shouldPublish_.store(false);
