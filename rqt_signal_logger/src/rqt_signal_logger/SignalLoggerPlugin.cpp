@@ -126,19 +126,12 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
 
   connect(configureUi_.startLoggerButton, SIGNAL(pressed()), this, SLOT(startLogger()));
   connect(configureUi_.stopLoggerButton, SIGNAL(pressed()), this, SLOT(stopLogger()));
+  connect(configureUi_.restartLoggerButton, SIGNAL(pressed()), this, SLOT(restartLogger()));
   connect(configureUi_.pathButton, SIGNAL(pressed()), this, SLOT(selectYamlFile()));
   connect(configureUi_.loadScriptButton, SIGNAL(pressed()), this, SLOT(loadYamlFile()));
   connect(configureUi_.saveScriptButton, SIGNAL(pressed()), this, SLOT(saveYamlFile()));
   connect(configureUi_.namespaceEdit, SIGNAL(returnPressed()), this, SLOT(setNamespace()));
-
-  QSignalMapper* signalMapper = new QSignalMapper (this) ;
-  connect(configureUi_.saveBinButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
-  connect(configureUi_.saveBagButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
-  connect(configureUi_.saveBothButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
-  signalMapper -> setMapping (configureUi_.saveBinButton, signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BINARY) ;
-  signalMapper -> setMapping (configureUi_.saveBagButton, signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BAG) ;
-  signalMapper -> setMapping (configureUi_.saveBothButton, signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BINARY_AND_BAG) ;
-  connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(saveLoggerData(int))) ;
+  connect(configureUi_.saveButton, SIGNAL(pressed()), this, SLOT(saveLoggerData()));
 
   // Those are fixed in signal_logger_ros
   getLoggerConfigurationServiceName_ = "/silo_ros/get_logger_configuration";
@@ -291,10 +284,18 @@ void SignalLoggerPlugin::stopLogger() {
   checkLoggerState();
 }
 
-void SignalLoggerPlugin::saveLoggerData(int type) {
+void SignalLoggerPlugin::restartLogger() {
+  stopLogger();
+  startLogger();
+}
+
+void SignalLoggerPlugin::saveLoggerData() {
   signal_logger_msgs::SaveLoggerData::Request req;
   signal_logger_msgs::SaveLoggerData::Response res;
-  req.logfileType = type;
+  if(configureUi_.binaryButton->isChecked()) { req.logfileTypes.push_back(signal_logger_msgs::SaveLoggerData::Request::LOGFILE_TYPE_BINARY); }
+  if(configureUi_.csvButton->isChecked()) { req.logfileTypes.push_back(signal_logger_msgs::SaveLoggerData::Request::LOGFILE_TYPE_CSV); }
+  if(configureUi_.bagButton->isChecked()) { req.logfileTypes.push_back(signal_logger_msgs::SaveLoggerData::Request::LOGFILE_TYPE_BAG); }
+
   if(saveLoggerDataClient_.call(req, res) && res.success) {
     std::string msg = std::string{"Successfully saved logger data to file."};
     statusMessage(msg, MessageType::SUCCESS, 2.0);

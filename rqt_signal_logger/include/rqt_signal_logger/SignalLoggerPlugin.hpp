@@ -77,7 +77,8 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
     void setNamespace();
     void startLogger();
     void stopLogger();
-    void saveLoggerData(int type);
+    void restartLogger();
+    void saveLoggerData();
     void selectYamlFile();
     void loadYamlFile();
     void saveYamlFile();
