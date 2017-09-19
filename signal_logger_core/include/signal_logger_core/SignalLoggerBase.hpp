@@ -76,12 +76,14 @@ class SignalLoggerBase {
   virtual bool publishData();
 
   /** Save all the buffered data into a log file
-   *  @param logFileType type of the log file
+   *  @param logFileTypes types of the log file
    */
-  virtual bool saveLoggerData(LogFileType logfileType = LogFileType::BINARY);
+  virtual bool saveLoggerData(const LogFileTypeSet & logfileTypes);
 
-  //! Stop the logger and save all the buffered data into a log file
-  virtual bool stopAndSaveLoggerData();
+  /** Stop the logger and save all the buffered data into log files
+   *  @param logFileTypes types of the log file
+   */
+  virtual bool stopAndSaveLoggerData(const LogFileTypeSet & logfileTypes);
 
   //! Cleanup logger
   virtual bool cleanup();
@@ -99,9 +101,9 @@ class SignalLoggerBase {
 
   /** Saves the logger data in a file in a seperate thread
    * @param logFileName filename of the log file
-   * @param logFileType type of the log file
+   * @param logfileTypes types of the log files
    */
-  virtual bool workerSaveData(const std::string & logFileName, LogFileType logfileType) = 0;
+  virtual bool workerSaveData(const std::string & logFileName, const LogFileTypeSet & logfileTypes) = 0;
 
   /** Resets the pointer to the logelement
    * @param buffertype type of the time buffer
@@ -116,9 +118,9 @@ class SignalLoggerBase {
 
  private:
   /** Wraps function workerSaveData to do common preparations and shutdown
-   * @param logFileType type of the log file
+   * @param logFileTypse types of the log files
    */
-  bool workerSaveDataWrapper(LogFileType logfileType);
+  bool workerSaveDataWrapper(const LogFileTypeSet & logfileTypes);
 
   /** Wait until logger can be started and start logger
    */

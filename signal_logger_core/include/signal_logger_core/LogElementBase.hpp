@@ -79,7 +79,7 @@ class LogElementBase: public LogElementInterface
   //! Writes local buffer copy to a file
   virtual void saveDataToLogFile(const TimeElement & times,
                                  unsigned int nrCollectDataCalls,
-                                 LogFileType type = LogFileType::BINARY) override { }
+                                 LogFileType type) override { }
 
   //! Stores a copy of the current buffer, file is saved from this
   virtual void copy() {

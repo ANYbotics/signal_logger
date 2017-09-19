@@ -13,6 +13,7 @@
 
 // STL
 #include <fstream>
+#include <unordered_set>
 
 namespace signal_logger_std {
 
@@ -28,8 +29,8 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
    *  @param unit       unit of the log var
    *  @param divider    log_freq = ctrl_freq/divider
    *  @param action     save, publish or save and publish
-   *  @param headerStream string stream for log file header
-   *  @param dataStream   type of the buffer
+   *  @param textStream string stream for text part of the log file
+   *  @param binaryStream string stream for binary part of the log file
    */
   LogElementStd(const ValueType_ * const ptr,
                 const signal_logger::BufferType bufferType,
@@ -38,11 +39,11 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
                 const std::string & unit,
                 const std::size_t divider,
                 const signal_logger::LogElementAction action,
-                std::stringstream * headerStream,
-                std::stringstream * dataStream) :
+                std::stringstream * textStream,
+                std::stringstream * binaryStream) :
       signal_logger::LogElementBase<ValueType_>(ptr, bufferType, bufferSize, name, unit, divider, action),
-      headerStream_(headerStream),
-      dataStream_(dataStream)
+      textStream_(textStream),
+      binaryStream_(binaryStream)
   {
 
   }
@@ -56,25 +57,35 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
   //! Save Data to file
   void saveDataToLogFile(const signal_logger::TimeElement & times,
                          unsigned int nrCollectDataCalls,
-                         signal_logger::LogFileType type = signal_logger::LogFileType::BINARY) override
+                         signal_logger::LogFileType type) override
   {
-    if(type == signal_logger::LogFileType::BINARY) {
-      // Lock the copy mutex
-      std::unique_lock<std::mutex> lock(this->mutexCopy_);
+    // Lock the copy mutex
+    std::unique_lock<std::mutex> lock(this->mutexCopy_);
+    if(this->bufferCopy_.noTotalItems() > 0 ) {
+      unsigned int startDiff = 0;
+      unsigned int endDiff = (nrCollectDataCalls - 1) % this->optionsCopy_.getDivider();
 
-      // Write to file
-      if(this->bufferCopy_.noTotalItems() > 0 ) {
-        signal_logger_std::traits::sls_traits<ValueType_, ValueType_>::writeLogElementToStreams(
-            headerStream_, dataStream_, this->bufferCopy_, this->optionsCopy_.getName(), this->optionsCopy_.getDivider());
+      if( type == signal_logger::LogFileType::CSV ) {
+        if(this->bufferCopy_.getBufferType() == signal_logger::BufferType::LOOPING) {
+          /* Last index of time: (times.size() - 1)
+           * Index of newest time corresponding to a data point:  (nrCollectDataCalls - 1) % this->dividerCopy_
+           * Offset of oldest time that corresponds to a data point: (this->bufferCopy_.size()-1) * this->dividerCopy_
+           */
+          startDiff = (times.getTimeBufferCopy().noTotalItems() - 1) - endDiff - (this->bufferCopy_.noTotalItems()-1) * this->optionsCopy_.getDivider();
+        }
       }
+
+      // Write to fill
+      signal_logger_std::traits::sls_traits<ValueType_, ValueType_>::writeLogElementToStreams(
+          textStream_, binaryStream_, type, this->bufferCopy_, this->optionsCopy_.getName(), this->optionsCopy_.getDivider(), startDiff, endDiff);
     }
   }
 
  protected:
-  //! Header stream
-  std::stringstream* headerStream_;
-  //! Data stream
-  std::stringstream* dataStream_;
+  //! Text stream
+  std::stringstream* textStream_;
+  //! Binary stream
+  std::stringstream* binaryStream_;
 
 };
 

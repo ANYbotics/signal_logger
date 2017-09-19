@@ -47,7 +47,7 @@ class LogElementInterface
    *  @param noCollectDataCalls   number of collectLoggerData calls, this allows time synchronization of the log file
    *  @param type                 type of the log file
    */
-  virtual void saveDataToLogFile(const TimeElement & times, unsigned int noCollectDataCalls, LogFileType type = LogFileType::BINARY) = 0;
+  virtual void saveDataToLogFile(const TimeElement & times, unsigned int noCollectDataCalls, LogFileType type) = 0;
 
   //! Stores a copy of the element, file is saved from this
   virtual void copy() = 0;

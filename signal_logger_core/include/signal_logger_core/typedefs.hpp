@@ -1,14 +1,17 @@
 /*!
- * @file	  typedefs.hpp
- * @author	Gabriel Hottiger
- * @date	  Jan 30, 2017
+ * @file	    typedefs.hpp
+ * @author	    Gabriel Hottiger
+ * @date	    Jan 30, 2017
  */
 
 #pragma once
 
-#include <cstddef>
 
+// signal logger core
 #include "signal_logger_core/signal_logger_traits.hpp"
+
+// STL
+#include <unordered_set>
 
 namespace signal_logger {
 
@@ -39,8 +42,8 @@ enum class LogElementAction: unsigned int
 enum class LogFileType: unsigned int
 {
   BINARY = 0,/*!< 0 */
-  BAG = 1, /*!< 1 */
-  BINARY_AND_BAG = 2/*!< 2 */
+  CSV = 1, /*!< 1 */
+  BAG = 2, /*!< 2 */
 };
 
 //! Default log element group
@@ -76,4 +79,18 @@ struct both_slashes {
 template <typename T>
 using vector_type = typename std::conditional<traits::is_eigen_matrix<T>::value,
   std::vector<T, Eigen::aligned_allocator<T>>, std::vector<T>>::type;
+
+
+//! Enum class hash
+struct EnumClassHash
+{
+  template <typename T>
+  std::size_t operator()(T t) const
+  {
+    return static_cast<std::size_t>(t);
+  }
+};
+
+using LogFileTypeSet = std::unordered_set<LogFileType, EnumClassHash>;
+
 }

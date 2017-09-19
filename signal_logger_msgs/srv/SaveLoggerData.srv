@@ -1,12 +1,12 @@
 ## This service saves the recorded log element data to
-## a file. The file type is specified by 'logfileType'.
-## The file is saved and 'success' is set to true. Else
+## files. The file types are specified by 'logfileTypes'.
+## The files are saved and 'success' is set to true. Else
 ## 'success' is set to false and no action is taken.
 
 # Save type
 int8 LOGFILE_TYPE_BINARY=0
-int8 LOGFILE_TYPE_BAG=1
-int8 LOGFILE_TYPE_BINARY_AND_BAG=2
-int8 logfileType
+int8 LOGFILE_TYPE_CSV=1
+int8 LOGFILE_TYPE_BAG=2
+int8[] logfileTypes
 ---
 bool success

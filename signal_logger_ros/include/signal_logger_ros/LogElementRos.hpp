@@ -76,11 +76,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
                          signal_logger::LogFileType type = signal_logger::LogFileType::BINARY) override
   {
     // If binary log file -> call super class
-    if(type == signal_logger::LogFileType::BINARY) {
-      signal_logger_std::LogElementStd<ValueType_>::saveDataToLogFile(times, nrCollectDataCalls, type);
-      return;
-    }
-    else if(type == signal_logger::LogFileType::BAG) {
+    if(type == signal_logger::LogFileType::BAG) {
       // Lock the copy mutex
       std::unique_lock<std::mutex> lock(this->mutexCopy_);
 
@@ -104,8 +100,15 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
         // Update msg
         traits::slr_update_traits<ValueType_>::updateMsg(this->bufferCopy_.getPointerAtPosition( (this->bufferCopy_.noTotalItems() - 1) - i), msgSave_, now);
         // Write to bag
-        bagWriter_->write(this->optionsCopy_.getName(), now, *msgSave_);
+        try{
+          bagWriter_->write(this->optionsCopy_.getName(), now, *msgSave_);
+        } catch(rosbag::BagException& exception) {
+          MELO_ERROR_STREAM("[LogElementRos] Could not write to bag in element: " << this->getCopyOptions().getName());
+          return;
+        }
       }
+    } else {
+      signal_logger_std::LogElementStd<ValueType_>::saveDataToLogFile(times, nrCollectDataCalls, type);
     }
   }
 

@@ -66,7 +66,7 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
       // Lock the logger (blocking!)
       boost::unique_lock<boost::shared_mutex> addLoggerLock(loggerMutex_);
       logElementsToAdd_[elementName].reset(new LogElementRos<ValueType_>(var, bufferType, bufferSize, elementName , unit, divider, action,
-                                                                         &headerStream_, &dataStream_, nh_, bagWriter_));
+                                                                         &textStream_, &binaryStream_, nh_, bagWriter_));
     }
   }
 
@@ -79,7 +79,7 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
   virtual signal_logger::TimestampPair getCurrentTime() override;
 
   //! Save all the buffered data into a log file
-  virtual bool workerSaveData(const std::string & logFileName, signal_logger::LogFileType logfileType) override;
+  virtual bool workerSaveData(const std::string & logFileName, const signal_logger::LogFileTypeSet & logfileTypes) override;
 
   /** Get current logger configuration
    *  @param  req empty request
