@@ -37,10 +37,13 @@ class SignalLoggerExample: public any_node::Node
     virtual void cleanup();
     virtual bool update(const any_worker::WorkerEvent& event);
     virtual void publishWorker();
+    virtual void readWorker();
 
   private:
     std::thread publishThread_;
+    std::thread readThread_;
     std::atomic_bool shouldPublish_;
+    std::atomic_bool shouldRead_;
     double logVar_;
     ros::Time time_;
 

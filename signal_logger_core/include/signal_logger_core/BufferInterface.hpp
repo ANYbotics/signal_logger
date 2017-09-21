@@ -32,7 +32,6 @@ class BufferInterface
 
   //! @brief clears the buffer
   virtual void clear() = 0;
-
 };
 
 } /* namespace signal_logger */

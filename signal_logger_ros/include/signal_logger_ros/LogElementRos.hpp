@@ -95,7 +95,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
       for(std::size_t i = 0; i < this->bufferCopy_.noTotalItems(); ++i) {
         // Get time at data point
         signal_logger::TimestampPair tsp_now =
-          times.getTimeBufferCopy().readElementAtPosition((times.getTimeBufferCopy().noTotalItems() - 1) - (startIdx + i*this->optionsCopy_.getDivider()) );
+          times.getTimeBufferCopy().getElementCopyAtPosition((times.getTimeBufferCopy().noTotalItems() - 1) - (startIdx + i*this->optionsCopy_.getDivider()) );
         ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
         // Update msg
         traits::slr_update_traits<ValueType_>::updateMsg(this->bufferCopy_.getPointerAtPosition( (this->bufferCopy_.noTotalItems() - 1) - i), msgSave_, now);
@@ -150,7 +150,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
           }
 
           // get time stamp
-          tsp_now = time.getTimeBuffer().readElementAtPosition(idx);
+          tsp_now = time.getTimeBuffer().getElementCopyAtPosition(idx);
         } // unlock time mutex
 
         // Read from buffer and transform to message via trait

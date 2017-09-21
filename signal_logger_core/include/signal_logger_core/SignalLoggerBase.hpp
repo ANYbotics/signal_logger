@@ -88,6 +88,25 @@ class SignalLoggerBase {
   //! Cleanup logger
   virtual bool cleanup();
 
+  //! Returns if an element is logged with this name
+  virtual bool hasElement(const std::string & name);
+
+  //! Get log element (throws std::out_of_range() if no element with name 'name' was added to the logger)
+  virtual const LogElementInterface & getElement(const std::string & name);
+
+  //! Get log element (throws std::out_of_range() if no element with name 'name' was added to the logger, or it it of different type)
+  template<typename ValueType_>
+  vector_type<ValueType_> readNewValues(const std::string & name) {
+    boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
+
+    if(!hasElement(name) || logElements_[name]->getType() !=  typeid(ValueType_) ) {
+      throw std::out_of_range("[SignalLoggerBase]::readNewValues(): Element " + name +
+          " was not added to the logger or is not of type " + std::type_index(typeid(ValueType_)).name() + "!");
+    }
+
+    return static_cast< LogElementBase<ValueType_>* >(logElements_[name].get())->readNewValues();
+  }
+
  protected:
   /** Reads collect script and enables all log data
    * @param scriptName filename of the logging script

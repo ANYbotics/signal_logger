@@ -379,7 +379,7 @@ bool SignalLoggerBase::stopAndSaveLoggerData(const LogFileTypeSet & logfileTypes
 bool SignalLoggerBase::cleanup()
 {
   // Lock the logger (blocking!)
-  boost::unique_lock<boost::shared_mutex> updateLoggerLock(loggerMutex_);
+  boost::unique_lock<boost::shared_mutex> lockLogger(loggerMutex_);
 
   // Publish data from buffer
   for(auto & elem : logElements_) { elem.second->cleanup(); }
@@ -391,6 +391,19 @@ bool SignalLoggerBase::cleanup()
   logElementsToAdd_.clear();
 
   return true;
+}
+
+bool SignalLoggerBase::hasElement(const std::string & name) {
+  boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
+  return logElements_.find(name) != logElements_.end();
+}
+
+const LogElementInterface & SignalLoggerBase::getElement(const std::string & name) {
+  boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
+  if(!hasElement(name)) {
+    throw std::out_of_range("[SignalLoggerBase]::getElement(): Element " + name + " was not added to the logger!");
+  }
+  return *logElements_[name];
 }
 
 bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)

@@ -16,6 +16,7 @@
 
 // STL
 #include <mutex>
+#include <typeindex>
 
 namespace signal_logger {
 
@@ -81,6 +82,9 @@ class LogElementInterface
 
   //! @return mutex of the log element
   virtual std::mutex& acquireMutex() const = 0;
+
+  //! @return type_index
+  virtual std::type_index getType() const = 0;
 
 };
 

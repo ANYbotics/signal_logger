@@ -86,6 +86,7 @@ class Buffer: public BufferInterface
     bufferSize_ = other.bufferSize_;
     noUnreadItems_ = other.noUnreadItems_;
     noItems_ = other.noItems_;
+    noNewItems_ = other.noNewItems_;
   }
 
   //! Push data into the buffer (if looping or not full).
@@ -115,12 +116,13 @@ class Buffer: public BufferInterface
        */
       noUnreadItems_ = std::min(++noUnreadItems_, bufferSize_);
       noItems_ = std::min(++noItems_, bufferSize_);
+      noNewItems_ = std::min(++noNewItems_, bufferSize_);
     }
 
     return true;
   }
 
-  /** Pop an item from the buffer (if buffer not empty). Decrement no unread items.
+  /** Read an item from the buffer (if buffer not empty). Decrement no unread items.
    *  @param pItem pointer to value in which popped value is stored
    */
   bool read(ValueType_ * pItem)
@@ -130,38 +132,68 @@ class Buffer: public BufferInterface
 
     // Check if buffer is empty
     if( noUnreadItems_ == 0 ) { return false; }
+    --noUnreadItems_;
 
     // Get item from buffer, Decrement nr of unread items
-    readElementAtPosition(pItem, --noUnreadItems_);
+    if(noUnreadItems_ < 0 || noUnreadItems_ >= noItems_) {
+      throw std::out_of_range("[SILO:Buffer]: Can not read element " + name_ + " at position " + std::to_string(noUnreadItems_));
+    }
+
+    *pItem = container_[noUnreadItems_];
 
     return true;
   }
 
-  /** Pop an item from back. Not decrementing unread items.
-   *  @param idx pointer to value in which popped value is stored
+  /** Read a vector of values collected since the last call to this function from the buffer (if buffer not empty). Decrement no new items.
+   *  @return vec vector of all new items since last call to this function
+   */
+  vector_type<ValueType_> readNewValues()
+  {
+    // Allocate vector
+    vector_type<ValueType_> newValues;
+
+    if( noNewItems_ != 0 ) {
+      // Lock the circular buffer
+      std::unique_lock<std::mutex> lock(mutex_);
+      newValues.reserve(noNewItems_);
+
+      for(int i = (noNewItems_ - 1); i >= 0; i=i-1) {
+        newValues.push_back(container_[i]);
+      }
+      noNewItems_ = 0;
+    }
+
+    return newValues;
+  }
+
+  /** Get copy of an item. Not decrementing unread items.
+   *  @param idx index of the stored value (idx'th newest value)
    *  @return val Copy of value at idx
    */
-  ValueType_ readElementAtPosition(std::size_t idx)  const {
+  ValueType_ getElementCopyAtPosition(std::size_t idx)  const {
     // Lock the circular buffer
     std::unique_lock<std::mutex> lock(mutex_);
 
     // read element
-    ValueType_ val;
-    readElementAtPosition(&val, idx);
-    return val;
+    if(idx < 0 || idx >= noItems_) {
+      throw std::out_of_range("[SILO:Buffer]: Can not read element " + name_ + " at position " + std::to_string(idx));
+    }
+
+    return container_[idx];
   }
 
+  /** Get const pointer to a const item. Not decrementing unread items.
+ *  @param idx index of the stored value (idx'th newest value)
+ *  @return val const Pointer to const value at idx
+ */
   const ValueType_ * const getPointerAtPosition(std::size_t idx)  const {
     // Lock the circular buffer
     std::unique_lock<std::mutex> lock(mutex_);
 
-    if(container_.size() < 1 ) {
-      throw std::out_of_range("[SILO:Buffer]: Can not read element " + name_ + " at position " + std::to_string(idx) + ". Size is " + std::to_string(container_.size()) + "!");
-    }
-
     if(idx < 0 || idx >= noItems_) {
       throw std::out_of_range("[SILO:Buffer]: Can not read element " + name_ + " at position " + std::to_string(idx));
     }
+    // local var for backward compatibility with (Ubuntu 14.04 / Ros Indigo)
     const ValueType_& value = container_[idx];
     return &value;
   }
@@ -185,6 +217,7 @@ class Buffer: public BufferInterface
     container_.clear();
     noUnreadItems_ = size_type(0);
     noItems_ = size_type(0);
+    noNewItems_ = size_type(0);
   }
 
   virtual BufferType getBufferType() const {
@@ -215,6 +248,7 @@ class Buffer: public BufferInterface
     container_.clear();
     noUnreadItems_ = size_type(0);
     noItems_ = size_type(0);
+    noNewItems_ = size_type(0);
   }
 
   //! Clear the buffer
@@ -238,6 +272,7 @@ class Buffer: public BufferInterface
       container_(bufferSize_),
       noUnreadItems_(0),
       noItems_(0),
+      noNewItems_(0),
       rows_(rows),
       cols_(cols),
       mutex_()
@@ -271,34 +306,6 @@ class Buffer: public BufferInterface
     return true;
   }
 
-  /** Push an element at front for default types
-   *  @param item item to read from buffer
-   *  @param idx position in the buffer
-   *  @return template specialization by return type
-   */
-  template<typename V = ValueType_>
-  typename std::enable_if<is_buffer_default_type<V>::value>::type
-  readElementAtPosition(ValueType_ * item, size_t position)  const {
-    if(position < 0 || position >= noItems_) {
-      throw std::out_of_range("[SILO:Buffer]: Can not read element " + name_ + " at position " + std::to_string(position));
-    }
-    *item = container_[position];
-  }
-
-  /** Push an element at front for eigen types
-   *  @param item item to read from buffer
-   *  @param idx position in the buffer
-   *  @return template specialization by return type
-   */
-  template<typename V = ValueType_>
-  typename std::enable_if<traits::is_eigen_matrix<V>::value>::type
-  readElementAtPosition(ValueType_ * item, size_t position)  const {
-    if(position < 0 || position >= noItems_) {
-      throw std::out_of_range("[SILO:Buffer]: Can not read element " + name_ + " at position " + std::to_string(position));
-    }
-    *item = container_[position];
-  }
-
  private:
   //! Pointer to value
   const ValueType_* const ptr_;
@@ -314,6 +321,8 @@ class Buffer: public BufferInterface
   size_type noUnreadItems_;
   //! Number of items in the buffer (read and unread)
   size_type noItems_;
+  //! Counter for readNewValues function, Only use there!!!
+  mutable size_type noNewItems_;
   //! Eigen specific entries (1 in other cases)
   const std::size_t rows_;
   const std::size_t cols_;

@@ -13,6 +13,7 @@ SignalLoggerExample::SignalLoggerExample(NodeHandlePtr nh):
   any_node::Node(nh),
   publishThread_(),
   shouldPublish_(true),
+  shouldRead_(true),
   logVar_(0.0),
   time_(ros::TIME_MIN)
 {
@@ -43,6 +44,7 @@ void SignalLoggerExample::init()
 
   // Spawn a publishing thread
   publishThread_ = std::thread(&SignalLoggerExample::publishWorker, this);
+  readThread_ = std::thread(&SignalLoggerExample::readWorker, this);
 
   // Start logger
   signal_logger::logger->startLogger();
@@ -59,7 +61,9 @@ void SignalLoggerExample::cleanup()
 
   // Joint publisher thread
   shouldPublish_.store(false);
+  shouldRead_.store(false);
   publishThread_.join();
+  readThread_.join();
 
   // Cleanup
   signal_logger::logger->cleanup();
@@ -86,5 +90,15 @@ void SignalLoggerExample::publishWorker() {
   }
 }
 
+void SignalLoggerExample::readWorker() {
+  while(shouldRead_) {
+    signal_logger::vector_type<double> v = signal_logger::logger->readNewValues<double>("/log/ns/logVar1");
+    std::cout << "Got new values: " << std::endl;
+    for(unsigned int i = 0; i < v.size(); ++i) {
+      std::cout << v[i] << std::endl;
+    }
+    sleep(1);
+  }
+}
 
 } /* namespace signal_logger_example */
