@@ -30,23 +30,25 @@ signal_logger_std_traits.hpp :
 template<typename ContainerType_>
 struct sls_traits<signal_logger::Circle, ContainerType_>
 {
-  static void writeLogElementToStreams(std::stringstream* header,
+  static void writeLogElementToStreams(std::stringstream* text,
                                        std::stringstream* binary,
-                                       const std::vector<ContainerType_> & data,
+                                       signal_logger::LogFileType fileType,
+                                       const signal_logger::Buffer<ContainerType_> & buffer,
                                        const std::string & name,
                                        const std::size_t divider,
-                                       const bool isBufferLooping,
+                                       const unsigned int startDiff,
+                                       const unsigned int endDiff,
                                        const std::function<const signal_logger::Circle *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
     // Use already defined double type trait to write the diameter
     auto getDiameter = [accessor](const ContainerType_ * const v) { return &(accessor(v)->diameter); };
     sls_traits<double, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_diameter", divider, isBufferLooping, getDiameter);
+      text, binary, fileType, buffer, name + "_diameter", divider, startDiff, endDiff, getDiameter);
 
     // Use already defined eigen matrix type trait to write the center
     auto getCenter = [accessor](const ContainerType_ * const v) { return &(accessor(v)->center); };
     sls_traits<Eigen::Vector2d, ContainerType_>::writeLogElementToStreams(
-        header, binary, data, name + "_center", divider, isBufferLooping, getCenter);
+      text, binary, fileType, buffer, name + "_diameter", divider, startDiff, endDiff, getCenter);
   }
 };
 \endcode

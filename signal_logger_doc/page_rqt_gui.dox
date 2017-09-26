@@ -36,9 +36,11 @@ The logger can be interfaced with three buttons:
 <ul>
   <li> 'Start Logger'-Button; Starts the logger.</li>
   <li> 'Stop Logger'-Button; Stops the logger.</li>
-  <li> 'Save Binary'-Button; Saves the logger data to a binary log file.</li>
-  <li> 'Save Bag'-Button; Saves the logger data to a bag file.</li>
-  <li> 'Save Both'-Button; Saves the logger data to both bag and binary file.</li>
+  <li> 'Restart Logger'-Button; Restarts the logger.</li>
+  <li> 'Save'-Button; Saves the logger data to a all selected log file types.</li>
+  <li> 'Binary'-RadioButton; Enables saving of a binary file.</li>
+  <li> 'CSV'-RadioButton; Enables saving of a csv file.</li>
+  <li> 'Bag'-RadioButton; Enables saving of a bag file.</li>
   <li> 'Namespace'-LineEdit; Namespace of the logger you want to edit.</li>
 </ul>
 
