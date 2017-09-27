@@ -46,6 +46,9 @@ void SignalLoggerExample::init()
   publishThread_ = std::thread(&SignalLoggerExample::publishWorker, this);
   readThread_ = std::thread(&SignalLoggerExample::readWorker, this);
 
+  signal_logger::logger->disableNamespace("ns");
+//  signal_logger::logger->enableElement("/log/ns/logVar1");
+
   // Start logger
   signal_logger::logger->startLogger();
 }
@@ -79,6 +82,15 @@ bool SignalLoggerExample::update(const any_worker::WorkerEvent& event) {
   logVar_ += 0.1;
   time_ += ros::Duration(1.0/10);
   ros::Time::setNow(time_);
+
+  static unsigned int counter = 0;
+  counter++;
+
+  if(counter ==  15) {
+    signal_logger::logger->enableNamespace("ns");
+  } else if(counter == 25) {
+    signal_logger::logger->disableElement("/log/ns/logVar2");
+  }
 
   return true;
 }

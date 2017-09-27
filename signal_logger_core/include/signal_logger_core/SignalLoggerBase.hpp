@@ -91,6 +91,17 @@ class SignalLoggerBase {
   //! Returns if an element is logged with this name
   virtual bool hasElement(const std::string & name);
 
+  virtual bool enableElement(const std::string & name);
+  virtual bool disableElement(const std::string & name);
+
+  virtual bool enableNamespace(const std::string & ns);
+  virtual bool disableNamespace(const std::string & ns);
+
+  bool setElementBufferSize(const std::string & name, const std::size_t size);
+  bool setElementBufferType(const std::string & name, const BufferType type);
+  bool setElementDivider(const std::string & name, const std::size_t divider);
+  bool setElementAction(const std::string & name, const LogElementAction action);
+
   //! Get log element (throws std::out_of_range() if no element with name 'name' was added to the logger)
   virtual const LogElementInterface & getElement(const std::string & name);
 
@@ -124,11 +135,8 @@ class SignalLoggerBase {
    */
   virtual bool workerSaveData(const std::string & logFileName, const LogFileTypeSet & logfileTypes) = 0;
 
-  /** Resets the pointer to the logelement
-   * @param buffertype type of the time buffer
-   * @param maxLogTime maximal time logging
-   */
-  virtual bool resetTimeLogElement(signal_logger::BufferType buffertype, double maxLogTime);
+  /** Initializes the pointer to the log element */
+  virtual void initTimeLogElement();
 
   /** Returns the current time
    * @return current time

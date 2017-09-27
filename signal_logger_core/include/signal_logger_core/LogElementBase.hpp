@@ -141,9 +141,9 @@ class LogElementBase: public LogElementInterface
   }
 
   /*** Get access to the buffer
- *   @tparam V  log element type (ValueType_)
- *   @return    buffer copy
- */
+   *   @tparam V  log element type (ValueType_)
+   *   @return    buffer copy
+   */
   template<typename V = ValueType_>
   const Buffer<V>& getTimeBuffer(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
   {
