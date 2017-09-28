@@ -175,14 +175,7 @@ bool SignalLoggerBase::restartLogger()
   return startLogger() && stopped;
 }
 
-
-// #TODO update logger via script, that basically allows every script to be loaded
-// #TODO update logger to add variables
-
-
-
-bool SignalLoggerBase::updateLogger() {
-
+bool SignalLoggerBase::updateLogger(const bool readScript, const std::string & scriptname) {
 
   // If lock can not be acquired because of saving ignore the call
   boost::unique_lock<boost::shared_mutex> tryUpdateLoggerLock(loggerMutex_, boost::try_to_lock);
@@ -203,10 +196,6 @@ bool SignalLoggerBase::updateLogger() {
     return false;
   }
 
-  // Disable all log data and reallocate buffer
-  for(auto & elem : enabledElements_) { elem->second->setIsEnabled(false); }
-  enabledElements_.clear();
-
   // Add elements to list
   for(auto & elemToAdd : logElementsToAdd_ ) {
     // Transfer ownership to logElements
@@ -216,9 +205,11 @@ bool SignalLoggerBase::updateLogger() {
   logElementsToAdd_.clear();
 
   // Read the script
-  if( !readDataCollectScript(options_.collectScriptFileName_) ) {
-    MELO_ERROR("[Signal logger] Could not load logger script!");
-    return false;
+  if(readScript) {
+    if( !readDataCollectScript( scriptname.empty() ? options_.collectScriptFileName_ : scriptname ) ) {
+      MELO_ERROR("[Signal logger] Could not load logger script!");
+      return false;
+    }
   }
 
   return true;
@@ -527,6 +518,7 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
   std::string ending = ".yaml";
   if ( ( (ending.size() + 1) > scriptName.size() ) || !std::equal(ending.rbegin(), ending.rend(), scriptName.rbegin()) ) {
     MELO_ERROR_STREAM("[Signal logger] Script must be a yaml file : *.yaml");
+    for(auto & elem : enabledElements_) { elem->second->setIsEnabled(true); }
     return false;
   }
 
@@ -537,6 +529,11 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
     fs.open(scriptName, std::fstream::out);
     fs.close();
   }
+
+  // Disable all log data and reallocate buffer
+  // Thread-safe since these methods are only called by update logger which owns a unique lock of the elements map
+  for(auto & elem : enabledElements_) { elem->second->setIsEnabled(false); }
+  enabledElements_.clear();
 
   // Get set of numbers from 0...(size-1)
   std::set<unsigned int> iteratorOffsets(boost::counting_iterator<unsigned int>(0),

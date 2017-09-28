@@ -65,8 +65,14 @@ class SignalLoggerBase {
   //! Stop and then restart the logger
   virtual bool restartLogger();
 
-  /** Update the logger (added variables are added) */
-  virtual bool updateLogger();
+  /** Update the logger (ded variables are added) */
+  /**
+   * @brief Update the logger, variables added since the last call are added
+   * @param readScript Determines whether the script is reloaded (sets the state as declared in the script)
+   * @param scriptname If empty, the script defined in the options is loaded. Otherwise scriptname will be used.
+   * @return true, iff logger was updated successfully
+   */
+  virtual bool updateLogger(const bool readScript = true, const std::string & scriptname = "");
 
   /** Save logger script **/
   virtual bool saveLoggerScript();
