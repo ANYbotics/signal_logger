@@ -46,8 +46,8 @@ void SignalLoggerExample::init()
   publishThread_ = std::thread(&SignalLoggerExample::publishWorker, this);
   readThread_ = std::thread(&SignalLoggerExample::readWorker, this);
 
-  signal_logger::logger->disableNamespace("ns");
-//  signal_logger::logger->enableElement("/log/ns/logVar1");
+//  signal_logger::logger->setNamespaceBufferSize("ns", 5);
+  signal_logger::logger->disableElement("/log/ns/logVar1");
 
   // Start logger
   signal_logger::logger->startLogger();
@@ -87,7 +87,8 @@ bool SignalLoggerExample::update(const any_worker::WorkerEvent& event) {
   counter++;
 
   if(counter ==  15) {
-    signal_logger::logger->enableNamespace("ns");
+//    signal_logger::logger->enableNamespace("ns");
+    signal_logger::logger->setElementDivider("/log/ns/logVar1", 6);
   } else if(counter == 25) {
     signal_logger::logger->disableElement("/log/ns/logVar2");
   }

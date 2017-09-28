@@ -14,7 +14,6 @@
 
 // boost
 #include <boost/iterator/counting_iterator.hpp>
-#include <boost/algorithm/string/predicate.hpp>
 
 // stl
 #include "assert.h"
@@ -385,50 +384,23 @@ bool SignalLoggerBase::cleanup()
   return true;
 }
 
-bool SignalLoggerBase::hasElement(const std::string & name) {
+bool SignalLoggerBase::hasElement(const std::string & name)
+{
   boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
   return logElements_.find(name) != logElements_.end();
 }
 
-bool SignalLoggerBase::enableNamespace(const std::string & ns) {
-  std::vector<std::string> elementList;
-  {
-    boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
-    for(auto & element : logElements_ ) {
-      if( boost::starts_with(element.first, options_.loggerPrefix_ + "/" + ns) ) {
-        elementList.push_back(element.first);
-      }
-    }
+const LogElementInterface & SignalLoggerBase::getElement(const std::string & name)
+{
+  boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
+  if(!hasElement(name)) {
+    throw std::out_of_range("[SignalLoggerBase]::getElement(): Element " + name + " was not added to the logger!");
   }
-
-  bool success =  true;
-  for(auto & element : elementList ) {
-    success = enableElement(element) && success;
-  }
-
-  return success;
+  return *logElements_[name];
 }
 
-bool SignalLoggerBase::disableNamespace(const std::string & ns) {
-  std::vector<std::string> elementList;
-  {
-    boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
-    for(auto & element : logElements_ ) {
-      if( boost::starts_with(element.first, options_.loggerPrefix_ + "/" + ns) ) {
-        elementList.push_back(element.first);
-      }
-    }
-  }
-
-  bool success =  true;
-  for(auto & element : elementList ) {
-    success = disableElement(element) && success;
-  }
-
-  return success;
-}
-
-bool SignalLoggerBase::enableElement(const std::string & name) {
+bool SignalLoggerBase::enableElement(const std::string & name)
+{
   boost::upgrade_lock<boost::shared_mutex> lockLogger(loggerMutex_);
   if( !hasElement(name) ) {
     MELO_WARN_STREAM("[SignalLogger::enableElement] Can not enable non-existing element with name " << name << "!");
@@ -453,101 +425,79 @@ bool SignalLoggerBase::enableElement(const std::string & name) {
   return true;
 }
 
-bool SignalLoggerBase::disableElement(const std::string & name) {
-  boost::upgrade_lock<boost::shared_mutex> lockLogger(loggerMutex_);
-  if( !hasElement(name) ) {
-    MELO_WARN_STREAM("[SignalLogger::disableElement] Can not disable non-existing element with name " << name << "!");
-    return false;
-  } else {
-    if( !logElements_[name]->isEnabled() ) { return true; }
-    if( isCollectingData_ ) {
-      MELO_WARN("[SignalLogger::disableElement]: Can not disable element when logger is running!");
-      return false;
-    }
-
-    boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLockLogger(lockLogger);
-    logElements_[name]->setIsEnabled(false);
+bool SignalLoggerBase::disableElement(const std::string & name)
+{
+  auto isEnabled = [](const std::unique_ptr<LogElementInterface> & e) { return e->isEnabled(); };
+  auto setIsEnabled = [this, name](const std::unique_ptr<LogElementInterface> & e, const bool p) {
+    e->setIsEnabled(p);
     auto it =  std::find(enabledElements_.begin(), enabledElements_.end(), logElements_.find(name));
     if( it != enabledElements_.end() ) { enabledElements_.erase(it); }
-  }
-  return true;
+  };
+  return setElementProperty<bool>(name, false, "enabled(false)", isEnabled, setIsEnabled);
 }
 
-bool SignalLoggerBase::setElementBufferSize(const std::string & name, const std::size_t size) {
-  boost::upgrade_lock<boost::shared_mutex> lockLogger(loggerMutex_);
-  if( !hasElement(name) ) {
-    MELO_WARN_STREAM("[SignalLogger::setElementBufferSize] Can not set buffer size of non-existing element with name " << name << "!");
-    return false;
-  } else {
-    if( logElements_[name]->getBuffer().getBufferSize() == size ) { return true; }
-    if( isCollectingData_ ) {
-      MELO_WARN("[SignalLogger::setElementBufferSize]: Can not set buffer size of element when logger is running!")
-      return false;
-    }
-    boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLockLogger(lockLogger);
-    logElements_[name]->getBuffer().setBufferSize(size);
-  }
-  return true;
+bool SignalLoggerBase::setElementBufferSize(const std::string & name, const std::size_t size)
+{
+  auto getBufferSize = [](const std::unique_ptr<LogElementInterface> & e) { return e->getBuffer().getBufferSize(); };
+  auto setBufferSize = [](const std::unique_ptr<LogElementInterface> & e, const std::size_t p) { e->getBuffer().setBufferSize(p); };
+  return setElementProperty<std::size_t>(name, size, "buffer size", getBufferSize, setBufferSize);
 }
 
-bool SignalLoggerBase::setElementBufferType(const std::string & name, const BufferType type) {
-  boost::upgrade_lock<boost::shared_mutex> lockLogger(loggerMutex_);
-  if( !hasElement(name) ) {
-    MELO_WARN_STREAM("[SignalLogger::setElementBufferType] Can not set buffer type of non-existing element with name " << name << "!");
-    return false;
-  } else {
-    if( logElements_[name]->getBuffer().getBufferType() == type ) { return true; }
-    if( isCollectingData_ ) {
-      MELO_WARN("[SignalLogger::setElementBufferType]: Can not set buffer type of element when logger is running!")
-      return false;
-    }
-    boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLockLogger(lockLogger);
-    logElements_[name]->getBuffer().setBufferType(type);
-  }
-  return true;
+bool SignalLoggerBase::setElementBufferType(const std::string & name, const BufferType type)
+{
+  auto getBufferType = [](const std::unique_ptr<LogElementInterface> & e) { return e->getBuffer().getBufferType(); };
+  auto setBufferType = [](const std::unique_ptr<LogElementInterface> & e, const BufferType p) { e->getBuffer().setBufferType(p); };
+  return setElementProperty<BufferType>(name, type, "buffer type", getBufferType, setBufferType);
 }
 
-bool SignalLoggerBase::setElementDivider(const std::string & name, const std::size_t divider) {
-  boost::upgrade_lock<boost::shared_mutex> lockLogger(loggerMutex_);
-  if( !hasElement(name) ) {
-    MELO_WARN_STREAM("[SignalLogger::setElementDivider] Can not set divider of non-existing element with name " << name << "!");
-    return false;
-  } else {
-    if( logElements_[name]->getOptions().getDivider() == divider ) { return true; }
-    if( isCollectingData_ ) {
-      MELO_WARN("[SignalLogger::setElementDivider]: Can not set divider of element when logger is running!")
-      return false;
-    }
-    boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLockLogger(lockLogger);
-    logElements_[name]->getOptions().setDivider(divider);
-  }
-  return true;
+bool SignalLoggerBase::setElementDivider(const std::string & name, const std::size_t divider)
+{
+  auto getDivider = [](const std::unique_ptr<LogElementInterface> & e) { return e->getOptions().getDivider(); };
+  auto setDivider = [](const std::unique_ptr<LogElementInterface> & e, const std::size_t p) { e->getOptions().setDivider(p); };
+  return setElementProperty<std::size_t>(name, divider, "divider", getDivider, setDivider);
 }
 
-bool SignalLoggerBase::setElementAction(const std::string & name, const LogElementAction action) {
-  boost::upgrade_lock<boost::shared_mutex> lockLogger(loggerMutex_);
-  if( !hasElement(name) ) {
-    MELO_WARN_STREAM("[SignalLogger::setElementAction] Can not set action of non-existing element with name " << name << "!");
-    return false;
-  } else {
-    if( logElements_[name]->getOptions().getAction() == action ) { return true; }
-    if( isCollectingData_ ) {
-      MELO_WARN("[SignalLogger::setElementAction]: Can not set action of element when logger is running!")
-      return false;
-    }
-    boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLockLogger(lockLogger);
-    logElements_[name]->getOptions().setAction(action);
-  }
-  return true;
+bool SignalLoggerBase::setElementAction(const std::string & name, const LogElementAction action)
+{
+  auto getAction = [](const std::unique_ptr<LogElementInterface> & e) { return e->getOptions().getAction(); };
+  auto setAction = [](const std::unique_ptr<LogElementInterface> & e, const LogElementAction p) { e->getOptions().setAction(p); };
+  return setElementProperty<LogElementAction>(name, action, "action", getAction, setAction);
 }
 
+bool SignalLoggerBase::enableNamespace(const std::string & ns)
+{
+  auto f = [this](const std::string & name) { return enableElement(name); };
+  return setElementPropertyForNamespace(ns, f);
+}
 
-const LogElementInterface & SignalLoggerBase::getElement(const std::string & name) {
-  boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
-  if(!hasElement(name)) {
-    throw std::out_of_range("[SignalLoggerBase]::getElement(): Element " + name + " was not added to the logger!");
-  }
-  return *logElements_[name];
+bool SignalLoggerBase::disableNamespace(const std::string & ns)
+{
+  auto f = [this](const std::string & name) { return disableElement(name); };
+  return setElementPropertyForNamespace(ns, f);
+}
+
+bool SignalLoggerBase::setNamespaceBufferSize(const std::string & ns, const std::size_t size)
+{
+  auto f = [size, this](const std::string & name) { return setElementBufferSize(name, size); };
+  return setElementPropertyForNamespace(ns, f);
+}
+
+bool SignalLoggerBase::setNamespaceBufferType(const std::string & ns, const BufferType type)
+{
+  auto f = [type, this](const std::string & name) { return setElementBufferType(name, type); };
+  return setElementPropertyForNamespace(ns, f);
+}
+
+bool SignalLoggerBase::setNamespaceDivider(const std::string & ns, const std::size_t divider)
+{
+  auto f = [divider, this](const std::string & name) { return setElementDivider(name, divider); };
+  return setElementPropertyForNamespace(ns, f);
+}
+
+bool SignalLoggerBase::setNamespaceAction(const std::string & ns, const LogElementAction action)
+{
+  auto f = [action, this](const std::string & name) { return setElementAction(name, action); };
+  return setElementPropertyForNamespace(ns, f);
 }
 
 bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
