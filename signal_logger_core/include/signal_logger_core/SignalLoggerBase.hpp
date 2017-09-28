@@ -90,6 +90,9 @@ class SignalLoggerBase {
   //! Cleanup logger
   virtual bool cleanup();
 
+  //! Set max logging time
+  void setMaxLoggingTime(double maxLoggingTime);
+
   /**
    * @brief Checks if logger has a log element with name 'name'
    * @param name Name of the log element to check

@@ -103,19 +103,25 @@ bool SignalLoggerBase::startLogger()
   size_t timeBufferSize =  static_cast<size_t >(maxLogTime * options_.updateFrequency_);
   BufferType timeBufferType =  (options_.maxLoggingTime_ == 0.0) ? BufferType::EXPONENTIALLY_GROWING : BufferType::FIXED_SIZE;
 
-  // If all elements are looping or all elements are fixed size use a time buffer of the according size/type
-  for(auto bufferType : { BufferType::FIXED_SIZE, BufferType::LOOPING } ) {
-    auto hasOtherElement = [bufferType] (const LogElementMapIterator& s) { return s->second->getBuffer().getBufferType() != bufferType; };
-    auto otherElement = std::find_if(enabledElements_.begin(), enabledElements_.end(), hasOtherElement);
-    if( otherElement == enabledElements_.end() ) {
-      auto maxElement = std::max_element(enabledElements_.begin(), enabledElements_.end(), maxScaledBufferSize());
-      timeBufferSize = ( maxElement != enabledElements_.end() ) ? ( (*maxElement)->second->getOptions().getDivider() *
-          (*maxElement)->second->getBuffer().getBufferSize() ) : 0;
-      timeBufferType = bufferType;
-      MELO_INFO_STREAM("[Signal logger] Use " << ( (bufferType == BufferType::FIXED_SIZE)? "fixed size" : "looping" )
-                                              << " Time Buffer of size:" << timeBufferSize);
+  if(enabledElements_.empty()) {
+    // If no elements are logged, log with a looping buffer TODO: keep max log time?
+    timeBufferType = BufferType::LOOPING;
+  } else {
+    // If all elements are looping or all elements are fixed size use a time buffer of the according size/type
+    for(auto bufferType : { BufferType::FIXED_SIZE, BufferType::LOOPING } ) {
+      auto hasOtherElement = [bufferType] (const LogElementMapIterator& s) { return s->second->getBuffer().getBufferType() != bufferType; };
+      auto otherElement = std::find_if(enabledElements_.begin(), enabledElements_.end(), hasOtherElement);
+      if( otherElement == enabledElements_.end() ) {
+        auto maxElement = std::max_element(enabledElements_.begin(), enabledElements_.end(), maxScaledBufferSize());
+        timeBufferSize = ( maxElement != enabledElements_.end() ) ? ( (*maxElement)->second->getOptions().getDivider() *
+            (*maxElement)->second->getBuffer().getBufferSize() ) : 0;
+        timeBufferType = bufferType;
+        MELO_INFO_STREAM("[Signal logger] Use " << ( (bufferType == BufferType::FIXED_SIZE)? "fixed size" : "looping" )
+                                                << " Time Buffer of size:" << timeBufferSize);
+      }
     }
   }
+
 
   // Set time buffer properties to the element
   timeElement_->getBuffer().setBufferType(timeBufferType);
@@ -384,6 +390,12 @@ bool SignalLoggerBase::cleanup()
   return true;
 }
 
+void SignalLoggerBase::setMaxLoggingTime(double maxLoggingTime) {
+  // The max logging time is only needed in startLogger, no issues it setting it anytime
+  boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
+  options_.maxLoggingTime_ = std::max(0.0, maxLoggingTime);
+}
+
 bool SignalLoggerBase::hasElement(const std::string & name)
 {
   boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
@@ -407,14 +419,16 @@ bool SignalLoggerBase::enableElement(const std::string & name)
     return false;
   }
   if( logElements_[name]->isEnabled() ) { return true; }
+
   if( isCollectingData_ && logElements_[name]->getBuffer().getBufferType() != BufferType::LOOPING ) {
-    MELO_WARN("[SignalLogger::enableElement]: Can not enable element with non-looping buffer type when logger is running!");
+    MELO_WARN_STREAM("[SignalLogger::enableElement]: Can not enable element " << name << " with non-looping buffer type when logger is running!");
     return false;
   }
 
   if(isCollectingData_ && ( timeElement_->getBuffer().getBufferType() != BufferType::LOOPING ||
       (logElements_[name]->getOptions().getDivider() * logElements_[name]->getBuffer() .getBufferSize()) > timeElement_->getBuffer().getBufferSize() ) ) {
-    MELO_WARN("[SignalLogger::enableElement]: Can not enable element when logger is running and time buffer is too small!");
+    MELO_WARN_STREAM("[SignalLogger::enableElement]: Can not enable element " << name << " when logger is running and time buffer is too small! "
+      << "(Des: " << logElements_[name]->getOptions().getDivider() * logElements_[name]->getBuffer() .getBufferSize() << " / Time: " << timeElement_->getBuffer().getBufferSize() <<")");
     return false;
   }
 

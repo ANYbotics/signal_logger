@@ -24,7 +24,7 @@ void SignalLoggerExample::init()
 {
   // Initialize logger
   signal_logger::setSignalLoggerRos(&getNodeHandle());
-  signal_logger::logger->initLogger(signal_logger::SignalLoggerOptions(1000, 10, "loggerScript.yaml", "/log"));
+  signal_logger::logger->initLogger(signal_logger::SignalLoggerOptions(10, 2, "loggerScript.yaml", "/log"));
 
   // Add logger vars and update logger
   signal_logger::add(logVar_, "logVar1", "ns", "[m]", 1, signal_logger::LogElementAction::SAVE,
@@ -47,7 +47,10 @@ void SignalLoggerExample::init()
   readThread_ = std::thread(&SignalLoggerExample::readWorker, this);
 
 //  signal_logger::logger->setNamespaceBufferSize("ns", 5);
-  signal_logger::logger->disableElement("/log/ns/logVar1");
+//  signal_logger::logger->disableElement("/log/ns/logVar1");
+  signal_logger::logger->disableNamespace("ns");
+
+  signal_logger::logger->setMaxLoggingTime(10);
 
   // Start logger
   signal_logger::logger->startLogger();
@@ -88,9 +91,10 @@ bool SignalLoggerExample::update(const any_worker::WorkerEvent& event) {
 
   if(counter ==  15) {
 //    signal_logger::logger->enableNamespace("ns");
+    signal_logger::logger->enableElement("/log/ns/logVar1");
     signal_logger::logger->setElementDivider("/log/ns/logVar1", 6);
   } else if(counter == 25) {
-    signal_logger::logger->disableElement("/log/ns/logVar2");
+//    signal_logger::logger->disableElement("/log/ns/logVar2");
   }
 
   return true;
