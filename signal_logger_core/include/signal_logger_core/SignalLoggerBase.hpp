@@ -221,6 +221,9 @@ class SignalLoggerBase {
    */
   virtual signal_logger::TimestampPair getCurrentTime();
 
+  //! Lock free version of has element
+  virtual bool hasElementLockFree(const std::string & name);
+
  private:
   /** Wraps function workerSaveData to do common preparations and shutdown
    * @param logFileTypse types of the log files
@@ -265,7 +268,7 @@ class SignalLoggerBase {
                           std::function<void(const std::unique_ptr<LogElementInterface> &, const PropertyType_)> propertySetter)
   {
     boost::upgrade_lock<boost::shared_mutex> lockLogger(loggerMutex_);
-    if( !hasElement(elementName) ) {
+    if( !hasElementLockFree(elementName) ) {
       MELO_WARN_STREAM("[SignalLogger::setElementProperty] Can not set " << propertyName << " of non-existing element with name " << elementName << "!");
       return false;
     } else {

@@ -139,9 +139,6 @@ bool SignalLoggerBase::startLogger()
 
 bool SignalLoggerBase::stopLogger()
 {
-  // If publishData is running notify stop
-  shouldPublish_ = false;
-
   // If lock can not be acquired because of saving ignore the call
   boost::unique_lock<boost::shared_mutex> tryStopLoggerLock(loggerMutex_, boost::try_to_lock);
   if(!tryStopLoggerLock && isSavingData_) {
@@ -159,6 +156,9 @@ bool SignalLoggerBase::stopLogger()
   } else if(!isCollectingData_) {
     MELO_DEBUG("[SignalLogger::stopLogger] Logger was already stopped!");
   }
+
+  // If publishData is running notify stop
+  shouldPublish_ = false;
 
   // Stop the collection of data!
   isCollectingData_ = false;
@@ -296,15 +296,10 @@ bool SignalLoggerBase::collectLoggerData()
 
 bool SignalLoggerBase::publishData()
 {
-  // Check if publishing is desired
-  if(!shouldPublish_) {
-    return true;
-  }
-
   // Try lock logger for read (non blocking!)
   boost::shared_lock<boost::shared_mutex> publishDataLock(loggerMutex_, boost::try_to_lock);
 
-  if(publishDataLock)
+  if(publishDataLock && shouldPublish_)
   {
     // Publish data from buffer
     for(auto & elem : enabledElements_)
@@ -364,14 +359,17 @@ bool SignalLoggerBase::stopAndSaveLoggerData(const LogFileTypeSet & logfileTypes
 
 bool SignalLoggerBase::cleanup()
 {
+  // Waiting for data to be saved
+  while(isSavingData_) {
+    MELO_INFO("[SignalLogger:cleanup]: Waiting for saving to complete ... ");
+    usleep( static_cast<__useconds_t >(5e5) ); // Wait half a second
+  }
+
+  // Make sure logger is stopped
+  stopLogger();
+
   // Lock the logger (blocking!)
   boost::unique_lock<boost::shared_mutex> lockLogger(loggerMutex_);
-
-  // Waiting for data to be saved
-  // while(isSavingData_) {
-  //   MELO_INFO("[SignalLogger:cleanup]: Waiting for saving to complete ... ");
-  //   usleep( static_cast<__useconds_t >(1e6/options_.updateFrequency_) );
-  // }
 
   // Publish data from buffer
   for(auto & elem : logElements_) { elem.second->cleanup(); }
@@ -391,16 +389,21 @@ void SignalLoggerBase::setMaxLoggingTime(double maxLoggingTime) {
   options_.maxLoggingTime_ = std::max(0.0, maxLoggingTime);
 }
 
+
+bool SignalLoggerBase::hasElementLockFree(const std::string & name) {
+  return logElements_.find(name) != logElements_.end();
+}
+
 bool SignalLoggerBase::hasElement(const std::string & name)
 {
   boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
-  return logElements_.find(name) != logElements_.end();
+  return hasElementLockFree(name);
 }
 
 const LogElementInterface & SignalLoggerBase::getElement(const std::string & name)
 {
   boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
-  if(!hasElement(name)) {
+  if(!hasElementLockFree(name)) {
     throw std::out_of_range("[SignalLoggerBase]::getElement(): Element " + name + " was not added to the logger!");
   }
   return *logElements_[name];
@@ -409,7 +412,7 @@ const LogElementInterface & SignalLoggerBase::getElement(const std::string & nam
 bool SignalLoggerBase::enableElement(const std::string & name)
 {
   boost::upgrade_lock<boost::shared_mutex> lockLogger(loggerMutex_);
-  if( !hasElement(name) ) {
+  if( !hasElementLockFree(name) ) {
     MELO_WARN_STREAM("[SignalLogger::enableElement] Can not enable non-existing element with name " << name << "!");
     return false;
   }
