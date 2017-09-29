@@ -50,10 +50,10 @@ class SignalLoggerNone : public SignalLoggerBase
   virtual bool restartLogger() override { return true; }
 
   //! Update the logger
-  virtual bool updateLogger() override { return true; }
+  virtual bool updateLogger(const bool readScript = true, const std::string & scriptname = "") override { return true; }
 
   //! Save logger script
-  virtual bool saveLoggerScript() override { return true; }
+  virtual bool saveLoggerScript(const std::string & scriptName = LOGGER_DEFAULT_SCRIPT_FILENAME) override { return true; }
 
   //! Collect log data, read data and push it into the buffer
   virtual bool collectLoggerData() override { return true; }

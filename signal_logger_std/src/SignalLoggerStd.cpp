@@ -106,12 +106,10 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, const sign
   return success;
 }
 
-bool SignalLoggerStd::resetTimeLogElement(signal_logger::BufferType buffertype, double maxLogTime) {
+void SignalLoggerStd::initTimeLogElement() {
   timeElement_.reset( new signal_logger_std::LogElementStd<signal_logger::TimestampPair>(
-    &logTime_, buffertype, maxLogTime*options_.updateFrequency_, options_.loggerPrefix_ + std::string{"/time"},
+    &logTime_, signal_logger::BufferType::FIXED_SIZE, 0, options_.loggerPrefix_ + std::string{"/time"},
     "[s/ns]", 1, signal_logger::LogElementAction::SAVE , &textStream_, &binaryStream_ ) );
-
-  return true;
 }
 
 } /* namespace signal_logger_std */

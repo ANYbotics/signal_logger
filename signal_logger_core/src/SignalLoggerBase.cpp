@@ -54,16 +54,8 @@ SignalLoggerBase::~SignalLoggerBase()
 
 void SignalLoggerBase::initLogger(const SignalLoggerOptions& options)
 {
-  // If lock can not be acquired because of saving ignore the call
-  boost::unique_lock<boost::shared_mutex> tryInitLoggerLock(loggerMutex_, boost::try_to_lock);
-  if(!tryInitLoggerLock && isSavingData_) {
-    MELO_WARN("Saving data while trying to initialize. Do nothing!");
-    return;
-  }
-
-  // Lock the logger if not locked yet (blocking!)
-  boost::unique_lock<boost::shared_mutex> initLoggerLock(loggerMutex_, boost::defer_lock);
-  if(!tryInitLoggerLock) { initLoggerLock.lock(); }
+  // Lock the logger (blocking!)
+  boost::unique_lock<boost::shared_mutex> initLoggerLock(loggerMutex_);
 
   // Assert corrupted configuration
   assert(options.updateFrequency_ > 0);
@@ -71,23 +63,16 @@ void SignalLoggerBase::initLogger(const SignalLoggerOptions& options)
   // Set configuration
   options_ = options;
 
-  // Get time buffer type and logging time
-  if(options_.maxLoggingTime_ == 0.0) {
-    resetTimeLogElement(BufferType::EXPONENTIALLY_GROWING, LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME);
-  }
-  else {
-    resetTimeLogElement(BufferType::FIXED_SIZE, options_.maxLoggingTime_);
-  }
+  // Init time element
+  initTimeLogElement();
 
   // Notify user
-  MELO_INFO("[Signal Logger] Initialized!");
+  MELO_INFO("[SignalLogger::initLogger] Initialized!");
   isInitialized_ = true;
-
 }
 
 bool SignalLoggerBase::startLogger()
 {
-
   // Delayed logger start if saving prevents lock of mutex
   boost::unique_lock<boost::shared_mutex> tryStartLoggerLock(loggerMutex_, boost::try_to_lock);
   if(!tryStartLoggerLock && isCopyingBuffer_) {
@@ -102,50 +87,47 @@ bool SignalLoggerBase::startLogger()
   if(!tryStartLoggerLock) { startLoggerLock.lock(); }
 
   // Warn the user on invalid request
-  if(!isInitialized_  || isCollectingData_ || isStarting_)
-  {
-    MELO_WARN("[Signal logger] Could not start!%s%s%s", !isInitialized_?" Not initialized!":"",
-        isCollectingData_?" Already running!":"", isStarting_?" Delayed logger start was already requested!":"");
+  if(!isInitialized_ || isStarting_) {
+    MELO_WARN("[SignalLogger::startLogger] Could not start!%s%s", !isInitialized_?" Not initialized!":"",
+              isStarting_?" Delayed logger start was already requested!":"");
     return false;
-  }
-
-  if(isCopyingBuffer_) {
-    // Still copying the data from the buffer, Wait in other thread until logger can be started.
-    std::thread t1(&SignalLoggerBase::workerStartLogger, this);
-    t1.detach();
+  } else if( isCollectingData_ ) {
+    MELO_DEBUG("[SignalLogger::startLogger] Already started!");
     return true;
   }
 
-  // If all elements are looping use a looping time buffer
-  auto loopingElement = std::find_if(enabledElements_.begin(), enabledElements_.end(),
-                                     [] (const LogElementMapIterator& s) { return s->second->getBuffer().getBufferType() != BufferType::LOOPING; } );
+  // Decide on the time buffer to use ( Init with exponentially growing when max log time is zero, fixed size buffer otherwise)
+  const double maxLogTime = (options_.maxLoggingTime_ == 0.0) ? LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME : options_.maxLoggingTime_;
+  size_t timeBufferSize =  static_cast<size_t >(maxLogTime * options_.updateFrequency_);
+  BufferType timeBufferType =  (options_.maxLoggingTime_ == 0.0) ? BufferType::EXPONENTIALLY_GROWING : BufferType::FIXED_SIZE;
 
-  if( loopingElement == enabledElements_.end() ) {
-    unsigned int timeBufferSize = 0;
-    auto maxElement = std::max_element(enabledElements_.begin(), enabledElements_.end(), maxScaledBufferSize());
-    if(maxElement != enabledElements_.end()) {
-      timeBufferSize = (*maxElement)->second->getOptions().getDivider() * (*maxElement)->second->getBuffer().getBufferSize();
-    }
-    timeElement_->getBuffer().setBufferType(BufferType::LOOPING);
-    timeElement_->getBuffer().setBufferSize(timeBufferSize);
-    MELO_INFO_STREAM("[Signal logger] Use Looping Buffer of size:" << timeBufferSize);
-  }
-  else {
-    if(options_.maxLoggingTime_ == 0.0) {
-      timeElement_->getBuffer().setBufferType(signal_logger::BufferType::EXPONENTIALLY_GROWING);
-      timeElement_->getBuffer().setBufferSize(LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME*options_.updateFrequency_);
-    }
-    else {
-      timeElement_->getBuffer().setBufferType(signal_logger::BufferType::FIXED_SIZE);
-      timeElement_->getBuffer().setBufferSize(options_.maxLoggingTime_*options_.updateFrequency_);
+  if(enabledElements_.empty()) {
+    // If no elements are logged, log with a looping buffer TODO: keep max log time?
+    timeBufferType = BufferType::LOOPING;
+  } else {
+    // If all elements are looping or all elements are fixed size use a time buffer of the according size/type
+    for(auto bufferType : { BufferType::FIXED_SIZE, BufferType::LOOPING } ) {
+      auto hasOtherElement = [bufferType] (const LogElementMapIterator& s) { return s->second->getBuffer().getBufferType() != bufferType; };
+      auto otherElement = std::find_if(enabledElements_.begin(), enabledElements_.end(), hasOtherElement);
+      if( otherElement == enabledElements_.end() ) {
+        auto maxElement = std::max_element(enabledElements_.begin(), enabledElements_.end(), maxScaledBufferSize());
+        timeBufferSize = ( maxElement != enabledElements_.end() ) ? ( (*maxElement)->second->getOptions().getDivider() *
+            (*maxElement)->second->getBuffer().getBufferSize() ) : 0;
+        timeBufferType = bufferType;
+        MELO_INFO_STREAM("[Signal logger] Use " << ( (bufferType == BufferType::FIXED_SIZE)? "fixed size" : "looping" )
+                                                << " Time Buffer of size:" << timeBufferSize);
+      }
     }
   }
 
-  // Reset elements
+
+  // Set time buffer properties to the element
+  timeElement_->getBuffer().setBufferType(timeBufferType);
+  timeElement_->getBuffer().setBufferSize(timeBufferSize);
+
+  // Reset elements ( Clear buffers )
   timeElement_->reset();
-
-
-  for(auto & elem : enabledElements_) { elem->second->reset(); }
+  for(auto & elem : logElements_) { elem.second->reset(); }
 
   // Reset flags and data collection calls
   isCollectingData_ = true;
@@ -171,12 +153,14 @@ bool SignalLoggerBase::stopLogger()
   boost::unique_lock<boost::shared_mutex> stopLoggerLock(loggerMutex_, boost::defer_lock);
   if(!tryStopLoggerLock) { stopLoggerLock.lock(); }
 
-  if(!isInitialized_ || !isCollectingData_)
-  {
-    MELO_WARN("[Signal logger] Could not stop!%s%s", !isInitialized_?" Not initialized!":"", !isCollectingData_?" Not running!":"");
-    return false;
+  // Those are cases where the logger is already stopped. So "stopping" was successful.
+  if(!isInitialized_) {
+    MELO_DEBUG("[SignalLogger::stopLogger] Could not stop non-initialized logger!");
+  } else if(!isCollectingData_) {
+    MELO_DEBUG("[SignalLogger::stopLogger] Logger was already stopped!");
   }
 
+  // Stop the collection of data!
   isCollectingData_ = false;
 
   return true;
@@ -189,7 +173,7 @@ bool SignalLoggerBase::restartLogger()
   return startLogger() && stopped;
 }
 
-bool SignalLoggerBase::updateLogger() {
+bool SignalLoggerBase::updateLogger(const bool readScript, const std::string & scriptname) {
 
   // If lock can not be acquired because of saving ignore the call
   boost::unique_lock<boost::shared_mutex> tryUpdateLoggerLock(loggerMutex_, boost::try_to_lock);
@@ -219,16 +203,18 @@ bool SignalLoggerBase::updateLogger() {
   logElementsToAdd_.clear();
 
   // Read the script
-  if( !readDataCollectScript(options_.collectScriptFileName_) ) {
-    MELO_ERROR("[Signal logger] Could not load logger script!");
-    return false;
+  if(readScript) {
+    if( !readDataCollectScript( scriptname.empty() ? options_.collectScriptFileName_ : scriptname ) ) {
+      MELO_ERROR("[Signal logger] Could not load logger script!");
+      return false;
+    }
   }
 
   return true;
 
 }
 
-bool SignalLoggerBase::saveLoggerScript() {
+bool SignalLoggerBase::saveLoggerScript(const std::string & scriptName) {
   // If lock can not be acquired because of saving ignore the call
   boost::unique_lock<boost::shared_mutex> trySaveLoggerScriptLock(loggerMutex_, boost::try_to_lock);
   if(!trySaveLoggerScriptLock && isSavingData_) {
@@ -240,7 +226,7 @@ bool SignalLoggerBase::saveLoggerScript() {
   boost::unique_lock<boost::shared_mutex> saveLoggerScriptLock(loggerMutex_, boost::defer_lock);
   if(!trySaveLoggerScriptLock) { saveLoggerScriptLock.lock(); }
 
-  if( !saveDataCollectScript( std::string(LOGGER_DEFAULT_SCRIPT_FILENAME) ) ){
+  if( !saveDataCollectScript( scriptName ) ){
     MELO_ERROR("[Signal logger] Could not save logger script!");
     return false;
   }
@@ -379,7 +365,13 @@ bool SignalLoggerBase::stopAndSaveLoggerData(const LogFileTypeSet & logfileTypes
 bool SignalLoggerBase::cleanup()
 {
   // Lock the logger (blocking!)
-  boost::unique_lock<boost::shared_mutex> updateLoggerLock(loggerMutex_);
+  boost::unique_lock<boost::shared_mutex> lockLogger(loggerMutex_);
+
+  // Waiting for data to be saved
+  while(isSavingData_) {
+    MELO_INFO("[SignalLogger:cleanup]: Waiting for saving to complete ... ");
+    usleep( static_cast<__useconds_t >(1e6/options_.updateFrequency_) );
+  }
 
   // Publish data from buffer
   for(auto & elem : logElements_) { elem.second->cleanup(); }
@@ -391,6 +383,130 @@ bool SignalLoggerBase::cleanup()
   logElementsToAdd_.clear();
 
   return true;
+}
+
+void SignalLoggerBase::setMaxLoggingTime(double maxLoggingTime) {
+  // The max logging time is only needed in startLogger, no issues it setting it anytime
+  boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
+  options_.maxLoggingTime_ = std::max(0.0, maxLoggingTime);
+}
+
+bool SignalLoggerBase::hasElement(const std::string & name)
+{
+  boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
+  return logElements_.find(name) != logElements_.end();
+}
+
+const LogElementInterface & SignalLoggerBase::getElement(const std::string & name)
+{
+  boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
+  if(!hasElement(name)) {
+    throw std::out_of_range("[SignalLoggerBase]::getElement(): Element " + name + " was not added to the logger!");
+  }
+  return *logElements_[name];
+}
+
+bool SignalLoggerBase::enableElement(const std::string & name)
+{
+  boost::upgrade_lock<boost::shared_mutex> lockLogger(loggerMutex_);
+  if( !hasElement(name) ) {
+    MELO_WARN_STREAM("[SignalLogger::enableElement] Can not enable non-existing element with name " << name << "!");
+    return false;
+  }
+  if( logElements_[name]->isEnabled() ) { return true; }
+
+  if( isCollectingData_ && logElements_[name]->getBuffer().getBufferType() != BufferType::LOOPING ) {
+    MELO_WARN_STREAM("[SignalLogger::enableElement]: Can not enable element " << name << " with non-looping buffer type when logger is running!");
+    return false;
+  }
+
+  if(isCollectingData_ && ( timeElement_->getBuffer().getBufferType() != BufferType::LOOPING ||
+      (logElements_[name]->getOptions().getDivider() * logElements_[name]->getBuffer() .getBufferSize()) > timeElement_->getBuffer().getBufferSize() ) ) {
+    MELO_WARN_STREAM("[SignalLogger::enableElement]: Can not enable element " << name << " when logger is running and time buffer is too small! "
+      << "(Des: " << logElements_[name]->getOptions().getDivider() * logElements_[name]->getBuffer() .getBufferSize() << " / Time: " << timeElement_->getBuffer().getBufferSize() <<")");
+    return false;
+  }
+
+  boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLockLogger(lockLogger);
+  logElements_[name]->setIsEnabled(true);
+  enabledElements_.push_back(logElements_.find(name));
+
+  return true;
+}
+
+bool SignalLoggerBase::disableElement(const std::string & name)
+{
+  auto isEnabled = [](const std::unique_ptr<LogElementInterface> & e) { return e->isEnabled(); };
+  auto setIsEnabled = [this, name](const std::unique_ptr<LogElementInterface> & e, const bool p) {
+    e->setIsEnabled(p);
+    auto it =  std::find(enabledElements_.begin(), enabledElements_.end(), logElements_.find(name));
+    if( it != enabledElements_.end() ) { enabledElements_.erase(it); }
+  };
+  return setElementProperty<bool>(name, false, "enabled(false)", isEnabled, setIsEnabled);
+}
+
+bool SignalLoggerBase::setElementBufferSize(const std::string & name, const std::size_t size)
+{
+  auto getBufferSize = [](const std::unique_ptr<LogElementInterface> & e) { return e->getBuffer().getBufferSize(); };
+  auto setBufferSize = [](const std::unique_ptr<LogElementInterface> & e, const std::size_t p) { e->getBuffer().setBufferSize(p); };
+  return setElementProperty<std::size_t>(name, size, "buffer size", getBufferSize, setBufferSize);
+}
+
+bool SignalLoggerBase::setElementBufferType(const std::string & name, const BufferType type)
+{
+  auto getBufferType = [](const std::unique_ptr<LogElementInterface> & e) { return e->getBuffer().getBufferType(); };
+  auto setBufferType = [](const std::unique_ptr<LogElementInterface> & e, const BufferType p) { e->getBuffer().setBufferType(p); };
+  return setElementProperty<BufferType>(name, type, "buffer type", getBufferType, setBufferType);
+}
+
+bool SignalLoggerBase::setElementDivider(const std::string & name, const std::size_t divider)
+{
+  auto getDivider = [](const std::unique_ptr<LogElementInterface> & e) { return e->getOptions().getDivider(); };
+  auto setDivider = [](const std::unique_ptr<LogElementInterface> & e, const std::size_t p) { e->getOptions().setDivider(p); };
+  return setElementProperty<std::size_t>(name, divider, "divider", getDivider, setDivider);
+}
+
+bool SignalLoggerBase::setElementAction(const std::string & name, const LogElementAction action)
+{
+  auto getAction = [](const std::unique_ptr<LogElementInterface> & e) { return e->getOptions().getAction(); };
+  auto setAction = [](const std::unique_ptr<LogElementInterface> & e, const LogElementAction p) { e->getOptions().setAction(p); };
+  return setElementProperty<LogElementAction>(name, action, "action", getAction, setAction);
+}
+
+bool SignalLoggerBase::enableNamespace(const std::string & ns)
+{
+  auto f = [this](const std::string & name) { return enableElement(name); };
+  return setElementPropertyForNamespace(ns, f);
+}
+
+bool SignalLoggerBase::disableNamespace(const std::string & ns)
+{
+  auto f = [this](const std::string & name) { return disableElement(name); };
+  return setElementPropertyForNamespace(ns, f);
+}
+
+bool SignalLoggerBase::setNamespaceBufferSize(const std::string & ns, const std::size_t size)
+{
+  auto f = [size, this](const std::string & name) { return setElementBufferSize(name, size); };
+  return setElementPropertyForNamespace(ns, f);
+}
+
+bool SignalLoggerBase::setNamespaceBufferType(const std::string & ns, const BufferType type)
+{
+  auto f = [type, this](const std::string & name) { return setElementBufferType(name, type); };
+  return setElementPropertyForNamespace(ns, f);
+}
+
+bool SignalLoggerBase::setNamespaceDivider(const std::string & ns, const std::size_t divider)
+{
+  auto f = [divider, this](const std::string & name) { return setElementDivider(name, divider); };
+  return setElementPropertyForNamespace(ns, f);
+}
+
+bool SignalLoggerBase::setNamespaceAction(const std::string & ns, const LogElementAction action)
+{
+  auto f = [action, this](const std::string & name) { return setElementAction(name, action); };
+  return setElementPropertyForNamespace(ns, f);
 }
 
 bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
@@ -405,8 +521,12 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
   // Check filename size and ending
   std::string ending = ".yaml";
   if ( ( (ending.size() + 1) > scriptName.size() ) || !std::equal(ending.rbegin(), ending.rend(), scriptName.rbegin()) ) {
-    MELO_ERROR_STREAM("[Signal logger] Script must be a yaml file : *.yaml");
-    for(auto & elem : enabledElements_) { elem->second->setIsEnabled(true); }
+    MELO_ERROR_STREAM("[Signal logger] Script must be a yaml file : *.yaml. Enable all elements!");
+    enabledElements_.clear();
+    for(auto it = logElements_.begin(); it != logElements_.end(); ++it) {
+      it->second->setIsEnabled(true);
+      enabledElements_.push_back(it);
+    }
     return false;
   }
 
@@ -549,11 +669,10 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
   return (j != 0);
 }
 
-bool SignalLoggerBase::resetTimeLogElement(signal_logger::BufferType buffertype, double maxLogTime) {
+void SignalLoggerBase::initTimeLogElement() {
   // Reset time element
   LogElementOptions options(options_.loggerPrefix_ + std::string{"/time"}, "[s/ns]", 1, LogElementAction::SAVE);
-  timeElement_.reset( new LogElementBase<TimestampPair>( &logTime_, buffertype, maxLogTime*options_.updateFrequency_, std::move(options) ) );
-  return true;
+  timeElement_.reset( new LogElementBase<TimestampPair>( &logTime_, BufferType::FIXED_SIZE, 0, std::move(options) ) );
 }
 
 signal_logger::TimestampPair SignalLoggerBase::getCurrentTime() {
@@ -618,8 +737,8 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
     noCollectDataCalls_ = 0;
 
     // Clear buffer for log elements
-    for(auto & elem : enabledElements_) {
-      elem->second->reset();
+    for(auto & elem : logElements_) {
+      elem.second->reset();
     }
 
     // Clear buffer for time elements

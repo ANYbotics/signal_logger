@@ -114,13 +114,21 @@ class LogElementBase: public LogElementInterface
   //! @return mutex of the log element
   std::mutex& acquireMutex() const { return mutex_; }
 
+  //! @return is log element enabled
   bool isEnabled() const { return isEnabled_.load(); }
 
+  //! @param enabled log element
   void setIsEnabled(const bool isEnabled) {
     isEnabled_.store(isEnabled);
     buffer_.allocate(isEnabled_);
     update();
   }
+
+  //! @return type_index
+  virtual std::type_index getType() const { return typeid(ValueType_); }
+
+  //! Expose readNewValues function of buffer
+  vector_type<ValueType_> readNewValues() { return buffer_.readNewValues(); }
 
   /*** Get access to the buffer copy
    *   @tparam V  log element type (ValueType_)
@@ -133,9 +141,9 @@ class LogElementBase: public LogElementInterface
   }
 
   /*** Get access to the buffer
- *   @tparam V  log element type (ValueType_)
- *   @return    buffer copy
- */
+   *   @tparam V  log element type (ValueType_)
+   *   @return    buffer copy
+   */
   template<typename V = ValueType_>
   const Buffer<V>& getTimeBuffer(typename std::enable_if<std::is_same<TimestampPair, V>::value>::type* = 0 /* is timestamp pair */) const
   {
