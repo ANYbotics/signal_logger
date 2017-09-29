@@ -75,7 +75,7 @@ class SignalLoggerBase {
   virtual bool updateLogger(const bool readScript = true, const std::string & scriptname = "");
 
   /** Save logger script **/
-  virtual bool saveLoggerScript();
+  virtual bool saveLoggerScript(const std::string & scriptName = std::string(LOGGER_DEFAULT_SCRIPT_FILENAME) );
 
   //! Collect log data, read data and push it into the buffer
   virtual bool collectLoggerData();

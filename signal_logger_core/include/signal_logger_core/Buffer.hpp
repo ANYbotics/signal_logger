@@ -149,12 +149,12 @@ class Buffer: public BufferInterface
    */
   vector_type<ValueType_> readNewValues()
   {
+    std::unique_lock<std::mutex> lock(mutex_);
     // Allocate vector
     vector_type<ValueType_> newValues;
 
     if( noNewItems_ != 0 ) {
       // Lock the circular buffer
-      std::unique_lock<std::mutex> lock(mutex_);
       newValues.reserve(noNewItems_);
 
       for(int i = (noNewItems_ - 1); i >= 0; i=i-1) {

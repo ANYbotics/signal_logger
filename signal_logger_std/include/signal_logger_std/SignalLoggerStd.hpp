@@ -46,7 +46,7 @@ class SignalLoggerStd : public signal_logger::SignalLoggerBase
             const std::size_t bufferSize                   = signal_logger::LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
             const signal_logger::BufferType bufferType     = signal_logger::LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
   {
-    std::string elementName = std::string{signal_logger::LOGGER_DEFAULT_PREFIX} + "/" + group + "/" + name;
+    std::string elementName = options_.loggerPrefix_ + "/" + group + "/" + name;
     elementName.erase(std::unique(elementName.begin(), elementName.end(), signal_logger::both_slashes()), elementName.end());
     {
       // Lock the logger (blocking!)

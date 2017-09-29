@@ -96,8 +96,6 @@ bool SignalLoggerBase::startLogger()
     return true;
   }
 
-  // #TODO update elements here?
-
   // Decide on the time buffer to use ( Init with exponentially growing when max log time is zero, fixed size buffer otherwise)
   const double maxLogTime = (options_.maxLoggingTime_ == 0.0) ? LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME : options_.maxLoggingTime_;
   size_t timeBufferSize =  static_cast<size_t >(maxLogTime * options_.updateFrequency_);
@@ -129,7 +127,7 @@ bool SignalLoggerBase::startLogger()
 
   // Reset elements ( Clear buffers )
   timeElement_->reset();
-  for(auto & elem : enabledElements_) { elem->second->reset(); }
+  for(auto & elem : logElements_) { elem.second->reset(); }
 
   // Reset flags and data collection calls
   isCollectingData_ = true;
@@ -216,7 +214,7 @@ bool SignalLoggerBase::updateLogger(const bool readScript, const std::string & s
 
 }
 
-bool SignalLoggerBase::saveLoggerScript() {
+bool SignalLoggerBase::saveLoggerScript(const std::string & scriptName) {
   // If lock can not be acquired because of saving ignore the call
   boost::unique_lock<boost::shared_mutex> trySaveLoggerScriptLock(loggerMutex_, boost::try_to_lock);
   if(!trySaveLoggerScriptLock && isSavingData_) {
@@ -228,7 +226,7 @@ bool SignalLoggerBase::saveLoggerScript() {
   boost::unique_lock<boost::shared_mutex> saveLoggerScriptLock(loggerMutex_, boost::defer_lock);
   if(!trySaveLoggerScriptLock) { saveLoggerScriptLock.lock(); }
 
-  if( !saveDataCollectScript( std::string(LOGGER_DEFAULT_SCRIPT_FILENAME) ) ){
+  if( !saveDataCollectScript( scriptName ) ){
     MELO_ERROR("[Signal logger] Could not save logger script!");
     return false;
   }
@@ -368,6 +366,12 @@ bool SignalLoggerBase::cleanup()
 {
   // Lock the logger (blocking!)
   boost::unique_lock<boost::shared_mutex> lockLogger(loggerMutex_);
+
+  // Waiting for data to be saved
+  while(isSavingData_) {
+    MELO_INFO("[SignalLogger:cleanup]: Waiting for saving to complete ... ");
+    usleep( static_cast<__useconds_t >(1e6/options_.updateFrequency_) );
+  }
 
   // Publish data from buffer
   for(auto & elem : logElements_) { elem.second->cleanup(); }
@@ -517,8 +521,12 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
   // Check filename size and ending
   std::string ending = ".yaml";
   if ( ( (ending.size() + 1) > scriptName.size() ) || !std::equal(ending.rbegin(), ending.rend(), scriptName.rbegin()) ) {
-    MELO_ERROR_STREAM("[Signal logger] Script must be a yaml file : *.yaml");
-    for(auto & elem : enabledElements_) { elem->second->setIsEnabled(true); }
+    MELO_ERROR_STREAM("[Signal logger] Script must be a yaml file : *.yaml. Enable all elements!");
+    enabledElements_.clear();
+    for(auto it = logElements_.begin(); it != logElements_.end(); ++it) {
+      it->second->setIsEnabled(true);
+      enabledElements_.push_back(it);
+    }
     return false;
   }
 
@@ -729,8 +737,8 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
     noCollectDataCalls_ = 0;
 
     // Clear buffer for log elements
-    for(auto & elem : enabledElements_) {
-      elem->second->reset();
+    for(auto & elem : logElements_) {
+      elem.second->reset();
     }
 
     // Clear buffer for time elements
