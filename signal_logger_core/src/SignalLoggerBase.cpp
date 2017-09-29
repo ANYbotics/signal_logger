@@ -368,10 +368,10 @@ bool SignalLoggerBase::cleanup()
   boost::unique_lock<boost::shared_mutex> lockLogger(loggerMutex_);
 
   // Waiting for data to be saved
-  while(isSavingData_) {
-    MELO_INFO("[SignalLogger:cleanup]: Waiting for saving to complete ... ");
-    usleep( static_cast<__useconds_t >(1e6/options_.updateFrequency_) );
-  }
+  // while(isSavingData_) {
+  //   MELO_INFO("[SignalLogger:cleanup]: Waiting for saving to complete ... ");
+  //   usleep( static_cast<__useconds_t >(1e6/options_.updateFrequency_) );
+  // }
 
   // Publish data from buffer
   for(auto & elem : logElements_) { elem.second->cleanup(); }
