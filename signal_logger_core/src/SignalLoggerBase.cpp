@@ -96,6 +96,13 @@ bool SignalLoggerBase::startLogger()
     return true;
   }
 
+  if(isCopyingBuffer_) {
+    // Still copying the data from the buffer, Wait in other thread until logger can be started.
+    std::thread t1(&SignalLoggerBase::workerStartLogger, this);
+    t1.detach();
+    return true;
+  }
+
   // Decide on the time buffer to use ( Init with exponentially growing when max log time is zero, fixed size buffer otherwise)
   const double maxLogTime = (options_.maxLoggingTime_ == 0.0) ? LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME : options_.maxLoggingTime_;
   size_t timeBufferSize =  static_cast<size_t >(maxLogTime * options_.updateFrequency_);
