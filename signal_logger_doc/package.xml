@@ -13,5 +13,6 @@
   <depend>signal_logger_std</depend>
   <depend>signal_logger_msgs</depend>
   <depend>rqt_signal_logger</depend>
+  <build_depend>doxygen</build_depend>
 
 </package>

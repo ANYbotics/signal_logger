@@ -26,7 +26,7 @@ IF(DOXYGEN)
       signal_logger_std
       signal_logger_msgs
       rqt_signal_logger
-    DEPENDS doxygen
+    DEPENDS
   )
 
   # Find signal_logger for documentation
