@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>signal_logger_doc</name>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <description>The signal logger documentation package</description>
   <maintainer email="gehrinch@ethz.ch">Christian Gehring</maintainer>
   <license>BSD</license>
@@ -13,5 +13,6 @@
   <depend>signal_logger_std</depend>
   <depend>signal_logger_msgs</depend>
   <depend>rqt_signal_logger</depend>
+  <build_depend>doxygen</build_depend>
 
 </package>
