@@ -390,7 +390,3 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_v
 } /* namespace traits */
 
 } /* namespace signal_logger_std */
-
-#ifdef SILO_STD_TRAITS_PLUGIN
-#include SILO_STD_TRAITS_PLUGIN
-#endif

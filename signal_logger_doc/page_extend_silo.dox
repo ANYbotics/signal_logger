@@ -70,15 +70,13 @@ template<>
 struct slr_msg_traits<signal_logger::Circle>
 {
   typedef signal_logger_msgs::CircleStamped         msgtype;
-  typedef signal_logger_msgs::CircleStampedPtr      msgtypePtr;
-  typedef signal_logger_msgs::CircleStampedConstPtr msgtypeConstPtr;
 };
 
 template <>
 struct slr_update_traits<signal_logger::Circle>
 {
   static void updateMsg(const signal_logger::Circle* var,
-                        typename slr_msg_traits<signal_logger::Circle>::msgtypePtr msg,
+                        typename slr_msg_traits<signal_logger::Circle>::msgtype* const msg,
                         const ros::Time& timeStamp)
   {
     msg->header.stamp = timeStamp;
@@ -90,80 +88,29 @@ struct slr_update_traits<signal_logger::Circle>
 \endcode
 
 
-<H3>Add a new data type to the logger using the plugin macro</H3>
+<H3>Add a new data type custom to your project to the logger</H3>
 When adding a type would add unnecessary dependencies to the signal_logger or the log type is very specific to your application, you should not add this type to
-the signal logger itself. Using a plugin macro it is possible to provide additional traits to the signal logger defined in another package (e.g. my_signal_logger_extension_package).
+the signal logger itself.
+However, due to the trait based nature of the signal_logger you can simply add a header file containing the additional traits.
+Make sure to use the proper namespaces.
 
-First create the new package 'my_signal_logger_extension_package'.<BR>
-<B>my_signal_logger_extension_package</B> <BR>
-&nbsp;&nbsp;<I>include</I> <BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&ndash; my_std_traits.hpp <BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&ndash; my_ros_traits.hpp <BR>
-&nbsp;&nbsp;<I>cmake</I> <BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&ndash; my_signal_logger_extension_package-extras.cmake <BR>
-&nbsp;&nbsp;&ndash; package.xml <BR>
-&nbsp;&nbsp;&ndash; CMakeLists.txt <BR> <BR> <BR>
+This include file contains the additional traits for the signal logger (see Circle example from above).<BR>
 
-
-The include files contain the additional traits for the signal logger (see Circle example from above).<BR>
-my_std_traits.hpp:
+my_circle_trait.hpp:
 \code{c}
 namespace signal_logger_std {
   namespace traits {
-    // Trait from above example
+    // Std trait from above example
   }
 }
-\endcode
 
-my_ros_traits.hpp:
-\code{c}
 namespace signal_logger_ros {
   namespace traits {
-    // Trait from above example
+    // Ros update and msg traits from above example
   }
 }
 \endcode
 
-<B>NOTE:</B> The message must not necessarily be defined in this package.<BR><BR><BR>
+After including this header and "signal_logger.hpp" you can add your custom circle type to the signal logger.
 
-The cmake folder is required to register the include files as plugins to the signal logger.<BR>
-my_signal_logger_extension_package-extras.cmake:
-\code{txt}
-set(SILO_STD_TRAITS_PLUGIN_PATH "my_signal_logger_extension_package/my_std_traits.hpp")
-if (SILO_STD_TRAITS_PLUGIN)
-  if (NOT SILO_STD_TRAITS_PLUGIN STREQUAL SILO_STD_TRAITS_PLUGIN_PATH)
-    MESSAGE(FATAL_ERROR "SILO_STD_TRAITS_PLUGIN already defined!")
-  endif ()
-else (SILO_STD_TRAITS_PLUGIN)
-    add_definitions(-DSILO_STD_TRAITS_PLUGIN=\"${SILO_STD_TRAITS_PLUGIN_PATH}\")
-endif (SILO_STD_TRAITS_PLUGIN)
-
-set(SILO_ROS_TRAITS_PLUGIN_PATH "my_signal_logger_extension_package/my_ros_traits.hpp")
-if (SILO_ROS_TRAITS_PLUGIN)
-  if (NOT SILO_ROS_TRAITS_PLUGIN STREQUAL SILO_ROS_TRAITS_PLUGIN_PATH)
-    MESSAGE(FATAL_ERROR "SILO_ROS_TRAITS_PLUGIN already defined!")
-  endif ()
-else (SILO_ROS_TRAITS_PLUGIN)
-  add_definitions(-DSILO_ROS_TRAITS_PLUGIN=\"${SILO_ROS_TRAITS_PLUGIN_PATH}\")
-endif (SILO_ROS_TRAITS_PLUGIN)
-\endcode
-
-<B>NOTE:</B> It is checked whether another plugin is already defined, then compilation fails.<BR><BR><BR>
-CMakeLists.txt:
-\code{txt}
-cmake_minimum_required(VERSION 2.8.3)
-project(my_signal_logger_extension_package)
-
-include(cmake/${PROJECT_NAME}-extras.cmake)
-
-find_package(catkin REQUIRED COMPONENTS
-  my_dependency1
-  my_dependency2
-)
-catkin_package(
-  INCLUDE_DIRS include
-  CATKIN_DEPENDS my_dependency1 my_dependency2
-  CFG_EXTRAS ${PROJECT_NAME}-extras.cmake
-)
-\endcode
 */
