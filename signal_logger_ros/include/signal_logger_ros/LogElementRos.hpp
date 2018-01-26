@@ -18,6 +18,9 @@
 // rosbag
 #include <rosbag/bag.h>
 
+// boost
+#include <boost/shared_ptr.hpp>
+
 namespace signal_logger_ros {
 
 //! Log element for ros logging
@@ -26,7 +29,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
 {
   //! convinience typedefs
   using MsgType = typename traits::slr_msg_traits<ValueType_>::msgtype;
-  using MsgTypePtr = typename traits::slr_msg_traits<ValueType_>::msgtypePtr;
+  using MsgTypePtr = boost::shared_ptr<MsgType>;
 
  public:
   /** Constructor
@@ -98,7 +101,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
           times.getTimeBufferCopy().getElementCopyAtPosition((times.getTimeBufferCopy().noTotalItems() - 1) - (startIdx + i*this->optionsCopy_.getDivider()) );
         ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
         // Update msg
-        traits::slr_update_traits<ValueType_>::updateMsg(this->bufferCopy_.getPointerAtPosition( (this->bufferCopy_.noTotalItems() - 1) - i), msgSave_, now);
+        traits::slr_update_traits<ValueType_>::updateMsg(this->bufferCopy_.getPointerAtPosition( (this->bufferCopy_.noTotalItems() - 1) - i), msgSave_.get(), now);
         // Write to bag
         try{
           bagWriter_->write(this->optionsCopy_.getName(), now, *msgSave_);
@@ -159,7 +162,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
       } // unlock elements mutex
 
       // publish over ros
-      traits::slr_update_traits<ValueType_>::updateMsg(&data, msg_, ros::Time(tsp_now.first, tsp_now.second));
+      traits::slr_update_traits<ValueType_>::updateMsg(&data, msg_.get(), ros::Time(tsp_now.first, tsp_now.second));
       {
         std::unique_lock<std::mutex> lock(this->publishMutex_);
         pub_.publish(msg_);

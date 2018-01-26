@@ -60,6 +60,15 @@ template<typename ValueType_>
 struct is_eigen_matrix<ValueType_, typename std::enable_if< std::is_base_of< Eigen::MatrixBase<ValueType_>,
                                                             ValueType_ >::value>::type > : std::true_type {};
 
+//! isEigenOfScalarMartix false type
+template<typename ValueType_, typename PrimType_, typename Enable_ = void>
+struct is_eigen_matrix_of_scalar : std::false_type {};
+
+//! isEigenOfScalarMartix true type
+template<typename ValueType_, typename PrimType_>
+struct is_eigen_matrix_of_scalar<ValueType_, PrimType_, typename std::enable_if< is_eigen_matrix<ValueType_>::value &&
+		std::is_same< typename ValueType_::Scalar, PrimType_ >::value>::type> : std::true_type {};
+
 //! isEigenMartix (All matrices/vectors except Eigen::Vector3 types) false type
 template<typename ValueType_, typename Enable_ = void>
 struct is_eigen_matrix_excluding_vector3 : std::false_type {};
