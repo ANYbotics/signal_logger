@@ -167,7 +167,7 @@ struct sls_traits<signal_logger::TimestampPair, ContainerType_>
  * Specializations: STL types                *
  ***************************************************/
 template <typename ValueType_, typename ContainerType_>
-struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_array<ValueType_>::value>::type>
+struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_array_type<ValueType_>::value>::type>
 {
   static void writeLogElementToStreams(std::stringstream* text,
                                        std::stringstream* binary,
@@ -181,11 +181,11 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
 
   {
     // Loop through extent of array
-    for (int i = 0; i < std::extent<ValueType_>::value; ++i)
+    for (int i = 0; i < get_array_size<ValueType_>(); ++i)
     {
       // Get xyz of the vector
       auto getElement = [i, accessor](const ContainerType_ * const v) { return &((*accessor(v))[i]); };
-      sls_traits<double, ContainerType_>::writeLogElementToStreams(
+      sls_traits<element_type_t<ValueType_>, ContainerType_>::writeLogElementToStreams(
           text, binary, fileType, buffer, name + "_" + std::to_string(i), divider, startDiff, endDiff, getElement);
     }
   }

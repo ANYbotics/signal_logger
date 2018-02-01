@@ -28,6 +28,29 @@ namespace traits {
 template<typename T>
 using element_type_t = typename std::remove_reference<decltype(*std::begin(std::declval<T&>()))>::type;
 
+//----------------------------------- STL traits -------------------------------------//
+
+template <typename>
+struct is_std_array : std::false_type {};
+
+template <typename V, size_t n>
+struct is_std_array<std::array<V, n>> : std::true_type {};
+
+//! is_array_type false type
+template<typename ValueType_, typename Enable_ = void>
+struct is_array_type : std::false_type {};
+
+//! is_array_type true type
+template<typename ValueType_>
+struct is_array_type<ValueType_, typename std::enable_if< is_std_array<ValueType_>::value || std::is_array<ValueType_>::value>::type > : std::true_type {};
+
+
+template<typename T, typename=typename std::enable_if<std::is_array<T>::value>::type>
+constexpr auto get_array_size() -> decltype(std::extent<T>::value) { return std::extent<T>::value; }
+
+template<typename T, typename=typename std::enable_if<is_std_array<T>::value>::type>
+constexpr auto get_array_size() -> decltype(std::declval<T>().size()) { return T().size(); }
+
 //----------------------------------- EIGEN traits -------------------------------------//
 
 //! isEigenQuaternion false type
