@@ -138,6 +138,54 @@ struct slr_msg_traits<signal_logger::TimestampPair> {
 };
 /********************************/
 
+
+/***************************************************
+ * Specializations: STL types                      *
+ ***************************************************/
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_array<ValueType_>::value &&
+    std::is_same<double, element_type_t<ValueType_>>::value>::type> {
+  using msgtype = signal_logger_msgs::Float64MultiArrayStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_array<ValueType_>::value &&
+    std::is_same<float, element_type_t<ValueType_>>::value>::type> {
+  using msgtype = signal_logger_msgs::Float32MultiArrayStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_array<ValueType_>::value &&
+    std::is_same<long, element_type_t<ValueType_>>::value>::type> {
+  using msgtype = signal_logger_msgs::Int64MultiArrayStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_array<ValueType_>::value &&
+    std::is_same<int, element_type_t<ValueType_>>::value>::type> {
+  using msgtype = signal_logger_msgs::Int32MultiArrayStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_array<ValueType_>::value &&
+    std::is_same<short, element_type_t<ValueType_>>::value>::type> {
+  using msgtype = signal_logger_msgs::Int16MultiArrayStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_array<ValueType_>::value &&
+    std::is_same<char, element_type_t<ValueType_>>::value>::type> {
+  using msgtype = signal_logger_msgs::Int8MultiArrayStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_array<ValueType_>::value &&
+    std::is_same<bool, element_type_t<ValueType_>>::value>::type> {
+  using msgtype = signal_logger_msgs::BoolMultiArrayStamped;
+};
+
+/********************************/
+
 /********************************
  * Specializations: eigen types *
  ********************************/
@@ -288,6 +336,23 @@ struct slr_update_traits<signal_logger::TimestampPair> {
     msg->header.stamp = timeStamp;
     msg->value.data.sec = var->first;
     msg->value.data.nsec = var->second;
+  }
+};
+/********************************/
+
+/***************************************************
+ * Specializations: STL types                *
+ ***************************************************/
+template <typename ValueType_>
+struct slr_update_traits<ValueType_, typename std::enable_if<std::is_array<ValueType_>::value>::type> {
+  static void updateMsg(const ValueType_* vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtype* const msg,
+                        const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->matrix.data.clear();
+    for (int i = 0; i < std::extent<ValueType_>::value; ++i) {
+      msg->matrix.data.push_back((*vectorPtr_)[i]);
+    }
   }
 };
 /********************************/

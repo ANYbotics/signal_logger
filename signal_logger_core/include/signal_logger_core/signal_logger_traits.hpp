@@ -25,6 +25,9 @@ namespace signal_logger {
 
 namespace traits {
 
+template<typename T>
+using element_type_t = typename std::remove_reference<decltype(*std::begin(std::declval<T&>()))>::type;
+
 //----------------------------------- EIGEN traits -------------------------------------//
 
 //! isEigenQuaternion false type
