@@ -23,6 +23,9 @@
 // STL
 #include <atomic>
 #include <thread>
+#include <vector>
+#include <array>
+#include <list>
 #include <signal.h>
 #include <stdlib.h>
 
@@ -46,7 +49,9 @@ class SignalLoggerExample: public any_node::Node
     std::atomic_bool shouldRead_;
     double logVar_;
     ros::Time time_;
-
+    std::vector<double> vec_;
+    std::array<int, 3> arr_;
+    std::list<float> list_;
 };
 
 } /* namespace m545_tf_publisher */

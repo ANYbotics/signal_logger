@@ -36,20 +36,47 @@ struct is_std_array : std::false_type {};
 template <typename V, size_t n>
 struct is_std_array<std::array<V, n>> : std::true_type {};
 
-//! is_array_type false type
-template<typename ValueType_, typename Enable_ = void>
-struct is_array_type : std::false_type {};
+template<typename T>
+struct has_const_iterator
+{
+ private:
+  typedef char                      one;
+  typedef struct { char array[2]; } two;
 
-//! is_array_type true type
-template<typename ValueType_>
-struct is_array_type<ValueType_, typename std::enable_if< is_std_array<ValueType_>::value || std::is_array<ValueType_>::value>::type > : std::true_type {};
+  template<typename C> static one test(typename C::const_iterator*);
+  template<typename C> static two  test(...);
+ public:
+  static const bool value = sizeof(test<T>(0)) == sizeof(one);
+  typedef T type;
+};
 
+template <typename T>
+struct has_begin_end
+{
+  struct Dummy { typedef void const_iterator; };
+  typedef typename std::conditional<has_const_iterator<T>::value, T, Dummy>::type TType;
+  typedef typename TType::const_iterator iter;
 
-template<typename T, typename=typename std::enable_if<std::is_array<T>::value>::type>
-constexpr auto get_array_size() -> decltype(std::extent<T>::value) { return std::extent<T>::value; }
+  struct Fallback { iter begin() const; iter end() const; };
+  struct Derived : TType, Fallback { };
 
-template<typename T, typename=typename std::enable_if<is_std_array<T>::value>::type>
-constexpr auto get_array_size() -> decltype(std::declval<T>().size()) { return T().size(); }
+  template<typename C, C> struct ChT;
+
+  template<typename C> static char (&f(ChT<iter (Fallback::*)() const, &C::begin>*))[1];
+  template<typename C> static char (&f(...))[2];
+  template<typename C> static char (&g(ChT<iter (Fallback::*)() const, &C::end>*))[1];
+  template<typename C> static char (&g(...))[2];
+
+  static bool const beg_value = sizeof(f<Derived>(0)) == 2;
+  static bool const end_value = sizeof(g<Derived>(0)) == 2;
+};
+
+template <typename T>
+struct is_container
+{
+  static const bool value = has_const_iterator<T>::value &&
+		  has_begin_end<T>::beg_value && has_begin_end<T>::end_value;
+};
 
 //----------------------------------- EIGEN traits -------------------------------------//
 

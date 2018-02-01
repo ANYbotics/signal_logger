@@ -15,7 +15,10 @@ SignalLoggerExample::SignalLoggerExample(NodeHandlePtr nh):
   shouldPublish_(true),
   shouldRead_(true),
   logVar_(0.0),
-  time_(ros::TIME_MIN)
+  time_(ros::TIME_MIN),
+  vec_{1, 2, 3},
+  arr_{4, 5, 6},
+  list_{7, 8, 9}
 {
   ros::Time::setNow(time_);
 }
@@ -42,6 +45,11 @@ void SignalLoggerExample::init()
    100, signal_logger::BufferType::LOOPING);
   signal_logger::add(logVar_, "logVar4", "ns1", "[kg]", 3, signal_logger::LogElementAction::SAVE_AND_PUBLISH ,
    10, signal_logger::BufferType::EXPONENTIALLY_GROWING);
+
+  // Add stl container types
+  signal_logger::add(vec_, "vec", "nsSTL");
+  signal_logger::add(arr_, "arr", "nsSTL");
+  signal_logger::add(list_, "list", "nsSTL");
 
   // Call update logger, this loads the variables from the siloOptions.collectScriptFileName_ file.
   signal_logger::logger->updateLogger();
