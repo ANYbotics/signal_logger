@@ -406,7 +406,7 @@ struct slr_update_traits<ValueType_, typename std::enable_if<std::is_same<ValueT
 
 template <typename ValueType_>
 struct slr_update_traits<ValueType_, typename std::enable_if<is_container<ValueType_>::value &&
-    !is_pair<element_type_t<ValueType_>>::value>::type> {
+    std::is_arithmetic<element_type_t<ValueType_>>::value>::type> {
   static void updateMsg(const ValueType_* vectorPtr_,
                         typename slr_msg_traits<ValueType_>::msgtype* const msg,
                         const ros::Time& timeStamp) {
