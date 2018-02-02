@@ -28,6 +28,15 @@ struct sls_typename_traits
   }
 };
 
+// string
+template<typename ValueType_>
+struct sls_typename_traits<ValueType_, typename std::enable_if<std::is_same<std::string, typename std::remove_cv<ValueType_>::type>::value>::type>
+{
+  static std::string getTypeName() {
+    return std::string("string");
+  }
+};
+
 // double
 template<typename ValueType_>
 struct sls_typename_traits<ValueType_, typename std::enable_if<std::is_same<double, typename std::remove_cv<ValueType_>::type>::value>::type>
@@ -71,8 +80,68 @@ template<typename ValueType_, typename ContainerType_, typename Enable_ = void> 
  * Specializations: core types *
  *******************************/
 template<typename ValueType_, typename ContainerType_>
-struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_arithmetic<ValueType_>::value>::type>
+struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_arithmetic<ValueType_>::value || std::is_same<std::string, typename std::remove_cv<ValueType_>::type>::value>::type>
 {
+  // helpers
+  template<typename V_ = ValueType_>
+  static unsigned int sizeOf(const signal_logger::Buffer<ContainerType_> & buffer,
+                             const std::function<const V_ * const(const ContainerType_ * const)> & accessor,
+                             typename std::enable_if<!std::is_same<std::string, typename std::remove_cv<V_>::type>::value>::type* = 0) {
+    return sizeof(V_);
+  }
+
+  template<typename V_ = ValueType_>
+  static unsigned int sizeOf(const signal_logger::Buffer<ContainerType_> & buffer,
+                             const std::function<const V_ * const(const ContainerType_ * const)> & accessor,
+                             typename std::enable_if<std::is_same<std::string, typename std::remove_cv<V_>::type>::value>::type* = 0) {
+    // Get max size of string
+    unsigned int maxStringSize = 0;
+    for (unsigned int i = 0; i<buffer.noTotalItems(); ++i)
+    {
+      const auto size = accessor(buffer.getPointerAtPosition(i))->size();
+      if(maxStringSize < size) {
+        maxStringSize = size;
+      }
+    }
+    return maxStringSize;
+  }
+
+  //! write arithmetic types to binary
+  template< typename V_ = ValueType_>
+  static typename std::enable_if<!std::is_same<std::string, typename std::remove_cv<V_>::type>::value>::type writeToBinary(
+      const unsigned int noBytes,
+      std::stringstream* binary,
+      const signal_logger::Buffer<ContainerType_> & buffer,
+      const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor)
+  {
+    for (unsigned int i = 0; i<buffer.noTotalItems(); ++i)
+    {
+      binary->write(reinterpret_cast<const char*>(accessor(buffer.getPointerAtPosition((buffer.noTotalItems() - 1) - i))), sizeof(ValueType_));
+    }
+  }
+
+  //! write string types to binary
+  template< typename V_ = ValueType_>
+  static typename std::enable_if<std::is_same<std::string, typename std::remove_cv<V_>::type>::value>::type writeToBinary(
+      const unsigned int noBytes,
+      std::stringstream* binary,
+      const signal_logger::Buffer<ContainerType_> & buffer,
+      const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor)
+  {
+    for (unsigned int i = 0; i<buffer.noTotalItems(); ++i)
+    {
+      const auto elem = accessor(buffer.getPointerAtPosition((buffer.noTotalItems() - 1) - i));
+      if(elem->size() == noBytes) {
+        // Same sized strings can be stored directly
+        *binary << *elem;
+      } else {
+        // Smaller strings are filled up with ----
+        std::string fullString = *elem + std::string(noBytes-elem->size(),'-');
+        *binary << fullString;
+      }
+    }
+  }
+
   static void writeLogElementToStreams(std::stringstream* text,
                                        std::stringstream* binary,
                                        signal_logger::LogFileType fileType,
@@ -84,12 +153,13 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
                                        const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
     if(fileType == signal_logger::LogFileType::BINARY) {
-      (*text) << name     << " " << sizeof(ValueType_) << " " << buffer.noTotalItems() << " "
+      const int noBytes = sizeOf(buffer, accessor);
+
+      (*text) << name     << " " << noBytes << " " << buffer.noTotalItems() << " "
                 << divider  << " " << (buffer.getBufferType() == signal_logger::BufferType::LOOPING) << " " << sls_typename_traits<ValueType_>::getTypeName() << std::endl;
-      for (unsigned int i = 0; i<buffer.noTotalItems(); ++i)
-      {
-        binary->write(reinterpret_cast<const char*>(accessor(buffer.getPointerAtPosition((buffer.noTotalItems() - 1) - i))), sizeof(ValueType_) );
-      }
+
+      writeToBinary(noBytes, binary, buffer, accessor);
+
     } else if(fileType == signal_logger::LogFileType::CSV){
       // Write name and starting empty cells
       (*text) << name << "," << std::string(startDiff, ',');
@@ -107,6 +177,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
 
   }
 };
+
 /********************************/
 
 /*******************************
@@ -166,6 +237,31 @@ struct sls_traits<signal_logger::TimestampPair, ContainerType_>
 /***************************************************
  * Specializations: STL types                *
  ***************************************************/
+template <typename ValueType_, typename ContainerType_>
+struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_pair<ValueType_>::value>::type>
+{
+  static void writeLogElementToStreams(std::stringstream* text,
+                                       std::stringstream* binary,
+                                       signal_logger::LogFileType fileType,
+                                       const signal_logger::Buffer<ContainerType_> & buffer,
+                                       const std::string & name,
+                                       const std::size_t divider,
+                                       const unsigned int startDiff,
+                                       const unsigned int endDiff,
+                                       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+
+  {
+    // Get xyz of the vector
+    auto getKey = [accessor](const ContainerType_ * const v) { return &(accessor(v)->first); };
+    sls_traits<typename ValueType_::first_type, ContainerType_>::writeLogElementToStreams(
+        text, binary, fileType, buffer, name + "_key", divider, startDiff, endDiff, getKey);
+
+    auto getValue = [accessor](const ContainerType_ * const v) { return &(accessor(v)->second); };
+    sls_traits<typename ValueType_::second_type, ContainerType_>::writeLogElementToStreams(
+        text, binary, fileType, buffer, name + "_value", divider, startDiff, endDiff, getValue);
+  }
+};
+
 template <typename ValueType_, typename ContainerType_>
 struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_container<ValueType_>::value>::type>
 {

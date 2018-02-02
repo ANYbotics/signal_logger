@@ -20,13 +20,17 @@
 
 // STL
 #include <type_traits>
+#include <string>
+#include <array>
+#include <map>
+#include <unordered_map>
 
 namespace signal_logger {
 
 namespace traits {
 
 template<typename T>
-using element_type_t = typename std::remove_reference<decltype(*std::begin(std::declval<T&>()))>::type;
+using element_type_t = typename std::remove_cv<typename std::remove_reference<decltype(*std::begin(std::declval<T&>()))>::type>::type;
 
 //----------------------------------- STL traits -------------------------------------//
 
@@ -35,6 +39,36 @@ struct is_std_array : std::false_type {};
 
 template <typename V, size_t n>
 struct is_std_array<std::array<V, n>> : std::true_type {};
+
+//! is_map false type
+template<typename>
+struct is_map : std::false_type {};
+
+//! is_map true type
+template<typename T, typename U>
+struct is_map<std::map<T,U>> : std::true_type {};
+
+//! is_map true type
+template<typename T, typename U>
+struct is_map<std::unordered_map<T,U>> : std::true_type {};
+
+//! is_pair false type
+template<typename>
+struct is_pair : std::false_type {};
+
+//! is_pair true type
+template<typename T, typename U>
+struct is_pair<std::pair<T,U>> : std::true_type {};
+
+//! is_pair false type
+template<typename Pair_, typename FirstType_, typename SecondType_, typename Enable_ = void>
+struct is_pair_of : std::false_type {};
+
+//! is_pair true type
+template<typename Pair_, typename FirstType_, typename SecondType_>
+struct is_pair_of<Pair_, FirstType_, SecondType_, typename std::enable_if<is_pair<Pair_>::value &&
+    std::is_same<typename Pair_::first_type, FirstType_>::value &&
+    std::is_same<typename Pair_::second_type, SecondType_>::value>::type> : std::true_type {};
 
 template<typename T>
 struct has_const_iterator
@@ -74,7 +108,7 @@ struct has_begin_end
 template <typename T>
 struct is_container
 {
-  static const bool value = has_const_iterator<T>::value &&
+  static const bool value = has_const_iterator<T>::value && !std::is_same<std::string, typename std::remove_cv<T>::type>::value &&
 		  has_begin_end<T>::beg_value && has_begin_end<T>::end_value;
 };
 

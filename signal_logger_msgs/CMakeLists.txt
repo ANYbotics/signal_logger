@@ -35,8 +35,18 @@ add_message_files(
    UInt8Stamped.msg
    BoolStamped.msg
    CharStamped.msg
+   StringStamped.msg
    UnsignedCharStamped.msg
    TimeStamped.msg
+   PairStringInt.msg
+   PairStringIntStamped.msg
+   MapStringIntStamped.msg
+   PairStringDouble.msg
+   PairStringDoubleStamped.msg
+   MapStringDoubleStamped.msg
+   PairIntDouble.msg
+   PairIntDoubleStamped.msg
+   MapIntDoubleStamped.msg
    LogElement.msg
 )
 
