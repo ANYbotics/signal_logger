@@ -40,6 +40,16 @@
 #include <signal_logger_msgs/UInt64Stamped.h>
 #include <signal_logger_msgs/UInt8Stamped.h>
 #include <signal_logger_msgs/UnsignedCharStamped.h>
+#include <signal_logger_msgs/StringStamped.h>
+#include <signal_logger_msgs/PairStringInt.h>
+#include <signal_logger_msgs/PairStringIntStamped.h>
+#include <signal_logger_msgs/MapStringIntStamped.h>
+#include <signal_logger_msgs/PairStringDouble.h>
+#include <signal_logger_msgs/PairStringDoubleStamped.h>
+#include <signal_logger_msgs/MapStringDoubleStamped.h>
+#include <signal_logger_msgs/PairIntDouble.h>
+#include <signal_logger_msgs/PairIntDoubleStamped.h>
+#include <signal_logger_msgs/MapIntDoubleStamped.h>
 
 #include "geometry_msgs/Vector3Stamped.h"
 #ifdef SILO_USE_KINDR
@@ -136,6 +146,95 @@ template <>
 struct slr_msg_traits<signal_logger::TimestampPair> {
   using msgtype = signal_logger_msgs::TimeStamped;
 };
+/********************************/
+
+
+/***************************************************
+ * Specializations: STL types                      *
+ ***************************************************/
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_same<ValueType_, std::string>::value>::type> {
+  using msgtype = signal_logger_msgs::StringStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<
+                          is_pair_of<ValueType_, std::string, double>::value>::type> {
+  using msgtype = signal_logger_msgs::PairStringDoubleStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<
+    is_pair_of<ValueType_, std::string, int>::value>::type> {
+  using msgtype = signal_logger_msgs::PairStringIntStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<
+    is_pair_of<ValueType_, int, double>::value>::type> {
+  using msgtype = signal_logger_msgs::PairIntDoubleStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_container<ValueType_>::value &&
+    std::is_same<double, element_type_t<ValueType_>>::value>::type> {
+  using msgtype = signal_logger_msgs::Float64MultiArrayStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_container<ValueType_>::value &&
+    std::is_same<float, element_type_t<ValueType_>>::value>::type> {
+  using msgtype = signal_logger_msgs::Float32MultiArrayStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_container<ValueType_>::value &&
+    std::is_same<long, element_type_t<ValueType_>>::value>::type> {
+  using msgtype = signal_logger_msgs::Int64MultiArrayStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_container<ValueType_>::value &&
+    std::is_same<int, element_type_t<ValueType_>>::value>::type> {
+  using msgtype = signal_logger_msgs::Int32MultiArrayStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_container<ValueType_>::value &&
+    std::is_same<short, element_type_t<ValueType_>>::value>::type> {
+  using msgtype = signal_logger_msgs::Int16MultiArrayStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_container<ValueType_>::value &&
+    std::is_same<char, element_type_t<ValueType_>>::value>::type> {
+  using msgtype = signal_logger_msgs::Int8MultiArrayStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_container<ValueType_>::value &&
+    std::is_same<bool, element_type_t<ValueType_>>::value>::type> {
+  using msgtype = signal_logger_msgs::BoolMultiArrayStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_container<ValueType_>::value &&
+    is_pair_of<element_type_t<ValueType_>, const std::string, double>::value>::type> {
+  using msgtype = signal_logger_msgs::MapStringDoubleStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_container<ValueType_>::value &&
+    is_pair_of<element_type_t<ValueType_>, const std::string, int>::value>::type> {
+  using msgtype = signal_logger_msgs::MapStringIntStamped;
+};
+
+template <typename ValueType_>
+struct slr_msg_traits<ValueType_, typename std::enable_if<is_container<ValueType_>::value &&
+    is_pair_of<element_type_t<ValueType_>, const int, double>::value>::type> {
+  using msgtype = signal_logger_msgs::MapIntDoubleStamped;
+};
+
 /********************************/
 
 /********************************
@@ -290,6 +389,65 @@ struct slr_update_traits<signal_logger::TimestampPair> {
     msg->value.data.nsec = var->second;
   }
 };
+/********************************/
+
+/***************************************************
+ * Specializations: STL types                *
+ ***************************************************/
+template <typename ValueType_>
+struct slr_update_traits<ValueType_, typename std::enable_if<std::is_same<ValueType_, std::string>::value>::type> {
+  static void updateMsg(const ValueType_* vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtype* const msg,
+                        const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->value = *vectorPtr_;
+  }
+};
+
+template <typename ValueType_>
+struct slr_update_traits<ValueType_, typename std::enable_if<is_container<ValueType_>::value &&
+    std::is_arithmetic<element_type_t<ValueType_>>::value>::type> {
+  static void updateMsg(const ValueType_* vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtype* const msg,
+                        const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->matrix.data.clear();
+    for (auto && v : *vectorPtr_) {
+      msg->matrix.data.push_back(v);
+    }
+  }
+};
+
+template <typename ValueType_>
+struct slr_update_traits<ValueType_, typename std::enable_if<is_container<ValueType_>::value &&
+    is_pair<element_type_t<ValueType_>>::value>::type> {
+  static void updateMsg(const ValueType_* vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtype* const msg,
+                        const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->pairs.clear();
+    using PairMsgsVector = decltype(msg->pairs);
+    typename PairMsgsVector::value_type pair;
+    for (auto && v : *vectorPtr_) {
+      pair.first = v.first;
+      pair.second = v.second;
+      msg->pairs.push_back(pair);
+    }
+  }
+};
+
+template <typename ValueType_>
+struct slr_update_traits<ValueType_, typename std::enable_if<
+    is_pair<ValueType_>::value>::type> {
+  static void updateMsg(const ValueType_* vectorPtr_,
+                        typename slr_msg_traits<ValueType_>::msgtype* const msg,
+                        const ros::Time& timeStamp) {
+    msg->header.stamp = timeStamp;
+    msg->first = vectorPtr_->first;
+    msg->second = vectorPtr_->second;
+  }
+};
+
 /********************************/
 
 /********************************

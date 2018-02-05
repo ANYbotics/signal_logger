@@ -70,9 +70,18 @@ for i=1:noElements
     logElements(i).divider = header{4}(i);
     logElements(i).isBufferLooping = header{5}(i);
     logElements(i).dataType = header{6}{i};
-    logElements(i).data = typecast( fread(fid, logElements(i).noData ,...
-        strcat('*', logElements(i).dataType) ), ...
-         logElements(i).dataType);
+    if(strcmp(logElements(i).dataType, 'string'))
+       offset = ftell(fid);
+       for j=0:1:(logElements(i).noBytes-1)
+        fseek(fid, offset + j, 'bof');
+        logElements(i).data = [logElements(i).data, char(typecast( fread(fid, logElements(i).noData ,...
+           '*uint8', logElements(i).noBytes-1),'uint8'))];
+       end
+       fseek(fid, -(logElements(i).noBytes-1), 'cof');
+    else
+      logElements(i).data = typecast( fread(fid, logElements(i).noData ,...
+        strcat('*', logElements(i).dataType) ),logElements(i).dataType);
+    end
     logElements(i).timeStruct = struct('seconds', [], 'nanoseconds', []);
     logElements(i).systime = zeros(logElements(i).noData, 1);
     logElements(i).time = zeros(logElements(i).noData, 1);

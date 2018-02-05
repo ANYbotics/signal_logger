@@ -23,6 +23,12 @@
 // STL
 #include <atomic>
 #include <thread>
+#include <vector>
+#include <array>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <list>
 #include <signal.h>
 #include <stdlib.h>
 
@@ -46,6 +52,16 @@ class SignalLoggerExample: public any_node::Node
     std::atomic_bool shouldRead_;
     double logVar_;
     ros::Time time_;
+    // STL
+    std::string string_;
+    std::vector<double> vec_;
+    std::array<int, 3> arr_;
+    std::list<float> list_;
+    std::set<long> set_;
+    std::deque<short> deque_;
+    std::pair<std::string, double> pair_;
+    std::map<std::string, int> map_;
+    std::unordered_map<int, double> umap_;
 
 };
 

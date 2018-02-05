@@ -15,7 +15,16 @@ SignalLoggerExample::SignalLoggerExample(NodeHandlePtr nh):
   shouldPublish_(true),
   shouldRead_(true),
   logVar_(0.0),
-  time_(ros::TIME_MIN)
+  time_(ros::TIME_MIN),
+  string_{"Hello World"},
+  vec_{1, 2, 3},
+  arr_{4, 5, 6},
+  list_{7, 8, 9},
+  set_{1, 1, 2, 3, 5, 8},
+  deque_{13, 21, 34, 55},
+  pair_{"pair", 2.0},
+  map_{{"one", 1}, {"zwei", 2}},
+  umap_{{1, 1.1}, {2, 2.22}, {3, 3.333}}
 {
   ros::Time::setNow(time_);
 }
@@ -42,6 +51,17 @@ void SignalLoggerExample::init()
    100, signal_logger::BufferType::LOOPING);
   signal_logger::add(logVar_, "logVar4", "ns1", "[kg]", 3, signal_logger::LogElementAction::SAVE_AND_PUBLISH ,
    10, signal_logger::BufferType::EXPONENTIALLY_GROWING);
+
+  // Add stl container types
+  signal_logger::add(string_, "string", "nsSTL");
+  signal_logger::add(vec_, "vec", "nsSTL");
+  signal_logger::add(arr_, "arr", "nsSTL");
+  signal_logger::add(list_, "list", "nsSTL");
+  signal_logger::add(set_, "set", "nsSTL");
+  signal_logger::add(deque_, "deque", "nsSTL");
+  signal_logger::add(pair_, "pair", "nsSTL");
+  signal_logger::add(map_, "map", "nsSTL");
+  signal_logger::add(umap_, "unorderedMap", "nsSTL");
 
   // Call update logger, this loads the variables from the siloOptions.collectScriptFileName_ file.
   signal_logger::logger->updateLogger();
@@ -124,6 +144,8 @@ bool SignalLoggerExample::update(const any_worker::WorkerEvent& event) {
   signal_logger::logger->collectLoggerData();
 
   // Update logger vars and time
+
+
   logVar_ += 0.1;
   time_ += ros::Duration(1.0/10);
   ros::Time::setNow(time_);
@@ -132,6 +154,9 @@ bool SignalLoggerExample::update(const any_worker::WorkerEvent& event) {
   if(counter ==  5) {
     // Set a property of a disabled element --> perfectly fine to do this
     signal_logger::logger->setElementDivider("/log/examples/ns1/logVar3", 2);
+    string_ = "Hello";
+  } else if(counter ==20) {
+    string_ = "Hello Extended World";
   } else if(counter == 50) {
     signal_logger::logger->stopLogger();
     signal_logger::logger->disableNamespace("ns1");
