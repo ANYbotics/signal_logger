@@ -34,7 +34,7 @@ catkin_package(
 ###########
 ## Build ##
 ###########
-add_definitions( --std=c++11 )
+add_definitions(-std=c++11 -Wall -Werror)
 include_directories( include )
 include_directories( ${catkin_INCLUDE_DIRS} )
 

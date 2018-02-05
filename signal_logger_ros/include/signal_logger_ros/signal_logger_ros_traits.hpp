@@ -128,7 +128,7 @@ struct slr_msg_traits<unsigned long> {
   using msgtype = signal_logger_msgs::UInt64Stamped;
 };
 
-/********************************/
+/////////////////////////////////////////
 
 /*******************************
  * Specializations: enum types *
@@ -137,7 +137,7 @@ template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<std::is_enum<ValueType_>::value>::type> {
   using msgtype = typename slr_msg_traits<typename std::underlying_type<ValueType_>::type>::msgtype;
 };
-/********************************/
+/////////////////////////////////////////
 
 /***************************************************
  * Specializations: Time stamp pair                *
@@ -146,7 +146,7 @@ template <>
 struct slr_msg_traits<signal_logger::TimestampPair> {
   using msgtype = signal_logger_msgs::TimeStamped;
 };
-/********************************/
+/////////////////////////////////////////
 
 
 /***************************************************
@@ -235,7 +235,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_container<ValueType
   using msgtype = signal_logger_msgs::MapIntDoubleStamped;
 };
 
-/********************************/
+/////////////////////////////////////////
 
 /********************************
  * Specializations: eigen types *
@@ -296,7 +296,7 @@ template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_scalar<ValueType_, bool>::value>::type> {
   using msgtype = signal_logger_msgs::BoolMultiArrayStamped;
 };
-/********************************/
+/////////////////////////////////////////
 
 /********************************
  * Specializations: kindr types *
@@ -329,9 +329,7 @@ struct slr_msg_traits<
         ValueType_>::value>::type> {
   using msgtype = geometry_msgs::TwistStamped;
 };
-/*******
-
-/********************************/
+/////////////////////////////////////////
 
 /***************************************************
  * Specializations: kindr vector at position types *
@@ -340,7 +338,7 @@ template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<is_kindr_vector_at_position<ValueType_>::value>::type> {
   using msgtype = kindr_msgs::VectorAtPosition;
 };
-/***************************************************/
+////////////////////////////////////////////////////
 #endif
 
 // generic interface
@@ -359,7 +357,7 @@ struct slr_update_traits<ValueType_, typename std::enable_if<std::is_arithmetic<
     msg->value = *vectorPtr_;
   }
 };
-/********************************/
+/////////////////////////////////
 
 /*******************************
  * Specializations: enum types *
@@ -374,7 +372,7 @@ struct slr_update_traits<ValueType_, typename std::enable_if<std::is_enum<ValueT
     slr_update_traits<typename std::underlying_type<ValueType_>::type>::updateMsg(&vectorPtr, msg, timeStamp);
   }
 };
-/********************************/
+////////////////////////////////
 
 /***************************************************
  * Specializations: Time stamp pair                *
@@ -448,7 +446,7 @@ struct slr_update_traits<ValueType_, typename std::enable_if<
   }
 };
 
-/********************************/
+/////////////////////////////////////////
 
 /********************************
  * Specializations: eigen types *
@@ -507,7 +505,7 @@ struct slr_update_traits<ValueType_,
     }
   }
 };
-/********************************/
+/////////////////////////////////////////
 
 #ifdef SILO_USE_KINDR
 /********************************
@@ -563,7 +561,7 @@ struct slr_update_traits<
   }
 };
 
-/********************************/
+/////////////////////////////////////////
 
 /***************************************************
  * Specializations: kindr vector at position types *
@@ -599,7 +597,7 @@ struct slr_update_traits<ValueType_, typename std::enable_if<is_kindr_vector_at_
     return kindr_msgs::VectorAtPosition::TYPE_TYPELESS;
   }
 };
-/***************************************************/
+/////////////////////////////////////////
 #endif
 
 } /* namespace traits */
