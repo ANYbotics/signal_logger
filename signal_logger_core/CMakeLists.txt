@@ -30,7 +30,7 @@ catkin_package(
 ## Build ##
 ###########
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-add_definitions(--std=c++11)
+add_definitions(-std=c++11 -Wall -Werror)
 include_directories(include)
 include_directories(${EIGEN3_INCLUDE_DIR})
 include_directories(${catkin_INCLUDE_DIRS})

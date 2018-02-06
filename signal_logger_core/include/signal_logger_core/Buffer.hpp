@@ -114,9 +114,9 @@ class Buffer: public BufferInterface
       /*  noUnreadItems -> increases on push decreased on pop, max out at capacity
        *  noItems -> increases on push, max out at capacity
        */
-      noUnreadItems_ = std::min(++noUnreadItems_, bufferSize_);
-      noItems_ = std::min(++noItems_, bufferSize_);
-      noNewItems_ = std::min(++noNewItems_, bufferSize_);
+      noUnreadItems_ = std::min((noUnreadItems_ + 1), bufferSize_);
+      noItems_ = std::min((noItems_ + 1), bufferSize_);
+      noNewItems_ = std::min((noNewItems_ + 1), bufferSize_);
     }
 
     return true;
@@ -324,8 +324,8 @@ class Buffer: public BufferInterface
   //! Counter for readNewValues function
   size_type noNewItems_;
   //! Eigen specific entries (1 in other cases)
-  const std::size_t rows_;
-  const std::size_t cols_;
+  const Eigen::Index rows_;
+  const Eigen::Index cols_;
   //! Mutex protecting accessing this container
   mutable std::mutex mutex_;
 };

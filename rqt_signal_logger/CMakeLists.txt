@@ -6,7 +6,7 @@ endif()
 project(rqt_signal_logger)
 
 # Set compiler flags
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+add_definitions(-std=c++11 -Wall -Werror)
 
 find_package(catkin REQUIRED COMPONENTS
     roscpp
