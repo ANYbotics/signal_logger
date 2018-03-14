@@ -56,6 +56,9 @@ class SignalLoggerBase {
    */
   virtual void initLogger(const SignalLoggerOptions& options);
 
+  //! True if logger is running
+  bool isRunning() const { return isCollectingData_; }
+
   //! Starts the logger (enable collecting)
   virtual bool startLogger();
 
