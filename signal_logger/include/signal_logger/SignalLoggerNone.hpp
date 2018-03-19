@@ -41,13 +41,13 @@ class SignalLoggerNone : public SignalLoggerBase
   virtual void initLogger(const SignalLoggerOptions& options) override { }
 
   //! Starts the logger (enable collecting)
-  virtual bool startLogger() override { return true; }
+  virtual bool startLogger(bool updateLogger = false) override { return true; }
 
   //! Stop the logger (disable collecting)
   virtual bool stopLogger() override { return true; }
 
   //! Stop and then restart the logger
-  virtual bool restartLogger() override { return true; }
+  virtual bool restartLogger(bool updateLogger = false) override { return true; }
 
   //! Update the logger
   virtual bool updateLogger(const bool readScript = true, const std::string & scriptname = "") override { return true; }

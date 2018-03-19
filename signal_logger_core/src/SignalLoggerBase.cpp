@@ -47,11 +47,6 @@ SignalLoggerBase::SignalLoggerBase():
 {
 }
 
-SignalLoggerBase::~SignalLoggerBase()
-{
-
-}
-
 void SignalLoggerBase::initLogger(const SignalLoggerOptions& options)
 {
   // Lock the logger (blocking!)
@@ -71,13 +66,13 @@ void SignalLoggerBase::initLogger(const SignalLoggerOptions& options)
   isInitialized_ = true;
 }
 
-bool SignalLoggerBase::startLogger()
+bool SignalLoggerBase::startLogger(bool updateLogger)
 {
   // Delayed logger start if saving prevents lock of mutex
   boost::unique_lock<boost::shared_mutex> tryStartLoggerLock(loggerMutex_, boost::try_to_lock);
   if(!tryStartLoggerLock && isCopyingBuffer_) {
     // Still copying the data from the buffer, Wait in other thread until logger can be started.
-    std::thread t1(&SignalLoggerBase::workerStartLogger, this);
+    std::thread t1(&SignalLoggerBase::workerStartLogger, this, updateLogger);
     t1.detach();
     return true;
   }
@@ -96,11 +91,19 @@ bool SignalLoggerBase::startLogger()
     return true;
   }
 
-  if(isCopyingBuffer_) {
+  if(isCopyingBuffer_ || (updateLogger && isSavingData_) ) {
     // Still copying the data from the buffer, Wait in other thread until logger can be started.
-    std::thread t1(&SignalLoggerBase::workerStartLogger, this);
+    std::thread t1(&SignalLoggerBase::workerStartLogger, this, updateLogger);
     t1.detach();
     return true;
+  }
+
+  // Update logger if requested
+  if(updateLogger) {
+    if(!this->updateLoggerLockFree()) {
+      MELO_WARN("[SignalLogger::startLogger] Could not update logger during logger start!");
+      return true;
+    }
   }
 
   // Decide on the time buffer to use ( Init with exponentially growing when max log time is zero, fixed size buffer otherwise)
@@ -173,11 +176,11 @@ bool SignalLoggerBase::stopLogger()
   return true;
 }
 
-bool SignalLoggerBase::restartLogger()
+bool SignalLoggerBase::restartLogger(bool updateLogger)
 {
   // Mutex is locked internally
   bool stopped = stopLogger();
-  return startLogger() && stopped;
+  return startLogger(updateLogger) && stopped;
 }
 
 bool SignalLoggerBase::updateLogger(const bool readScript, const std::string & scriptname) {
@@ -193,11 +196,16 @@ bool SignalLoggerBase::updateLogger(const bool readScript, const std::string & s
   boost::unique_lock<boost::shared_mutex> updateLoggerLock(loggerMutex_, boost::defer_lock);
   if(!tryUpdateLoggerLock) { updateLoggerLock.lock(); }
 
+
+  return updateLoggerLockFree(readScript, scriptname);
+}
+
+bool SignalLoggerBase::updateLoggerLockFree(const bool readScript, const std::string & scriptname) {
   // Check if update logger call is valid
   if(!isInitialized_ || isCollectingData_ || isSavingData_)
   {
     MELO_WARN("[Signal logger] Could not update!%s%s%s", !isInitialized_?" Not initialized!":"",
-        isSavingData_?" Saving data!":"", isCollectingData_?" Collecting data!":"");
+              isSavingData_?" Saving data!":"", isCollectingData_?" Collecting data!":"");
     return false;
   }
 
@@ -218,7 +226,6 @@ bool SignalLoggerBase::updateLogger(const bool readScript, const std::string & s
   }
 
   return true;
-
 }
 
 bool SignalLoggerBase::saveLoggerScript(const std::string & scriptName) {
@@ -769,14 +776,14 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
   return success;
 }
 
-bool SignalLoggerBase::workerStartLogger() {
+bool SignalLoggerBase::workerStartLogger(bool updateLogger) {
   isStarting_ = true;
 
   while(true) {
-    if(!isCopyingBuffer_) {
+    if(!isCopyingBuffer_ && (!updateLogger || !isSavingData_)) {
       isStarting_ = false;
       MELO_INFO("[Signal logger] Delayed logger start!");
-      return startLogger();
+      return startLogger(updateLogger);
     }
     // Sleep for one timestep (init is only allowed once. access of updateFrequency is ok)
     usleep( (1.0/options_.updateFrequency_) * 1e6 );
