@@ -49,7 +49,7 @@ class SignalLoggerBase {
   SignalLoggerBase();
 
   //! Destructor
-  virtual ~SignalLoggerBase();
+  virtual ~SignalLoggerBase() = default;
 
   /** Initializes the logger
    * @param options Signal logger options
@@ -60,13 +60,13 @@ class SignalLoggerBase {
   bool isRunning() const { return isCollectingData_; }
 
   //! Starts the logger (enable collecting)
-  virtual bool startLogger();
+  virtual bool startLogger(bool updateLogger = false);
 
   //! Stop the logger (disable collecting)
   virtual bool stopLogger();
 
   //! Stop and then restart the logger
-  virtual bool restartLogger();
+  virtual bool restartLogger(bool updateLogger = false);
 
   /** Update the logger (ded variables are added) */
   /**
@@ -227,6 +227,9 @@ class SignalLoggerBase {
   //! Lock free version of has element
   virtual bool hasElementLockFree(const std::string & name);
 
+  //! Lock free version of updateLogger
+  virtual bool updateLoggerLockFree(const bool readScript = true, const std::string & scriptname = "");
+
  private:
   /** Wraps function workerSaveData to do common preparations and shutdown
    * @param logFileTypse types of the log files
@@ -235,7 +238,7 @@ class SignalLoggerBase {
 
   /** Wait until logger can be started and start logger
    */
-  bool workerStartLogger();
+  bool workerStartLogger(bool updateLogger = false);
 
   //! Comparison operator, get element with largest scaled buffer size
   struct maxScaledBufferSize {

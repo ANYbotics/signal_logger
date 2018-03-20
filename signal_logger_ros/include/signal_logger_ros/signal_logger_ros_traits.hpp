@@ -409,6 +409,12 @@ struct slr_update_traits<ValueType_, typename std::enable_if<is_container<ValueT
                         typename slr_msg_traits<ValueType_>::msgtype* const msg,
                         const ros::Time& timeStamp) {
     msg->header.stamp = timeStamp;
+    msg->matrix.layout.dim.clear();
+    msg->matrix.layout.dim.resize(1);
+    msg->matrix.layout.dim[0].label = "items";
+    msg->matrix.layout.dim[0].size = vectorPtr_->size();
+    msg->matrix.layout.dim[0].stride = vectorPtr_->size();
+    msg->matrix.layout.data_offset = 0;
     msg->matrix.data.clear();
     for (auto && v : *vectorPtr_) {
       msg->matrix.data.push_back(v);
@@ -482,6 +488,11 @@ struct slr_update_traits<ValueType_, typename std::enable_if<is_eigen_angle_axis
                         typename slr_msg_traits<ValueType_>::msgtype* const msg,
                         const ros::Time& timeStamp) {
     msg->header.stamp = timeStamp;
+    msg->matrix.layout.dim.resize(1);
+    msg->matrix.layout.dim[0].label = "angleAxis";
+    msg->matrix.layout.dim[0].size = vectorPtr_->size();
+    msg->matrix.layout.dim[0].stride = vectorPtr_->size();
+    msg->matrix.layout.data_offset = 0;
     msg->matrix.data.clear();
     msg->matrix.data.push_back(vectorPtr_->angle());
     msg->matrix.data.push_back(vectorPtr_->axis()(0));
@@ -497,6 +508,14 @@ struct slr_update_traits<ValueType_,
                         typename slr_msg_traits<ValueType_>::msgtype* const msg,
                         const ros::Time& timeStamp) {
     msg->header.stamp = timeStamp;
+    msg->matrix.layout.dim.resize(2);
+    msg->matrix.layout.dim[0].label = "row";
+    msg->matrix.layout.dim[0].size = vectorPtr_->rows();
+    msg->matrix.layout.dim[0].stride = vectorPtr_->rows()*vectorPtr_->cols();
+    msg->matrix.layout.dim[1].label = "col";
+    msg->matrix.layout.dim[1].size = vectorPtr_->cols();
+    msg->matrix.layout.dim[1].stride = vectorPtr_->cols();
+    msg->matrix.layout.data_offset = 0;
     msg->matrix.data.clear();
     for (int r = 0; r < vectorPtr_->rows(); r++) {
       for (int c = 0; c < vectorPtr_->cols(); c++) {
