@@ -34,10 +34,10 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
   /** Constructor
    *  @param nh             pointer to the ros nodehandle
    */
-  SignalLoggerRos(ros::NodeHandle * nh);
+  explicit SignalLoggerRos(ros::NodeHandle * nh);
 
   //! Destructor
-  virtual ~SignalLoggerRos();
+  ~SignalLoggerRos() override = default;
 
   /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
     * @tparam ValueType_       Data type of the logger element
