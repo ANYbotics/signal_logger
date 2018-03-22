@@ -27,11 +27,6 @@ SignalLoggerRos::SignalLoggerRos(ros::NodeHandle * nh):
   isLoggerRunningService_  =  nh_->advertiseService("silo_ros/is_logger_running", &SignalLoggerRos::isLoggerRunning, this);
 }
 
-SignalLoggerRos::~SignalLoggerRos()
-{
-  this->cleanup();
-}
-
 bool SignalLoggerRos::cleanup() {
   signal_logger_std::SignalLoggerStd::cleanup();
   getLoggerConfigurationService_.shutdown();
