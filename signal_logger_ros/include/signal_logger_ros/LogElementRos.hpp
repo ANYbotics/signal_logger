@@ -157,7 +157,9 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
         } // unlock time mutex
 
         // Read from buffer and transform to message via trait
-        this->buffer_.read(&data);
+        if(!this->buffer_.read(&data)) {
+          return;
+        }
 
       } // unlock elements mutex
 
