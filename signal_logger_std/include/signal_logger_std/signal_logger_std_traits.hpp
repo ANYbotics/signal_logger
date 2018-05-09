@@ -264,7 +264,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_pair<Va
 
 template <typename ValueType_, typename ContainerType_>
 struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_container<ValueType_>::value &&
-(std::is_arithmetic<element_type_t<ValueType_>>::value || is_pair<element_type_t<ValueType_>>::value) >::type>
+(std::is_arithmetic<element_type_t<ValueType_>>::value || is_pair<element_type_t<ValueType_>>::value || is_eigen_matrix<element_type_t<ValueType_>>::value) >::type>
 {
   static void writeLogElementToStreams(std::stringstream* text,
                                        std::stringstream* binary,

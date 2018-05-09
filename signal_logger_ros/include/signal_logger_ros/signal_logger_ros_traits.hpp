@@ -301,7 +301,7 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_sca
 template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<is_container<ValueType_>::value &&
     is_eigen_matrix<element_type_t<ValueType_>>::value>::type> {
-  using msgtype = slr_msg_traits<element_type_t<ValueType_>>::msgtype;
+  using msgtype = typename slr_msg_traits<element_type_t<ValueType_>>::msgtype;
 };
 
 /////////////////////////////////////////
@@ -521,16 +521,16 @@ struct slr_update_traits<ValueType_, typename std::enable_if<is_container<ValueT
     msg->matrix.layout.dim[0].label = "id";
     msg->matrix.layout.dim[0].size = vectorPtr_->size();
     msg->matrix.layout.dim[0].stride = vectorPtr_->size()*first_elem->rows()*first_elem->cols();
-    msg->matrix.layout.dim[0].label = "row";
-    msg->matrix.layout.dim[0].size = first_elem->rows();
-    msg->matrix.layout.dim[0].stride = first_elem->rows()*first_elem->cols();
-    msg->matrix.layout.dim[1].label = "col";
-    msg->matrix.layout.dim[1].size = first_elem->cols();
-    msg->matrix.layout.dim[1].stride = first_elem->cols();
+    msg->matrix.layout.dim[1].label = "row";
+    msg->matrix.layout.dim[1].size = first_elem->rows();
+    msg->matrix.layout.dim[1].stride = first_elem->rows()*first_elem->cols();
+    msg->matrix.layout.dim[2].label = "col";
+    msg->matrix.layout.dim[2].size = first_elem->cols();
+    msg->matrix.layout.dim[2].stride = first_elem->cols();
     msg->matrix.layout.data_offset = 0;
     msg->matrix.data.clear();
 
-    for (int i = 0; i < vectorPtr_->size(); i++) {
+    for (unsigned int i = 0; i < vectorPtr_->size(); i++) {
       for (int r = 0; r < first_elem->rows(); r++) {
         for (int c = 0; c < first_elem->cols(); c++) {
           msg->matrix.data.push_back((*vectorPtr_)[i](r, c));
