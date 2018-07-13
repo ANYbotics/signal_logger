@@ -65,6 +65,8 @@ static constexpr const double LOGGER_DEFAULT_MAXIMUM_LOG_TIME     = 10.0;
 static constexpr const char*  LOGGER_DEFAULT_SCRIPT_FILENAME      = "logger.yaml";
 //! Default logger prefix
 static constexpr const char*  LOGGER_DEFAULT_PREFIX               = "/log";
+//! Default logger name
+static constexpr const char*  LOGGER_DEFAULT_NAME               = "silo";
 //! Default log time for exponentially growing time buffer
 static constexpr const double LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME = 10.0;
 

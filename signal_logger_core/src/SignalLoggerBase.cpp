@@ -62,7 +62,7 @@ void SignalLoggerBase::initLogger(const SignalLoggerOptions& options)
   initTimeLogElement();
 
   // Notify user
-  MELO_INFO("[SignalLogger::initLogger] Initialized!");
+  MELO_INFO("[SignalLogger::initLogger] Initialized logger '%s'!", options_.loggerName_.c_str());
   isInitialized_ = true;
 }
 
@@ -83,11 +83,11 @@ bool SignalLoggerBase::startLogger(bool updateLogger)
 
   // Warn the user on invalid request
   if(!isInitialized_ || isStarting_) {
-    MELO_WARN("[SignalLogger::startLogger] Could not start!%s%s", !isInitialized_?" Not initialized!":"",
-              isStarting_?" Delayed logger start was already requested!":"");
+    MELO_WARN("[SignalLogger::startLogger] Could not start logger '%s'!%s%s", options_.loggerName_.c_str(),
+              !isInitialized_?" Not initialized!":"", isStarting_?" Delayed logger start was already requested!":"");
     return false;
   } else if( isCollectingData_ ) {
-    MELO_DEBUG("[SignalLogger::startLogger] Already started!");
+    MELO_DEBUG("[SignalLogger::startLogger] Already started logger '%s'!", options_.loggerName_.c_str());
     return true;
   }
 
@@ -101,7 +101,7 @@ bool SignalLoggerBase::startLogger(bool updateLogger)
   // Update logger if requested
   if(updateLogger) {
     if(!this->updateLoggerLockFree()) {
-      MELO_WARN("[SignalLogger::startLogger] Could not update logger during logger start!");
+      MELO_WARN("[SignalLogger::startLogger] Could not update logger '%s' during logger start!", options_.loggerName_.c_str());
       return true;
     }
   }
@@ -124,8 +124,9 @@ bool SignalLoggerBase::startLogger(bool updateLogger)
         timeBufferSize = ( maxElement != enabledElements_.end() ) ? ( (*maxElement)->second->getOptions().getDivider() *
             (*maxElement)->second->getBuffer().getBufferSize() ) : 0;
         timeBufferType = bufferType;
-        MELO_INFO_STREAM("[Signal logger] Use " << ( (bufferType == BufferType::FIXED_SIZE)? "fixed size" : "looping" )
-                                                << " Time Buffer of size:" << timeBufferSize);
+        MELO_INFO_STREAM("[Signal logger] Logger '" << options_.loggerName_ << "' uses "
+                         << ( (bufferType == BufferType::FIXED_SIZE)? "fixed size" : "looping" )
+                         << " Time Buffer of size:" << timeBufferSize);
       }
     }
   }
@@ -152,7 +153,7 @@ bool SignalLoggerBase::stopLogger()
   // If lock can not be acquired because of saving ignore the call
   boost::unique_lock<boost::shared_mutex> tryStopLoggerLock(loggerMutex_, boost::try_to_lock);
   if(!tryStopLoggerLock && isSavingData_) {
-    MELO_WARN("Saving data while trying to stop logger. Do nothing!");
+    MELO_WARN("Saving data while trying to stop logger '%s'. Do nothing!", options_.loggerName_.c_str());
     return false;
   }
 
@@ -162,9 +163,9 @@ bool SignalLoggerBase::stopLogger()
 
   // Those are cases where the logger is already stopped. So "stopping" was successful.
   if(!isInitialized_) {
-    MELO_DEBUG("[SignalLogger::stopLogger] Could not stop non-initialized logger!");
+    MELO_DEBUG("[SignalLogger::stopLogger] Could not stop non-initialized logger '%s'!", options_.loggerName_.c_str());
   } else if(!isCollectingData_) {
-    MELO_DEBUG("[SignalLogger::stopLogger] Logger was already stopped!");
+    MELO_DEBUG("[SignalLogger::stopLogger] Logger '%s' was already stopped!", options_.loggerName_.c_str());
   }
 
   // If publishData is running notify stop
@@ -188,7 +189,7 @@ bool SignalLoggerBase::updateLogger(const bool readScript, const std::string & s
   // If lock can not be acquired because of saving ignore the call
   boost::unique_lock<boost::shared_mutex> tryUpdateLoggerLock(loggerMutex_, boost::try_to_lock);
   if(!tryUpdateLoggerLock && isSavingData_) {
-    MELO_WARN("Saving data while trying to update logger. Do nothing!");
+    MELO_WARN("Saving data while trying to update logger '%s'. Do nothing!", options_.loggerName_.c_str());
     return false;
   }
 
@@ -204,7 +205,7 @@ bool SignalLoggerBase::updateLoggerLockFree(const bool readScript, const std::st
   // Check if update logger call is valid
   if(!isInitialized_ || isCollectingData_ || isSavingData_)
   {
-    MELO_WARN("[Signal logger] Could not update!%s%s%s", !isInitialized_?" Not initialized!":"",
+    MELO_WARN("[Signal logger] Could not update logger '%s'!%s%s%s", options_.loggerName_.c_str(), !isInitialized_?" Not initialized!":"",
               isSavingData_?" Saving data!":"", isCollectingData_?" Collecting data!":"");
     return false;
   }
@@ -220,7 +221,7 @@ bool SignalLoggerBase::updateLoggerLockFree(const bool readScript, const std::st
   // Read the script
   if(readScript) {
     if( !readDataCollectScript( scriptname.empty() ? options_.collectScriptFileName_ : scriptname ) ) {
-      MELO_ERROR("[Signal logger] Could not load logger script!");
+      MELO_ERROR("[Signal logger] Could not load logger script for logger '%s'!", options_.loggerName_.c_str());
       return false;
     }
   }
@@ -232,7 +233,7 @@ bool SignalLoggerBase::saveLoggerScript(const std::string & scriptName) {
   // If lock can not be acquired because of saving ignore the call
   boost::unique_lock<boost::shared_mutex> trySaveLoggerScriptLock(loggerMutex_, boost::try_to_lock);
   if(!trySaveLoggerScriptLock && isSavingData_) {
-    MELO_WARN("Saving data while trying to save logger script. Do nothing!");
+    MELO_WARN("Saving data while trying to save logger script for logger '%s'. Do nothing!", options_.loggerName_.c_str());
     return false;
   }
 
@@ -241,7 +242,7 @@ bool SignalLoggerBase::saveLoggerScript(const std::string & scriptName) {
   if(!trySaveLoggerScriptLock) { saveLoggerScriptLock.lock(); }
 
   if( !saveDataCollectScript( scriptName ) ){
-    MELO_ERROR("[Signal logger] Could not save logger script!");
+    MELO_ERROR("[Signal logger] Could not save logger script for logger '%s'!", options_.loggerName_.c_str());
     return false;
   }
   return true;
@@ -269,7 +270,7 @@ bool SignalLoggerBase::collectLoggerData()
       // Check if time buffer is full when using a fixed size buffer
       if(timeElement_->getBuffer().getBufferType() == BufferType::FIXED_SIZE && timeElement_->getBuffer().noTotalItems() == timeElement_->getBuffer().getBufferSize())
       {
-        MELO_WARN("[Signal Logger] Stopped. Time buffer is full!");
+        MELO_WARN("[Signal Logger] Stopped logger '%s'. Time buffer is full!", options_.loggerName_.c_str());
         // Free lock and stop logger
         collectLoggerDataLock.unlock();
         this->stopLogger();
@@ -302,7 +303,7 @@ bool SignalLoggerBase::collectLoggerData()
     }
   }
   else {
-    MELO_DEBUG("[Signal Logger] Dropping collect data call!");
+    MELO_DEBUG("[Signal Logger] Dropping collect data call for logger '%s'!", options_.loggerName_.c_str());
   }
 
   return true;
@@ -344,8 +345,8 @@ bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes)
   if(lockSaveData) {
     if(!isInitialized_ || isSavingData_)
     {
-      MELO_WARN("[Signal logger] Could not save data! %s%s", isSavingData_?" Already saving data!":"",
-          !isInitialized_?" Not initialized!":"");
+      MELO_WARN("[Signal logger] Could not save data for logger '%s'! %s%s", options_.loggerName_.c_str(),
+                isSavingData_?" Already saving data!":"", !isInitialized_?" Not initialized!":"");
       return false;
     }
 
@@ -358,7 +359,7 @@ bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes)
     t1.detach();
   }
   else {
-    MELO_WARN("[Signal logger] Already saving to file!");
+    MELO_WARN("[Signal logger] Already saving data to file for logger '%s'!", options_.loggerName_.c_str());
   }
 
   return true;
@@ -375,7 +376,7 @@ bool SignalLoggerBase::cleanup()
 {
   // Waiting for data to be saved
   while(isSavingData_) {
-    MELO_INFO("[SignalLogger:cleanup]: Waiting for saving to complete ... ");
+    MELO_INFO("[SignalLogger:cleanup]: Waiting for saving of logger '%s' to complete ... ", options_.loggerName_.c_str());
     usleep( static_cast<__useconds_t >(5e5) ); // Wait half a second
   }
 
@@ -418,7 +419,8 @@ const LogElementInterface & SignalLoggerBase::getElement(const std::string & nam
 {
   boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
   if(!hasElementLockFree(name)) {
-    throw std::out_of_range("[SignalLoggerBase]::getElement(): Element " + name + " was not added to the logger!");
+    throw std::out_of_range("[SignalLoggerBase]::getElement(): Element " + name + " was not added to logger '" +
+        options_.loggerName_ + "'!");
   }
   return *logElements_[name];
 }
@@ -427,20 +429,24 @@ bool SignalLoggerBase::enableElement(const std::string & name)
 {
   boost::upgrade_lock<boost::shared_mutex> lockLogger(loggerMutex_);
   if( !hasElementLockFree(name) ) {
-    MELO_WARN_STREAM("[SignalLogger::enableElement] Can not enable non-existing element with name " << name << "!");
+    MELO_WARN_STREAM("[SignalLogger::enableElement] Can not enable non-existing element with name " << name << " for logger '" <<
+        options_.loggerName_ << "'!");
     return false;
   }
   if( logElements_[name]->isEnabled() ) { return true; }
 
   if( isCollectingData_ && logElements_[name]->getBuffer().getBufferType() != BufferType::LOOPING ) {
-    MELO_WARN_STREAM("[SignalLogger::enableElement]: Can not enable element " << name << " with non-looping buffer type when logger is running!");
+    MELO_WARN_STREAM("[SignalLogger::enableElement]: Can not enable element " << name << " with non-looping buffer type when logger '" <<
+        options_.loggerName_ << "' is running!");
     return false;
   }
 
   if(isCollectingData_ && ( timeElement_->getBuffer().getBufferType() != BufferType::LOOPING ||
       (logElements_[name]->getOptions().getDivider() * logElements_[name]->getBuffer() .getBufferSize()) > timeElement_->getBuffer().getBufferSize() ) ) {
-    MELO_WARN_STREAM("[SignalLogger::enableElement]: Can not enable element " << name << " when logger is running and time buffer is too small! "
-      << "(Des: " << logElements_[name]->getOptions().getDivider() * logElements_[name]->getBuffer() .getBufferSize() << " / Time: " << timeElement_->getBuffer().getBufferSize() <<")");
+    MELO_WARN_STREAM("[SignalLogger::enableElement]: Can not enable element " << name << " when logger '"
+      << options_.loggerName_ << "' is running and time buffer is too small! " << "(Des: "
+      << logElements_[name]->getOptions().getDivider() * logElements_[name]->getBuffer() .getBufferSize()
+      << " / Time: " << timeElement_->getBuffer().getBufferSize() <<")");
     return false;
   }
 
@@ -530,15 +536,15 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
 {
   if(!isInitialized_ || isSavingData_)
   {
-    MELO_WARN("[Signal logger] Could not read data collect script! %s%s", isCollectingData_?" Collecting data!":"",
-        !isInitialized_?" Not initialized!":"");
+    MELO_WARN("[Signal logger] Could not read data collect script for logger '%s'! %s%s", options_.loggerName_.c_str(),
+              isCollectingData_?" Collecting data!":"", !isInitialized_?" Not initialized!":"");
     return false;
   }
 
   // Check filename size and ending
   std::string ending = ".yaml";
   if ( ( (ending.size() + 1) > scriptName.size() ) || !std::equal(ending.rbegin(), ending.rend(), scriptName.rbegin()) ) {
-    MELO_ERROR_STREAM("[Signal logger] Script must be a yaml file : *.yaml. Enable all elements!");
+    MELO_ERROR("[Signal logger] Script for logger '%s' must be a yaml file : *.yaml. Enable all elements!", options_.loggerName_.c_str());
     enabledElements_.clear();
     for(auto it = logElements_.begin(); it != logElements_.end(); ++it) {
       it->second->setIsEnabled(true);
@@ -616,20 +622,23 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
             }
           }
           else {
-            MELO_DEBUG_STREAM("[Signal logger] Could not load " << name << " from config file. Var not logged.");
+            MELO_DEBUG_STREAM("[Signal logger] Could not load " << name << " from config file for logger '" <<
+                              options_.loggerName_ << "'. Var not logged.");
           }
         }
         else {
-          MELO_DEBUG_STREAM("[Signal logger] Could not load get name from config file. Ignore entry nr: " << i << "!");
+          MELO_DEBUG_STREAM("[Signal logger] Could not load get name from config file for logger '" <<
+                            options_.loggerName_ << "'. Ignore entry nr: " << i << "!");
         }
       }
     }
     else {
-      MELO_DEBUG_STREAM("[Signal logger] Parameter file is ill-formatted. Log elements is no sequence.");
+      MELO_DEBUG("[Signal logger] Param file of logger '%s' is ill-formatted. Log elements is no sequence.", options_.loggerName_.c_str());
     }
   }
   catch(YAML::Exception & e) {
-    MELO_ERROR_STREAM("[Signal logger] Could not load config file, because exception occurred: "<< e.what());
+    MELO_ERROR_STREAM("[Signal logger] Could not load config file for logger '" << options_.loggerName_ <<
+                      "', because exception occurred: "<< e.what());
     return false;
   }
 
@@ -638,7 +647,8 @@ bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
     LogElementMapIterator elem = std::next(logElements_.begin(), iteratorOffset);
     elem->second->setIsEnabled(true);
     enabledElements_.push_back(elem);
-    MELO_DEBUG("[Signal logger] Enable logger element %s. It was not specified in the logger file!", elem->first.c_str() );
+    MELO_DEBUG("[Signal logger] Enable logger element %s. It was not specified in the logger file of logger '%s'!", elem->first.c_str(),
+               options_.loggerName_.c_str());
   }
 
   return true;
@@ -648,15 +658,15 @@ bool SignalLoggerBase::saveDataCollectScript(const std::string & scriptName)
 {
   if(!isInitialized_ || isSavingData_)
   {
-    MELO_WARN("[Signal logger] Could not save data collect script! %s%s", isCollectingData_?" Collecting data!":"",
-        !isInitialized_?" Not initialized!":"");
+    MELO_WARN("[Signal logger] Could not save data collect script for logger '%s'! %s%s", options_.loggerName_.c_str(),
+              isCollectingData_?" Collecting data!":"", !isInitialized_?" Not initialized!":"");
     return false;
   }
 
   // Check filename size and ending
   std::string ending = ".yaml";
   if ( ( (ending.size() + 1) > scriptName.size() ) || !std::equal(ending.rbegin(), ending.rend(), scriptName.rbegin()) ) {
-    MELO_ERROR_STREAM("[Signal logger] Script must be a yaml file : *.yaml");
+    MELO_ERROR("[Signal logger] Script for logger '%s' must be a yaml file : *.yaml", options_.loggerName_.c_str());
     return false;
   }
 
@@ -709,13 +719,14 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
 
   // Read suffix number from file
   int suffixNumber = 0;
-  std::ifstream ifs(".last_data", std::ifstream::in);
+  std::string fileNumberFile = "." + options_.loggerName_ + "_fileNumber";
+  std::ifstream ifs(fileNumberFile, std::ifstream::in);
   if(ifs.is_open()) { ifs >> suffixNumber; }
   ifs.close();
   ++suffixNumber;
 
   // Write next suffix number to file
-  std::ofstream ofs(".last_data", std::ofstream::out | std::ofstream::trunc);
+  std::ofstream ofs(fileNumberFile, std::ofstream::out | std::ofstream::trunc);
   if(ofs.is_open()) { ofs << suffixNumber; }
   ofs.close();
 
@@ -728,8 +739,8 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
   std::time_t now = std::chrono::system_clock::to_time_t ( std::chrono::system_clock::now() );
   strftime(dateTime, sizeof dateTime, "%Y%m%d_%H-%M-%S_", std::localtime(&now));
 
-  // Filename format (e.g. silo_13Sep2016_12-13-49_00011)
-  std::string filename = std::string{"silo_"} + std::string{dateTime} + suffixString;
+  // Filename format (e.g. #loggerName_13Sep2016_12-13-49_00011)
+  std::string filename = options_.loggerName_ + "_" + std::string{dateTime} + suffixString;
 
   {
     // Lock the logger (blocking!)
@@ -771,7 +782,7 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
   // Set flag, notify user
   isSavingData_ = false;
 
-  MELO_INFO_STREAM( "[Signal logger] All done, captain! Stored logging data to file " << filename );
+  MELO_INFO_STREAM( "[Signal logger] All done, captain! Stored logging data for logger '" << options_.loggerName_ << "' to file " << filename );
 
   return success;
 }
@@ -782,7 +793,7 @@ bool SignalLoggerBase::workerStartLogger(bool updateLogger) {
   while(true) {
     if(!isCopyingBuffer_ && (!updateLogger || !isSavingData_)) {
       isStarting_ = false;
-      MELO_INFO("[Signal logger] Delayed logger start!");
+      MELO_INFO("[Signal logger] Delayed logger start of logger '%s'!", options_.loggerName_.c_str());
       return startLogger(updateLogger);
     }
     // Sleep for one timestep (init is only allowed once. access of updateFrequency is ok)
