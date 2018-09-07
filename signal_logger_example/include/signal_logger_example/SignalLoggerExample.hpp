@@ -39,8 +39,8 @@ class SignalLoggerExample: public any_node::Node
   public:
     SignalLoggerExample(NodeHandlePtr nh);
 
-    virtual void init();
-    virtual void cleanup();
+    bool init() override;
+    void cleanup() override;
     virtual bool update(const any_worker::WorkerEvent& event);
     virtual void publishWorker();
     virtual void readWorker();
