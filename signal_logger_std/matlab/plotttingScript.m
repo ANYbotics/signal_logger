@@ -3,7 +3,7 @@
 
 
 %% Mainbody velocities
-if (plotMainbodyVel)
+if (1)
 
     named_figure('main body linear velocity')
     subplot(3,1,1)

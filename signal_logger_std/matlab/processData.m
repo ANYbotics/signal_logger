@@ -1,6 +1,6 @@
 % Get filename from directory
-fNumber = 5;
-fName = getFilenameFromNumber(fNumber, ['/home/', getenv('LOGNAME'), '/.ros']);
+fNumber = 239;
+fName = getFilenameFromNumber(fNumber, pwd);
 fprintf(['\nGot filename: ', fName, ' from number: ', num2str(fNumber)]);
 
 % Read data

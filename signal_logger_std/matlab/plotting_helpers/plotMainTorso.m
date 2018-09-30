@@ -87,3 +87,46 @@ xlabel('time [s]'); ylabel('yaw [rad]');
 plotDataWithName(logElements, idx_loco_torso_desiredAngularVelocityBaseInControlFrame_z, {'linestyle','-.','color','r'});
 plotDataWithName(logElements, idx_loco_torso_measAngularVelocityBaseInControlFrame_z, {'linestyle','-.','color','b'});
 
+
+%% Contact force
+lfContactForce = figure();
+
+%subplot(3,1,1);
+title('Left Fore Contact Force');
+grid on; hold on;
+xlabel('time [s]'); ylabel('Force [N]');
+xlim([30 33]);
+ylim([-25 230]);
+% plotDataWithName(logElements, idx_loco_leftFore_forceAtEEInWorldFrame_x, {'color','r', 'lineWidth', 2});
+% plotDataWithName(logElements, idx_loco_leftFore_forceAtEEInWorldFrame_y, {'color','g', 'lineWidth', 2});
+plotDataWithName(logElements, idx_loco_leftFore_forceAtEEInWorldFrame_z, {'color','b', 'lineWidth', 2});
+plotDataWithName(logElements, idx_loco_leftFore_desiredForceAtEEInWorldFrame_z, {'color','r', 'lineWidth', 2}, -1.0);
+
+legend('f_{meas}', 'f_{des}');
+
+lhContactForce = figure();
+
+%subplot(3,1,1);
+title('Left Hind Contact Force');
+grid on; hold on;
+xlabel('time [s]'); ylabel('Force [N]');
+xlim([30 33]);
+ylim([-25 260])
+%plotDataWithName(logElements, idx_loco_leftHind_forceAtEEInWorldFrame_x, {'color','r', 'lineWidth', 2});
+%plotDataWithName(logElements, idx_loco_leftHind_forceAtEEInWorldFrame_y, {'color','g', 'lineWidth', 2});
+plotDataWithName(logElements, idx_loco_leftHind_forceAtEEInWorldFrame_z, {'color','b', 'lineWidth', 2});
+plotDataWithName(logElements, idx_loco_leftHind_desiredForceAtEEInWorldFrame_z, {'color','r', 'lineWidth', 2}, -1.0);
+
+% subplot(3,1,2);
+% grid on; hold on;
+% xlabel('time [s]'); ylabel('pitch [rad]');
+% plotDataWithName(logElements, idx_loco_torso_desiredAngularVelocityBaseInControlFrame_y, {'linestyle','-.','color','r'});
+% plotDataWithName(logElements, idx_loco_torso_measAngularVelocityBaseInControlFrame_y, {'linestyle','-.','color','b'});
+% 
+% subplot(3,1,3);
+% grid on; hold on;
+% xlabel('time [s]'); ylabel('yaw [rad]');
+% plotDataWithName(logElements, idx_loco_torso_desiredAngularVelocityBaseInControlFrame_z, {'linestyle','-.','color','r'});
+% plotDataWithName(logElements, idx_loco_torso_measAngularVelocityBaseInControlFrame_z, {'linestyle','-.','color','b'});
+
+
