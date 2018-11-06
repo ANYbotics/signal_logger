@@ -29,7 +29,7 @@ SignalLoggerExample::SignalLoggerExample(NodeHandlePtr nh):
   ros::Time::setNow(time_);
 }
 
-void SignalLoggerExample::init()
+bool SignalLoggerExample::init()
 {
   // The signal logger is created as a SignalLoggerNone, this resets it to be a ros logger
   signal_logger::setSignalLoggerRos(&getNodeHandle());
@@ -113,6 +113,9 @@ void SignalLoggerExample::init()
   // Finally let's start the logger
   signal_logger::logger->startLogger();
 
+  addWorker("SignalLoggerExample::updateWorker", 0.1, &SignalLoggerExample::update, this);
+
+  return true;
 }
 
 void SignalLoggerExample::cleanup()
