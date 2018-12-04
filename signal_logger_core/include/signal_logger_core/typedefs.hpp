@@ -55,7 +55,7 @@ static constexpr std::size_t LOG_ELEMENT_DEFAULT_DIVIDER      = 1;
 //! Default log element action
 static constexpr LogElementAction LOG_ELEMENT_DEFAULT_ACTION  = LogElementAction::SAVE_AND_PUBLISH;
 //! Default log element buffer size
-static constexpr std::size_t LOG_ELEMENT_DEFAULT_BUFFER_SIZE  = 1000;
+static constexpr std::size_t LOG_ELEMENT_DEFAULT_BUFFER_SIZE  = 24000;
 //! Default log element buffer type
 static constexpr BufferType LOG_ELEMENT_DEFAULT_BUFFER_TYPE   = BufferType::LOOPING;
 
