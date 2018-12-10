@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>signal_logger_example</name>
-  <version>0.3.0</version>
+  <version>0.4.0</version>
   <description>The signal_logger_example package</description>
   <maintainer email="gabrielhottiger@todo.todo">gabrielhottiger</maintainer>
   <license>BSD</license>
