@@ -725,11 +725,6 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
   ifs.close();
   ++suffixNumber;
 
-  // Write next suffix number to file
-  std::ofstream ofs(fileNumberFile, std::ofstream::out | std::ofstream::trunc);
-  if(ofs.is_open()) { ofs << suffixNumber; }
-  ofs.close();
-
   // To string with format 00000 (e.g 00223)
   std::string suffixString = std::to_string(suffixNumber);
   while(suffixString.length() != 5 ) { suffixString.insert(0, "0"); }
@@ -782,7 +777,14 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
   // Set flag, notify user
   isSavingData_ = false;
 
-  MELO_INFO_STREAM( "[Signal logger] All done, captain! Stored logging data for logger '" << options_.loggerName_ << "' to file " << filename );
+  if(success) {
+    // Write next suffix number to file
+    std::ofstream ofs(fileNumberFile, std::ofstream::out | std::ofstream::trunc);
+    if(ofs.is_open()) { ofs << suffixNumber; }
+    ofs.close();
+
+    MELO_INFO_STREAM( "[Signal logger] All done, captain! Stored logging data for logger '" << options_.loggerName_ << "' to file " << filename );
+  }
 
   return success;
 }
