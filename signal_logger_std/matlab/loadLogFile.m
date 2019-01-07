@@ -32,38 +32,52 @@ if ~exist('fname') || isempty(fname),
 	fname=strcat(pathname, fname);
 end;
 
-% open as little-endian ("ieee-be" for big endian)
-fid=fopen(fname, 'r', 'ieee-le');
-if fid == -1,
-    msg = strcat('File does not exist: ', fname);
-    error(msg)
-end;
+% Check for csv files
+if (strcmp(fname(end-3:end),'.csv'))
+  
+  %Extract full file as table
+  csvTable = readtable(fname);
+  
+  %Discard empty last column
+  csvTable = csvTable(:,1:end-1);
+  
+  %Get log elements
+  logElements = csvTableToLogElements(csvTable);
+   
+else
+  % open as little-endian ("ieee-be" for big endian)
+  fid=fopen(fname, 'r', 'ieee-le');
+  if fid == -1,
+      msg = strcat('File does not exist: ', fname);
+      error(msg)
+  end;
 
-% skip comments
-[ fid, currentLine ] = skipComments(fid, false);
+  % skip comments
+  [ fid, currentLine ] = skipComments(fid, false);
 
-% read time synchronization offset
-timeSyncOffset = str2double(currentLine);
+  % read time synchronization offset
+  timeSyncOffset = str2double(currentLine);
 
-% skip comments
-[ fid, currentLine ] = skipComments(fid, false);
+  % skip comments
+  [ fid, currentLine ] = skipComments(fid, false);
 
-% read number of elements
-noElements = str2double(currentLine);
+  % read number of elements
+  noElements = str2double(currentLine);
 
-% skip comments
-fid = skipComments(fid, true);
+  % skip comments
+  fid = skipComments(fid, true);
 
-% read header
-header = textscan(fid,'%s %d %d %d %d %s', noElements);
+  % read header
+  header = textscan(fid,'%s %d %d %d %d %s', noElements);
 
-% skip header comments
-fid = skipComments(fid, true);
+  % skip header comments
+  fid = skipComments(fid, true);
 
-% initialize log elements
-logElements = repmat(struct('name', '', 'noBytes', 0, 'noData', 0, ...
-                            'divider', 0, 'isBufferLooping', 0, 'data', []) , noElements, 1 );
-for i=1:noElements
+  % initialize log elements
+  logElements = repmat(struct('name', '', 'noBytes', 0, 'noData', 0, ...
+                              'divider', 0, 'isBufferLooping', 0, 'data', []) , noElements, 1 );
+                            
+  for i=1:noElements
     logElements(i).name = header{1}(i);
     logElements(i).noBytes = header{2}(i);
     logElements(i).noData = header{3}(i);
@@ -85,11 +99,15 @@ for i=1:noElements
     logElements(i).timeStruct = struct('seconds', [], 'nanoseconds', []);
     logElements(i).systime = zeros(logElements(i).noData, 1);
     logElements(i).time = zeros(logElements(i).noData, 1);
+  end
+  
+  fclose(fid);
+  
+  % Match time to data
+  logElements = matchTimeToData(logElements, timeSyncOffset);
+  
 end
 
-fclose(fid);
 
-% Match time to data
-logElements = matchTimeToData(logElements, timeSyncOffset);
 
 end
