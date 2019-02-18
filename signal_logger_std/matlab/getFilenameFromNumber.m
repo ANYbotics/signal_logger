@@ -12,7 +12,7 @@ listingDirs = dir(fileDir);
 for k=1:length(listingDirs)
     if (listingDirs(k).isdir == 0), 
         res = strfind(listingDirs(k).name, fileNumberString);
-        if (length(res) > 0),
+        if (length(res) > 0 && listingDirs(k).name(1) ~= '.')
             fname = listingDirs(k).name;
             break;
         end
