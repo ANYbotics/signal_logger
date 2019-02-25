@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
-  find_package(Qt5Widgets REQUIRED)
+  find_package(Qt5 COMPONENTS Core Widgets Designer REQUIRED)
 else()
   find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
   include(${QT_USE_FILE})
@@ -92,6 +92,8 @@ endif()
 include_directories(
     ${rqt_signal_logger_INCLUDE_DIRECTORIES}
     ${catkin_INCLUDE_DIRS}
+    ${Qt5Widgets_INCLUDE_DIRS}
+    ${Qt5Designer_INCLUDE_DIRS}
 )
 
 
@@ -111,7 +113,7 @@ target_link_libraries(rqt_signal_logger
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
   qt5_use_modules(${PROJECT_NAME} Widgets)
-  target_link_libraries(${PROJECT_NAME} Qt5::Widgets)
+  target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Widgets)
 else()
   target_link_libraries(${PROJECT_NAME} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
 endif()
