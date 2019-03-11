@@ -1,5 +1,5 @@
 % Get filename from directory
-fNumber = 239;
+%fNumber = 1037;
 fName = getFilenameFromNumber(fNumber, pwd);
 fprintf(['\nGot filename: ', fName, ' from number: ', num2str(fNumber)]);
 
