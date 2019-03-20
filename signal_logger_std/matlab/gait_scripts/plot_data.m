@@ -1,27 +1,31 @@
 %% Init
 clear all; close all;
-fNumber = 1037;
+fNumber = 164;
 processData;
 
+%% Setup
 plotDuration = logElements(1).time(end);
-% static walk [17 19]
+% static walk [16.5 18.5]
 % trot [23 25]
+% pace [8 9]
+% dyn walk [12.5 14.5]
+% run trot [16.2 17.5]
 
-startTime = 23;
-endTime = 25;
-plot_lims = [startTime endTime];
+startTime = 8;
+endTime = 9;
+plot_lims = [0 plotDuration];
 
 %% Joints
 % branch_names = {'LF', 'RF', 'LH', 'RH'};
 branch_names = {'LF'};
 node_names = {'HAA', 'HFE', 'KFE'};
-plotJointDataType('Pos', logElements, branch_names, node_names, plot_lims, startTime);
+%plotJointDataType('Pos', logElements, branch_names, node_names, plot_lims, startTime);
 plotJointDataType('Vel', logElements, branch_names, node_names, plot_lims, startTime);
-plotJointDataType('Tor', logElements, branch_names, node_names, plot_lims, startTime);
+%plotJointDataType('Tor', logElements, branch_names, node_names, plot_lims, startTime);
 
 %% Forces
-branch_names_extended = {'leftFore', 'rightFore', 'leftHind', 'rightHind'};
-% branch_names_extended = {'leftFore'};
+%branch_names_extended = {'leftFore', 'rightFore', 'leftHind', 'rightHind'};
+branch_names_extended = {'leftFore'};
 dim_names = {'x','y','z'};
 plotForceData(logElements, branch_names_extended, dim_names, plot_lims, startTime);
 

@@ -22,8 +22,11 @@ for k_branch=1:num_cols
         end
         
         if k_branch~=1
-%           set(gca,'YTickLabel',[]);
           set(gca,'YLabel',[]);
+        end
+        
+        if k_joint==1 && k_branch==num_cols
+          legend('des','meas');
         end
         
         numxticks = 5;
@@ -39,4 +42,6 @@ for k_branch=1:num_cols
         
         start_id = start_id + num_cols;
     end
+end
+
 end

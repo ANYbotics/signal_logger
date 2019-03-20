@@ -23,6 +23,10 @@ for k_branch=1:num_cols
         if k_branch~=1
           set(gca,'YLabel',[]);
         end
+        
+        if k_dim==1 && k_branch==num_cols
+          legend('des','meas');
+        end
        
         % Set y limits.
         plotdata = get(gca,'Children');
@@ -48,4 +52,6 @@ for k_branch=1:num_cols
 
         start_id = start_id + num_cols;
     end
+end
+
 end

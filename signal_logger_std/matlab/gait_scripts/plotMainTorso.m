@@ -112,8 +112,6 @@ lfContactForce = figure();
 title('Left Fore Contact Force');
 grid on; hold on;
 xlabel('time [s]'); ylabel('Force [N]');
-xlim([30 33]);
-ylim([-25 230]);
 % plotDataWithName(logElements, idx_loco_leftFore_forceAtEEInWorldFrame_x, {'color','r', 'lineWidth', 2});
 % plotDataWithName(logElements, idx_loco_leftFore_forceAtEEInWorldFrame_y, {'color','g', 'lineWidth', 2});
 plotDataWithName(logElements, idx_loco_leftFore_forceAtEEInWorldFrame_z, {'color','b', 'lineWidth', 2});
@@ -127,8 +125,6 @@ lhContactForce = figure();
 title('Left Hind Contact Force');
 grid on; hold on;
 xlabel('time [s]'); ylabel('Force [N]');
-xlim([30 33]);
-ylim([-25 260])
 %plotDataWithName(logElements, idx_loco_leftHind_forceAtEEInWorldFrame_x, {'color','r', 'lineWidth', 2});
 %plotDataWithName(logElements, idx_loco_leftHind_forceAtEEInWorldFrame_y, {'color','g', 'lineWidth', 2});
 plotDataWithName(logElements, idx_loco_leftHind_forceAtEEInWorldFrame_z, {'color','b', 'lineWidth', 2});
