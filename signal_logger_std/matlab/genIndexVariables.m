@@ -1,4 +1,4 @@
-function [ ] = genIndexVariables( logElements , verbose)
+function [alphIndexList] = genIndexVariables( logElements , verbose)
 %GENINDEXVARIABLES Summary of this function goes here
 %   Detailed explanation goes here
 % % generate index variables
@@ -6,6 +6,8 @@ function [ ] = genIndexVariables( logElements , verbose)
 if nargin < 2
  verbose = true;
 end
+
+alphIndexList = strings(length(logElements),1);
 
 for k=1:length(logElements)
     completeName = char(logElements(k).name);
@@ -22,7 +24,7 @@ for k=1:length(logElements)
     strippedName = strrep(completeName, '/', '_');
     
     idxName = ['idx' strippedName];
-    
+
     % Fix max name length
     if (length(idxName) > 60)
         % Try to substitute known patterns
@@ -40,14 +42,18 @@ for k=1:length(logElements)
         idxName = strrep(idxName,'linear','lin');
         idxName = strrep(idxName,'torso_control_gait_container','tcgc');
         idxName = strrep(idxName,'estimated','est');
-    end    
-    
+    end
+
+    alphIndexList(k) = idxName; 
+
     if(verbose)
         disp([num2str(k) ' ' idxName]);
     end
     evalin('base', [' global ' idxName]);
     evalin('base', [idxName '=' num2str(k) ';']);
 end
+
+alphIndexList = sort(alphIndexList);
 
 end
 

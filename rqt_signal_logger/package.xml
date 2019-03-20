@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>rqt_signal_logger</name>
-  <version>0.3.0</version>
+  <version>0.5.0</version>
   <description>The rqt_signal_logger package</description>
 
   <maintainer email="gabriel.hottiger@mavt.ethz.ch">Gabriel Hottiger</maintainer>
@@ -13,6 +13,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <depend>qtbase5-dev</depend>
+  <depend>qttools5-dev</depend>
   <depend>roscpp</depend>
   <depend>rqt_gui</depend>
   <depend>rqt_gui_cpp</depend>

@@ -8,7 +8,7 @@
 #pragma once
 
 // Qt
-#include <QtDesigner/QtDesigner>
+#include <QtDesigner>
 #include <QWidget>
 
 namespace rqt_signal_logger {

@@ -148,8 +148,7 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
           this->buffer_.noUnreadItems())*this->options_.getDivider();
 
           if(this->buffer_.getBufferType() == signal_logger::BufferType::LOOPING) {
-            idx = (time.getBuffer().noTotalItems() - 1) - (nrCollectDataCalls - 1) % this->options_.getDivider()
-                - (this->buffer_.noTotalItems()-this->buffer_.noUnreadItems())*this->options_.getDivider();
+            idx = (this->buffer_.noUnreadItems() - 1)*this->options_.getDivider() + (nrCollectDataCalls - 1) % this->options_.getDivider();
           }
 
           // get time stamp
