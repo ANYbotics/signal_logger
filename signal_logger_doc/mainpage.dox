@@ -19,7 +19,7 @@ Furthermore a ROS implementation is available, that additionally features:
 </ul>
 
 \section source_code Source Code
-The source code is available at <a href="https://bitbucket.org/leggedrobotics/signal_logger">https://bitbucket.org/leggedrobotics/signal_logger</a>.
+The source code is available at <a href="https://github.com/anybotics/signal_logger</a>.
 
 \section license License
 This library is <a href="http://www.gnu.org/philosophy/free-sw.html">Free Software</a> and is licensed under <a href="http://opensource.org/licenses/BSD-3-Clause">BSD 3-Clause</a>.
@@ -47,9 +47,9 @@ This library is written extensively using C++11.
 \section dependencies Dependencies
 The core and std library of the signal logger are non ROS dependent. And only require the following dependencies:
 <ul>
-  <li><a href="https://bitbucket.org/leggedrobotics/message_logger">message_logger</a></li>
+  <li><a href="https://github.com/anybotics/message_logger">message_logger</a></li>
   <li><a href="http://eigen.tuxfamily.org">Eigen</a></li>
-  <li><a href="https://github.com/ethz-asl/kindr">kindr (optional -DSILO_USE_KINDR=OFF)</a></li>
+  <li><a href="https://github.com/anybotics/kindr">kindr (optional -DSILO_USE_KINDR=OFF)</a></li>
 </ul>
 
 The signal_logger package combines all loggers and allows runtime logger type selection. By setting -DSILO_USE_ROS=OFF you can exclude
@@ -61,7 +61,7 @@ The ros logger requires these additional dependencies:
   <li><a href="http://wiki.ros.org/roscpp">roscpp</a></li>
   <li><a href="http://wiki.ros.org/std_msgs">std_msgs</a></li>
   <li><a href="http://wiki.ros.org/geometry_msgs">geometry_msgs</a></li>
-  <li><a href="https://github.com/ethz-asl/kindr_ros">kindr_msgs (optional -DSILO_USE_KINDR=OFF)</a></li>
+  <li><a href="https://github.com/anybotics/kindr_ros">kindr_msgs (optional -DSILO_USE_KINDR=OFF)</a></li>
   <li><a href="https://bitbucket.org/leggedrobotics/any_common">bageditor</a></li>
 </ul>
 
@@ -78,7 +78,7 @@ Build signal_logger with [catkin](wiki.ros.org/catkin):
 
 \code{.sh}
 cd ~/catkin_ws/src
-git clone https://bitbucket.org/leggedrobotics/signal_logger
+git clone https://github.com/anybotics/signal_logger
 catkin_make
 \endcode
 
@@ -86,7 +86,7 @@ or with [catkin command line tools](http://catkin-tools.readthedocs.org):
 
 \code{.sh}
 cd ~/catkin_ws/src
-git clone https://bitbucket.org/leggedrobotics/signal_logger
+git clone https://github.com/anybotics/signal_logger
 catkin build signal_logger
 \endcode
 

@@ -6,6 +6,7 @@
   <maintainer email="cgehring@anybotics.com">Christian Gehring</maintainer>
   <license>BSD</license>
   <author email="ghottiger@anybotics.com">Gabriel Hottiger</author>
+  <url>https://github.com/anybotics/signal_logger</url>
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>signal_logger</depend>

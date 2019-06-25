@@ -5,6 +5,7 @@
   <description>The signal_logger_example package</description>
   <maintainer email="gabrielhottiger@todo.todo">gabrielhottiger</maintainer>
   <license>BSD</license>
+  <url>https://github.com/anybotics/signal_logger</url>
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>any_node</depend>
