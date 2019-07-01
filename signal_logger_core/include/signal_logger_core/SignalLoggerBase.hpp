@@ -199,6 +199,12 @@ class SignalLoggerBase {
     return static_cast< LogElementBase<ValueType_>* >(logElements_[name].get())->readNewValues();
   }
 
+  /**
+   * @brief Get new time values (since the last call to this function) as a vector (first entry is the oldest)
+   * @return vector of time values since last call to this function
+   */
+  vector_type<TimestampPair> readNewTimeLogValues();
+
  protected:
   /** Reads collect script and enables all log data
    * @param scriptName filename of the logging script

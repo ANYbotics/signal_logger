@@ -532,6 +532,11 @@ bool SignalLoggerBase::setNamespaceAction(const std::string & ns, const LogEleme
   return setElementPropertyForNamespace(ns, f);
 }
 
+vector_type<TimestampPair> SignalLoggerBase::readNewTimeLogValues() {
+  std::unique_lock<std::mutex> uniqueTimeElementLock(timeElement_->acquireMutex());
+  return timeElement_.get()->readNewValues();
+}
+
 bool SignalLoggerBase::readDataCollectScript(const std::string & scriptName)
 {
   if(!isInitialized_ || isSavingData_)
