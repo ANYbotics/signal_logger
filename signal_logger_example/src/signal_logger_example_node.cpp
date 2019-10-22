@@ -10,6 +10,5 @@
 int main(int argc, char **argv)
 {
   any_node::Nodewrap<signal_logger_example::SignalLoggerExample> node(argc, argv, "signal_logger_example", 4);
-  node.execute();
-  return 0;
+  return static_cast<int>(!node.execute());
 }
