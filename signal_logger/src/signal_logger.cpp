@@ -85,6 +85,19 @@ void setSignalLoggerStd() {
 void setSignalLoggerRos(ros::NodeHandle* nh) {
   logger.reset(new signal_logger_ros::SignalLoggerRos(nh));
 }
+
+void setSignalLogger(const std::string& name, ros::NodeHandle* nh) {
+  if (name.compare("ros") == 0) {
+    signal_logger::setSignalLoggerRos(nh);
+  }
+  else if (name.compare("std") == 0) {
+    signal_logger::setSignalLoggerStd();
+  }
+  else {
+    signal_logger::setSignalLoggerNone();
+  }
+}
+
 #endif
 
 

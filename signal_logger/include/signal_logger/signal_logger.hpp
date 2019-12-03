@@ -46,6 +46,8 @@ void setSignalLoggerStd();
 
 #ifdef SILO_USE_ROS
 void setSignalLoggerRos(ros::NodeHandle* nh);
+
+void setSignalLogger(const std::string& name, ros::NodeHandle* nh);
 #endif
 
 /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
