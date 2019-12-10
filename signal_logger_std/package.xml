@@ -5,8 +5,7 @@
   <description>The signal_logger_std package</description>
 
   <maintainer email="ghottiger@anybotics.com">Gabriel Hottiger</maintainer>
-  <maintainer email="cgehring@anybotics.com">Christian Gehring</maintainer>
-  <maintainer email="bellicoso@mavt.ethz.ch">Dario Bellicoso</maintainer>
+  <maintainer email="pleemann@anybotics.com">Philipp Leemann</maintainer>
   <author email="ghottiger@anybotics.com">Gabriel Hottiger</author>
   <author email="cgehring@anybotics.com">Christian Gehring</author>
   <author email="bellicoso@mavt.ethz.ch">Dario Bellicoso</author>

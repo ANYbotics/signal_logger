@@ -6,7 +6,7 @@
   <description>ROS message definitions for the signal logger.</description>
 
   <maintainer email="ghottiger@anybotics.com">Gabriel Hottiger</maintainer>
-  <maintainer email="bellicoso@mavt.ethz.ch">Dario Bellicoso</maintainer>
+  <maintainer email="pleemann@anybotics.com">Philipp Leemann</maintainer>
 
   <author email="ghottiger@anybotics.com">Gabriel Hottiger</author>
   <author email="bellicoso@mavt.ethz.ch">Dario Bellicoso</author>

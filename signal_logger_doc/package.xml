@@ -3,7 +3,8 @@
   <name>signal_logger_doc</name>
   <version>0.5.0</version>
   <description>The signal logger documentation package</description>
-  <maintainer email="cgehring@anybotics.com">Christian Gehring</maintainer>
+  <maintainer email="ghottiger@anybotics.com">Gabriel Hottiger</maintainer>
+  <maintainer email="pleemann@anybotics.com">Philipp Leemann</maintainer>
   <license>BSD</license>
   <author email="ghottiger@anybotics.com">Gabriel Hottiger</author>
   <url>https://github.com/anybotics/signal_logger</url>
