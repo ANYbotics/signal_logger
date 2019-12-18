@@ -1,6 +1,6 @@
 /*!
 * @file     SignalLoggerPlugin.hpp
-* @author   Gabriel Hottiger, Samuel Bachmann
+* @author   Gabriel Hottiger, Samuel Bachmann, Fernando Garcia
 * @date     October 10, 2016
 * @brief    Signal Logger Rqt plugin.
 */
@@ -32,6 +32,7 @@
 #include <QDoubleSpinBox>
 #include <QScrollArea>
 #include <QStatusBar>
+#include <QTreeWidget>
 
 // STL
 #include <list>
@@ -66,9 +67,10 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   virtual void shutdownPlugin();
   virtual void saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const;
   virtual void restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings);
-  void statusMessage(std::string message, MessageType type, double displaySeconds = 2.0);
+  void statusMessage(const std::string& message, MessageType type, double displaySeconds = 2.0);
   void shutdownROS();
-  bool checkNamespace(const QString & text);
+  bool checkNamespace(const QString& text);
+  static void getNamespaces(std::vector<std::string>* namespaces, const std::string& topic);
 
   protected slots:
     void refreshAll();
@@ -99,12 +101,8 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   QStatusBar* statusBar_;
   QWidget* varsWidget_;
   QWidget* configureWidget_;
-  QGridLayout* paramsGrid_;
-  QWidget* paramsWidget_;
-  QWidget* paramsScrollHelperWidget_;
-  QVBoxLayout* paramsScrollLayout_;
+  QTreeWidget* paramsWidgetTree_;
   QStringList namespaceList_;
-
 
   // ROS services
   ros::ServiceClient getLoggerConfigurationClient_;

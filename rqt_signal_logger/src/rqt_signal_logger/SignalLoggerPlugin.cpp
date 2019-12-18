@@ -1,6 +1,6 @@
 /*!
 * @file     SignalLoggerPlugin.cpp
-* @author   Gabriel Hottiger, Samuel Bachmann
+* @author   Gabriel Hottiger, Samuel Bachmann, Fernando Garcia
 * @date     October 10, 2016
 * @brief    Signal Logger Rqt plugin.
 */
@@ -16,9 +16,6 @@
 
 // Qt
 #include <QStringList>
-#include <QGridLayout>
-#include <QScrollArea>
-#include <QScrollBar>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QSignalMapper>
@@ -26,6 +23,7 @@
 
 // STL
 #include <fstream>
+#include <memory>
 
 // System
 #include <sys/stat.h>
@@ -57,15 +55,12 @@ static size_t getMaxParamNameWidth(std::vector<std::string> const &lines) {
 
 SignalLoggerPlugin::SignalLoggerPlugin() :
                             rqt_gui_cpp::Plugin(),
-                            widget_(0),
+                            widget_(nullptr),
                             tabWidget_(),
                             statusBar_(),
-                            varsWidget_(0),
-                            configureWidget_(0),
-                            paramsGrid_(),
-                            paramsWidget_(0),
-                            paramsScrollHelperWidget_(0),
-                            paramsScrollLayout_(0),
+                            varsWidget_(nullptr),
+                            configureWidget_(nullptr),
+                            paramsWidgetTree_(nullptr),
                             updateFrequency_(0.0) {
   setObjectName("SignalLoggerPlugin");
 }
@@ -226,7 +221,7 @@ void SignalLoggerPlugin::changeAll() {
   bool success = true;
 
   for (auto& elem : logElements_) {
-    success = success && elem->changeElement();
+    success = success && elem->updateChangeElement();
   }
   if(success) {
     statusMessage(std::string("Applied changes to all the logger elements!"), MessageType::STATUS);
@@ -518,8 +513,6 @@ void SignalLoggerPlugin::checkLoggerState() {
   else {
     statusMessage("Can not check if logger is running.", MessageType::WARNING, 2.0);
   }
-
-  return;
 }
 
 void SignalLoggerPlugin::shutdownPlugin() {
@@ -560,56 +553,46 @@ bool findStringIC(const std::string & strHaystack, const std::string & strNeedle
 void SignalLoggerPlugin::drawParamList() {
 
   logElements_.clear();
+  delete paramsWidgetTree_;
 
-  if (paramsWidget_) {
-    // delete widget
-    delete paramsWidget_->layout();
-    delete paramsScrollHelperWidget_->layout();
-    varsUi_.verticalLayout->removeWidget(paramsWidget_);
-    delete paramsWidget_;
-  }
   varsUi_.verticalSpacer->changeSize(1, 1, QSizePolicy::Fixed,
                                      QSizePolicy::Fixed);
 
-  paramsWidget_ = new QWidget();
-  paramsWidget_->setObjectName(QString::fromUtf8("paramsWidget"));
-  varsUi_.verticalLayout->insertWidget(2, paramsWidget_);
-
-  paramsScrollHelperWidget_ = new QWidget(paramsWidget_);
-  paramsGrid_= new QGridLayout(paramsScrollHelperWidget_);
-  paramsGrid_->setObjectName(QString::fromUtf8("paramsGrid"));
+  paramsWidgetTree_ = new QTreeWidget();
+  paramsWidgetTree_->setObjectName(QString::fromUtf8("treeWidget"));
+  varsUi_.verticalLayout->insertWidget(2, paramsWidgetTree_);
 
   const size_t maxParamNameWidth = getMaxParamNameWidth(logElementNames_);
 
   // Create a line for each filtered parameter
   std::string filter = varsUi_.lineEditFilter->text().toStdString();
+
   for (auto& name : logElementNames_) {
-    //    std::size_t found = name.find(filter);
     if (findStringIC(name, filter)) {
-      logElements_.push_back(std::shared_ptr<LogElement>(new LogElement(name, varsWidget_, paramsGrid_, &getLoggerElementClient_, &setLoggerElementClient_, maxParamNameWidth)));
+      auto* namespaces = new std::vector<std::string>();
+      getNamespaces(namespaces, name);
+      std::string parent;
+      std::string parentWithNs;
+
+      for (auto& ns : *namespaces) {
+        parentWithNs += '/' + ns;
+        QList<QTreeWidgetItem*> childrenItemList = paramsWidgetTree_->findItems(QString::fromStdString(parentWithNs), Qt::MatchContains|Qt::MatchRecursive|Qt::MatchWrap, 0);
+        if (!childrenItemList.count()) {
+          QList<QTreeWidgetItem*> parentItemList = paramsWidgetTree_->findItems(QString::fromStdString(parent), Qt::MatchContains|Qt::MatchRecursive|Qt::MatchWrap, 0);
+          QTreeWidgetItem* parentItem = nullptr;
+          if (parentItemList.count())
+            parentItem = parentItemList[0];
+          logElements_.push_back(std::make_shared<LogElement>(parentWithNs, parentItem, varsWidget_, paramsWidgetTree_, &getLoggerElementClient_, &setLoggerElementClient_, maxParamNameWidth));
+        }
+        parent = parentWithNs;
+      }
+      delete namespaces;
     }
   }
-  // This needs to be done after everthing is setup.
-  paramsScrollHelperWidget_->setLayout(paramsGrid_);
-
-  // Put it into a scroll area
-  QScrollArea* paramsScrollArea = new QScrollArea();
-  paramsScrollArea->setWidget(paramsScrollHelperWidget_);
-
-  // Make the scroll step the same width as the fixed widgets in the grid
-  paramsScrollArea->horizontalScrollBar()->setSingleStep(paramsScrollHelperWidget_->width() / 24);
-
-  paramsScrollLayout_ = new QVBoxLayout(paramsWidget_);
-  paramsScrollLayout_->addWidget(paramsScrollArea);
-
-  paramsWidget_->setLayout(paramsScrollLayout_);
-  paramsScrollHelperWidget_->setLayout(paramsGrid_);
-
   this->checkLoggerState();
-
 }
 
-void SignalLoggerPlugin::statusMessage(std::string message, MessageType type, double displaySeconds) {
+void SignalLoggerPlugin::statusMessage(const std::string& message, MessageType type, double displaySeconds) {
   switch(type) {
     case MessageType::ERROR:
       statusBar_->setStyleSheet("color: red");
@@ -629,6 +612,21 @@ void SignalLoggerPlugin::statusMessage(std::string message, MessageType type, do
       break;
   }
   statusBar_->showMessage(QString::fromStdString(message), displaySeconds*1000);
+}
+
+void SignalLoggerPlugin::getNamespaces(std::vector<std::string>* namespaces, const std::string& topic) {
+  if (!namespaces) {
+    return;
+  }
+
+  const auto delimiter = '/';
+  size_t start;
+  size_t end = 0;
+
+  while ((start = topic.find_first_not_of(delimiter, end)) != std::string::npos) {
+    end = topic.find(delimiter, start);
+    namespaces->push_back(topic.substr(start, end - start));
+  }
 }
 
 }

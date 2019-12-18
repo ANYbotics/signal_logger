@@ -19,7 +19,7 @@ namespace rqt_signal_logger {
 BufferIndicator::BufferIndicator(QWidget* parent) :
   QWidget(parent),
   alignment_(Qt::AlignCenter),
-  diameter_(std::min(30, parent->height())),
+  diameter_(std::min(24, parent->height())),
   nrUnreadElements_(0),
   nrTotalElements_(0),
   bufferSize_(0),
@@ -124,7 +124,7 @@ void BufferIndicator::paintEvent(QPaintEvent *event)
   // Declare bounding rectangles and center point
   QRectF outerBox = QRectF(x,y,diamX_,diamY_);
   QRectF innerBox = QRectF(x+diamX_/3,y+diamX_/3,diamX_/3,diamY_/3);
-  QPointF center(x+diamX_/2, y+diamY_/2);
+  QPointF center(x+diamX_/3, y+diamY_/3);
 
   // Setup painter
   QPainter p(this);
@@ -132,7 +132,7 @@ void BufferIndicator::paintEvent(QPaintEvent *event)
   p.setPen(Qt::NoPen);
 
   // Draw white background circle
-  p.setBrush(QBrush(QColor("white")));
+  p.setBrush(QBrush(QColor("gray")));
   p.drawEllipse(outerBox);
 
   // Draw total elements circle segment
