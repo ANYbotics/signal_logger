@@ -336,6 +336,11 @@ bool SignalLoggerBase::publishData()
 
 bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes)
 {
+  if (logfileTypes.empty()) {
+    MELO_WARN("[Signal logger] Could not save data for logger '%s'! No log file types provided.", options_.loggerName_.c_str());
+    return false;
+  }
+
   // Make sure start stop are not called in the meantime
   boost::shared_lock<boost::shared_mutex> saveLoggerDataLock(loggerMutex_);
 

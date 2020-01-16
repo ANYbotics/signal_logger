@@ -121,6 +121,9 @@
             <property name="text">
              <string>Binary</string>
             </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
             <property name="autoExclusive">
              <bool>false</bool>
             </property>
