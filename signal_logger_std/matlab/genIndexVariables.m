@@ -7,7 +7,8 @@ if nargin < 2
  verbose = true;
 end
 
-alphIndexList = strings(length(logElements),1);
+%alphIndexList = strings(length(logElements),1);  % matlab
+alphIndexList = cellstr(char(blanks(length(logElements)))');  % octave
 
 for k=1:length(logElements)
     completeName = char(logElements(k).name);
