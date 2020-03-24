@@ -4,14 +4,16 @@ function [ fname ] = getFilenameFromNumber( fileNumber, fileDir )
 % Add zeros in front of the number
 fileNumberString = num2str(fileNumber);
 for j=1:1:5-length(fileNumberString)
-    fileNumberString = ['0' fileNumberString];
+    fileNumberString = strcat("0", fileNumberString);
 end
+
+fileEnding = strcat(fileNumberString, ".silo");
 
 fname = '';
 listingDirs = dir(fileDir);
 for k=1:length(listingDirs)
     if (listingDirs(k).isdir == 0), 
-        res = strfind(listingDirs(k).name, fileNumberString);
+        res = strfind(listingDirs(k).name, fileEnding);
         if (length(res) > 0 && listingDirs(k).name(1) ~= '.')
             fname = listingDirs(k).name;
             break;

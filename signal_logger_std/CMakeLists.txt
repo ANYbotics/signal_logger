@@ -39,7 +39,6 @@ target_link_libraries(${PROJECT_NAME}
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  PATTERN ".svn" EXCLUDE
 )
 
 install(TARGETS ${PROJECT_NAME}
@@ -50,8 +49,4 @@ install(TARGETS ${PROJECT_NAME}
 
 install(DIRECTORY matlab
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  FILES_MATCHING 
-  PATTERN "loadLogFile.m"
-  PATTERN "matchTimeToData.m"
-  PATTERN "processData.m"
 )
