@@ -69,7 +69,7 @@ class SignalLoggerNone : public SignalLoggerBase
 
  protected:
   //! Saves the logger data in a file in a seperate thread
-  virtual bool workerSaveData(const std::string & logFileName, const signal_logger::LogFileTypeSet & logfileTypes) override { return true; };
+  virtual bool workerSaveData(const std::string & logFileName, const signal_logger::LogFileTypeSet & logfileTypes) override { return false; };
 
 };
 

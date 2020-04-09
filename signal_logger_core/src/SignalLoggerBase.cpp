@@ -794,6 +794,8 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
     ofs.close();
 
     MELO_INFO_STREAM( "[Signal logger] All done, captain! Stored logging data for logger '" << options_.loggerName_ << "' to file " << filename );
+  } else {
+    MELO_WARN_STREAM( "[Signal logger] Did not save logger data.");
   }
 
   return success;

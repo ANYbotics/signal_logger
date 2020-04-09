@@ -28,7 +28,7 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, const sign
 
   if(noCollectDataCallsCopy_ == 0) {
     MELO_WARN_STREAM("[SignalLoggerStd] Could not save logger data! Data count is zero.");
-    return true;
+    return false;
   }
 
   bool success = true;
