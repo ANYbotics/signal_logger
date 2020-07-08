@@ -8,5 +8,6 @@ int8 LOGFILE_TYPE_BINARY=0
 int8 LOGFILE_TYPE_CSV=1
 int8 LOGFILE_TYPE_BAG=2
 int8[] logfileTypes
+string customFilename
 ---
 bool success

@@ -88,8 +88,18 @@ class SignalLoggerBase {
 
   /** Save all the buffered data into a log file
    *  @param logFileTypes types of the log file
+   *  @return true iff successful.
    */
-  virtual bool saveLoggerData(const LogFileTypeSet & logfileTypes);
+  virtual bool saveLoggerData(const LogFileTypeSet& logfileTypes) {
+    return saveLoggerData(logfileTypes, "");
+  }
+
+  /** Save all the buffered data into a log file
+   *  @param logFileTypes types of the log file
+   *  @param customFilename name of the log file
+   *  @return true iff successful.
+   */
+  virtual bool saveLoggerData(const LogFileTypeSet& logfileTypes, std::string customFilename);
 
   /** Stop the logger and save all the buffered data into log files
    *  @param logFileTypes types of the log file
@@ -237,10 +247,13 @@ class SignalLoggerBase {
   virtual bool updateLoggerLockFree(const bool readScript = true, const std::string & scriptname = "");
 
  private:
-  /** Wraps function workerSaveData to do common preparations and shutdown
-   * @param logFileTypse types of the log files
+  /** Save data and next suffix number in a separate thread.
+   * @param logFileTypes types of the log files
+   * @param filename name of the log file
+   * @param suffixNumber log file suffix number (this function will save it to a file as well)
+   * @return success boolean.
    */
-  bool workerSaveDataWrapper(const LogFileTypeSet & logfileTypes);
+  bool workerSaveDataWrapper(const LogFileTypeSet & logfileTypes, const std::string& filename, int suffixNumber);
 
   /** Wait until logger can be started and start logger
    */
@@ -321,6 +334,28 @@ class SignalLoggerBase {
 
     return success;
   }
+
+  /** Get name of file where log numbers are written.
+   * @return Name of file where log numbers are written.
+   */
+  std::string getFileNumberFilename() const {
+    return "." + options_.loggerName_ + "_fileNumber";
+  }
+
+  /**
+   * @brief Read suffix number from file
+   * @return next suffix number.
+   * @note This function be called in parallel to any other process.
+   */
+  int getNextSuffixNumber() const;
+
+  /**
+   * @brief Get base name of log file corresponding to a given suffix number.
+   * @param suffixNumber Suffix number.
+   * @return file name in #loggerName_13Sep2016_12-13-49_00011 format
+   * @note This function be called in parallel to any other process.
+   */
+   std::string getLogfileBasename(int suffixNumber) const;
 
  protected:
   //! Logger Options

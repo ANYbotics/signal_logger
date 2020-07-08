@@ -103,10 +103,12 @@ signal_logger::logger->restartLogger();
 
 <H3>Save the logger data</H3>
 The standard logger implements saving the data to a binary, bag or csv file. The type of files can be selected by passing a vector of signal_logger::LogFileType.
+Optionally the basename of the log file can be provided, otherwise it will be generated from the logger name and date.
 The saving is done in a different, detached thread. As a first step the complete buffer data is copied and flushed.
 Then the logger can continue to collect data, while the copies are saved into a binary/bag file.
 \code{c}
-signal_logger::logger->saveLoggerData( {LogFileType::BINARY, LogFileType::CSV} );
+signal_logger::logger->saveLoggerData({ LogFileType::BINARY, LogFileType::CSV });
++signal_logger::logger->saveLoggerData({ LogFileType::BINARY, LogFileType::CSV }, "my_custom_log");
 signal_logger::logger->stopAndSaveLoggerData();
 \endcode
 

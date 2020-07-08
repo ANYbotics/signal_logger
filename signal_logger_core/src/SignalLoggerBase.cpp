@@ -334,7 +334,7 @@ bool SignalLoggerBase::publishData()
   return true;
 }
 
-bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes)
+bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes, std::string customFilename)
 {
   if (logfileTypes.empty()) {
     MELO_WARN("[Signal logger] Could not save data for logger '%s'! No log file types provided.", options_.loggerName_.c_str());
@@ -360,7 +360,9 @@ bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes)
     isSavingData_ = true;
 
     // Save data in different thread
-    std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this, logfileTypes);
+    int suffixNumber = getNextSuffixNumber();
+    std::string fileBasename = (customFilename.length() > 0) ? customFilename : getLogfileBasename(suffixNumber);
+    std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this, logfileTypes, fileBasename, suffixNumber);
     t1.detach();
   }
   else {
@@ -724,17 +726,15 @@ signal_logger::TimestampPair SignalLoggerBase::getCurrentTime() {
   return timeStamp;
 }
 
-bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes) {
-  //-- Produce file name, this can be done in series to every other process
-
-  // Read suffix number from file
+int SignalLoggerBase::getNextSuffixNumber() const {
   int suffixNumber = 0;
-  std::string fileNumberFile = "." + options_.loggerName_ + "_fileNumber";
-  std::ifstream ifs(fileNumberFile, std::ifstream::in);
-  if(ifs.is_open()) { ifs >> suffixNumber; }
+  std::ifstream ifs(getFileNumberFilename(), std::ifstream::in);
+  if (ifs.is_open()) { ifs >> suffixNumber; }
   ifs.close();
-  ++suffixNumber;
+  return ++suffixNumber;
+}
 
+std::string SignalLoggerBase::getLogfileBasename(int suffixNumber) const {
   // To string with format 00000 (e.g 00223)
   std::string suffixString = std::to_string(suffixNumber);
   while(suffixString.length() != 5 ) { suffixString.insert(0, "0"); }
@@ -743,10 +743,10 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
   char dateTime[21];
   std::time_t now = std::chrono::system_clock::to_time_t ( std::chrono::system_clock::now() );
   strftime(dateTime, sizeof dateTime, "%Y%m%d_%H-%M-%S_", std::localtime(&now));
+  return options_.loggerName_ + "_" + std::string{dateTime} + suffixString;
+}
 
-  // Filename format (e.g. #loggerName_13Sep2016_12-13-49_00011)
-  std::string filename = options_.loggerName_ + "_" + std::string{dateTime} + suffixString;
-
+bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes, const std::string& fileBasename, int suffixNumber) {
   {
     // Lock the logger (blocking!)
     boost::unique_lock<boost::shared_mutex> workerSaveDataWrapperLock(loggerMutex_);
@@ -782,18 +782,18 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
   }
 
   // Start saving copy to file
-  bool success = this->workerSaveData(filename, logfileTypes);
+  bool success = this->workerSaveData(fileBasename, logfileTypes);
 
   // Set flag, notify user
   isSavingData_ = false;
 
   if(success) {
     // Write next suffix number to file
-    std::ofstream ofs(fileNumberFile, std::ofstream::out | std::ofstream::trunc);
+    std::ofstream ofs(getFileNumberFilename(), std::ofstream::out | std::ofstream::trunc);
     if(ofs.is_open()) { ofs << suffixNumber; }
     ofs.close();
 
-    MELO_INFO_STREAM( "[Signal logger] All done, captain! Stored logging data for logger '" << options_.loggerName_ << "' to file " << filename );
+    MELO_INFO_STREAM( "[Signal logger] All done, captain! Stored logging data for logger '" << options_.loggerName_ << "' to file " << fileBasename << ".silo");
   } else {
     MELO_WARN_STREAM( "[Signal logger] Did not save logger data.");
   }

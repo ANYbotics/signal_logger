@@ -120,10 +120,16 @@ bool SignalLoggerExample::init()
 
 void SignalLoggerExample::cleanup()
 {
-  // The logger can save various log file types (such as .csv, .bag and a minimal binary file for parsing with matlab)
+  // The logger can save various log file types (such as .csv, .bag or a minimal binary .silo file for parsing with MATLAB or Python)
   signal_logger::logger->saveLoggerData( { signal_logger::LogFileType::CSV,
                                            signal_logger::LogFileType::BAG,
                                            signal_logger::LogFileType::BINARY } );
+
+  // Optionally we can specify the basename of the log file to save to (extension will be .csv, .bag or .silo from log file types)
+  signal_logger::logger->saveLoggerData( { signal_logger::LogFileType::CSV,
+                                           signal_logger::LogFileType::BAG,
+                                           signal_logger::LogFileType::BINARY } , "my_custom_log");
+
   // Stop the logger, this can be done either before or after the saving
   signal_logger::logger->stopLogger();
 
