@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>signal_logger_ui</name>
+  <version>0.1.0</version>
+  <description>Python plotting interface for Signal Logger</description>
+  <maintainer email="scaron@anybotics.com">Stéphane Caron</maintainer>
+  <maintainer email="avijayan@anybotics.com">Aravind Vijayan</maintainer>
+  <author email="pierre.gergondet@gmail.com">Pierre Gergondet</author>
+  <license>BSD</license>
+  <url>https://github.com/jrl-umi3218/mc_rtc/tree/master/utils/mc_log_gui</url>
+  <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>ipython-qtconsole</exec_depend>
+  <exec_depend>jupyter-qtconsole</exec_depend>
+  <exec_depend>python-ipykernel</exec_depend>
+  <exec_depend>python-matplotlib</exec_depend>
+  <exec_depend>python-numpy</exec_depend>
+  <exec_depend>python-pyside</exec_depend>
+  <exec_depend>python-qtconsole</exec_depend>
+  <exec_depend>signal_logger_python</exec_depend>
+</package>
