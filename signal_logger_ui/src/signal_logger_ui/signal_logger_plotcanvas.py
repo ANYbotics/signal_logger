@@ -405,6 +405,33 @@ class PlotFigure(object):
             self.axes2, self._legend_right, x, y, y_label)
         return True
 
+    def _add_deriv_plot(self, axes, legend, x, y, y_label):
+        times = self.data[x]
+        y_vals = self.data[y]
+        deriv_vals = []
+        dt = times[1] - times[0]
+        for i in range(1, len(times)):
+            diff = y_vals[i] - y_vals[i - 1]
+            new_dt = times[i] - times[i - 1]
+            if new_dt > 0.:
+                dt = new_dt
+            deriv_vals.append(diff / dt)
+        return self._plot(axes, legend, times[1:], deriv_vals, y_label)
+
+    def add_deriv_plot_left(self, x, y, y_label):
+        self._show_left_axis()
+        if y_label in self.axes_plots:
+            return False
+        self.axes_plots[y_label] = self._add_deriv_plot(self.axes, self._legend_left, x, y, y_label)
+        return True
+
+    def add_deriv_plot_right(self, x, y, y_label):
+        self._show_right_axis()
+        if y_label in self.axes2_plots:
+            return False
+        self.axes2_plots[y_label] = self._add_deriv_plot(self.axes2, self._legend_right, x, y, y_label)
+        return True
+
     def _add_roll_plot(self, axes, legend, x_label, base):
         if (base + _SEP + "qw") in self.data.keys():
             fmt = "q"

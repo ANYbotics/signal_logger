@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright 2015-2019 CNRS-UM LIRMM, CNRS-AIST JRL
 # Copyright 2020 ANYbotics AG
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,21 +25,33 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from .signal_logger_plotcanvas import PlotFigure
-from .signal_logger_types import GraphLabels
-from .signal_logger_types import LineStyle
-from .signal_logger_types import TextWithFontSize
-from .signal_logger_ui import SignalLoggerUI, UserPlot, load_user_plots
+from numpy.random import random
+from signal_logger_ui import PlotFigure
 
-from .signal_logger_tab import SignalLoggerTab
 
-__all__ = [
-    'GraphLabels',
-    'LineStyle',
-    'PlotFigure',
-    'SignalLoggerTab',
-    'SignalLoggerUI',
-    'TextWithFontSize',
-    'UserPlot',
-    'load_user_plots'
-]
+def test_plot_deriv(data_len=10):
+    """
+    Test "deriv" plots implemented in PlotFigure.
+
+    :param data_len: Size of synthetic dataset to test on.
+    """
+    figure = PlotFigure()
+    t = [0.]
+    y = random(data_len)
+    dt = random(data_len)
+    for i in range(1, data_len):
+        t.append(t[-1] + dt[i])
+
+    def hijack_plot(axes, legend, times, deriv_vals, y_label):
+        """Hijack call to _plot to receive results from the tested function."""
+        assert len(times) == len(deriv_vals) == data_len - 1
+        for i in range(data_len - 1):
+            assert abs(deriv_vals[i] - (y[i + 1] - y[i]) / (t[i + 1] - t[i])) < 1e-10
+
+    figure.data = { 't': t, 'y': y}
+    figure._plot = hijack_plot
+    figure._add_deriv_plot(None, None, 't', 'y', None)
+
+
+if __name__ == "__main__":
+    test_plot_deriv()

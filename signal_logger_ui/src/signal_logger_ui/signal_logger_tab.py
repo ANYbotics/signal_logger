@@ -165,7 +165,9 @@ class SpecialPlot(object):
             self.remove = self.figure.remove_plot_left
         else:
             self.remove = self.figure.remove_plot_right
-        if special_id == "diff":
+        if special_id == "deriv":
+            self.__plot = self.__add_deriv
+        elif special_id == "diff":
             self.__plot = self.__add_diff
         elif special_id == "rpy":
             self.__plot = self.__add_rpy
@@ -190,6 +192,20 @@ class SpecialPlot(object):
             add_fn = self.figure.add_diff_plot_right
         for a in added:
             label = a + _SEP + "diff"
+            if add_fn(self.figure.x_data, a, label):
+                self.added.append(label)
+
+    def __add_deriv(self):
+        added = filter(
+            lambda x: re.match(
+                "{}($|{}.*$)".format(self.name, _SEP), x) is not None,
+            self.figure.data.keys())
+        if self.idx == 0:
+            add_fn = self.figure.add_deriv_plot_left
+        else:
+            add_fn = self.figure.add_deriv_plot_right
+        for a in added:
+            label = a + _SEP + "deriv"
             if add_fn(self.figure.x_data, a, label):
                 self.added.append(label)
 
@@ -405,6 +421,11 @@ class SignalLoggerTab(QtGui.QWidget):
             return
         menu = QtGui.QMenu(ySelector)
 
+        # Plot deriv button
+        action = QtGui.QAction(u"Plot deriv".format(item.actualText), menu)
+        action.triggered.connect(lambda: RemoveSpecialPlotButton(item.actualText, self, idx, "deriv"))
+        menu.addAction(action)
+
         # Plot diff button
         action = QtGui.QAction(u"Plot diff".format(item.actualText), menu)
         action.triggered.connect(lambda: RemoveSpecialPlotButton(
@@ -508,7 +529,7 @@ class SignalLoggerTab(QtGui.QWidget):
                 match = re.match("(.*){}(.*)$".format(_SEP), yd)
                 if match is None:
                     special(yd, idx, "diff")
-                elif match.group(2) in ["rpy", "r", "p", "y"]:
+                elif match.group(2) in ["deriv", "rpy", "r", "p", "y"]:
                     special(match.group(1), idx, match.group(2))
                 else:
                     special(match.group(1), idx, "diff")
