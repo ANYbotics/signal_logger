@@ -45,8 +45,14 @@ IF(DOXYGEN)
   # Add configure file
   CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/doxygen.config.in ${DOCSOURCE_DIR}/doxygen.config IMMEDIATE)
 
-  # Build doxygen
-  execute_process(COMMAND ${DOXYGEN} ${DOCSOURCE_DIR}/doxygen.config)
+  # Build doxygen.
+  add_custom_target(
+    ${PROJECT_NAME} ALL
+    COMMAND ${DOXYGEN} ${DOCSOURCE_DIR}/doxygen.config
+    WORKING_DIRECTORY ${DOCSOURCE_DIR}
+    COMMENT "${PROJECT_NAME}: Generating API documentation."
+    VERBATIM
+  )
   #ADD_CUSTOM_TARGET(doc ${DOXYGEN} ${DOCSOURCE_DIR}/doxygen.config)
 
   # Unset cache files
