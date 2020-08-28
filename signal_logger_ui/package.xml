@@ -17,4 +17,6 @@
   <exec_depend>python-pyside</exec_depend>
   <exec_depend>python-qtconsole</exec_depend>
   <exec_depend>signal_logger_python</exec_depend>
+
+<!--   <test_depend>cmake_python_coverage</test_depend> -->
 </package>

@@ -17,4 +17,7 @@
   <depend>signal_logger_core</depend>
   <depend>message_logger</depend>
 
+<!--   <test_depend>cmake_code_coverage</test_depend> -->
+  <test_depend>gtest</test_depend>
+
 </package>

@@ -19,5 +19,8 @@
   <depend>kindr</depend>
   <depend>yaml-cpp</depend>
   <build_export_depend>eigen</build_export_depend>
+  
+<!--   <test_depend>cmake_code_coverage</test_depend> -->
+  <test_depend>gtest</test_depend>
 
 </package>
