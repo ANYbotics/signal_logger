@@ -151,6 +151,13 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonExpandAll">
+       <property name="text">
+        <string>expand all</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>

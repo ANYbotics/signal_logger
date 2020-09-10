@@ -114,6 +114,7 @@ void SignalLoggerPlugin::initPlugin(qt_gui_cpp::PluginContext& context) {
   connect(varsUi_.pushButtonRefreshAll, SIGNAL(pressed()), this, SLOT(refreshAll()));
   connect(varsUi_.lineEditFilter, SIGNAL(returnPressed()), this ,SLOT(refreshAll()));
   connect(varsUi_.pushButtonChangeAll, SIGNAL(pressed()), this, SLOT(changeAll()));
+  connect(varsUi_.pushButtonExpandAll, SIGNAL(pressed()), this, SLOT(expandAll()));
   connect(this, SIGNAL(parametersChanged()), this, SLOT(drawParamList()));
   connect(varsUi_.taskComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(taskChanged(int)));
   connect(varsUi_.applyButton, SIGNAL(pressed()), this, SLOT(applyButtonPressed()));
@@ -252,6 +253,13 @@ void SignalLoggerPlugin::refreshAll() {
   }
   else {
     statusMessage(std::string("Could not get current logger configuration."), MessageType::WARNING);
+  }
+}
+
+void SignalLoggerPlugin::expandAll(){
+  statusMessage(std::string("Expanding all logger elements..."), MessageType::STATUS);
+  for (auto& elem : logElements_) {
+    elem->expandEntries();
   }
 }
 

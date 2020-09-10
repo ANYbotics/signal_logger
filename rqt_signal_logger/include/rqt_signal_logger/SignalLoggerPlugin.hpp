@@ -75,6 +75,7 @@ class SignalLoggerPlugin : public rqt_gui_cpp::Plugin {
   protected slots:
     void refreshAll();
     void changeAll();
+    void expandAll();
     void drawParamList();
     void setNamespace();
     void startLogger();

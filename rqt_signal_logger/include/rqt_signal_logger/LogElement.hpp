@@ -215,6 +215,10 @@ class LogElement: public QObject {
       updateSpinBox(item->child(i), value, column);
   }
 
+  void expandEntries() {
+    treeWidget_->expandAll();
+  }
+
   public slots:
 
   void updateIsLogging(int checkBoxStatus) {
