@@ -78,14 +78,14 @@ signal_logger::add(myVar, name, group, unit, divider, action, bufferSize, buffer
 
 However, this will have no effect until the update function signal_logger::SignalLoggerBase::updateLogger() is called. Try to call this function at the end of the
 configuration, since this function will open a file stream and parse (a potentially big) yaml file. If you are using the signal_logger in combination with
-<a href="https://github.com/anybotics/rocoma">rocoma</a> it is worthwhile to know that updateLogger() is called after the initialization of every "normal" controller.
+controller manager it is worthwhile to know that updateLogger() is called after the initialization of every "normal" controller.
 \code{c}
 signal_logger::logger->updateLogger();
 \endcode
 
 <H3>Collect logger data</H3>
 The activated/enabled elements of the logger are collected when signal_logger::SignalLoggerBase::collectLoggerData() is called and the logger was started. It is required that this function is called with the 'collectFrequency'
-specified in the init function. If you are using the signal_logger in combination with <a href="https://github.com/anybotics/rocoma">rocoma</a> collectLoggerData is called after the advancing of every "normal" or
+specified in the init function. If you are using the signal_logger in combination with the controller manager collectLoggerData is called after the advancing of every "normal" or
 "emergency" controller.
 \code{c}
 signal_logger::logger->collectLoggerData();
@@ -93,7 +93,7 @@ signal_logger::logger->collectLoggerData();
 
 
 <H3>Start/Stop the logger</H3>
-To start and stop the logger following functions are provided. When starting the logger the buffers are cleared. If you are using the signal_logger in combination with <a href="https://github.com/anybotics/rocoma">rocoma</a>
+To start and stop the logger following functions are provided. When starting the logger the buffers are cleared. If you are using the signal_logger in combination with the controller manager
 the logger is started on initialization and stopped in the pre-stop of every "normal" or "emergency" controller.
 \code{c}
 signal_logger::logger->startLogger();
