@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Copyright 2020 ANYbotics AG
@@ -27,7 +27,7 @@
 
 import numpy
 
-from PySide import QtGui
+from PySide2 import QtWidgets
 from qtconsole.inprocess import QtInProcessKernelManager
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 
@@ -42,7 +42,7 @@ class ConsoleWidget(RichJupyterWidget):
     def start(self, silo, ui):
         self.start_kernel_manager(silo, ui)
         self.start_kernel_client()
-        self.exit_requested.connect(QtGui.QApplication.quit)
+        self.exit_requested.connect(QtWidgets.QApplication.quit)
         self.clear()
 
     def start_kernel_manager(self, silo, ui):

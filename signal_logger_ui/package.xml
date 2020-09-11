@@ -9,13 +9,15 @@
   <license>BSD</license>
   <url>https://github.com/jrl-umi3218/mc_rtc/tree/master/utils/mc_log_gui</url>
   <buildtool_depend>catkin</buildtool_depend>
-  <exec_depend>ipython-qtconsole</exec_depend>
+  <exec_depend>python3-qtconsole</exec_depend>
   <exec_depend>jupyter-qtconsole</exec_depend>
-  <exec_depend>python-ipykernel</exec_depend>
-  <exec_depend>python-matplotlib</exec_depend>
-  <exec_depend>python-numpy</exec_depend>
-  <exec_depend>python-pyside</exec_depend>
-  <exec_depend>python-qtconsole</exec_depend>
+  <exec_depend>python3-ipykernel</exec_depend>
+  <exec_depend>python3-matplotlib</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-pyside2.qtcore</exec_depend>
+  <exec_depend>python3-pyside2.qtwidgets</exec_depend>
+  <exec_depend>python3-pyside2.qtprintsupport</exec_depend>
+  <exec_depend>python3-qtconsole</exec_depend>
   <exec_depend>signal_logger_python</exec_depend>
 
 <!--   <test_depend>cmake_python_coverage</test_depend> -->

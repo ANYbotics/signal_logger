@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Copyright 2015-2019 CNRS-UM LIRMM, CNRS-AIST JRL
@@ -29,17 +29,17 @@
 import copy
 import re
 
-from PySide import QtCore, QtGui
+import signal_logger_ui.ui
+
+from PySide2 import QtCore, QtWidgets
 from signal_logger.config import TOPIC_SEPARATOR as _SEP
 
-import ui
-
-from .config import RPY_LABELS
-from .signal_logger_types import LineStyle
-from .signal_logger_plotcanvas import PlotFigure
+from signal_logger_ui.config import RPY_LABELS
+from signal_logger_ui.signal_logger_types import LineStyle
+from signal_logger_ui.signal_logger_plotcanvas import PlotFigure
 
 
-class SignalLoggerTreeWidgetItem(QtGui.QTreeWidgetItem):
+class SignalLoggerTreeWidgetItem(QtWidgets.QTreeWidgetItem):
     def __init__(self, parent, displayText, actualText, hasData):
         super(SignalLoggerTreeWidgetItem, self).__init__(parent, [displayText])
         self._displayText = displayText
@@ -116,7 +116,7 @@ class TreeView(object):
         if name == fullName:
             selection = ySelector.selectionModel()
             selection.select(
-                self.modelIdxs[idx], QtGui.QItemSelectionModel.Select)
+                self.modelIdxs[idx], QtCore.QItemSelectionModel.Select)
             ySelector.setSelectionModel(selection)
             parent = self.parent
             while parent is not None and idx < len(parent.widgets):
@@ -247,11 +247,11 @@ class SpecialPlot(object):
         self.__plot()
 
 
-class RemoveSpecialPlotButton(SpecialPlot, QtGui.QPushButton):
+class RemoveSpecialPlotButton(SpecialPlot, QtWidgets.QPushButton):
     def __init__(self, name, logtab, idx, special_id):
         self.logtab = logtab
         SpecialPlot.__init__(self, name, logtab.ui.canvas, idx, special_id)
-        QtGui.QPushButton.__init__(
+        QtWidgets.QPushButton.__init__(
             self, u"Remove {} {} plot".format(name, special_id), logtab)
         self.clicked.connect(self.on_clicked)
         if idx == 0:
@@ -282,12 +282,12 @@ def set_label(label_fn, label_size_fn, label):
         label_size_fn(label.fontsize)
 
 
-class SignalLoggerTab(QtGui.QWidget):
+class SignalLoggerTab(QtWidgets.QWidget):
     canvas_need_update = QtCore.Signal()
 
     def __init__(self, parent=None):
         super(SignalLoggerTab, self).__init__(parent)
-        self.ui = ui.SignalLoggerTab()
+        self.ui = signal_logger_ui.ui.SignalLoggerTab()
         self.ui.setupUi(self)
         self.ui.canvas.setupLockButtons(self.ui.selectorLayout)
         if parent is not None:
@@ -296,8 +296,8 @@ class SignalLoggerTab(QtGui.QWidget):
 
         def setupSelector(ySelector):
             ySelector.setHeaderLabels(["Signal"])
-            ySelector.header().setResizeMode(
-                QtGui.QHeaderView.ResizeMode.Stretch)
+            ySelector.header().setSectionResizeMode(
+                QtWidgets.QHeaderView.ResizeMode.Stretch)
             ySelector.viewport().installEventFilter(
                 FilterRightClick(ySelector))
 
@@ -334,15 +334,15 @@ class SignalLoggerTab(QtGui.QWidget):
         self.itemSelectionChanged(self.ui.y1Selector, self.y1Selected, 0)
         self.y2Selected = []
         self.itemSelectionChanged(self.ui.y2Selector, self.y2Selected, 1)
-        for _, s in self.specials.iteritems():
+        for _, s in self.specials.items():
             s.plot()
 
-    @QtCore.Slot(QtGui.QTreeWidgetItem, int)
+    @QtCore.Slot(QtWidgets.QTreeWidgetItem, int)
     def on_y1Selector_itemClicked(self, item, col):
         self.y1Selected = self.itemSelectionChanged(
             self.ui.y1Selector, self.y1Selected, 0)
 
-    @QtCore.Slot(QtGui.QTreeWidgetItem, int)
+    @QtCore.Slot(QtWidgets.QTreeWidgetItem, int)
     def on_y2Selector_itemClicked(self, item, col):
         self.y2Selected = self.itemSelectionChanged(
             self.ui.y2Selector, self.y2Selected, 1)
@@ -376,7 +376,7 @@ class SignalLoggerTab(QtGui.QWidget):
             self.data.keys()))
 
         def find_item(s):
-            iterator = QtGui.QTreeWidgetItemIterator(ySelector)
+            iterator = QtWidgets.QTreeWidgetItemIterator(ySelector)
             for itm in [it.value() for it in iterator]:
                 if itm.actualText == s:
                     return itm
@@ -419,15 +419,15 @@ class SignalLoggerTab(QtGui.QWidget):
         item = ySelector.itemAt(point)
         if item is None:
             return
-        menu = QtGui.QMenu(ySelector)
+        menu = QtWidgets.QMenu(ySelector)
 
         # Plot deriv button
-        action = QtGui.QAction(u"Plot deriv".format(item.actualText), menu)
+        action = QtWidgets.QAction(u"Plot deriv".format(item.actualText), menu)
         action.triggered.connect(lambda: RemoveSpecialPlotButton(item.actualText, self, idx, "deriv"))
         menu.addAction(action)
 
         # Plot diff button
-        action = QtGui.QAction(u"Plot diff".format(item.actualText), menu)
+        action = QtWidgets.QAction(u"Plot diff".format(item.actualText), menu)
         action.triggered.connect(lambda: RemoveSpecialPlotButton(
             item.actualText, self, idx, "diff"))
         menu.addAction(action)
@@ -437,7 +437,7 @@ class SignalLoggerTab(QtGui.QWidget):
         if s is not None:
             for item_label, axis_label in RPY_LABELS:
                 label = u"Plot {}".format(item_label, item.actualText)
-                action = QtGui.QAction(label, menu)
+                action = QtWidgets.QAction(label, menu)
                 action.triggered.connect(
                     lambda label=axis_label:
                     RemoveSpecialPlotButton(s.group(1), self, idx, label))
@@ -455,7 +455,7 @@ class SignalLoggerTab(QtGui.QWidget):
                             qc.group(1)[1:], item_label)
                     else:
                         action_text = u"Plot {}".format(item_label)
-                    action = QtGui.QAction(action_text, menu)
+                    action = QtWidgets.QAction(action_text, menu)
                     plot_name = item.actualText + qc.group(1)
                     action.triggered.connect(
                         lambda name=plot_name, label=axis_label:
@@ -544,11 +544,11 @@ class SignalLoggerTab(QtGui.QWidget):
             figure.grid2 = LineStyle(**p.grid2)
         else:
             figure.grid2 = p.grid2
-        for y, s in p.style.iteritems():
+        for y, s in p.style.items():
             figure.style_left(y, s)
-        for y, s in p.style2.iteritems():
+        for y, s in p.style2.items():
             figure.style_right(y, s)
-        for param, value in p.extra.iteritems():
+        for param, value in p.extra.items():
             getattr(figure, param)(value)
         return figure
 

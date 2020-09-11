@@ -26,41 +26,41 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtWidgets
 
 
 class Ui_SignalLoggerTab(object):
     def setupUi(self, SignalLoggerTab):
         SignalLoggerTab.setObjectName("SignalLoggerTab")
         SignalLoggerTab.resize(803, 538)
-        self.horizontalLayout = QtGui.QHBoxLayout(SignalLoggerTab)
-        self.horizontalSplitter = QtGui.QSplitter(SignalLoggerTab)
+        self.horizontalLayout = QtWidgets.QHBoxLayout(SignalLoggerTab)
+        self.horizontalSplitter = QtWidgets.QSplitter(SignalLoggerTab)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.y1SelectorLayout = QtGui.QVBoxLayout()
+        self.y1SelectorLayout = QtWidgets.QVBoxLayout()
         self.y1SelectorLayout.setObjectName("y1SelectorLayout")
-        self.y1Selector = QtGui.QTreeWidget(SignalLoggerTab)
+        self.y1Selector = QtWidgets.QTreeWidget(SignalLoggerTab)
         self.y1Selector.setSelectionMode(
-            QtGui.QAbstractItemView.MultiSelection)
+            QtWidgets.QAbstractItemView.MultiSelection)
         self.y1Selector.setSelectionBehavior(
-            QtGui.QAbstractItemView.SelectItems)
+            QtWidgets.QAbstractItemView.SelectItems)
         self.y1Selector.setColumnCount(1)
         self.y1Selector.setObjectName("y1Selector")
         self.y1Selector.headerItem().setText(0, "1")
         self.y1Selector.header().setVisible(True)
         self.y1SelectorLayout.addWidget(self.y1Selector)
-        self.y1SelectorLayoutWrapper = QtGui.QWidget()
+        self.y1SelectorLayoutWrapper = QtWidgets.QWidget()
         self.y1SelectorLayoutWrapper.setLayout(self.y1SelectorLayout)
         self.horizontalSplitter.addWidget(self.y1SelectorLayoutWrapper)
-        self.verticalLayout = QtGui.QVBoxLayout()
+        self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
         self.canvas = PlotCanvasWithToolbar(SignalLoggerTab)
         self.canvas.setObjectName("canvas")
         self.verticalLayout.addWidget(self.canvas)
-        self.selectorLayout = QtGui.QHBoxLayout()
+        self.selectorLayout = QtWidgets.QHBoxLayout()
         self.selectorLayout.setObjectName("selectorLayout")
-        self.xSelector = QtGui.QComboBox(SignalLoggerTab)
-        sizePolicy = QtGui.QSizePolicy(
-            QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        self.xSelector = QtWidgets.QComboBox(SignalLoggerTab)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(
@@ -69,20 +69,20 @@ class Ui_SignalLoggerTab(object):
         self.xSelector.setObjectName("xSelector")
         self.selectorLayout.addWidget(self.xSelector)
         self.verticalLayout.addLayout(self.selectorLayout)
-        self.verticalLayoutWrapper = QtGui.QWidget()
+        self.verticalLayoutWrapper = QtWidgets.QWidget()
         self.verticalLayoutWrapper.setLayout(self.verticalLayout)
         self.horizontalSplitter.addWidget(self.verticalLayoutWrapper)
-        self.y2SelectorLayout = QtGui.QVBoxLayout()
+        self.y2SelectorLayout = QtWidgets.QVBoxLayout()
         self.y2SelectorLayout.setObjectName("y2SelectorLayout")
-        self.y2Selector = QtGui.QTreeWidget(SignalLoggerTab)
+        self.y2Selector = QtWidgets.QTreeWidget(SignalLoggerTab)
         self.y2Selector.setSelectionMode(
-            QtGui.QAbstractItemView.MultiSelection)
+            QtWidgets.QAbstractItemView.MultiSelection)
         self.y2Selector.setColumnCount(1)
         self.y2Selector.setObjectName("y2Selector")
         self.y2Selector.headerItem().setText(0, "1")
         self.y2Selector.header().setVisible(True)
         self.y2SelectorLayout.addWidget(self.y2Selector)
-        self.y2SelectorLayoutWrapper = QtGui.QWidget()
+        self.y2SelectorLayoutWrapper = QtWidgets.QWidget()
         self.y2SelectorLayoutWrapper.setLayout(self.y2SelectorLayout)
         self.horizontalSplitter.addWidget(self.y2SelectorLayoutWrapper)
         self.horizontalSplitter.setStretchFactor(0, 0.8)
@@ -95,9 +95,8 @@ class Ui_SignalLoggerTab(object):
 
     def retranslateUi(self, SignalLoggerTab):
         SignalLoggerTab.setWindowTitle(
-            QtGui.QApplication.translate(
-                "SignalLoggerTab", "SignalLoggerTab", None,
-                QtGui.QApplication.UnicodeUTF8))
+            QtWidgets.QApplication.translate(
+                "SignalLoggerTab", "SignalLoggerTab", None))
 
 
 try:

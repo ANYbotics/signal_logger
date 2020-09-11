@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Copyright 2015-2019 CNRS-UM LIRMM, CNRS-AIST JRL
@@ -26,10 +26,10 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtWidgets
 
 
-class SignalLoggerTabBar(QtGui.QTabBar):
+class SignalLoggerTabBar(QtWidgets.QTabBar):
 
     def __init__(self, parent=None):
         super(SignalLoggerTabBar, self).__init__(parent)
@@ -46,7 +46,7 @@ class SignalLoggerTabBar(QtGui.QTabBar):
 
     def mouseDoubleClickEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
-            name = QtGui.QInputDialog.getText(
+            name = QtWidgets.QInputDialog.getText(
                 self, "New name for current graph", "New name:",
                 text=self.tabText(self.currentIndex()))
             if name[1]:
@@ -54,7 +54,7 @@ class SignalLoggerTabBar(QtGui.QTabBar):
         super(SignalLoggerTabBar, self).mouseDoubleClickEvent(event)
 
 
-class SignalLoggerTabWidget(QtGui.QTabWidget):
+class SignalLoggerTabWidget(QtWidgets.QTabWidget):
 
     def __init__(self, parent=None):
         super(SignalLoggerTabWidget, self).__init__(parent)

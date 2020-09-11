@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Copyright 2015-2019 CNRS-UM LIRMM, CNRS-AIST JRL
@@ -26,21 +26,21 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from .signal_logger_plotcanvas import PlotFigure
-from .signal_logger_types import GraphLabels
-from .signal_logger_types import LineStyle
-from .signal_logger_types import TextWithFontSize
-from .signal_logger_ui import SignalLoggerUI, UserPlot, load_user_plots
+from signal_logger_ui.signal_logger_types import GraphLabels
+from signal_logger_ui.signal_logger_types import LineStyle
+from signal_logger_ui.signal_logger_types import TextWithFontSize
+from signal_logger_ui.signal_log_ui       import SignalLoggerUI, UserPlot, load_user_plots
+from signal_logger_ui.signal_logger_plotcanvas import PlotFigure
 
-from .signal_logger_tab import SignalLoggerTab
+from signal_logger_ui.signal_logger_tab import SignalLoggerTab
 
 __all__ = [
     'GraphLabels',
     'LineStyle',
     'PlotFigure',
-    'SignalLoggerTab',
-    'SignalLoggerUI',
     'TextWithFontSize',
+    'SignalLoggerUI',
     'UserPlot',
-    'load_user_plots'
+    'load_user_plots',
+    'SignalLoggerTab'
 ]

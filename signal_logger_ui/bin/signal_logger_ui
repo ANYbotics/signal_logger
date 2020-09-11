@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Copyright 2015-2019 CNRS-UM LIRMM, CNRS-AIST JRL
@@ -31,7 +31,7 @@ import os
 import signal
 import sys
 
-from PySide import QtGui
+from PySide2 import QtWidgets
 from signal_logger_ui import SignalLoggerUI
 from warnings import warn
 
@@ -45,7 +45,7 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     gui = SignalLoggerUI()
     args = parse_args()
     gui.load_log(fpath=args.fpath, logdir=args.logdir)

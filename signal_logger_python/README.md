@@ -5,13 +5,15 @@
 Run the reader script by:
 
 ```bash
-rosrun signal_logger_python signal_logger_reader high
+rosrun signal_logger_python signal_logger_reader mySiloPrefix
 ```
+
+This will load the latest silo in your ``~/.ros`` folder whose filename starts with ``mySiloPrefix``. For example, if you have high-level controller silos in your ``~/.ros`` folder, replace ``mySiloFilePrefix`` by e.g. ``high`` or ``highLevel``.
 
 Once loaded, you can read data using e.g.:
 
 ```python
-vel = Signal(data, 'loco/leftFore/linearVelocityDesiredEEOriginInWorldFrame/x')
+vel = silo.get_signal('loco/leftFore/linearVelocityDesiredEEOriginInWorldFrame/x')
 vel.value(9.1)  # value of the signal at t=9.1 [s]
 vel.average(8.95, 9.4)  # time average between 8.95 [s] and 9.4 [s]
 ```

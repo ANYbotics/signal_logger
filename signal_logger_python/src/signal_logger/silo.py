@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Author:       Stephane Caron
 # Affiliation:  ANYbotics
@@ -48,7 +48,7 @@ class Silo(object):
         if full_name in self.data:
             values = self.data[full_name]
             return Signal(name, self.times, values)
-        matches = {key for key in self.data.keys() if key.startswith(full_name)}
+        matches = {key for key in self.data if key.startswith(full_name)}
         suffixes = {key[len(full_name):] for key in matches}
         values = {suffix[1:]: self.data[full_name + suffix] for suffix in suffixes}
         if suffixes == {'/x', '/y', '/z'}:

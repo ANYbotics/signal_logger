@@ -26,10 +26,10 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from .signal_logger_main_ui import Ui_MainWindow as MainWindow
-from .signal_logger_tab_ui import Ui_SignalLoggerTab as SignalLoggerTab
+from signal_logger_ui.ui.signal_logger_main_ui import Ui_MainWindow as MainWindow
+from signal_logger_ui.ui.signal_logger_tab_ui import Ui_SignalLoggerTab as SignalLoggerTab
 
 __all__ = [
     'MainWindow',
-    'SignalLoggerTab',
+    'SignalLoggerTab'
 ]

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Author:       Stephane Caron
 # Affiliation:  ANYbotics
@@ -90,7 +90,7 @@ class LogReader(object):
 
         :param fpath: Path to file.
         """
-        with open(fpath) as fd:
+        with open(fpath, 'rb') as fd:
             self._read_header(fd)
             self._read_data(fd)
         self._compute_time()
@@ -113,7 +113,7 @@ class LogReader(object):
         """
         going_binary = False
         while not going_binary:
-            line = fd.readline()
+            line = str(fd.readline(), encoding='latin-1')
             if line.startswith('#'):
                 if "Binary Data" in line:
                     going_binary = True
@@ -136,6 +136,9 @@ class LogReader(object):
             format = desc.get_format()
             for _ in range(desc.nb_points):
                 bytes = fd.read(desc.size)
+                if len(bytes) != desc.size:
+                    warn("End of file reached earlier than expected.")
+                    return
                 try:
                     values = struct.unpack(format, bytes)
                     self._data[desc.name].append(values[0])
@@ -169,7 +172,7 @@ class LogReader(object):
         time = self._data["t"]
         size_differences = {
             key: len(time) - len(data)
-            for key, data in self._data.iteritems()}
-        for key, size_diff in size_differences.iteritems():
+            for key, data in self._data.items()}
+        for key, size_diff in size_differences.items():
             if size_diff > 0:
                 self._data[key] = [None] * size_diff + self._data[key]
