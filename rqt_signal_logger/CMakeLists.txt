@@ -6,7 +6,7 @@ endif()
 project(rqt_signal_logger)
 
 # Set compiler flags
-add_definitions(-std=c++11 -Wall -Werror)
+add_definitions(-std=c++11 -Wall)
 
 find_package(catkin REQUIRED COMPONENTS
     roscpp

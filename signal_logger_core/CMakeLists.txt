@@ -30,7 +30,7 @@ catkin_package(
 ## Build ##
 ###########
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-add_definitions(-std=c++11 -Wall -Werror)
+add_definitions(-std=c++11 -Wall)
 add_definitions(-DMELO_MIN_SEVERITY=MELO_SEVERITY_INFO)
 include_directories(include)
 include_directories(${EIGEN3_INCLUDE_DIR})
