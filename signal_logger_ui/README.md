@@ -60,7 +60,7 @@ following:
 [Desktop Entry]
 Name=Signal Logger highLevelController
 Comment=Open most recent log from high-level controller
-Exec=bash -c "source /opt/ros/melodic/setup.bash && /opt/ros/melodic/bin/signal_logger_ui high"
+Exec=bash -c "source /opt/ros/noetic/setup.bash && /opt/ros/noetic/bin/signal_logger_ui high"
 Icon=org.gnome.PowerStats
 Type=Application
 Categories=Development
