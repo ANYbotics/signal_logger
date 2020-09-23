@@ -612,18 +612,18 @@ class SignalLoggerUI(QtWidgets.QMainWindow):
         title, ok = QtWidgets.QInputDialog.getText(
             self, "Custom plot", "Title:", text=defaultTitle)
         if ok:
-            y1 = filter(
+            y1 = list(filter(
                 lambda k: k in self.data.keys(),
-                canvas.axes_plots.keys())
-            y2 = filter(
+                canvas.axes_plots.keys()))
+            y2 = list(filter(
                 lambda k: k in self.data.keys(),
-                canvas.axes2_plots.keys())
-            y1d = map(
+                canvas.axes2_plots.keys()))
+            y1d = list(map(
                 lambda sp: "{}_{}".format(sp.name, sp.id),
-                filter(lambda sp: sp.idx == 0, tab.specials.values()))
-            y2d = map(
+                filter(lambda sp: sp.idx == 0, tab.specials.values())))
+            y2d = list(map(
                 lambda sp: "{}_{}".format(sp.name, sp.id),
-                filter(lambda sp: sp.idx == 1, tab.specials.values()))
+                filter(lambda sp: sp.idx == 1, tab.specials.values())))
             style = {
                 y: canvas.style_left(y)
                 for y in canvas.axes_plots.keys()}
