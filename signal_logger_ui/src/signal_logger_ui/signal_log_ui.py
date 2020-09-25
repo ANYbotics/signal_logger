@@ -65,19 +65,6 @@ def load_user_plots(fpath):
     return user_plot_list
 
 
-class RobotAction(QtWidgets.QAction):
-
-    def __init__(self, display, parent):
-        super(RobotAction, self).__init__(display, parent)
-        self._actual = display
-
-    def actual(self, n=None):
-        if n is None:
-            return self._actual
-        else:
-            self._actual = n
-
-
 class CommonStyleDialog(QtWidgets.QDialog):
     def __init__(self, parent, name, canvas, style):
         super(CommonStyleDialog, self).__init__(parent)
@@ -435,11 +422,9 @@ class SignalLoggerUI(QtWidgets.QMainWindow):
             self.gridStyles['left'], self.gridStyles['right'], {}, {},
             GraphLabels(), {})
 
-        self.robotFile = os.path.expanduser("~") + "/.config/signal_logger/robot"
-        self.userPlotFile = os.path.expanduser("~") + "/.config/signal_logger/custom_plots.json"
+        self.user_plot_file = os.path.expanduser("~") + "/.config/signal_logger/custom_plots.json"
         self.reload_user_plots()
 
-        self.activeRobotAction = None
         self.styleMenu = QtWidgets.QMenu("Style", self.ui.menubar)
 
         # Line style menu
@@ -521,44 +506,30 @@ class SignalLoggerUI(QtWidgets.QMainWindow):
         self.addApplicationShortcut(
             QtCore.Qt.CTRL + QtCore.Qt.Key_T, self.shortcutNewTab)
         self.addApplicationShortcut(
-            QtCore.Qt.CTRL + QtCore.Qt.Key_S, self.save_userplot)
+            QtCore.Qt.CTRL + QtCore.Qt.Key_S, self.save_user_plot)
         self.addApplicationShortcut(
             QtCore.Qt.CTRL + QtCore.Qt.Key_A, self.shortcutAxesDialog)
 
     def reload_user_plots(self):
-        self.userPlotList = load_user_plots(self.userPlotFile)
-        self.update_userplot_menu()
+        self.user_plots = load_user_plots(self.user_plot_file)
+        self.update_user_plot_menu()
 
-    def saveUserPlots(self):
-        
-        # encoding for seralising objects to python3
-        ## introduced as in python3, fiter/map returns iterators, not lists
+    def save_user_plots(self):
+        # encoding for serializing objects to python3
+        # introduced as in python3, filter/map returns iterators, not lists
         def encode(o):
-            if isinstance(o,filter) or isinstance(o,map):
+            if isinstance(o, filter) or isinstance(o, map):
                 return list(o)
             return vars(o)
     
-        confDir = os.path.dirname(self.userPlotFile)
-        if not os.path.exists(confDir):
-            os.makedirs(confDir)
-        with open(self.userPlotFile, 'w') as f:
+        conf_dir = os.path.dirname(self.user_plot_file)
+        if not os.path.exists(conf_dir):
+            os.makedirs(conf_dir)
+        with open(self.user_plot_file, 'w') as f:
             json.dump(
-                self.userPlotList, f, default=lambda o:encode(o), indent=2,
+                self.user_plots, f, default=lambda o:encode(o), indent=2,
                 separators=(',', ': '))
-        self.update_userplot_menu()
-
-    def saveDefaultRobot(self, name):
-        confDir = os.path.dirname(self.robotFile)
-        if not os.path.exists(confDir):
-            os.makedirs(confDir)
-        with open(self.robotFile, 'w') as f:
-            f.write("{}".format(name))
-
-    def getDefaultRobot(self):
-        if os.path.exists(self.robotFile):
-            return open(self.robotFile).read().strip()
-        else:
-            return u""
+        self.update_user_plot_menu()
 
     def addApplicationShortcut(self, key, callback):
         shortcut = QtWidgets.QShortcut(self)
@@ -566,36 +537,35 @@ class SignalLoggerUI(QtWidgets.QMainWindow):
         shortcut.setContext(QtCore.Qt.ShortcutContext.ApplicationShortcut)
         shortcut.activated.connect(lambda: callback())
 
-
-    def update_userplot_menu(self):
+    def update_user_plot_menu(self):
         self.ui.menuUserPlots.clear()
         
         def _gen_closure(fnc,arg):
             """ utility to generate a closure, discards state from triggered Qt signal"""
             return lambda s: fnc(arg)
         
-        for p in self.userPlotList:
+        for p in self.user_plots:
             act = QtWidgets.QAction(p.title, self.ui.menuUserPlots)
-            act.triggered.connect(_gen_closure(self.plot_userplot,p))
+            act.triggered.connect(_gen_closure(self.plot_user_plot, p))
             self.ui.menuUserPlots.addAction(act)
         self.ui.menuUserPlots.addSeparator()
         act = QtWidgets.QAction("Reload custom plots", self.ui.menuUserPlots)
         act.triggered.connect(self.reload_user_plots)
         self.ui.menuUserPlots.addAction(act)
-        if len(self.userPlotList) > 0:
+        if len(self.user_plots) > 0:
             rmUserPlotMenu = QtWidgets.QMenu(
                 "Remove plot", self.ui.menuUserPlots)
-            for p in self.userPlotList:
+            for p in self.user_plots:
                 act = QtWidgets.QAction(p.title, self.ui.menuUserPlots)
                 act.triggered.connect(
-                    _gen_closure(self.remove_userplot,p))
+                    _gen_closure(self.remove_user_plot, p))
                 rmUserPlotMenu.addAction(act)
             self.ui.menuUserPlots.addMenu(rmUserPlotMenu)
         act = QtWidgets.QAction("Save current plot", self.ui.menuUserPlots)
-        act.triggered.connect(self.save_userplot)
+        act.triggered.connect(self.save_user_plot)
         self.ui.menuUserPlots.addAction(act)
 
-    def save_userplot(self):
+    def save_user_plot(self):
         tab = self.ui.tabWidget.currentWidget()
         canvas = tab.ui.canvas
         valid = len(canvas.axes_plots) != 0 or len(canvas.axes2_plots) != 0
@@ -637,7 +607,7 @@ class SignalLoggerUI(QtWidgets.QMainWindow):
                     "tick_fontsize", "legend_fontsize", "labelpad",
                     "top_offset", "bottom_offset", "y1_legend_ncol",
                     "y2_legend_ncol"]}
-            up = UserPlot(
+            user_plot = UserPlot(
                 title, tab.x_data, y1, y1d, y2, y2d, self.getCanvas().grid,
                 self.getCanvas().grid2, style, style2, GraphLabels(
                     title=TextWithFontSize(
@@ -649,16 +619,16 @@ class SignalLoggerUI(QtWidgets.QMainWindow):
                     y2_label=TextWithFontSize(
                         canvas.y2_label(), canvas.y2_label_fontsize())),
                 extra)
-            for i in range(len(self.userPlotList)):
-                if self.userPlotList[i].title == title:
-                    self.userPlotList[i] = up
+            for i in range(len(self.user_plots)):
+                if self.user_plots[i].title == title:
+                    self.user_plots[i] = user_plot
                     found = True
                     break
             if not found:
-                self.userPlotList.append(up)
-            self.saveUserPlots()
+                self.user_plots.append(user_plot)
+            self.save_user_plots()
 
-    def plot_userplot(self, p):
+    def plot_user_plot(self, p):
         valid = p.x in self.data.keys() and all([
             y in self.data.keys() for x in [p.y1, p.y2] for y in x])
         if not valid:
@@ -684,16 +654,12 @@ class SignalLoggerUI(QtWidgets.QMainWindow):
         self.ui.tabWidget.setCurrentIndex(self.ui.tabWidget.count() - 2)
         self.updateClosable()
 
-    def remove_userplot(self, p_in):
-        for p in self.userPlotList:
+    def remove_user_plot(self, p_in):
+        for p in self.user_plots:
             if p.title == p_in.title:
-                self.userPlotList.remove(p)
+                self.user_plots.remove(p)
                 break
-        self.saveUserPlots()
-
-    def setRobot(self, action):
-        action.setChecked(False)
-        self.activeRobotAction.setChecked(True)
+        self.save_user_plots()
 
     def getCanvas(self):
         return self.ui.tabWidget.currentWidget().ui.canvas
