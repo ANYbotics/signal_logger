@@ -26,7 +26,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from PySide2 import QtWidgets
+from PySide2 import QtGui, QtWidgets
 
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QDialog
 
