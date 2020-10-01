@@ -11,6 +11,12 @@ from warnings import warn
 from .config import TOPIC_SEPARATOR
 
 
+common_suffixes = []
+common_suffixes.extend(['_angular_{}'.format(coord) for coord in ['x', 'y', 'z']])
+common_suffixes.extend(['_linear_{}'.format(coord) for coord in ['x', 'y', 'z']])
+common_suffixes.extend(['_{}'.format(coord) for coord in ['w', 'x', 'y', 'z']])
+
+
 class Descriptor(object):
 
     """
@@ -68,10 +74,20 @@ class Descriptor(object):
         name = ros_name
         if name.startswith('/log/'):
             name = name[5:]
-        for suffix in ['w', 'x', 'y', 'z']:
-            if name.endswith('_' + suffix):
-                name = name[:-(1 + len(suffix))] + TOPIC_SEPARATOR + suffix
-                break
+
+        def update_suffix(name):
+            if "ulerAnglesZyx" in name:
+                suffix_map = {'_x': 'yaw', '_y': 'pitch', '_z': 'roll'}
+                for suffix, replacement in suffix_map.items():
+                    if name.endswith(suffix):
+                      return name[:-len(suffix)] + TOPIC_SEPARATOR + replacement
+            else:
+                for suffix in common_suffixes:
+                    if name.endswith(suffix):
+                        return name[:-len(suffix)] + TOPIC_SEPARATOR + suffix[1:]
+            return name
+
+        name = update_suffix(name)
         name = name.replace('/', TOPIC_SEPARATOR)
         return name
 

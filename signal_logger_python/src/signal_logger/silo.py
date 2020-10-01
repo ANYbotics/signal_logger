@@ -9,7 +9,7 @@ from numpy import array
 from .cartesian_signal import CartesianSignal
 from .find import find_log
 from .read import LogReader
-from .rotation_signals import EulerAnglesSignal
+from .rotation_signals import EulerAnglesZyxSignal
 from .rotation_signals import QuaternionSignal
 from .signal import Signal
 
@@ -51,11 +51,10 @@ class Silo(object):
         matches = {key for key in self.data if key.startswith(full_name)}
         suffixes = {key[len(full_name):] for key in matches}
         values = {suffix[1:]: self.data[full_name + suffix] for suffix in suffixes}
-        if suffixes == {'/x', '/y', '/z'}:
-            if "EulerAngles" in name:
-                return EulerAnglesSignal(name, self.times, values['x'], values['y'], values['z'])
-            else:  # not Euler angles
-                return CartesianSignal(name, self.times, values['x'], values['y'], values['z'])
+        if "ulerAnglesZyx" in name:
+            return EulerAnglesZyxSignal(name, self.times, values['yaw'], values['pitch'], values['roll'])
+        elif suffixes == {'/x', '/y', '/z'}:
+            return CartesianSignal(name, self.times, values['x'], values['y'], values['z'])
         elif suffixes == {'/w', '/x', '/y', '/z'}:
             return QuaternionSignal(name, self.times, values['w'], values['x'], values['y'], values['z'])
         raise ValueError("Unrecognized signal type with fields {}".format({suffix[1:] for suffix in suffixes}))

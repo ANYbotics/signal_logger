@@ -29,6 +29,25 @@ alias silo='rosrun signal_logger_ui signal_logger_ui'
 So that ``silo high`` opens the most recent log file recorder with the
 high-level controller
 
+## Embedded IPython shell
+
+There is an embedded IPython shell (hidden by default, you need to slide it up)
+at the bottom of every window. You can read signals there via the `get_signal`
+method of the `silo` object that is loaded by default there:
+
+```python
+In [1]: lf_haa_current = silo.get_signal('state/current/LF_HAA')
+
+In [2]: plot(lf_haa_current)
+```
+
+Plotting is currently in a hackish state: it is done on the right axis, and not
+appended to the legend properly. Plot something else on the right axis using
+the UI to initialize it, so that you can then use the axis customization button
+to set its bottom and top boundaries. When you clear all UI signals from the
+right axis, it will be removed and all signals plotted from the IPython shell
+will be removed as well.
+
 ## Convenience
 
 ### Opening logs from the file manager

@@ -51,15 +51,17 @@ class ConsoleWidget(RichJupyterWidget):
         kernel_manager.kernel.gui = 'qt'
 
         def EulerAngles(name, roll, pitch, yaw, *args, **kwargs):
-            from signal_logger.rotation_signals import EulerAnglesSignal
-            return EulerAnglesSignal.from_constant(name, silo.times, roll, pitch, yaw, *args, **kwargs)
+            from signal_logger.rotation_signals import EulerAnglesZyxSignal
+            return EulerAnglesZyxSignal.from_constant(
+                name, silo.times, roll, pitch, yaw, *args, **kwargs)
 
         def clf():
             import pylab
             pylab.clf()
             ui.tab.ui.canvas.canvas.draw()
 
-        def plot(signal, *args, **kwargs):  # TODO(scaron): currently plots to the right axis, give choice
+        def plot(signal, *args, **kwargs):
+            # TODO(scaron): currently plots to the right axis, give choice
             signal.plot(*args, **kwargs)
             ui.tab.ui.canvas.canvas.draw()
 
@@ -89,4 +91,3 @@ class ConsoleWidget(RichJupyterWidget):
     def print_text(self, text):
         """Print some plain text to the IPython console."""
         self._append_plain_text(text)
-

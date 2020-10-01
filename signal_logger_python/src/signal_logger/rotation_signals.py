@@ -120,7 +120,7 @@ class QuaternionSignal(Signal):
         return self.conjugate()
 
 
-class EulerAnglesSignal(QuaternionSignal):
+class EulerAnglesZyxSignal(QuaternionSignal):
 
     """
     Signal for Euler angles (z-y'-z'' intrinsic, x-y-z extrinsic convention) associated with a given silo.
@@ -134,9 +134,9 @@ class EulerAnglesSignal(QuaternionSignal):
 
         :param name: Name of the series.
         :param times: List of time values.
-        :param x: Signal for (vector) x coordinates.
-        :param y: Signal for (vector) y coordinates.
-        :param z: Signal for (vector) z coordinates.
+        :param x: Signal for (vector) yaw coordinates, saved as "*_x" by signal_logger.
+        :param y: Signal for (vector) pitch coordinates, saved as "*_y" by signal_logger.
+        :param z: Signal for (vector) roll coordinates, saved as "*_z" by signal_logger.
         """
         x = numpy.array(x)
         y = numpy.array(y)
@@ -144,7 +144,7 @@ class EulerAnglesSignal(QuaternionSignal):
         assert len(x.shape) == 1
         assert len(y.shape) == 1
         assert len(z.shape) == 1
-        roll, pitch, yaw = z, y, x  # first (resp. last) coordinate in EulerAnglesZyx is yaw (resp. pitch)
+        roll, pitch, yaw = z, y, x  # first (resp. last) coordinate in EulerAnglesZyx is yaw (resp. roll)
         cr, cp, cy = numpy.cos(roll / 2.), numpy.cos(pitch / 2.), numpy.cos(yaw / 2.)
         sr, sp, sy = numpy.sin(roll / 2.), numpy.sin(pitch / 2.), numpy.sin(yaw / 2.)
         q_w = cr * cp * cy + sr * sp * sy
@@ -154,7 +154,7 @@ class EulerAnglesSignal(QuaternionSignal):
         self.roll = roll
         self.pitch = pitch
         self.yaw = yaw
-        super(EulerAnglesSignal, self).__init__(name, times, q_w, q_x, q_y, q_z)
+        super(EulerAnglesZyxSignal, self).__init__(name, times, q_w, q_x, q_y, q_z)
 
     @staticmethod
     def from_constant(name, times, roll, pitch, yaw, degrees=False):
@@ -173,4 +173,4 @@ class EulerAnglesSignal(QuaternionSignal):
             roll *= numpy.pi / 180.
             pitch *= numpy.pi / 180.
             yaw *= numpy.pi / 180.
-        return EulerAnglesSignal(name, times, [yaw] * len(times), [pitch] * len(times), [roll] * len(times))
+        return EulerAnglesZyxSignal(name, times, [yaw] * len(times), [pitch] * len(times), [roll] * len(times))
