@@ -169,12 +169,14 @@ class SpecialPlot(object):
             self.__plot = self.__add_deriv
         elif special_id == "diff":
             self.__plot = self.__add_diff
-        elif special_id == "rpy":
-            self.__plot = self.__add_rpy
-        elif special_id == "r":
-            self.__plot = self.__add_roll
         elif special_id == "p":
             self.__plot = self.__add_pitch
+        elif special_id == "r":
+            self.__plot = self.__add_roll
+        elif special_id == "rpy":
+            self.__plot = self.__add_rpy
+        elif special_id == "smooth_deriv":
+            self.__plot = self.__add_smooth_deriv
         elif special_id == "y":
             self.__plot = self.__add_yaw
         else:
@@ -206,6 +208,20 @@ class SpecialPlot(object):
             add_fn = self.figure.add_deriv_plot_right
         for a in added:
             label = a + _SEP + "deriv"
+            if add_fn(self.figure.x_data, a, label):
+                self.added.append(label)
+
+    def __add_smooth_deriv(self):
+        added = filter(
+            lambda x: re.match(
+                "{}($|{}.*$)".format(self.name, _SEP), x) is not None,
+            self.figure.data.keys())
+        if self.idx == 0:
+            add_fn = self.figure.add_smooth_deriv_plot_left
+        else:
+            add_fn = self.figure.add_smooth_deriv_plot_right
+        for a in added:
+            label = a + _SEP + "smooth_deriv"
             if add_fn(self.figure.x_data, a, label):
                 self.added.append(label)
 
@@ -421,20 +437,27 @@ class SignalLoggerTab(QtWidgets.QWidget):
             return
         menu = QtWidgets.QMenu(ySelector)
 
-        # Plot deriv button
-        action = QtWidgets.QAction(u"Plot deriv".format(item.actualText), menu)
-        action.triggered.connect(lambda: RemoveSpecialPlotButton(item.actualText, self, idx, "deriv"))
-        menu.addAction(action)
-
         # Plot diff button
         action = QtWidgets.QAction(u"Plot diff".format(item.actualText), menu)
         action.triggered.connect(lambda: RemoveSpecialPlotButton(
             item.actualText, self, idx, "diff"))
         menu.addAction(action)
 
+        # Plot deriv button
+        action = QtWidgets.QAction(u"Plot deriv".format(item.actualText), menu)
+        action.triggered.connect(lambda: RemoveSpecialPlotButton(item.actualText, self, idx, "deriv"))
+        menu.addAction(action)
+
+        # Plot smooth deriv button
+        action = QtWidgets.QAction(u"Plot smooth deriv".format(item.actualText), menu)
+        action.triggered.connect(lambda: RemoveSpecialPlotButton(item.actualText, self, idx, "smooth_deriv"))
+        menu.addAction(action)
+
         # Plot roll/pitch/yaw buttons
         s = re.match("^(.*){}q?[wxyz]$".format(_SEP), item.actualText)
-        if s is not None:
+        if len(item.actualText.split('/')[-1]) < 2:
+            pass  # single coordinate like 'x' or 'y'
+        elif s is not None:
             for item_label, axis_label in RPY_LABELS:
                 label = u"Plot {}".format(item_label, item.actualText)
                 action = QtWidgets.QAction(label, menu)

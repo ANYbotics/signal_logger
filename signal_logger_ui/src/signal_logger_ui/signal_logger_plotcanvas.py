@@ -388,9 +388,8 @@ class PlotFigure(object):
         return True
 
     def _add_diff_plot(self, axes, legend, x, y, y_label):
-        dt = self.data[x][1] - self.data[x][0]
         return self._plot(
-            axes, legend, self.data[x][1:], numpy.diff(self.data[y]) / dt, y_label)
+            axes, legend, self.data[x][1:], numpy.diff(self.data[y]), y_label)
 
     def add_diff_plot_left(self, x, y, y_label):
         self._show_left_axis()
@@ -433,6 +432,25 @@ class PlotFigure(object):
         if y_label in self.axes2_plots:
             return False
         self.axes2_plots[y_label] = self._add_deriv_plot(self.axes2, self._legend_right, x, y, y_label)
+        return True
+
+    def _add_smooth_deriv_plot(self, axes, legend, x, y, y_label):
+        dt = numpy.average(numpy.diff(self.data[x]))
+        return self._plot(
+            axes, legend, self.data[x][1:], numpy.diff(self.data[y]) / dt, y_label)
+
+    def add_smooth_deriv_plot_left(self, x, y, y_label):
+        self._show_left_axis()
+        if y_label in self.axes_plots:
+            return False
+        self.axes_plots[y_label] = self._add_smooth_deriv_plot(self.axes, self._legend_left, x, y, y_label)
+        return True
+
+    def add_smooth_deriv_plot_right(self, x, y, y_label):
+        self._show_right_axis()
+        if y_label in self.axes2_plots:
+            return False
+        self.axes2_plots[y_label] = self._add_smooth_deriv_plot(self.axes2, self._legend_right, x, y, y_label)
         return True
 
     def _add_roll_plot(self, axes, legend, x_label, base):
