@@ -32,11 +32,11 @@ high-level controller
 ## Embedded IPython shell
 
 There is an embedded IPython shell (hidden by default, you need to slide it up)
-at the bottom of every window. You can read signals there via the `get_signal`
-method of the `silo` object that is loaded by default there:
+at the bottom of every window. You can read signals there via the `silo`
+dictionary that is loaded by default there:
 
 ```python
-In [1]: lf_haa_current = silo.get_signal('state/current/LF_HAA')
+In [1]: lf_haa_current = silo['state/current/LF_HAA']
 
 In [2]: plot(lf_haa_current)
 ```

@@ -14,7 +14,7 @@ from .rotation_signals import QuaternionSignal
 from .signal import Signal
 
 
-class Silo(object):
+class Silo(dict):
 
     """
     Set of signal (time series) data.
@@ -44,6 +44,8 @@ class Silo(object):
         """
         if full_name[0] == '/':
             full_name = full_name[1:]
+        if full_name[-1] == '/':
+            full_name = full_name[:-1]
         name = full_name.split('/')[-1]
         if full_name in self.data:
             values = self.data[full_name]
@@ -58,3 +60,20 @@ class Silo(object):
         elif suffixes == {'/w', '/x', '/y', '/z'}:
             return QuaternionSignal(name, self.times, values['w'], values['x'], values['y'], values['z'])
         raise ValueError("Unrecognized signal type with fields {}".format({suffix[1:] for suffix in suffixes}))
+
+    def keys(self):
+        """
+        Get list of available signals for dictionary syntax.
+
+        :return: Keys of the internal data dictionary.
+        """
+        return self.data.keys()
+
+    def __getitem__(self, item):
+        """
+        Get a signal using the dictionary syntax.
+
+        :param item: Signal name.
+        :return: signal
+        """
+        return self.get_signal(item)
