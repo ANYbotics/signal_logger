@@ -6,6 +6,7 @@
 
 import struct
 
+from os.path import commonprefix
 from warnings import warn
 
 from .config import TOPIC_SEPARATOR
@@ -71,10 +72,6 @@ class Descriptor(object):
 
         :return: Name in UI format.
         """
-        name = ros_name
-        if name.startswith('/log/'):
-            name = name[5:]
-
         def update_suffix(name):
             if "ulerAnglesZyx" in name:
                 suffix_map = {'_x': 'yaw', '_y': 'pitch', '_z': 'roll'}
@@ -87,7 +84,7 @@ class Descriptor(object):
                         return name[:-len(suffix)] + TOPIC_SEPARATOR + suffix[1:]
             return name
 
-        name = update_suffix(name)
+        name = update_suffix(ros_name)
         name = name.replace('/', TOPIC_SEPARATOR)
         return name
 
@@ -109,6 +106,7 @@ class LogReader(object):
         with open(fpath, 'rb') as fd:
             self._read_header(fd)
             self._read_data(fd)
+        self._trim_common_prefix()
         self._compute_time()
         self._pad_data()
         return self
@@ -161,6 +159,15 @@ class LogReader(object):
                 except struct.error as e:
                     warn("Reading error for '{}': {}".format(
                         desc.name, str(e)))
+
+    def _trim_common_prefix(self):
+        """
+        Trim longest common prefix to all signal names.
+        """
+        common_prefix = commonprefix(list(self._data.keys()))
+        print("Removing prefix {} which is common to all signals".format(common_prefix))
+        prefix_len = len(common_prefix)
+        self._data = {key[prefix_len:]: value for key, value in self._data.items()}
 
     def _compute_time(self):
         """
