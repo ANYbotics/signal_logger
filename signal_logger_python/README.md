@@ -33,7 +33,7 @@ import signal_logger
 silo = signal_logger.Silo("my_file.silo")
 accelInImuFrame = silo.get_signal('/state/imu/linAccImuInImuFrame')
 rotationImuToBase = EulerAnglesZyxSignal.from_constant('rotationImuToBase', silo.times, 0., 0., 90, degrees=True)
-rotationBaseToWorld = silo.get_signal('loco/torso/measEulerAnglesZyxBaseToWorld')
+rotationBaseToWorld = silo.get_signal('loco/torso/measured/orientationEulerAnglesZyxBaseToWorld')
 accelInWorldFrame = rotationBaseToWorld * rotationImuToBase * accelInImuFrame
 ```
 
