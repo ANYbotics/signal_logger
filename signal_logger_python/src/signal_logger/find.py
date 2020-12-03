@@ -21,7 +21,7 @@ def find_log(fpath, logdir=None):
     Find log file.
 
     :param: fpath: Initial file name, or path, or identifier.
-    :param: logdir: Directory in which log files are looked up (default: ~/.ros).
+    :param: logdir: Directory where log files are looked up (default: ~/.ros).
     :return: Log file path.
     """
     if os.path.isfile(fpath):
@@ -41,7 +41,8 @@ def find_log(fpath, logdir=None):
         return max(prefix_files, key=os.path.getctime)
 
     # If argument is a suffix, warn and ask the user
-    candidates = [logdir + f for f in os.listdir(logdir) if f.endswith(fpath)]
+    suffix = fpath + ".silo"
+    candidates = [logdir + f for f in os.listdir(logdir) if f.endswith(suffix)]
     if not candidates:
         warnings.warn("Found no log file for '{}'".format(fpath))
         return fpath
