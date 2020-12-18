@@ -4,7 +4,7 @@
 # Affiliation:  ANYbotics
 # Date:         07.04.2020
 
-from numpy import array
+from numpy import array, savetxt, vstack
 
 from .cartesian_signal import CartesianSignal
 from .find import find_log
@@ -59,7 +59,7 @@ class Silo(dict):
             return CartesianSignal(name, self.times, values['x'], values['y'], values['z'])
         elif suffixes == {'/w', '/x', '/y', '/z'}:
             return QuaternionSignal(name, self.times, values['w'], values['x'], values['y'], values['z'])
-        raise ValueError("Unrecognized signal type with fields {}".format({suffix[1:] for suffix in suffixes}))
+        raise ValueError("Unrecognized signal '{}' with suffixes {}".format(full_name, {suffix[1:] for suffix in suffixes}))
 
     def keys(self):
         """
@@ -77,3 +77,13 @@ class Silo(dict):
         :return: signal
         """
         return self.get_signal(item)
+
+    def write_signals_to_csv(self, signals, fname):
+        """
+        Write a set of signals to a CSV file.
+
+        :param signals: List of signal names.
+        :param fname: Name of output file.
+        """
+        A = vstack([self.get_signal(signal_name).values for signal_name in signals])
+        savetxt(fname, A.T, delimiter=",", header=','.join(signals))
