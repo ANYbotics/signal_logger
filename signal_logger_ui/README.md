@@ -9,7 +9,7 @@ Install ``sudo apt install python-pyside`` (Ubuntu 18.04).
 Run the script from ROS, giving it as argument any of:
 
 - file name
-- prefix (e.g. "highLevelController"): it will then open the most recent log
+- prefix (e.g. "motionControlManager"): it will then open the most recent log
 - suffix (e.g. 200): it will then open the log corresponding to this id
 - full file path
 
@@ -26,8 +26,8 @@ directory. You can alias the rosrun for faster access:
 alias silo='rosrun signal_logger_ui signal_logger_ui'
 ```
 
-So that ``silo high`` opens the most recent log file recorder with the
-high-level controller
+So that ``silo motion`` opens the most recent log file recorder with the
+motion control manager
 
 ## Embedded IPython shell
 
@@ -72,20 +72,20 @@ and click on "Set as default".
 
 ### Opening the last log directly
 
-Create ``~/.local/share/applications/signal_logger_hlc.desktop`` with the
+Create ``~/.local/share/applications/signal_logger_mcm.desktop`` with the
 following:
 
 ```
 [Desktop Entry]
-Name=Signal Logger highLevelController
-Comment=Open most recent log from high-level controller
-Exec=bash -c "source /opt/ros/noetic/setup.bash && /opt/ros/noetic/bin/signal_logger_ui high"
+Name=Signal Logger motionControlManager
+Comment=Open most recent log from motion control manager
+Exec=bash -c "source /opt/ros/noetic/setup.bash && /opt/ros/noetic/bin/signal_logger_ui motionControl"
 Icon=org.gnome.PowerStats
 Type=Application
 Categories=Development
 ```
 
-Press the Meta key on your keyboard and type "HLC". Right-click on the Signal
+Press the Meta key on your keyboard and type "MCM". Right-click on the Signal
 Logger icon that appears, then "Add to Favorites". You can then move it in your
 dock so that it is accessible by a fast keyboard shortcut such as Meta + 1.
 

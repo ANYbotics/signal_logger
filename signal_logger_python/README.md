@@ -8,7 +8,7 @@ Run the reader script by:
 rosrun signal_logger_python signal_logger_reader mySiloPrefix
 ```
 
-This will load the latest silo in your ``~/.ros`` folder whose filename starts with ``mySiloPrefix``. For example, if you have high-level controller silos in your ``~/.ros`` folder, replace ``mySiloFilePrefix`` by e.g. ``high`` or ``highLevel``.
+This will load the latest silo in your ``~/.ros`` folder whose filename starts with ``mySiloPrefix``. For example, if you have motion control manager silos in your ``~/.ros`` folder, replace ``mySiloFilePrefix`` by e.g. ``high`` or ``highLevel``.
 
 Once loaded, you can read data using e.g.:
 
