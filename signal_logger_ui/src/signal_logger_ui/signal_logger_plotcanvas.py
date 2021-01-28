@@ -162,8 +162,8 @@ class PlotFigure(object):
             x_min = dataLim[0][0] - x_range*0.05
             x_max = dataLim[1][0] + x_range*0.05
             if xlim is not None:
-                x_min = min(x_min, xlim[0])
-                x_max = max(x_max, xlim[1])
+                x_min = max(x_min, xlim[0])
+                x_max = min(x_max, xlim[1])
             axes.set_xlim([x_min, x_max])
             if ylim is None:
                 axes.set_ylim([
@@ -773,12 +773,7 @@ class PlotCanvasWithToolbar(PlotFigure, QWidget):
         SimpleAxesDialog(self).exec_()
 
     def on_draw(self, event):
-        if self.x_limits is not None:
-            self.x_limits = self.axes.get_xlim()
-        if self.y1_limits is not None:
-            self.y1_limits = self.axes.get_ylim()
-        if self.y2_limits is not None:
-            self.y2_limits = self.axes2.get_ylim()
+        pass
 
     def draw(self):
         PlotFigure.draw(self, self.x_limits, self.y1_limits, self.y2_limits)
@@ -795,17 +790,11 @@ class PlotCanvasWithToolbar(PlotFigure, QWidget):
     def x_locked_changed(self, status):
         self.x_limits = self._y_lock_changed(
             "X", self.x_locked, self.axes.get_xlim)
-        if self.x_limits is None:
-            self.draw()
 
     def y1_locked_changed(self, status):
         self.y1_limits = self._y_lock_changed(
             "Y1", self.y1_locked, self.axes.get_ylim)
-        if self.y1_limits is None:
-            self.draw()
 
     def y2_locked_changed(self, status):
         self.y2_limits = self._y_lock_changed(
             "Y2", self.y2_locked, self.axes2.get_ylim)
-        if self.y2_limits is None:
-            self.draw()
