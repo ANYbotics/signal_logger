@@ -391,6 +391,17 @@ class SignalLoggerTab(QtWidgets.QWidget):
             lambda x: any([is_selected(s, x) for s in selected_items]),
             self.data.keys()))
 
+        max_signals_per_axis = 30
+        if len(selected) > max_signals_per_axis:
+            axis_name = "left" if idx == 0 else "right"
+            msg = "Trying to plot {} > {} signals on the {} axis.\n\nUnselect some signals on the {}-hand side to proceed."
+            msg_box = QtWidgets.QMessageBox()
+            msg_box.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msg_box.setText(msg.format(len(selected), max_signals_per_axis, axis_name, axis_name))
+            msg_box.setWindowTitle("Signal Overflow")
+            msg_box.exec_()
+            selected = prevSelected
+
         def find_item(s):
             iterator = QtWidgets.QTreeWidgetItemIterator(ySelector)
             for itm in [it.value() for it in iterator]:
