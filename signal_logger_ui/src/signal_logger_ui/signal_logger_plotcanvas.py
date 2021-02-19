@@ -776,6 +776,7 @@ class PlotCanvasWithToolbar(PlotFigure, QWidget):
         pass
 
     def draw(self):
+        self.canvas.toolbar.update()  # drop history of Home, Forward and Back buttons in the navigation toolbar
         PlotFigure.draw(self, self.x_limits, self.y1_limits, self.y2_limits)
         self.canvas.draw()
 
