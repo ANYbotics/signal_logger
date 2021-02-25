@@ -62,7 +62,7 @@ class Signal(object):
         index = self.index_from_time(t)
         return self.values[index]
 
-    def average(self, start_time, end_time):
+    def average(self, start_time, end_time, absvals=False):
         """
         Time average of signal between ``start_time`` and ``end_time``.
 
@@ -72,6 +72,8 @@ class Signal(object):
             Start time in [s].
         end_time : scalar
             End time in [s].
+        absvals : boolean
+            If true, average the absolute value rather than the signed value of the signal.
         """
         duration = end_time - start_time
         assert (duration > 0.), "Duration should be positive"
@@ -83,7 +85,8 @@ class Signal(object):
         total_time = 0.
         for index in range(start_index, end_index + 1):
             dt = self.times[index + 1] - self.times[index]
-            signal_sum += self.values[index] * dt
+            incr = self.values[index] * dt
+            signal_sum += abs(incr) if absvals else incr
             total_time += dt
         return signal_sum / total_time
 
