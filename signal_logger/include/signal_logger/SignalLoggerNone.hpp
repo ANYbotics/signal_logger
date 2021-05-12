@@ -34,41 +34,38 @@ class SignalLoggerNone : public SignalLoggerBase
   {
   }
 
-  /** Initializes the logger
-   * @param updateFrequency   Update frequency of the controller (frequency of collectLoggerData being called)
-   * @param logScriptFileName Filename of the log script, this specifies which topics shall be logged
-   */
+  //! @copydoc SignalLoggerBase::initLogger
   virtual void initLogger(const SignalLoggerOptions& options) override { }
 
-  //! Starts the logger (enable collecting)
+  //! @copydoc SignalLoggerBase::startLogger
   virtual bool startLogger(bool updateLogger = false) override { return true; }
 
-  //! Stop the logger (disable collecting)
+  //! @copydoc SignalLoggerBase::stopLogger
   virtual bool stopLogger() override { return true; }
 
-  //! Stop and then restart the logger
+  //! @copydoc SignalLoggerBase::restartLogger
   virtual bool restartLogger(bool updateLogger = false) override { return true; }
 
-  //! Update the logger
+  //! @copydoc SignalLoggerBase::updateLogger
   virtual bool updateLogger(const bool readScript = true, const std::string & scriptname = "") override { return true; }
 
-  //! Save logger script
+  //! @copydoc SignalLoggerBase::saveLoggerScript
   virtual bool saveLoggerScript(const std::string & scriptName = LOGGER_DEFAULT_SCRIPT_FILENAME) override { return true; }
 
-  //! Collect log data, read data and push it into the buffer
+  //! @copydoc SignalLoggerBase::collectLoggerData
   virtual bool collectLoggerData() override { return true; }
 
-  //! Publish a single data point of every element from the buffer
+  //! @copydoc SignalLoggerBase::publishData
   virtual bool publishData() override { return true; }
 
-  //! Save all the buffered data into a log file
+  //! @copydoc SignalLoggerBase::saveLoggerData
   virtual bool saveLoggerData(const signal_logger::LogFileTypeSet & logfileTypes) override { return true; }
 
-  //! Stop the logger and save all the buffered data into a log file
+  //! @copydoc SignalLoggerBase::stopAndSaveLoggerData
   virtual bool stopAndSaveLoggerData(const signal_logger::LogFileTypeSet & logfileTypes) override { return true; }
 
  protected:
-  //! Saves the logger data in a file in a seperate thread
+  //! @copydoc SignalLoggerBase::workerSaveData
   virtual bool workerSaveData(const std::string & logFileName, const signal_logger::LogFileTypeSet & logfileTypes) override { return false; };
 
 };

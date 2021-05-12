@@ -111,6 +111,7 @@ bool SignalLoggerExample::init()
   readThread_ = std::thread(&SignalLoggerExample::readWorker, this);
 
   // Finally let's start the logger
+  signal_logger::logger->setName("example");
   signal_logger::logger->startLogger();
 
   addWorker("SignalLoggerExample::updateWorker", 0.1, &SignalLoggerExample::update, this);
@@ -171,6 +172,7 @@ bool SignalLoggerExample::update(const any_worker::WorkerEvent& event) {
     signal_logger::logger->disableNamespace("ns1");
     signal_logger::logger->enableElement("/log/examples/ns2/logVar5");
     signal_logger::logger->enableElement("/log/examples/ns1/logVar3");
+    signal_logger::logger->setName("example");
     signal_logger::logger->startLogger();
   } else if(counter == 100) {
     signal_logger::logger->enableElement("/log/examples/ns1/logVar1");

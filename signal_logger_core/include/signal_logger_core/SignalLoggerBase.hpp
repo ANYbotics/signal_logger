@@ -59,7 +59,11 @@ class SignalLoggerBase {
   //! True if logger is running
   bool isRunning() const { return isCollectingData_; }
 
-  //! Starts the logger (enable collecting)
+  /** Starts the logger (enable collecting)
+   *
+   * @param updateLogger    If true, new variables will be added to the log.
+   * @return                True if successful.
+   */
   virtual bool startLogger(bool updateLogger = false);
 
   //! Stop the logger (disable collecting)
@@ -108,6 +112,11 @@ class SignalLoggerBase {
 
   //! Cleanup logger
   virtual bool cleanup();
+
+  /** Set the name of the logger.
+   *  @param name   The name of the logger. Will be present in e.g. filenames.
+   */
+  void setName(const std::string& name);
 
   //! Set max logging time
   void setMaxLoggingTime(double maxLoggingTime);
@@ -256,6 +265,9 @@ class SignalLoggerBase {
   bool workerSaveDataWrapper(const LogFileTypeSet & logfileTypes, const std::string& filename, int suffixNumber);
 
   /** Wait until logger can be started and start logger
+   *
+   * @param updateLogger    If true, new variables are added in the log.
+   * @return                True if successful.
    */
   bool workerStartLogger(bool updateLogger = false);
 
@@ -339,7 +351,7 @@ class SignalLoggerBase {
    * @return Name of file where log numbers are written.
    */
   std::string getFileNumberFilename() const {
-    return "." + options_.loggerName_ + "_fileNumber";
+    return "." + loggerName_ + "_fileNumber";
   }
 
   /**
@@ -364,6 +376,8 @@ class SignalLoggerBase {
   std::atomic_uint noCollectDataCalls_;
   //! Copy of nr of calls to collect data for saving
   std::atomic_uint noCollectDataCallsCopy_;
+  //! Logger Name
+  std::string loggerName_;
 
   //-- Log Elements
 
