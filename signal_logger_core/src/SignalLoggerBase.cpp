@@ -734,10 +734,20 @@ signal_logger::TimestampPair SignalLoggerBase::getCurrentTime() {
 
 int SignalLoggerBase::getNextSuffixNumber() const {
   int suffixNumber = 0;
+
+  // Read current suffix number from file
   std::ifstream ifs(getFileNumberFilename(), std::ifstream::in);
   if (ifs.is_open()) { ifs >> suffixNumber; }
   ifs.close();
-  return ++suffixNumber;
+
+  suffixNumber++;
+
+  // Write next suffix number to file
+  std::ofstream ofs(getFileNumberFilename(), std::ofstream::out | std::ofstream::trunc);
+  if(ofs.is_open()) { ofs << suffixNumber; }
+  ofs.close();
+
+  return suffixNumber;
 }
 
 std::string SignalLoggerBase::getLogfileBasename(int suffixNumber) const {
@@ -794,11 +804,6 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
   isSavingData_ = false;
 
   if(success) {
-    // Write next suffix number to file
-    std::ofstream ofs(getFileNumberFilename(), std::ofstream::out | std::ofstream::trunc);
-    if(ofs.is_open()) { ofs << suffixNumber; }
-    ofs.close();
-
     MELO_INFO_STREAM( "[Signal logger] All done, captain! Stored logging data for logger '" << loggerName_ << "' to file " << fileBasename << ".silo");
   } else {
     MELO_WARN_STREAM( "[Signal logger] Did not save logger data.");
