@@ -90,6 +90,21 @@ class Signal(object):
             total_time += dt
         return signal_sum / total_time
 
+    def rms(self, start_time, end_time):
+        """
+        Root Mean Square value between ``start_time`` and ``end_time``.
+
+        Parameters
+        ----------
+        start_time : scalar
+            Start time in [s].
+        end_time : scalar
+            End time in [s].
+        """
+
+        squared_signal = self * self
+        return sqrt(squared_signal.average(start_time, end_time))
+
     def std_dev(self, start_time, end_time):
         """
         Standard deviation of signal between ``start_time`` and ``end_time``.
