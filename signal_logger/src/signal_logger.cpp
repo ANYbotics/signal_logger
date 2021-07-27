@@ -56,11 +56,9 @@ std::shared_ptr<SignalLoggerBase> logger(new SignalLoggerNone());
 
 
 LoggerType getLoggerType() {
-  #ifdef SILO_USE_ROS
   if( dynamic_cast<signal_logger_ros::SignalLoggerRos*>(logger.get()) != nullptr ) {
     return LoggerType::TypeRos;
   }
-  #endif
 
   if( dynamic_cast<signal_logger_std::SignalLoggerStd*>(logger.get()) != nullptr ) {
     return LoggerType::TypeStd;
@@ -81,7 +79,6 @@ void setSignalLoggerStd() {
   logger.reset(new signal_logger_std::SignalLoggerStd());
 }
 
-#ifdef SILO_USE_ROS
 void setSignalLoggerRos(ros::NodeHandle* nh) {
   logger.reset(new signal_logger_ros::SignalLoggerRos(nh));
 }
@@ -97,8 +94,5 @@ void setSignalLogger(const std::string& name, ros::NodeHandle* nh) {
     signal_logger::setSignalLoggerNone();
   }
 }
-
-#endif
-
 
 } /* namespace signal_logger */

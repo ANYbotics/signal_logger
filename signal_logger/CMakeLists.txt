@@ -1,20 +1,13 @@
 cmake_minimum_required(VERSION 3.5.1)
 project(signal_logger)
 
-include(cmake/${PROJECT_NAME}-extras.cmake)
-
 # List of necessary dependencies
 set(SILO_CATKIN_PACKAGES
   signal_logger_core
+  signal_logger_ros
   signal_logger_std
 )
 
-# Append optional dependencies
-if(SILO_USE_ROS)
-  list(APPEND SILO_CATKIN_PACKAGES signal_logger_ros)
-endif(SILO_USE_ROS)
-
-# Find depencendies
 find_package(catkin REQUIRED COMPONENTS
   ${SILO_CATKIN_PACKAGES}
 )
@@ -24,7 +17,6 @@ catkin_package(
  INCLUDE_DIRS include
  LIBRARIES ${PROJECT_NAME}
  CATKIN_DEPENDS ${SILO_CATKIN_PACKAGES}
- CFG_EXTRAS ${PROJECT_NAME}-extras.cmake
 )
 
 ###########

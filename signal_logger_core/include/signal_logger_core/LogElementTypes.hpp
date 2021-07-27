@@ -8,9 +8,7 @@
 #pragma once
 
 // kindr
-#ifdef SILO_USE_KINDR
-  #include <kindr/Core>
-#endif
+#include <kindr/Core>
 
 // Eigen
 #include <Eigen/Core>
@@ -32,7 +30,6 @@ typedef Eigen::Matrix< unsigned char ,Eigen::Dynamic, Eigen::Dynamic >  MatrixXU
 typedef Eigen::Matrix< bool ,Eigen::Dynamic, Eigen::Dynamic >           MatrixXb;
 typedef Eigen::Matrix< std::string ,Eigen::Dynamic, Eigen::Dynamic >    MatrixXstring;
 
-#ifdef SILO_USE_KINDR
   //! Kindr types
   typedef kindr::Position3D             KindrPositionD;
   typedef kindr::RotationQuaternionPD   KindrRotationQuaternionD;
@@ -58,6 +55,5 @@ typedef Eigen::Matrix< std::string ,Eigen::Dynamic, Eigen::Dynamic >    MatrixXs
     KindrPositionD position;
     std::string positionFrame;
   };
-#endif
 
 } // end namespace

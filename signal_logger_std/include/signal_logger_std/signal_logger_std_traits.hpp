@@ -403,7 +403,6 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if< is_eigen_
 };
 /********************************/
 
-#ifdef SILO_USE_KINDR
 /********************************
  * Specializations: kindr types *
  ********************************/
@@ -508,11 +507,6 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_v
         text, binary, fileType, buffer, name + "_at_position_in_" + positionFrame + "_frame", divider, startDiff, endDiff, getKindrPosition);
   }
 };
-
-
-
-
-#endif
 
 } /* namespace traits */
 

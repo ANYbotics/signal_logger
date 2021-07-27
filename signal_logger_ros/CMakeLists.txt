@@ -3,6 +3,7 @@ project(signal_logger_ros)
 
 # List of necessary dependencies
 set(SILOROS_CATKIN_PACKAGES
+  kindr_msgs
   message_logger
   signal_logger_core
   signal_logger_std
@@ -12,12 +13,6 @@ set(SILOROS_CATKIN_PACKAGES
   geometry_msgs
   rosbag
 )
-
-# Append optional dependencies (signal_logger defines SILO_USE_KINDR)
-find_package(catkin REQUIRED COMPONENTS signal_logger_core)
-if(SILO_USE_KINDR)
-  list(APPEND SILOROS_CATKIN_PACKAGES kindr_msgs)
-endif(SILO_USE_KINDR)
 
 # Find depencendies
 find_package(catkin REQUIRED COMPONENTS

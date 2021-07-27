@@ -52,9 +52,8 @@
 #include <signal_logger_msgs/MapIntDoubleStamped.h>
 
 #include "geometry_msgs/Vector3Stamped.h"
-#ifdef SILO_USE_KINDR
 #include "kindr_msgs/VectorAtPosition.h"
-#endif
+
 namespace signal_logger_ros {
 
 namespace traits {
@@ -301,8 +300,6 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_eigen_matrix_of_sca
 /********************************
  * Specializations: kindr types *
  ********************************/
-#ifdef SILO_USE_KINDR
-
 template <typename ValueType_>
 struct slr_msg_traits<ValueType_, typename std::enable_if<is_kindr_vector<ValueType_>::value>::type> {
   using msgtype = typename slr_msg_traits<typename ValueType_::Implementation>::msgtype;
@@ -339,7 +336,6 @@ struct slr_msg_traits<ValueType_, typename std::enable_if<is_kindr_vector_at_pos
   using msgtype = kindr_msgs::VectorAtPosition;
 };
 ////////////////////////////////////////////////////
-#endif
 
 // generic interface
 template <typename ValueType_, typename Enable_ = void>
@@ -526,7 +522,6 @@ struct slr_update_traits<ValueType_,
 };
 /////////////////////////////////////////
 
-#ifdef SILO_USE_KINDR
 /********************************
  * Specializations: kindr types *
  ********************************/
@@ -617,7 +612,6 @@ struct slr_update_traits<ValueType_, typename std::enable_if<is_kindr_vector_at_
   }
 };
 /////////////////////////////////////////
-#endif
 
 } /* namespace traits */
 

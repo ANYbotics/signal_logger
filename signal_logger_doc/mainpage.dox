@@ -49,19 +49,17 @@ The core and std library of the signal logger are non ROS dependent. And only re
 <ul>
   <li><a href="https://github.com/anybotics/message_logger">message_logger</a></li>
   <li><a href="http://eigen.tuxfamily.org">Eigen</a></li>
-  <li><a href="https://github.com/anybotics/kindr">kindr (optional -DSILO_USE_KINDR=OFF)</a></li>
+  <li><a href="https://github.com/anybotics/kindr">kindr</a></li>
 </ul>
 
-The signal_logger package combines all loggers and allows runtime logger type selection. By setting -DSILO_USE_ROS=OFF you can exclude
-the ros logger and therefore also the ROS dependency. Place an empty CATKIN_IGNORE file in the signal_logger_ros package to exclude it
-from the build (e.g. you don't have ROS).
+The signal_logger package combines all loggers and allows runtime logger type selection.
 
 The ros logger requires these additional dependencies:
 <ul>
   <li><a href="http://wiki.ros.org/roscpp">roscpp</a></li>
   <li><a href="http://wiki.ros.org/std_msgs">std_msgs</a></li>
   <li><a href="http://wiki.ros.org/geometry_msgs">geometry_msgs</a></li>
-  <li><a href="https://github.com/anybotics/kindr_ros">kindr_msgs (optional -DSILO_USE_KINDR=OFF)</a></li>
+  <li><a href="https://github.com/anybotics/kindr_ros">kindr_msgs</a></li>
   <li><a href="https://bitbucket.org/leggedrobotics/any_common">bageditor</a></li>
 </ul>
 
@@ -89,9 +87,6 @@ cd ~/catkin_ws/src
 git clone https://github.com/anybotics/signal_logger
 catkin build signal_logger
 \endcode
-
-To exclude ROS use: \code{.sh} catkin build signal_logger --cmake-args -DSILO_USE_ROS=OFF \endcode
-To exclude KINDR use: \code{.sh} catkin build signal_logger --cmake-args -DSILO_USE_KINDR=OFF \endcode
 
 
 For additionally building the rqt_signal_logger:

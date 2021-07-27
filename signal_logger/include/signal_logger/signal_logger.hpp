@@ -14,12 +14,9 @@
 
 #include "signal_logger_core/typedefs.hpp"
 #include "signal_logger_core/SignalLoggerBase.hpp"
+#include "signal_logger_ros/SignalLoggerRos.hpp"
 #include "signal_logger_std/SignalLoggerStd.hpp"
 #include "signal_logger/SignalLoggerNone.hpp"
-
-#ifdef SILO_USE_ROS
-  #include "signal_logger_ros/SignalLoggerRos.hpp"
-#endif
 
 #include <memory>
 #include "assert.h"
@@ -44,11 +41,10 @@ void setSignalLoggerNone();
 
 void setSignalLoggerStd();
 
-#ifdef SILO_USE_ROS
 void setSignalLoggerRos(ros::NodeHandle* nh);
 
 void setSignalLogger(const std::string& name, ros::NodeHandle* nh);
-#endif
+
 
 /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
   * @tparam ValueType_       Data type of the logger element
@@ -71,13 +67,11 @@ void add( const ValueType_ & var,
           const std::size_t bufferSize    = LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
           const BufferType bufferType     = LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
 {
-    #ifdef SILO_USE_ROS
       signal_logger_ros::SignalLoggerRos* slRos = dynamic_cast<signal_logger_ros::SignalLoggerRos*>(logger.get());
       if(slRos) {
         slRos->add<ValueType_>(&var, name, group, unit, divider, action, bufferSize, bufferType);
         return;
       }
-    #endif
 
     signal_logger_std::SignalLoggerStd* slStd = dynamic_cast<signal_logger_std::SignalLoggerStd*>(logger.get());
     if(slStd) {
