@@ -107,7 +107,7 @@ template <typename T>
 struct is_container
 {
   static const bool value = has_const_iterator<T>::value && !std::is_same<std::string, typename std::remove_cv<T>::type>::value &&
-		  has_begin_end<T>::beg_value && has_begin_end<T>::end_value;
+      !std::is_base_of<Eigen::EigenBase<T>, T>::value && has_begin_end<T>::beg_value && has_begin_end<T>::end_value;
 };
 
 //----------------------------------- EIGEN traits -------------------------------------//
