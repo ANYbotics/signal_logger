@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>signal_logger_python</name>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <description>Python plotting interface for Signal Logger</description>
   <maintainer email="scaron@anybotics.com">Stéphane Caron</maintainer>
   <maintainer email="avijayan@anybotics.com">Aravind Vijayan</maintainer>
