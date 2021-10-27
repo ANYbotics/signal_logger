@@ -253,7 +253,7 @@ class SignalLoggerBase {
   virtual bool hasElementLockFree(const std::string & name);
 
   //! Lock free version of updateLogger
-  virtual bool updateLoggerLockFree(const bool readScript = true, const std::string & scriptname = "");
+  virtual bool updateLoggerLockFree(const bool readScript = false, const std::string & scriptname = "");
 
  private:
   /** Save data and next suffix number in a separate thread.
