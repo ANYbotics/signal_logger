@@ -165,7 +165,6 @@ class LogReader(object):
         Trim longest common prefix to all signal names.
         """
         common_prefix = commonprefix(list(self._data.keys()))
-        print("Removing prefix {} which is common to all signals".format(common_prefix))
         prefix_len = len(common_prefix)
         self._data = {key[prefix_len:]: value for key, value in self._data.items()}
 
