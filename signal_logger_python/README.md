@@ -13,7 +13,7 @@ This will load the latest silo in your ``~/.ros`` folder whose filename starts w
 Once loaded, you can read data using e.g.:
 
 ```python
-vel = silo.get_signal('/trekker/loco/leftFore/linearVelocityDesiredEEOriginInWorldFrame/x')
+vel = silo.get_signal('/trekker/loco/leftFore/desired/linearVelocityEEInWorldFrame/x')
 vel.value(9.1)  # value of the signal at t=9.1 [s]
 vel.average(8.95, 9.4)  # time average between 8.95 [s] and 9.4 [s]
 ```
