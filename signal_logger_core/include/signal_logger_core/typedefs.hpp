@@ -53,7 +53,7 @@ static constexpr const char* LOG_ELEMENT_DEFAULT_UNIT         = "-";
 //! Default log element divider
 static constexpr std::size_t LOG_ELEMENT_DEFAULT_DIVIDER      = 1;
 //! Default log element action
-static constexpr LogElementAction LOG_ELEMENT_DEFAULT_ACTION  = LogElementAction::SAVE_AND_PUBLISH;
+static constexpr LogElementAction LOG_ELEMENT_DEFAULT_ACTION  = LogElementAction::SAVE;
 //! Default log element buffer size
 static constexpr std::size_t LOG_ELEMENT_DEFAULT_BUFFER_SIZE  = 10000;
 //! Default log element buffer type
