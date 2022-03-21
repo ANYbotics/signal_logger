@@ -368,8 +368,17 @@ bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes, std::
     // Save data in different thread
     int suffixNumber = getNextSuffixNumber();
     std::string fileBasename = (customFilename.length() > 0) ? customFilename : getLogfileBasename(suffixNumber);
-    std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this, logfileTypes, fileBasename, suffixNumber);
+    std::atomic<bool> threadStarted;
+    threadStarted = false;
+    std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this, logfileTypes, fileBasename, suffixNumber, std::ref(threadStarted));
     t1.detach();
+
+    //! TODO(VY): Fix this properly.
+    //! It can happen that OS does not schedule `workerSaveDataWrapper` for long enough that other threads modify the `logElements_`.
+    //! If this happens saving might be unstable and cause seg-faults. Not a full fix. Full fixes is in issue #8404.
+    while(!threadStarted) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
   }
   else {
     MELO_WARN("[Signal logger] Already saving data to file for logger '%s'!", loggerName_.c_str());
@@ -762,9 +771,10 @@ std::string SignalLoggerBase::getLogfileBasename(int suffixNumber) const {
   return loggerName_ + "_" + std::string{dateTime} + suffixString;
 }
 
-bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes, const std::string& fileBasename, int suffixNumber) {
+bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes, const std::string& fileBasename, int suffixNumber, std::atomic<bool>& threadStarted) {
   {
     // Lock the logger (blocking!)
+    threadStarted = true;
     boost::unique_lock<boost::shared_mutex> workerSaveDataWrapperLock(loggerMutex_);
 
     // Copy general stuff
