@@ -2,7 +2,7 @@
 <package format="2">
 
   <name>signal_logger_msgs</name>
-  <version>0.5.4</version>
+  <version>0.5.5</version>
   <description>ROS message definitions for the signal logger.</description>
 
   <maintainer email="ghottiger@anybotics.com">Gabriel Hottiger</maintainer>
