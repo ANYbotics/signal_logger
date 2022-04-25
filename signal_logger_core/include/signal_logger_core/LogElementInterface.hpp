@@ -50,8 +50,8 @@ class LogElementInterface
    */
   virtual void saveDataToLogFile(const TimeElement & times, unsigned int noCollectDataCalls, LogFileType type) = 0;
 
-  //! Stores a copy of the element, file is saved from this
-  virtual void copy() = 0;
+  //! Moves to a copy of the element, file is saved from this
+  virtual void moveIntoSavingBuffer() = 0;
 
   //! Reset logger element called before logger start
   virtual void reset() = 0;

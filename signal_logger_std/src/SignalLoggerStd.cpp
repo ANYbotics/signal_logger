@@ -43,11 +43,10 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, const sign
       binaryStream_.str(std::string());
 
       {
-        boost::unique_lock<boost::shared_mutex> saveLoggerLock(loggerMutex_);
         // Fill streams
         timeElement_->saveDataToLogFile(*timeElement_, noCollectDataCallsCopy_, fileType);
 
-        for(auto & elem : enabledElements_) {
+        for(auto & elem : enabledElementsCopy_) {
 
           if(elem->second->getCopyOptions().isSaved())
           {

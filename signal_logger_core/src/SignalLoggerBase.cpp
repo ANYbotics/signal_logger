@@ -25,7 +25,7 @@
 // system
 #include <sys/stat.h>
 
-// signal_logger_core 
+// signal_logger_core
 #include "signal_logger_core/typedefs.hpp"
 
 namespace signal_logger {
@@ -37,6 +37,7 @@ SignalLoggerBase::SignalLoggerBase():
                   loggerName_(LOGGER_DEFAULT_NAME),
                   logElements_(),
                   enabledElements_(),
+                  enabledElementsCopy_(),
                   logElementsToAdd_(),
                   logTime_(),
                   timeElement_(),
@@ -368,7 +369,7 @@ bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes, std::
     // Save data in different thread
     int suffixNumber = getNextSuffixNumber();
     std::string fileBasename = (customFilename.length() > 0) ? customFilename : getLogfileBasename(suffixNumber);
-    std::atomic<bool> threadStarted;
+    std::atomic<bool> threadStarted{false};
     threadStarted = false;
     std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this, logfileTypes, fileBasename, suffixNumber, std::ref(threadStarted));
     t1.detach();
@@ -376,8 +377,8 @@ bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes, std::
     //! TODO(VY): Fix this properly.
     //! It can happen that OS does not schedule `workerSaveDataWrapper` for long enough that other threads modify the `logElements_`.
     //! If this happens saving might be unstable and cause seg-faults. Not a full fix. Full fixes is in issue #8404.
-    while(!threadStarted) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    while (!threadStarted) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }
   else {
@@ -776,32 +777,24 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
     // Lock the logger (blocking!)
     threadStarted = true;
     boost::unique_lock<boost::shared_mutex> workerSaveDataWrapperLock(loggerMutex_);
+    enabledElementsCopy_ = enabledElements_;
 
     // Copy general stuff
     noCollectDataCallsCopy_ = noCollectDataCalls_.load();
 
-    // Copy data from buffer
-    for(auto & elem : enabledElements_)
+    // Move data from buffer and reset the container
+    for(auto & elem : logElements_)
     {
-      if(elem->second->getOptions().isSaved())
-      {
-        elem->second->copy();
-      }
-    }
-
-    // Copy time
-    timeElement_->copy();
-
-    // Reset buffers and counters
-    noCollectDataCalls_ = 0;
-
-    // Clear buffer for log elements
-    for(auto & elem : logElements_) {
+      elem.second->moveIntoSavingBuffer();
       elem.second->reset();
     }
 
-    // Clear buffer for time elements
+    // Move time and reset the container
+    timeElement_->moveIntoSavingBuffer();
     timeElement_->reset();
+
+    // Reset buffers and counters
+    noCollectDataCalls_ = 0;
 
     // Set flag -> collection can restart
     isCopyingBuffer_ = false;

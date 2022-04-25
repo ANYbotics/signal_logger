@@ -385,6 +385,8 @@ class SignalLoggerBase {
   LogElementMap logElements_;
   //! Vector of iterators in logElements_ map
   std::vector<LogElementMapIterator> enabledElements_;
+  //! Copy of @ref enabledElements_ used while saving the signal logger data
+  std::vector<LogElementMapIterator> enabledElementsCopy_;
   //! Map of all log elements added since last call to updateLogger()
   LogElementMap logElementsToAdd_;
 

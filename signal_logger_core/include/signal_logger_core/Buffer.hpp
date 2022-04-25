@@ -76,12 +76,17 @@ class Buffer: public BufferInterface
   }
 
   /** transfer to new buffer
-   *  @param other  Lvalue to other buffer
-   *  @brief basically a copy constructor however, the container entries are moved
+   *  @param other  Rvalue to other buffer
+   *  @brief basically a move constructor however, the buffer parameters (type, size, items...) are copied.
    */
-  void transfer(Buffer & other)
+  void transfer(Buffer && other)
   {
-    container_ = other.container_;
+    std::lock_guard<std::mutex> lock(mutex_);
+    // std::swap performs a move operation on the circular buffer.
+    std::swap(container_, other.container_);
+    // This will leave the other.container with capacity of 0.
+    // Here, we set the capacity of the original container back to the buffer size.
+    other.container_.set_capacity(other.bufferSize_);
     bufferType_ = other.bufferType_;
     bufferSize_ = other.bufferSize_;
     noUnreadItems_ = other.noUnreadItems_;

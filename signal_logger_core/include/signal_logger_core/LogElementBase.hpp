@@ -81,12 +81,12 @@ class LogElementBase: public LogElementInterface
                                  unsigned int nrCollectDataCalls,
                                  LogFileType type) override { }
 
-  //! Stores a copy of the current buffer, file is saved from this
-  virtual void copy() {
+  //! Moves to a copy of the current buffer, file is saved from this
+  virtual void moveIntoSavingBuffer() {
     // Lock all mutexes and copy the buffer
     std::unique_lock<std::mutex> lock(mutex_);
     std::unique_lock<std::mutex> lockCopy(mutexCopy_);
-    bufferCopy_.transfer(buffer_);
+    bufferCopy_.transfer(std::move(buffer_));
     optionsCopy_.transfer(options_);
   }
 
