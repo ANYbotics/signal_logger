@@ -3,7 +3,7 @@
   <name>signal_logger_python</name>
   <version>0.1.7</version>
   <description>Python plotting interface for Signal Logger</description>
-  <maintainer email="scaron@anybotics.com">Stéphane Caron</maintainer>
+  <maintainer email="desteban@anybotics.com">Domingo Esteban</maintainer>
   <maintainer email="avijayan@anybotics.com">Aravind Vijayan</maintainer>
   <author email="scaron@anybotics.com">Stéphane Caron</author>
   <license>BSD</license>
