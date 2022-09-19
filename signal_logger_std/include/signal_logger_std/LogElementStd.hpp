@@ -61,7 +61,8 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
   {
     // Lock the copy mutex
     std::unique_lock<std::mutex> lock(this->mutexCopy_);
-    if(this->bufferCopy_.noTotalItems() > 0 ) {
+    const auto numTotalItems = this->bufferCopy_.noTotalItems();
+    if(numTotalItems > 0 ) {
       unsigned int startDiff = 0;
       unsigned int endDiff = (nrCollectDataCalls - 1) % this->optionsCopy_.getDivider();
 
@@ -71,7 +72,7 @@ class LogElementStd: public signal_logger::LogElementBase<ValueType_>
            * Index of newest time corresponding to a data point:  (nrCollectDataCalls - 1) % this->dividerCopy_
            * Offset of oldest time that corresponds to a data point: (this->bufferCopy_.size()-1) * this->dividerCopy_
            */
-          startDiff = (times.getTimeBufferCopy().noTotalItems() - 1) - endDiff - (this->bufferCopy_.noTotalItems()-1) * this->optionsCopy_.getDivider();
+          startDiff = (times.getTimeBufferCopy().noTotalItems() - 1) - endDiff - (numTotalItems-1) * this->optionsCopy_.getDivider();
         }
       }
 

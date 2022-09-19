@@ -96,7 +96,8 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
                              typename std::enable_if<std::is_same<std::string, typename std::remove_cv<V_>::type>::value>::type* = 0) {
     // Get max size of string
     unsigned int maxStringSize = 0;
-    for (unsigned int i = 0; i<buffer.noTotalItems(); ++i)
+    const auto numTotalItems = buffer.noTotalItems();
+    for (unsigned int i = 0; i<numTotalItems; ++i)
     {
       const auto size = accessor(buffer.getPointerAtPosition(i))->size();
       if(maxStringSize < size) {
@@ -114,9 +115,10 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
       const signal_logger::Buffer<ContainerType_> & buffer,
       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor)
   {
-    for (unsigned int i = 0; i<buffer.noTotalItems(); ++i)
+    const auto numTotalItems = buffer.noTotalItems();
+    for (unsigned int i = 0; i<numTotalItems; ++i)
     {
-      binary->write(reinterpret_cast<const char*>(accessor(buffer.getPointerAtPosition((buffer.noTotalItems() - 1) - i))), sizeof(ValueType_));
+      binary->write(reinterpret_cast<const char*>(accessor(buffer.getPointerAtPosition((numTotalItems - 1) - i))), sizeof(ValueType_));
     }
   }
 
@@ -128,9 +130,10 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
       const signal_logger::Buffer<ContainerType_> & buffer,
       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor)
   {
-    for (unsigned int i = 0; i<buffer.noTotalItems(); ++i)
+    const auto numTotalItems = buffer.noTotalItems();
+    for (unsigned int i = 0; i<numTotalItems; ++i)
     {
-      const auto elem = accessor(buffer.getPointerAtPosition((buffer.noTotalItems() - 1) - i));
+      const auto elem = accessor(buffer.getPointerAtPosition((numTotalItems - 1) - i));
       if(elem->size() == noBytes) {
         // Same sized strings can be stored directly
         *binary << *elem;
@@ -165,8 +168,9 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
       (*text) << name << "," << std::string(startDiff, ',');
 
       // Store complete data with (divider-1) empty cells inbetween
-      for (unsigned int i = 0; i < (buffer.noTotalItems() - 1); ++i) {
-        (*text) << *accessor(buffer.getPointerAtPosition((buffer.noTotalItems() - 1) - i)) << ",";
+      const auto numTotalItems = buffer.noTotalItems();
+      for (unsigned int i = 0; i < (numTotalItems - 1); ++i) {
+        (*text) << *accessor(buffer.getPointerAtPosition((numTotalItems - 1) - i)) << ",";
         (*text) << std::string( (divider - 1), ',');
       }
 

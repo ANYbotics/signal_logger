@@ -95,13 +95,14 @@ class LogElementRos: public signal_logger_std::LogElementStd<ValueType_>
                    - (this->bufferCopy_.noTotalItems()-1) * this->optionsCopy_.getDivider();
       }
 
-      for(std::size_t i = 0; i < this->bufferCopy_.noTotalItems(); ++i) {
+      const auto numTotalItems = this->bufferCopy_.noTotalItems();
+      for(std::size_t i = 0; i < numTotalItems; ++i) {
         // Get time at data point
         signal_logger::TimestampPair tsp_now =
           times.getTimeBufferCopy().getElementCopyAtPosition((times.getTimeBufferCopy().noTotalItems() - 1) - (startIdx + i*this->optionsCopy_.getDivider()) );
         ros::Time now = ros::Time(tsp_now.first, tsp_now.second);
         // Update msg
-        traits::slr_update_traits<ValueType_>::updateMsg(this->bufferCopy_.getPointerAtPosition( (this->bufferCopy_.noTotalItems() - 1) - i), msgSave_.get(), now);
+        traits::slr_update_traits<ValueType_>::updateMsg(this->bufferCopy_.getPointerAtPosition( (numTotalItems - 1) - i), msgSave_.get(), now);
         // Write to bag
         try{
           bagWriter_->write(this->optionsCopy_.getName(), now, *msgSave_);
