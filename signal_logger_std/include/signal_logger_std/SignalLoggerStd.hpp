@@ -23,7 +23,7 @@ class SignalLoggerStd : public signal_logger::SignalLoggerBase
 {
  public:
   SignalLoggerStd();
-  virtual ~SignalLoggerStd();
+  ~SignalLoggerStd() override = default;
 
   /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
    * @tparam ValueType_       Data type of the logger element
@@ -55,6 +55,9 @@ class SignalLoggerStd : public signal_logger::SignalLoggerBase
                                                                                             unit, divider, action, &textStream_, &binaryStream_));
     }
   }
+
+  //! Cleanup logger
+  bool cleanup() override;
 
   //! Save all the buffered data into a log file
   virtual bool workerSaveData(const std::string & logFileName, const signal_logger::LogFileTypeSet & logfileTypes) override;

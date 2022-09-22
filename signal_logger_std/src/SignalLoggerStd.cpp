@@ -18,10 +18,13 @@ SignalLoggerStd::SignalLoggerStd():
 
 }
 
-SignalLoggerStd::~SignalLoggerStd()
-{
-
+bool SignalLoggerStd::cleanup() {
+  SignalLoggerBase::cleanup();
+  std::stringstream().swap(textStream_);
+  std::stringstream().swap(binaryStream_);
+  return true;
 }
+
 
 //! Save all the buffered data into a log file
 bool SignalLoggerStd::workerSaveData(const std::string & logFileName, const signal_logger::LogFileTypeSet & logfileTypes) {
