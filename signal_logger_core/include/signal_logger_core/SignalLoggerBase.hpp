@@ -330,11 +330,14 @@ class SignalLoggerBase {
                                       std::function<bool(const std::string &)> setElementProperty)
   {
     std::vector<std::string> elementList;
+    // Reserve here to avoid allocating memory on the fly
+    elementList.reserve(logElements_.size());
+    const std::string resolvedNamespace = options_.loggerPrefix_ + "/" + ns;
     {
       boost::shared_lock<boost::shared_mutex> lockLogger(loggerMutex_);
       for(auto & element : logElements_ ) {
-        if( boost::starts_with(element.first, options_.loggerPrefix_ + "/" + ns) ) {
-          elementList.push_back(element.first);
+        if( boost::starts_with(element.first, resolvedNamespace) ) {
+          elementList.emplace_back(element.first);
         }
       }
     }

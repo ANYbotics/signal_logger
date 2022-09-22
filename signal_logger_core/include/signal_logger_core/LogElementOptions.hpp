@@ -52,9 +52,9 @@ class LogElementOptions
     action_.store(other.getAction());
   }
 
-  std::string getName() const { return name_; }
+  const std::string& getName() const { return name_; }
 
-  std::string getUnit() const { return unit_; }
+  const std::string& getUnit() const { return unit_; }
 
   std::size_t getDivider() const { return divider_.load(); }
   void setDivider(const std::size_t divider) { divider_.store(divider); }
