@@ -120,7 +120,6 @@ class LogElementBase: public LogElementInterface
   //! @param enabled log element
   void setIsEnabled(const bool isEnabled) {
     isEnabled_.store(isEnabled);
-    buffer_.allocate(isEnabled_);
     update();
   }
 

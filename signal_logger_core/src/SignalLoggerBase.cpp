@@ -483,7 +483,7 @@ bool SignalLoggerBase::enableElement(const std::string & name)
 bool SignalLoggerBase::disableElement(const std::string & name)
 {
   auto isEnabled = [](const std::unique_ptr<LogElementInterface> & e) { return e->isEnabled(); };
-  auto setIsEnabled = [this, name](const std::unique_ptr<LogElementInterface> & e, const bool p) {
+  auto setIsEnabled = [this, &name](const std::unique_ptr<LogElementInterface> & e, const bool p) {
     e->setIsEnabled(p);
     auto it =  std::find(enabledElements_.begin(), enabledElements_.end(), logElements_.find(name));
     if( it != enabledElements_.end() ) { enabledElements_.erase(it); }
