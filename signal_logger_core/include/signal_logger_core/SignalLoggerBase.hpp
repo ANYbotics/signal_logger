@@ -262,7 +262,8 @@ class SignalLoggerBase {
    * @param suffixNumber log file suffix number (this function will save it to a file as well)
    * @return success boolean.
    */
-  bool workerSaveDataWrapper(const LogFileTypeSet & logfileTypes, const std::string& filename, int suffixNumber, std::atomic<bool>& threadStarted);
+  bool workerSaveDataWrapper(const LogFileTypeSet & logfileTypes, const std::string& filename,
+                             const std::string& loggerName, int suffixNumber);
 
   /** Wait until logger can be started and start logger
    *

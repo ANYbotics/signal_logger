@@ -366,20 +366,15 @@ bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes, std::
     isCopyingBuffer_ = true;
     isSavingData_ = true;
 
+    // Copy some variables to avoid changes to them while `workerSaveDataWrapper` thread is being scheduled and `loggerMutex_` is unlocked.
+    enabledElementsCopy_ = enabledElements_;
+    noCollectDataCallsCopy_ = noCollectDataCalls_.load();
+
     // Save data in different thread
     int suffixNumber = getNextSuffixNumber();
     std::string fileBasename = (customFilename.length() > 0) ? customFilename : getLogfileBasename(suffixNumber);
-    std::atomic<bool> threadStarted{false};
-    threadStarted = false;
-    std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this, logfileTypes, fileBasename, suffixNumber, std::ref(threadStarted));
+    std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this, logfileTypes, fileBasename, loggerName_, suffixNumber);
     t1.detach();
-
-    //! TODO(VY): Fix this properly.
-    //! It can happen that OS does not schedule `workerSaveDataWrapper` for long enough that other threads modify the `logElements_`.
-    //! If this happens saving might be unstable and cause seg-faults. Not a full fix. Full fixes is in issue #8404.
-    while (!threadStarted) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
   }
   else {
     MELO_WARN("[Signal logger] Already saving data to file for logger '%s'!", loggerName_.c_str());
@@ -772,15 +767,11 @@ std::string SignalLoggerBase::getLogfileBasename(int suffixNumber) const {
   return loggerName_ + "_" + std::string{dateTime} + suffixString;
 }
 
-bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes, const std::string& fileBasename, int suffixNumber, std::atomic<bool>& threadStarted) {
+bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes, const std::string& fileBasename,
+                                             const std::string& loggerName, int suffixNumber) {
   {
     // Lock the logger (blocking!)
-    threadStarted = true;
     boost::unique_lock<boost::shared_mutex> workerSaveDataWrapperLock(loggerMutex_);
-    enabledElementsCopy_ = enabledElements_;
-
-    // Copy general stuff
-    noCollectDataCallsCopy_ = noCollectDataCalls_.load();
 
     // Move data from buffer and reset the container
     for(auto & elem : logElements_)
@@ -807,7 +798,7 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
   isSavingData_ = false;
 
   if(success) {
-    MELO_INFO_STREAM( "[Signal logger] All done, captain! Stored logging data for logger '" << loggerName_ << "' to file " << fileBasename << ".silo");
+    MELO_INFO_STREAM( "[Signal logger] All done, captain! Stored logging data for logger '" << loggerName << "' to file " << fileBasename << ".silo");
   } else {
     MELO_WARN_STREAM( "[Signal logger] Did not save logger data.");
   }
