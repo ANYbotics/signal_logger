@@ -229,12 +229,16 @@ class Buffer: public BufferInterface
   }
 
   //! @return number of unread elements
+  // TODO(rverschueren): This function is semantically ill-defined: after you release the lock and use the number, it might have changed
+  // already and lead to a data race.
   virtual std::size_t noUnreadItems() const {
     std::unique_lock<std::mutex> lock(mutex_);
     return noUnreadItems_;
   }
 
   //! @return number of items stored in the buffer (read and unread)
+  // TODO(rverschueren): This function is semantically ill-defined: after you release the lock and use the number, it might have changed
+  // already and lead to a data race.
   virtual std::size_t noTotalItems() const {
     std::unique_lock<std::mutex> lock(mutex_);
     return noItems_;
@@ -243,7 +247,11 @@ class Buffer: public BufferInterface
   //! Clear the buffer
   void clear() {
     std::unique_lock<std::mutex> lock(mutex_);
-    container_.clear();
+    // Instead of destroying the elements, we write until we loop around and start overwriting the elements.
+    // NOTE: This only works for circular buffers!!!
+    for (unsigned i = 0; i < noItems_ - noUnreadItems_ + 1; ++i) {
+      container_.push_front();
+    }
     noUnreadItems_ = size_type(0);
     noItems_ = size_type(0);
     noNewItems_ = size_type(0);
