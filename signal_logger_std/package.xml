@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>signal_logger_std</name>
-  <version>0.5.10</version>
+  <version>0.5.11</version>
   <description>The signal_logger_std package</description>
 
   <maintainer email="ghottiger@anybotics.com">Gabriel Hottiger</maintainer>

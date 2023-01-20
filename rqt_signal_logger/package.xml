@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>rqt_signal_logger</name>
-  <version>0.5.10</version>
+  <version>0.5.11</version>
   <description>The rqt_signal_logger package</description>
 
   <maintainer email="ghottiger@anybotics.com">Gabriel Hottiger</maintainer>
