@@ -774,7 +774,7 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
     boost::unique_lock<boost::shared_mutex> workerSaveDataWrapperLock(loggerMutex_);
 
     // Move data from buffer and reset the container
-    for(auto & elem : enabledElements_)
+    for(auto & elem : enabledElementsCopy_)
     {
       elem->second->moveIntoSavingBuffer();
       elem->second->reset();
