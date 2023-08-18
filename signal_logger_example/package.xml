@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>signal_logger_example</name>
-  <version>0.5.14</version>
+  <version>0.5.15</version>
   <description>The signal_logger_example package</description>
   <author email="ghottiger@anybotics.com">Gabriel Hottiger</author>
   <maintainer email="ghottiger@anybotics.com">Gabriel Hottiger</maintainer>
