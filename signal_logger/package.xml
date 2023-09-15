@@ -14,7 +14,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>acl_time</depend>
   <depend>signal_logger_core</depend>
   <depend>signal_logger_ros</depend>
   <depend>signal_logger_std</depend>

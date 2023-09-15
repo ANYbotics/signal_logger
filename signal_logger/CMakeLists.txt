@@ -1,13 +1,8 @@
 cmake_minimum_required(VERSION 3.5.1)
 project(signal_logger)
 
-set(CMAKE_CXX_STANDARD 17)
-add_compile_options(-Wall -Wextra -Wpedantic)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 # List of necessary dependencies
 set(SILO_CATKIN_PACKAGES
-  acl_time
   signal_logger_core
   signal_logger_ros
   signal_logger_std
@@ -24,17 +19,16 @@ catkin_package(
  CATKIN_DEPENDS ${SILO_CATKIN_PACKAGES}
 )
 
-add_library(${PROJECT_NAME}
-  src/EventLogger.cpp
+###########
+## Build ##
+###########
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+add_definitions(-std=c++11 -Wall)
+include_directories(include)
+include_directories(${catkin_INCLUDE_DIRS})
+
+add_library(${PROJECT_NAME} SHARED
   src/signal_logger.cpp
-)
-
-target_include_directories(${PROJECT_NAME} PRIVATE
-  include
-)
-
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-  ${catkin_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
