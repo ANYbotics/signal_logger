@@ -43,6 +43,18 @@ class SignalLoggerBase {
   using LogElementMapIterator = LogElementMap::iterator;
 
  public:
+  //! Default log element divider
+  static constexpr std::size_t LOG_ELEMENT_DEFAULT_DIVIDER = 1;
+  //! Default log element action
+  static constexpr LogElementAction LOG_ELEMENT_DEFAULT_ACTION = LogElementAction::SAVE;
+  //! Default log element buffer size
+  static constexpr std::size_t LOG_ELEMENT_DEFAULT_BUFFER_SIZE = 10000;
+  //! Default log element buffer type
+  static constexpr BufferType LOG_ELEMENT_DEFAULT_BUFFER_TYPE = BufferType::LOOPING;
+  //! Default log element group
+  static std::string LOG_ELEMENT_DEFAULT_GROUP_NAME;
+  //! Default log element unit
+  static std::string LOG_ELEMENT_DEFAULT_UNIT;
   /** Constructor
    * @param loggerPrefix prefix to the logger variables
    */
@@ -82,7 +94,7 @@ class SignalLoggerBase {
   virtual bool updateLogger(const bool readScript = true, const std::string & scriptname = "");
 
   /** Save logger script **/
-  virtual bool saveLoggerScript(const std::string & scriptName = std::string(LOGGER_DEFAULT_SCRIPT_FILENAME) );
+  virtual bool saveLoggerScript(const std::string & scriptName = std::string(SignalLoggerOptions::LOGGER_DEFAULT_SCRIPT_FILENAME) );
 
   //! Collect log data, read data and push it into the buffer
   virtual bool collectLoggerData();

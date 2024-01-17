@@ -31,6 +31,7 @@ include_directories( ${catkin_INCLUDE_DIRS} )
 
 add_library(${PROJECT_NAME} SHARED
   src/SignalLoggerBase.cpp
+  src/SignalLoggerOptions.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

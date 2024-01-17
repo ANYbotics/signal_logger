@@ -30,11 +30,14 @@
 
 namespace signal_logger {
 
+std::string SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME = "/log/";
+std::string SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT = "-";
+
 SignalLoggerBase::SignalLoggerBase():
                   options_(),
                   noCollectDataCalls_(0u),
                   noCollectDataCallsCopy_(0u),
-                  loggerName_(LOGGER_DEFAULT_NAME),
+                  loggerName_(SignalLoggerOptions::LOGGER_DEFAULT_NAME),
                   logElements_(),
                   enabledElements_(),
                   enabledElementsCopy_(),
@@ -110,7 +113,7 @@ bool SignalLoggerBase::startLogger(bool updateLogger)
   }
 
   // Decide on the time buffer to use ( Init with exponentially growing when max log time is zero, fixed size buffer otherwise)
-  const double maxLogTime = (options_.maxLoggingTime_ == 0.0) ? LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME : options_.maxLoggingTime_;
+  const double maxLogTime = (options_.maxLoggingTime_ == 0.0) ? SignalLoggerOptions::LOGGER_EXP_GROWING_MAXIMUM_LOG_TIME : options_.maxLoggingTime_;
   size_t timeBufferSize =  static_cast<size_t >(maxLogTime * options_.updateFrequency_);
   BufferType timeBufferType =  (options_.maxLoggingTime_ == 0.0) ? BufferType::EXPONENTIALLY_GROWING : BufferType::FIXED_SIZE;
 

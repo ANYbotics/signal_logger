@@ -60,12 +60,12 @@ void setSignalLogger(const std::string& name, ros::NodeHandle* nh);
 template<typename ValueType_>
 void add( const ValueType_ & var,
           const std::string & name,
-          const std::string & group       = LOG_ELEMENT_DEFAULT_GROUP_NAME,
-          const std::string & unit        = LOG_ELEMENT_DEFAULT_UNIT,
-          const std::size_t divider       = LOG_ELEMENT_DEFAULT_DIVIDER,
-          const LogElementAction action   = LOG_ELEMENT_DEFAULT_ACTION,
-          const std::size_t bufferSize    = LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
-          const BufferType bufferType     = LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
+          const std::string & group       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME,
+          const std::string & unit        = SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
+          const std::size_t divider       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
+          const LogElementAction action   = SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
+          const std::size_t bufferSize    = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
+          const BufferType bufferType     = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
 {
       signal_logger_ros::SignalLoggerRos* slRos = dynamic_cast<signal_logger_ros::SignalLoggerRos*>(logger.get());
       if(slRos) {
@@ -100,12 +100,12 @@ template<typename ValueType_>
 typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value>::type
 add(const ValueType_ & var,
     Eigen::Ref<MatrixXstring> names,
-    const std::string & group       = LOG_ELEMENT_DEFAULT_GROUP_NAME,
-    const std::string & unit        = LOG_ELEMENT_DEFAULT_UNIT,
-    const std::size_t divider       = LOG_ELEMENT_DEFAULT_DIVIDER,
-    const LogElementAction action   = LOG_ELEMENT_DEFAULT_ACTION,
-    const std::size_t bufferSize    = LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
-    const BufferType bufferType     = LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
+    const std::string & group       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME,
+    const std::string & unit        = SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
+    const std::size_t divider       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
+    const LogElementAction action   = SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
+    const std::size_t bufferSize    = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
+    const BufferType bufferType     = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
 {
   assert(names.rows() == var.rows() && "rows() have different size in add");
   assert(names.cols() == var.cols() && "cols() have different size in add");

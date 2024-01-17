@@ -25,12 +25,12 @@ class SignalLoggerNone : public SignalLoggerBase
   template<typename ValueType_>
   void add( const ValueType_ * const var,
             const std::string & name,
-            const std::string & group       = LOG_ELEMENT_DEFAULT_GROUP_NAME,
-            const std::string & unit        = LOG_ELEMENT_DEFAULT_UNIT,
-            const std::size_t divider       = LOG_ELEMENT_DEFAULT_DIVIDER,
-            const LogElementAction action   = LOG_ELEMENT_DEFAULT_ACTION,
-            const std::size_t bufferSize    = LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
-            const BufferType bufferType     = LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
+            const std::string & group       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME,
+            const std::string & unit        = SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
+            const std::size_t divider       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
+            const LogElementAction action   = SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
+            const std::size_t bufferSize    = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
+            const BufferType bufferType     = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
   {
   }
 
@@ -50,7 +50,7 @@ class SignalLoggerNone : public SignalLoggerBase
   virtual bool updateLogger(const bool readScript = true, const std::string & scriptname = "") override { return true; }
 
   //! @copydoc SignalLoggerBase::saveLoggerScript
-  virtual bool saveLoggerScript(const std::string & scriptName = LOGGER_DEFAULT_SCRIPT_FILENAME) override { return true; }
+  virtual bool saveLoggerScript(const std::string & scriptName = SignalLoggerOptions::LOGGER_DEFAULT_SCRIPT_FILENAME) override { return true; }
 
   //! @copydoc SignalLoggerBase::collectLoggerData
   virtual bool collectLoggerData() override { return true; }
