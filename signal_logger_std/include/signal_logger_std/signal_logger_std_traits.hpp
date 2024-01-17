@@ -133,7 +133,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
     const auto numTotalItems = buffer.noTotalItems();
     for (unsigned int i = 0; i<numTotalItems; ++i)
     {
-      const auto elem = accessor(buffer.getPointerAtPosition((numTotalItems - 1) - i));
+      const auto& elem = accessor(buffer.getPointerAtPosition((numTotalItems - 1) - i));
       if(elem->size() == noBytes) {
         // Same sized strings can be stored directly
         *binary << *elem;

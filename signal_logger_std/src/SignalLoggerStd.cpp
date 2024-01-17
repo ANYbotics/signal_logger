@@ -41,9 +41,9 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, const sign
 
     if(fileType == signal_logger::LogFileType::BINARY || fileType == signal_logger::LogFileType::CSV) {
       // Clear streams
-      textStream_.str(std::string());
+      std::stringstream().swap(textStream_);
       textStream_.precision(5);
-      binaryStream_.str(std::string());
+      std::stringstream().swap(binaryStream_);
 
       {
         // Fill streams
@@ -108,6 +108,8 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, const sign
         success = false;
         continue;
       }
+      std::stringstream().swap(textStream_);
+      std::stringstream().swap(binaryStream_);
     }
   }
 
