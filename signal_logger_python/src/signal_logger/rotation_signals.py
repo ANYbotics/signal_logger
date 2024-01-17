@@ -123,7 +123,7 @@ class QuaternionSignal(Signal):
 class EulerAnglesZyxSignal(QuaternionSignal):
 
     """
-    Signal for Euler angles (z-y'-z'' intrinsic, x-y-z extrinsic convention) associated with a given silo.
+    Signal for Euler angles (z-y'-x'' intrinsic, x-y-z extrinsic convention) associated with a given silo.
 
     See https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
     """
