@@ -165,8 +165,7 @@ class LogReader(object):
         Trim longest common prefix to all signal names.
         """
         common_prefix = commonprefix(list(self._data.keys()))
-        prefix_len = len(common_prefix)
-        self._data = {key[prefix_len:]: value for key, value in self._data.items()}
+        self._data = {key[common_prefix.rfind('/') + 1:]: value for key, value in self._data.items()}
 
     def _compute_time(self):
         """
