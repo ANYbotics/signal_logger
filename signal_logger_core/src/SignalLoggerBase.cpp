@@ -239,6 +239,10 @@ void SignalLoggerBase::setName(const std::string& name) {
   loggerName_ = name;
 }
 
+void SignalLoggerBase::setPathWithPrefix(const std::string& pathWithPrefix) {
+  pathWithPrefix_ = pathWithPrefix;
+}
+
 bool SignalLoggerBase::saveLoggerScript(const std::string & scriptName) {
   // If lock can not be acquired because of saving ignore the call
   boost::unique_lock<boost::shared_mutex> trySaveLoggerScriptLock(loggerMutex_, boost::try_to_lock);
@@ -376,7 +380,7 @@ bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes, std::
     // Save data in different thread
     int suffixNumber = getNextSuffixNumber();
     std::string fileBasename = (customFilename.length() > 0) ? customFilename : getLogfileBasename(suffixNumber);
-    std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this, logfileTypes, fileBasename, loggerName_, suffixNumber);
+    std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this, logfileTypes, fileBasename, loggerName_, pathWithPrefix_, suffixNumber);
     t1.detach();
   }
   else {
@@ -771,7 +775,7 @@ std::string SignalLoggerBase::getLogfileBasename(int suffixNumber) const {
 }
 
 bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes, const std::string& fileBasename,
-                                             const std::string& loggerName, int suffixNumber) {
+                                             const std::string& loggerName, std::string pathWithPrefix, int suffixNumber) {
   {
     // Lock the logger (blocking!)
     boost::unique_lock<boost::shared_mutex> workerSaveDataWrapperLock(loggerMutex_);
@@ -795,7 +799,7 @@ bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes
   }
 
   // Start saving copy to file
-  bool success = this->workerSaveData(fileBasename, logfileTypes);
+  bool success = this->workerSaveData(fileBasename, pathWithPrefix, logfileTypes);
 
   // Set flag, notify user
   isSavingData_ = false;

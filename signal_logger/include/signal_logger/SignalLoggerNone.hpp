@@ -66,7 +66,7 @@ class SignalLoggerNone : public SignalLoggerBase
 
  protected:
   //! @copydoc SignalLoggerBase::workerSaveData
-  virtual bool workerSaveData(const std::string & logFileName, const signal_logger::LogFileTypeSet & logfileTypes) override { return false; };
+  virtual bool workerSaveData(const std::string & logFileName, const std::string & pathWithPrefix, const signal_logger::LogFileTypeSet & logfileTypes) override { return false; };
 
 };
 

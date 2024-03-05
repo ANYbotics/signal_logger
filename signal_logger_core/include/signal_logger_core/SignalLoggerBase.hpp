@@ -130,6 +130,11 @@ class SignalLoggerBase {
    */
   void setName(const std::string& name);
 
+  /** Set the saving prefix (which may contain folder path and prefix) of the logger.
+   *  @param pathWithPrefix   Logger path and prefix.
+   */
+  void setPathWithPrefix(const std::string& pathWithPrefix);
+
   //! Set max logging time
   void setMaxLoggingTime(double maxLoggingTime);
 
@@ -249,9 +254,10 @@ class SignalLoggerBase {
 
   /** Saves the logger data in a file in a seperate thread
    * @param logFileName filename of the log file
+   * @param pathWithPrefix Logger saving path and prefix
    * @param logfileTypes types of the log files
    */
-  virtual bool workerSaveData(const std::string & logFileName, const LogFileTypeSet & logfileTypes) = 0;
+  virtual bool workerSaveData(const std::string & logFileName, const std::string& pathWithPrefix, const LogFileTypeSet & logfileTypes) = 0;
 
   /** Initializes the pointer to the log element */
   virtual void initTimeLogElement();
@@ -271,11 +277,12 @@ class SignalLoggerBase {
   /** Save data and next suffix number in a separate thread.
    * @param logFileTypes types of the log files
    * @param filename name of the log file
+   * @param pathWithPrefix logger saving path and prefix
    * @param suffixNumber log file suffix number (this function will save it to a file as well)
    * @return success boolean.
    */
   bool workerSaveDataWrapper(const LogFileTypeSet & logfileTypes, const std::string& filename,
-                             const std::string& loggerName, int suffixNumber);
+                             const std::string& loggerName, std::string pathWithPrefix, int suffixNumber);
 
   /** Wait until logger can be started and start logger
    *
@@ -394,6 +401,8 @@ class SignalLoggerBase {
   std::atomic_uint noCollectDataCallsCopy_;
   //! Logger Name
   std::string loggerName_;
+  //! Logger Folder
+  std::string pathWithPrefix_;
 
   //-- Log Elements
 

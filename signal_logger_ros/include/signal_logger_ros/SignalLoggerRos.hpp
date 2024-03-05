@@ -79,7 +79,7 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd
   virtual signal_logger::TimestampPair getCurrentTime() override;
 
   //! Save all the buffered data into a log file
-  virtual bool workerSaveData(const std::string & logFileName, const signal_logger::LogFileTypeSet & logfileTypes) override;
+  virtual bool workerSaveData(const std::string & logFileName, const std::string & pathWithPrefix, const signal_logger::LogFileTypeSet & logfileTypes) override;
 
   /** Get current logger configuration
    *  @param  req empty request

@@ -27,7 +27,7 @@ bool SignalLoggerStd::cleanup() {
 
 
 //! Save all the buffered data into a log file
-bool SignalLoggerStd::workerSaveData(const std::string & logFileName, const signal_logger::LogFileTypeSet & logfileTypes) {
+bool SignalLoggerStd::workerSaveData(const std::string & logFileName, const std::string & pathWithPrefix, const signal_logger::LogFileTypeSet & logfileTypes) {
 
   if(noCollectDataCallsCopy_ == 0) {
     MELO_WARN_STREAM("[SignalLoggerStd] Could not save logger data! Data count is zero.");
@@ -59,7 +59,7 @@ bool SignalLoggerStd::workerSaveData(const std::string & logFileName, const sign
       }
 
       if(fileType == signal_logger::LogFileType::BINARY) {
-        const std::string binaryLogFileName = logFileName + ".silo";
+        const std::string binaryLogFileName = pathWithPrefix + logFileName + ".silo";
         // Write string header
         file_.open(binaryLogFileName, std::ios::out | std::ios::trunc);
         if(file_.is_open()) {

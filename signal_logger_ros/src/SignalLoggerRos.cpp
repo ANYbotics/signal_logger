@@ -54,7 +54,7 @@ signal_logger::TimestampPair SignalLoggerRos::getCurrentTime() {
   return timeStamp;
 }
 
-bool SignalLoggerRos::workerSaveData(const std::string & logFileName, const signal_logger::LogFileTypeSet & logfileTypes) {
+bool SignalLoggerRos::workerSaveData(const std::string & logFileName, const std::string & pathWithPrefix, const signal_logger::LogFileTypeSet & logfileTypes) {
 
   if(noCollectDataCallsCopy_ == 0) {
     MELO_WARN_STREAM("[SignalLoggerRos] Could not save logger data! Data count is zero.");
@@ -88,7 +88,7 @@ bool SignalLoggerRos::workerSaveData(const std::string & logFileName, const sign
         bagWriter_->close();
         bagWriter_.reset();
       } else {
-        success = success && signal_logger_std::SignalLoggerStd::workerSaveData(logFileName, { fileType });
+        success = success && signal_logger_std::SignalLoggerStd::workerSaveData(logFileName, pathWithPrefix, { fileType });
       }
   }
 

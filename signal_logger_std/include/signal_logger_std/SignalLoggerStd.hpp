@@ -60,7 +60,7 @@ class SignalLoggerStd : public signal_logger::SignalLoggerBase
   bool cleanup() override;
 
   //! Save all the buffered data into a log file
-  virtual bool workerSaveData(const std::string & logFileName, const signal_logger::LogFileTypeSet & logfileTypes) override;
+  virtual bool workerSaveData(const std::string & logFileName, const std::string& pathWithPrefix, const signal_logger::LogFileTypeSet & logfileTypes) override;
 
   /** Initializes the pointer to the logelement */
   virtual void initTimeLogElement() override;
