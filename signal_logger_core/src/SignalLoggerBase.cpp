@@ -159,7 +159,7 @@ bool SignalLoggerBase::stopLogger()
   // If lock can not be acquired because of saving ignore the call
   boost::unique_lock<boost::shared_mutex> tryStopLoggerLock(loggerMutex_, boost::try_to_lock);
   if(!tryStopLoggerLock && isSavingData_) {
-    MELO_WARN("Saving data while trying to stop logger '%s'. Do nothing!", loggerName_.c_str());
+    MELO_DEBUG("Saving data while trying to stop logger '%s'. Do nothing!", loggerName_.c_str());
     return false;
   }
 
@@ -351,7 +351,7 @@ bool SignalLoggerBase::publishData()
 bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes, std::string customFilename)
 {
   if (logfileTypes.empty()) {
-    MELO_WARN("[Signal logger] Could not save data for logger '%s'! No log file types provided.", loggerName_.c_str());
+    MELO_DEBUG("[Signal logger] Could not save data for logger '%s'! No log file types provided.", loggerName_.c_str());
     return false;
   }
 
@@ -364,7 +364,7 @@ bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes, std::
   if(lockSaveData) {
     if(!isInitialized_ || isSavingData_)
     {
-      MELO_WARN("[Signal logger] Could not save data for logger '%s'! %s%s", loggerName_.c_str(),
+      MELO_DEBUG("[Signal logger] Could not save data for logger '%s'! %s%s", loggerName_.c_str(),
                 isSavingData_?" Already saving data!":"", !isInitialized_?" Not initialized!":"");
       return false;
     }
@@ -384,7 +384,7 @@ bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes, std::
     t1.detach();
   }
   else {
-    MELO_WARN("[Signal logger] Already saving data to file for logger '%s'!", loggerName_.c_str());
+    MELO_DEBUG("[Signal logger] Already saving data to file for logger '%s'!", loggerName_.c_str());
   }
 
   return true;
