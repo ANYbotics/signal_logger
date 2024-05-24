@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>signal_logger_ros</name>
-  <version>0.5.19</version>
+  <version>0.5.20</version>
   <description>The signal_logger_ros package</description>
 
   <maintainer email="ghottiger@anybotics.com">Gabriel Hottiger</maintainer>
