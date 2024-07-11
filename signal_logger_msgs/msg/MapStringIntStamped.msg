@@ -1,3 +1,3 @@
 # MapStringIntStamped
-Header header 
+std_msgs/Header header 
 PairStringInt[] pairs

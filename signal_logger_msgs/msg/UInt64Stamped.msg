@@ -1,3 +1,3 @@
 # Int64Stamped
-Header header
+std_msgs/Header header
 uint64 value

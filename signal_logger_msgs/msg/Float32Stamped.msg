@@ -1,3 +1,3 @@
 # Float32Stamped
-Header header 
+std_msgs/Header header 
 float32 value

@@ -1,4 +1,4 @@
 # PairIntDoubleStamped
-Header header 
+std_msgs/Header header 
 int32 first
 float64 second

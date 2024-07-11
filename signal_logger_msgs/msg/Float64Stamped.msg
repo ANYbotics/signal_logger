@@ -1,3 +1,3 @@
 # Float64Stamped
-Header header 
+std_msgs/Header header 
 float64 value
