@@ -36,16 +36,16 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 try:
-    matplotlib.use('Qt4Agg')
-    matplotlib.rcParams['backend.qt4'] = 'PySide'
+    matplotlib.use('Qt5Agg')
+    matplotlib.rcParams['backend.qt5'] = 'PySide'
     import matplotlib.pyplot
 except Exception:
     pass
 
 from collections import OrderedDict
 from math import asin, atan2
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from numpy import array
 from signal_logger.config import TOPIC_SEPARATOR as _SEP
 
