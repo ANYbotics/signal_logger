@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.16.3)
 project(signal_logger_msgs)
+
+if("$ENV{ROS_VERSION}" STREQUAL "1")
 
 find_package(catkin REQUIRED COMPONENTS
   message_generation
@@ -72,3 +74,73 @@ generate_messages(
 catkin_package(
   CATKIN_DEPENDS message_runtime geometry_msgs std_msgs
 )
+
+else() # ROS version 2
+
+set(PACKAGE_DEPENDENCIES
+  builtin_interfaces
+  geometry_msgs
+  std_msgs
+  )
+
+find_package(ament_cmake REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+  
+foreach(PKG IN LISTS PACKAGE_DEPENDENCIES)
+  find_package(${PKG} REQUIRED)
+endforeach()
+
+set(MSG_FILES
+  "msg/BoolMultiArray.msg"
+  "msg/Float64MultiArrayStamped.msg"
+  "msg/Int64MultiArrayStamped.msg"
+  "msg/BoolMultiArrayStamped.msg"
+  "msg/Int16MultiArrayStamped.msg"
+  "msg/Int8MultiArray.msg"
+  "msg/Float32MultiArrayStamped.msg"
+  "msg/Int32MultiArrayStamped.msg"
+  "msg/Int8MultiArrayStamped.msg"
+  "msg/Float64Stamped.msg"
+  "msg/Float32Stamped.msg"
+  "msg/Int64Stamped.msg"
+  "msg/Int32Stamped.msg"
+  "msg/Int16Stamped.msg"
+  "msg/Int8Stamped.msg"
+  "msg/UInt64Stamped.msg"
+  "msg/UInt32Stamped.msg"
+  "msg/UInt16Stamped.msg"
+  "msg/UInt8Stamped.msg"
+  "msg/BoolStamped.msg"
+  "msg/CharStamped.msg"
+  "msg/StringStamped.msg"
+  "msg/UnsignedCharStamped.msg"
+  "msg_ros2/TimeStamped.msg"
+  "msg/PairStringInt.msg"
+  "msg/PairStringIntStamped.msg"
+  "msg/MapStringIntStamped.msg"
+  "msg/PairStringDouble.msg"
+  "msg/PairStringDoubleStamped.msg"
+  "msg/MapStringDoubleStamped.msg"
+  "msg/PairIntDouble.msg"
+  "msg/PairIntDoubleStamped.msg"
+  "msg/MapIntDoubleStamped.msg"
+  "msg/LogElement.msg"
+  "srv/GetLoggerElement.srv"
+  "srv/GetLoggerConfiguration.srv"
+  "srv/EditLoggerScript.srv"
+  "srv/SetLoggerElement.srv"
+  "srv/SaveLoggerData.srv"
+  )
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+    ${MSG_FILES}
+  DEPENDENCIES
+    ${PACKAGE_DEPENDENCIES}
+  )
+
+ament_export_dependencies(rosidl_default_runtime)
+ament_export_dependencies(${PACKAGE_DEPENDENCIES})
+
+ament_package()
+
+endif()

@@ -295,9 +295,9 @@ void SignalLoggerPlugin::restartLogger() {
 void SignalLoggerPlugin::saveLoggerData() {
   signal_logger_msgs::SaveLoggerData::Request req;
   signal_logger_msgs::SaveLoggerData::Response res;
-  if(configureUi_.binaryButton->isChecked()) { req.logfileTypes.push_back(signal_logger_msgs::SaveLoggerData::Request::LOGFILE_TYPE_BINARY); }
-  if(configureUi_.csvButton->isChecked()) { req.logfileTypes.push_back(signal_logger_msgs::SaveLoggerData::Request::LOGFILE_TYPE_CSV); }
-  if(configureUi_.bagButton->isChecked()) { req.logfileTypes.push_back(signal_logger_msgs::SaveLoggerData::Request::LOGFILE_TYPE_BAG); }
+  if(configureUi_.binaryButton->isChecked()) { req.logfile_types.push_back(signal_logger_msgs::SaveLoggerData::Request::LOGFILE_TYPE_BINARY); }
+  if(configureUi_.csvButton->isChecked()) { req.logfile_types.push_back(signal_logger_msgs::SaveLoggerData::Request::LOGFILE_TYPE_CSV); }
+  if(configureUi_.bagButton->isChecked()) { req.logfile_types.push_back(signal_logger_msgs::SaveLoggerData::Request::LOGFILE_TYPE_BAG); }
 
   if(saveLoggerDataClient_.call(req, res) && res.success) {
     std::string msg = std::string{"Successfully saved logger data to file."};

@@ -154,7 +154,7 @@ bool SignalLoggerRos::stopLogger(std_srvs::TriggerRequest& req,
 bool SignalLoggerRos::saveLoggerData(signal_logger_msgs::SaveLoggerDataRequest& req,
                                      signal_logger_msgs::SaveLoggerDataResponse& res) {
   signal_logger::LogFileTypeSet types;
-  for(const auto filetype : req.logfileTypes){
+  for(const auto filetype : req.logfile_types){
     switch(filetype) {
       case signal_logger_msgs::SaveLoggerDataRequest::LOGFILE_TYPE_BINARY:
         types.insert(signal_logger::LogFileType::BINARY);
@@ -172,7 +172,7 @@ bool SignalLoggerRos::saveLoggerData(signal_logger_msgs::SaveLoggerDataRequest& 
     }
   }
 
-  res.success = signal_logger::SignalLoggerBase::saveLoggerData(types, req.customFilename);
+  res.success = signal_logger::SignalLoggerBase::saveLoggerData(types, req.custom_filename);
   return true;
 }
 
