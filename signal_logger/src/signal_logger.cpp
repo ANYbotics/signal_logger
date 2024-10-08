@@ -79,11 +79,19 @@ void setSignalLoggerStd() {
   logger.reset(new signal_logger_std::SignalLoggerStd());
 }
 
+#ifndef ROS2_BUILD
 void setSignalLoggerRos(ros::NodeHandle* nh) {
+#else /* ROS2_BUILD */
+void setSignalLoggerRos(rclcpp::Node::SharedPtr nh) {
+#endif /* ROS2_BUILD */
   logger.reset(new signal_logger_ros::SignalLoggerRos(nh));
 }
 
+#ifndef ROS2_BUILD
 void setSignalLogger(const std::string& name, ros::NodeHandle* nh) {
+#else /* ROS2_BUILD */
+void setSignalLogger(const std::string& name, rclcpp::Node::SharedPtr nh) {
+#endif /* ROS2_BUILD */
   if (name.compare("ros") == 0) {
     signal_logger::setSignalLoggerRos(nh);
   }

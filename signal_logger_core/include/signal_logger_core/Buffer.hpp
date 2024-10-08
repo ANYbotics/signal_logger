@@ -191,7 +191,7 @@ class Buffer: public BufferInterface
  *  @param idx index of the stored value (idx'th newest value)
  *  @return val const Pointer to const value at idx
  */
-  const ValueType_ * const getPointerAtPosition(std::size_t idx)  const {
+  const ValueType_ * getPointerAtPosition(std::size_t idx)  const {
     // Lock the circular buffer
     std::unique_lock<std::mutex> lock(mutex_);
 

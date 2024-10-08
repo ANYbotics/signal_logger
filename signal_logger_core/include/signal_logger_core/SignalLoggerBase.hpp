@@ -278,11 +278,10 @@ class SignalLoggerBase {
    * @param logFileTypes types of the log files
    * @param filename name of the log file
    * @param pathWithPrefix logger saving path and prefix
-   * @param suffixNumber log file suffix number (this function will save it to a file as well)
    * @return success boolean.
    */
   bool workerSaveDataWrapper(const LogFileTypeSet & logfileTypes, const std::string& filename,
-                             const std::string& loggerName, std::string pathWithPrefix, int suffixNumber);
+                             const std::string& loggerName, std::string pathWithPrefix);
 
   /** Wait until logger can be started and start logger
    *

@@ -73,13 +73,13 @@ class LogElementBase: public LogElementInterface
   void collectData() override final { buffer_.collect(); }
 
   //! Reads buffer and processes data (probably called from different thread)
-  virtual void publishData(const TimeElement & time,
-                           unsigned int nrCollectDataCalls) override { }
+  virtual void publishData([[maybe_unused]] const TimeElement & time,
+                           [[maybe_unused]] unsigned int nrCollectDataCalls) override { }
 
   //! Writes local buffer copy to a file
-  virtual void saveDataToLogFile(const TimeElement & times,
-                                 unsigned int nrCollectDataCalls,
-                                 LogFileType type) override { }
+  virtual void saveDataToLogFile([[maybe_unused]] const TimeElement & times,
+                                 [[maybe_unused]] unsigned int nrCollectDataCalls,
+                                 [[maybe_unused]] LogFileType type) override { }
 
   //! Moves to a copy of the current buffer, file is saved from this
   virtual void moveIntoSavingBuffer() {

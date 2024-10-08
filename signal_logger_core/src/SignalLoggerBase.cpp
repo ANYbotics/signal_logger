@@ -380,7 +380,7 @@ bool SignalLoggerBase::saveLoggerData(const LogFileTypeSet & logfileTypes, std::
     // Save data in different thread
     int suffixNumber = getNextSuffixNumber();
     std::string fileBasename = (customFilename.length() > 0) ? customFilename : getLogfileBasename(suffixNumber);
-    std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this, logfileTypes, fileBasename, loggerName_, pathWithPrefix_, suffixNumber);
+    std::thread t1(&SignalLoggerBase::workerSaveDataWrapper, this, logfileTypes, fileBasename, loggerName_, pathWithPrefix_);
     t1.detach();
   }
   else {
@@ -775,7 +775,7 @@ std::string SignalLoggerBase::getLogfileBasename(int suffixNumber) const {
 }
 
 bool SignalLoggerBase::workerSaveDataWrapper(const LogFileTypeSet & logfileTypes, const std::string& fileBasename,
-                                             const std::string& loggerName, std::string pathWithPrefix, int suffixNumber) {
+                                             const std::string& loggerName, std::string pathWithPrefix) {
   {
     // Lock the logger (blocking!)
     boost::unique_lock<boost::shared_mutex> workerSaveDataWrapperLock(loggerMutex_);

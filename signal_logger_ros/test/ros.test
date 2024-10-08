@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <test pkg="signal_logger_ros" type="test_signal_logger_ros" test-name="signal_logger_ros_test" time-limit="60.0"/>
+</launch>

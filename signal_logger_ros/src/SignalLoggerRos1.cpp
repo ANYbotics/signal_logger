@@ -6,8 +6,9 @@
  *           Extends std logger with publishing and bag storing functionality.
  */
 
+#ifndef ROS2_BUILD
 #include "signal_logger_ros/SignalLoggerRos.hpp"
-#include "boost/filesystem.hpp"
+#include <filesystem>
 
 namespace signal_logger_ros {
 
@@ -96,7 +97,7 @@ bool SignalLoggerRos::workerSaveData(const std::string & logFileName, const std:
 }
 
 
-bool SignalLoggerRos::getLoggerConfiguration(signal_logger_msgs::GetLoggerConfigurationRequest& req,
+bool SignalLoggerRos::getLoggerConfiguration([[maybe_unused]] signal_logger_msgs::GetLoggerConfigurationRequest& req,
                                             signal_logger_msgs::GetLoggerConfigurationResponse& res) {
   {
     boost::shared_lock<boost::shared_mutex> getLoggerConfigurationLock(loggerMutex_);
@@ -112,7 +113,7 @@ bool SignalLoggerRos::getLoggerConfiguration(signal_logger_msgs::GetLoggerConfig
 
   if(res.script_filepath.compare(0,1,"/") != 0)
   {
-    res.script_filepath.insert(0, boost::filesystem::current_path().string() + std::string{"/"});
+    res.script_filepath.insert(0, std::filesystem::current_path().string() + std::string{"/"});
   }
 
   return true;
@@ -139,13 +140,13 @@ bool SignalLoggerRos::setLoggerElement(signal_logger_msgs::SetLoggerElement::Req
   return true;
 }
 
-bool SignalLoggerRos::startLogger(std_srvs::TriggerRequest& req,
+bool SignalLoggerRos::startLogger([[maybe_unused]] std_srvs::TriggerRequest& req,
                                   std_srvs::TriggerResponse& res) {
   res.success =  signal_logger::SignalLoggerBase::startLogger();
   return true;
 }
 
-bool SignalLoggerRos::stopLogger(std_srvs::TriggerRequest& req,
+bool SignalLoggerRos::stopLogger([[maybe_unused]] std_srvs::TriggerRequest& req,
                                  std_srvs::TriggerResponse& res) {
   res.success =  signal_logger::SignalLoggerBase::stopLogger();
   return true;
@@ -177,7 +178,7 @@ bool SignalLoggerRos::saveLoggerData(signal_logger_msgs::SaveLoggerDataRequest& 
 }
 
 
-bool SignalLoggerRos::isLoggerRunning(std_srvs::TriggerRequest& req,
+bool SignalLoggerRos::isLoggerRunning([[maybe_unused]] std_srvs::TriggerRequest& req,
                                       std_srvs::TriggerResponse& res) {
   res.success = this->isCollectingData_;
   return true;
@@ -315,3 +316,4 @@ bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::LogElement & msg
 }
 
 } /* namespace signal_logger */
+#endif /* ROS2_BUILD */

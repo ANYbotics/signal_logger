@@ -1,19 +1,17 @@
-<?xml version="1.0"?>
-<package format="2">
+<?xml version='1.0' encoding='utf-8'?>
+<package format="3">
   <name>signal_logger_ros</name>
   <version>0.5.22</version>
   <description>The signal_logger_ros package</description>
-
-  <maintainer email="ghottiger@anybotics.com">Gabriel Hottiger</maintainer>
-  <maintainer email="pleemann@anybotics.com">Philipp Leemann</maintainer>
   <author email="ghottiger@anybotics.com">Gabriel Hottiger</author>
   <author email="cgehring@anybotics.com">Christian Gehring</author>
   <author email="bellicoso@mavt.ethz.ch">Dario Bellicoso</author>
+  <maintainer email="ghottiger@anybotics.com">Gabriel Hottiger</maintainer>
+  <maintainer email="pleemann@anybotics.com">Philipp Leemann</maintainer>
   <license>BSD</license>
   <url>https://github.com/anybotics/signal_logger</url>
-
-  <buildtool_depend>catkin</buildtool_depend>
-
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
   <depend>message_logger</depend>
   <depend>signal_logger_core</depend>
   <depend>signal_logger_std</depend>
@@ -21,10 +19,15 @@
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>geometry_msgs</depend>
-  <depend>rosbag</depend>
+  <depend condition="$ROS_VERSION == 1">rosbag</depend>
+  <depend condition="$ROS_VERSION == 2">rosbag2_cpp</depend>
+  <depend condition="$ROS_VERSION == 2">rclcpp</depend>
   <depend>kindr_msgs</depend>
-
-<!--   <test_depend>cmake_code_coverage</test_depend> -->
-  <test_depend>gtest</test_depend>
-
+<!--   <test_depend condition="$ROS_VERSION == 1">cmake_code_coverage</test_depend> -->
+  <test_depend condition="$ROS_VERSION == 1">gtest</test_depend>
+  <test_depend condition="$ROS_VERSION == 1">rostest</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">ament_cmake_gtest</test_depend>
+  <export>
+    <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
+  </export>
 </package>

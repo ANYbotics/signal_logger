@@ -23,34 +23,34 @@ class SignalLoggerNone : public SignalLoggerBase
 
   //! Add
   template<typename ValueType_>
-  void add( const ValueType_ * const var,
-            const std::string & name,
-            const std::string & group       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME,
-            const std::string & unit        = SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
-            const std::size_t divider       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
-            const LogElementAction action   = SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
-            const std::size_t bufferSize    = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
-            const BufferType bufferType     = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
+  void add( [[maybe_unused]] const ValueType_ * const var,
+            [[maybe_unused]] const std::string & name,
+            [[maybe_unused]] const std::string & group       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME,
+            [[maybe_unused]] const std::string & unit        = SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
+            [[maybe_unused]] const std::size_t divider       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
+            [[maybe_unused]] const LogElementAction action   = SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
+            [[maybe_unused]] const std::size_t bufferSize    = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
+            [[maybe_unused]] const BufferType bufferType     = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
   {
   }
 
   //! @copydoc SignalLoggerBase::initLogger
-  virtual void initLogger(const SignalLoggerOptions& options) override { }
+  virtual void initLogger([[maybe_unused]] const SignalLoggerOptions& options) override { }
 
   //! @copydoc SignalLoggerBase::startLogger
-  virtual bool startLogger(bool updateLogger = false) override { return true; }
+  virtual bool startLogger([[maybe_unused]] bool updateLogger = false) override { return true; }
 
   //! @copydoc SignalLoggerBase::stopLogger
   virtual bool stopLogger() override { return true; }
 
   //! @copydoc SignalLoggerBase::restartLogger
-  virtual bool restartLogger(bool updateLogger = false) override { return true; }
+  virtual bool restartLogger([[maybe_unused]] bool updateLogger = false) override { return true; }
 
   //! @copydoc SignalLoggerBase::updateLogger
-  virtual bool updateLogger(const bool readScript = true, const std::string & scriptname = "") override { return true; }
+  virtual bool updateLogger([[maybe_unused]] const bool readScript = true, [[maybe_unused]] const std::string & scriptname = "") override { return true; }
 
   //! @copydoc SignalLoggerBase::saveLoggerScript
-  virtual bool saveLoggerScript(const std::string & scriptName = SignalLoggerOptions::LOGGER_DEFAULT_SCRIPT_FILENAME) override { return true; }
+  virtual bool saveLoggerScript([[maybe_unused]] const std::string & scriptName = SignalLoggerOptions::LOGGER_DEFAULT_SCRIPT_FILENAME) override { return true; }
 
   //! @copydoc SignalLoggerBase::collectLoggerData
   virtual bool collectLoggerData() override { return true; }
@@ -59,14 +59,14 @@ class SignalLoggerNone : public SignalLoggerBase
   virtual bool publishData() override { return true; }
 
   //! @copydoc SignalLoggerBase::saveLoggerData
-  virtual bool saveLoggerData(const signal_logger::LogFileTypeSet & logfileTypes) override { return true; }
+  virtual bool saveLoggerData([[maybe_unused]] const signal_logger::LogFileTypeSet & logfileTypes) override { return true; }
 
   //! @copydoc SignalLoggerBase::stopAndSaveLoggerData
-  virtual bool stopAndSaveLoggerData(const signal_logger::LogFileTypeSet & logfileTypes) override { return true; }
+  virtual bool stopAndSaveLoggerData([[maybe_unused]] const signal_logger::LogFileTypeSet & logfileTypes) override { return true; }
 
  protected:
   //! @copydoc SignalLoggerBase::workerSaveData
-  virtual bool workerSaveData(const std::string & logFileName, const std::string & pathWithPrefix, const signal_logger::LogFileTypeSet & logfileTypes) override { return false; };
+  virtual bool workerSaveData([[maybe_unused]] const std::string & logFileName, [[maybe_unused]] const std::string & pathWithPrefix, [[maybe_unused]] const signal_logger::LogFileTypeSet & logfileTypes) override { return false; };
 
 };
 

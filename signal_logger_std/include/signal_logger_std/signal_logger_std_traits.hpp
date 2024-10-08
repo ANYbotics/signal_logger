@@ -84,15 +84,15 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
 {
   // helpers
   template<typename V_ = ValueType_>
-  static unsigned int sizeOf(const signal_logger::Buffer<ContainerType_> & buffer,
-                             const std::function<const V_ * const(const ContainerType_ * const)> & accessor,
-                             typename std::enable_if<!std::is_same<std::string, typename std::remove_cv<V_>::type>::value>::type* = 0) {
+  static unsigned int sizeOf([[maybe_unused]] const signal_logger::Buffer<ContainerType_> & buffer,
+                             [[maybe_unused]] const std::function<const V_ * (const ContainerType_ * const)> & accessor,
+                             [[maybe_unused]] typename std::enable_if<!std::is_same<std::string, typename std::remove_cv<V_>::type>::value>::type* = 0) {
     return sizeof(V_);
   }
 
   template<typename V_ = ValueType_>
   static unsigned int sizeOf(const signal_logger::Buffer<ContainerType_> & buffer,
-                             const std::function<const V_ * const(const ContainerType_ * const)> & accessor,
+                             const std::function<const V_ * (const ContainerType_ * const)> & accessor,
                              typename std::enable_if<std::is_same<std::string, typename std::remove_cv<V_>::type>::value>::type* = 0) {
     // Get max size of string
     unsigned int maxStringSize = 0;
@@ -110,10 +110,10 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
   //! write arithmetic types to binary
   template< typename V_ = ValueType_>
   static typename std::enable_if<!std::is_same<std::string, typename std::remove_cv<V_>::type>::value>::type writeToBinary(
-      const unsigned int noBytes,
+      [[maybe_unused]] const unsigned int noBytes,
       std::stringstream* binary,
       const signal_logger::Buffer<ContainerType_> & buffer,
-      const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor)
+      const std::function<const ValueType_ *(const ContainerType_ * const)> & accessor)
   {
     const auto numTotalItems = buffer.noTotalItems();
     for (unsigned int i = 0; i<numTotalItems; ++i)
@@ -128,7 +128,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
       const unsigned int noBytes,
       std::stringstream* binary,
       const signal_logger::Buffer<ContainerType_> & buffer,
-      const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor)
+      const std::function<const ValueType_ *(const ContainerType_ * const)> & accessor)
   {
     const auto numTotalItems = buffer.noTotalItems();
     for (unsigned int i = 0; i<numTotalItems; ++i)
@@ -153,7 +153,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ar
                                        const std::size_t divider,
                                        const unsigned int startDiff,
                                        const unsigned int endDiff,
-                                       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+                                       const std::function<const ValueType_ *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
     if(fileType == signal_logger::LogFileType::BINARY) {
       const int noBytes = sizeOf(buffer, accessor);
@@ -198,7 +198,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_en
                                        const std::size_t divider,
                                        const unsigned int startDiff,
                                        const unsigned int endDiff,
-                                       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+                                       const std::function<const ValueType_ *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
     // Lambda accessing the underlying type #TODO reinterpret_cast is kind of a hack
     auto getUnderlyingType = [accessor](const ContainerType_ * const v) { return reinterpret_cast<const typename std::underlying_type<ValueType_>::type *>(accessor(v)); };
@@ -222,7 +222,7 @@ struct sls_traits<signal_logger::TimestampPair, ContainerType_>
                                        const std::size_t divider,
                                        const unsigned int startDiff,
                                        const unsigned int endDiff,
-                                       const std::function<const signal_logger::TimestampPair * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+                                       const std::function<const signal_logger::TimestampPair *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
 
   {
     // Get seconds from timestamp pair
@@ -252,7 +252,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_pair<Va
                                        const std::size_t divider,
                                        const unsigned int startDiff,
                                        const unsigned int endDiff,
-                                       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+                                       const std::function<const ValueType_ *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
 
   {
     // Get xyz of the vector
@@ -278,7 +278,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_contain
                                        const std::size_t divider,
                                        const unsigned int startDiff,
                                        const unsigned int endDiff,
-                                       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+                                       const std::function<const ValueType_ *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
 
   {
     // Loop through extent of array
@@ -336,7 +336,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_eigen_q
                                        const std::size_t divider,
                                        const unsigned int startDiff,
                                        const unsigned int endDiff,
-                                       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+                                       const std::function<const ValueType_ *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
     // Get wxyz of the vector
     std::vector<std::string> suffix = {"_x", "_y", "_z", "_w"};
@@ -359,7 +359,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_eigen_a
                                        const std::size_t divider,
                                        const unsigned int startDiff,
                                        const unsigned int endDiff,
-                                       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+                                       const std::function<const ValueType_ *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
     // Get angle of angle-axis
     auto getAngle = [accessor](const ContainerType_ * const v) { const typename ValueType_::Scalar & val = accessor(v)->angle();  return &val; };
@@ -388,7 +388,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if< is_eigen_
                                        const std::size_t divider,
                                        const unsigned int startDiff,
                                        const unsigned int endDiff,
-                                       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+                                       const std::function<const ValueType_ *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
     for (int r = 0; r < accessor(buffer.getPointerAtPosition(0))->rows(); ++r)
     {
@@ -422,7 +422,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if< std::is_b
                                        const std::size_t divider,
                                        const unsigned int startDiff,
                                        const unsigned int endDiff,
-                                       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+                                       const std::function<const ValueType_ *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
     // Get underlying eigen type
     auto getEigenType = [accessor](const ContainerType_ * const v) { return &(accessor(v)->toImplementation()); };
@@ -442,7 +442,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_h
                                        const std::size_t divider,
                                        const unsigned int startDiff,
                                        const unsigned int endDiff,
-                                       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+                                       const std::function<const ValueType_ *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
 
     // Get underlying position type
@@ -467,7 +467,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<std::is_ba
                                        const std::size_t divider,
                                        const unsigned int startDiff,
                                        const unsigned int endDiff,
-                                       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+                                       const std::function<const ValueType_ *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
 
     // Get underlying translational type
@@ -497,7 +497,7 @@ struct sls_traits<ValueType_, ContainerType_, typename std::enable_if<is_kindr_v
                                        const std::size_t divider,
                                        const unsigned int startDiff,
                                        const unsigned int endDiff,
-                                       const std::function<const ValueType_ * const(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
+                                       const std::function<const ValueType_ *(const ContainerType_ * const)> & accessor = [](const ContainerType_ * const v) { return v; })
   {
     // Get kindr vector
     std::string vectorFrame = buffer.noTotalItems() ? accessor(buffer.getPointerAtPosition(0))->vectorFrame : "unknown";

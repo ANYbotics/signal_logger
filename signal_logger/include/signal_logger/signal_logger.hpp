@@ -41,9 +41,17 @@ void setSignalLoggerNone();
 
 void setSignalLoggerStd();
 
+#ifndef ROS2_BUILD
 void setSignalLoggerRos(ros::NodeHandle* nh);
+#else /* ROS2_BUILD */
+void setSignalLoggerRos(rclcpp::Node::SharedPtr nh);
+#endif /* ROS2_BUILD */
 
+#ifndef ROS2_BUILD
 void setSignalLogger(const std::string& name, ros::NodeHandle* nh);
+#else /* ROS2_BUILD */
+void setSignalLogger(const std::string& name, rclcpp::Node::SharedPtr nh);
+#endif /* ROS2_BUILD */
 
 
 /** Add variable to logger. This is a default implementation if no specialization is provided an error is posted.
