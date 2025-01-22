@@ -299,7 +299,7 @@ bool SignalLoggerBase::collectLoggerData()
 
       // Update time
       {
-        std::unique_lock<std::mutex> uniqueTimeElementLock(timeElement_->acquireMutex());
+        std::lock_guard lock(timeElement_->acquireMutex());
         timeElement_->collectData();
       }
 
@@ -315,9 +315,6 @@ bool SignalLoggerBase::collectLoggerData()
       // Iterate
       ++noCollectDataCalls_;
     }
-  }
-  else {
-    MELO_DEBUG("[Signal Logger] Dropping collect data call for logger '%s'!", loggerName_.c_str());
   }
 
   return true;
