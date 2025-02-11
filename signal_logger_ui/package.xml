@@ -4,7 +4,7 @@
   <version>0.1.23</version>
   <description>Python plotting interface for Signal Logger</description>
   <maintainer email="desteban@anybotics.com">Domingo Esteban</maintainer>
-  <maintainer email="avijayan@anybotics.com">Aravind Vijayan</maintainer>
+  <maintainer email="jjunger@anybotics.com">Jonas Junger</maintainer>
   <author email="pierre.gergondet@gmail.com">Pierre Gergondet</author>
   <license>BSD</license>
   <url>https://github.com/jrl-umi3218/mc_rtc/tree/master/utils/mc_log_gui</url>

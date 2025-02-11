@@ -4,7 +4,7 @@
   <version>0.1.23</version>
   <description>Python plotting interface for Signal Logger</description>
   <maintainer email="desteban@anybotics.com">Domingo Esteban</maintainer>
-  <maintainer email="avijayan@anybotics.com">Aravind Vijayan</maintainer>
+  <maintainer email="jjunger@anybotics.com">Jonas Junger</maintainer>
   <author email="scaron@anybotics.com">Stéphane Caron</author>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
