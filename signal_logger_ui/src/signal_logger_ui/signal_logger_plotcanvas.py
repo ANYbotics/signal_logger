@@ -109,13 +109,16 @@ class PlotFigure(object):
         self._legend_fontsize = 10
         self._top_offset = 0.9
         self._bottom_offset = 0.1
-        self._y1_legend_ncol = 3
-        self._y2_legend_ncol = 3
+        self._y1_legend_ncol = 1
+        self._y2_legend_ncol = 1
 
         self.data = None
         self.computed_data = {}
         self.axes_plots = OrderedDict()
         self.axes2_plots = OrderedDict()
+
+        self.vline = None 
+        self.vline2 = None 
 
         color_set = matplotlib.cm.Set1
         rgb_from_float = lambda x: color_set(x)
@@ -325,17 +328,14 @@ class PlotFigure(object):
     def _legend_left(self):
         if len(self.axes_plots) > 0:
             self.axes.legend(
-                bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+                bbox_to_anchor=(-0.1, 1.02, 0.6, .102), loc=2,
                 ncol=self._y1_legend_ncol, mode="expand", borderaxespad=0.5,
                 fontsize=self._legend_fontsize)
 
     def _legend_right(self):
-        top_anchor = -0.125
-        if len(self.x_label()):
-            top_anchor = -0.175
         if len(self.axes2_plots):
             self.axes2.legend(
-                bbox_to_anchor=(0., top_anchor, 1., .102), loc=2,
+                bbox_to_anchor=(0.5, 1.02, 0.6, .102), loc=2,
                 ncol=self._y2_legend_ncol, mode="expand", borderaxespad=0.5,
                 fontsize=self._legend_fontsize)
 
@@ -366,6 +366,13 @@ class PlotFigure(object):
             plt = axe.plot(
                 x, y, label=y_label, color=style.color,
                 linestyle=style.linestyle, linewidth=style.linewidth)
+        
+        if (axe == self.axes):
+            if (self.vline is None):
+                self.vline = axe.axvline(x=0, color='grey', linestyle='--', alpha=0.7)
+        else:
+            if (self.vline2 is None):
+                self.vline2 = axe.axvline(x=0, color='grey', linestyle='--', alpha=0.7)
         update_legend_fn()
         return plt[0]
 
@@ -589,6 +596,7 @@ class PlotFigure(object):
             self._legend_left()
         else:
             self.axes.clear()
+            self.vline = None
             self._hide_left_axis()
         if len(self.axes_plots) == 0 and len(self.axes2_plots) == 0:
             self.color = 0
@@ -604,6 +612,7 @@ class PlotFigure(object):
             self._legend_right()
         else:
             self.axes2.clear()
+            self.vline2 = None
             self._hide_right_axis()
         if len(self.axes_plots) == 0 and len(self.axes2_plots) == 0:
             self.color = 0
@@ -628,6 +637,8 @@ class PlotFigure(object):
         self.axes2_plots = {}
         self.axes.clear()
         self.axes2.clear()
+        self.vline = None
+        self.vline2 = None
 
     def _style(self, plots, y, styleIn=None):
         if y not in plots:
@@ -740,8 +751,13 @@ class PlotCanvasWithToolbar(PlotFigure, QWidget):
         PlotFigure.__init__(self)
         QWidget.__init__(self, parent)
 
+        self.hover_active = True
+        self.hover_over_canvas = False
         self.canvas = FigureCanvas(self.fig)
         self.canvas.mpl_connect('draw_event', self.on_draw)
+        self.canvas.mpl_connect('motion_notify_event', self.on_hover)
+        self.canvas.mpl_connect("button_press_event", self.on_click)
+
         self.toolbar = NavigationToolbar(self.canvas, self)
         self.toolbar.pan()  # Pan by default
 
@@ -771,6 +787,39 @@ class PlotCanvasWithToolbar(PlotFigure, QWidget):
 
     def axesDialog(self):
         SimpleAxesDialog(self).exec_()
+
+    def on_click(self, event):
+        if event.button == 1 and self.hover_over_canvas:
+            self.hover_active = not self.hover_active 
+
+    def on_hover(self, event):
+        if event.inaxes in [self.axes, self.axes2]:  # Ensure the mouse is inside the plot area
+            self.hover_over_canvas = True
+            if not self.hover_active:
+                return
+            x_hover = event.xdata
+            if x_hover is None:
+                return
+            
+            if self.axes_plots: 
+                if self.vline:
+                    self.vline.set_xdata(x_hover)
+                for key, ax in self.axes_plots.items():
+                    y_hover = numpy.interp(x_hover, self.data[self.x_data], self.data[key])
+                    ax.set_label(f"{key} = {y_hover:.5f}")
+                    self._legend_left()
+
+            if self.axes2_plots: 
+                if self.vline2:
+                    self.vline2.set_xdata(x_hover)
+                for key, ax in self.axes2_plots.items():
+                    y_hover = numpy.interp(x_hover, self.data[self.x_data], self.data[key])
+                    ax.set_label(f"{key} = {y_hover:.5f}")
+                    self._legend_right() 
+
+            self.canvas.draw()
+        else:
+            self.hover_over_canvas = False
 
     def on_draw(self, event):
         pass
