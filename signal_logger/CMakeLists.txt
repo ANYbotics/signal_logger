@@ -58,6 +58,7 @@ if("$ENV{ROS_VERSION}" STREQUAL "1")
   if(CATKIN_ENABLE_TESTING)
     catkin_add_gtest(test_${PROJECT_NAME}
       test/test_${PROJECT_NAME}.cpp
+      test/test_${PROJECT_NAME}_buffer_size.cpp
       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test
     )
 
@@ -136,7 +137,11 @@ else() # ROS version 2
 
   if(BUILD_TESTING)
     find_package(ament_cmake_gtest REQUIRED)
-    ament_add_gtest(test_${PROJECT_NAME} test/test_${PROJECT_NAME}.cpp)
+    ament_add_gtest(
+      test_${PROJECT_NAME}
+      test/test_${PROJECT_NAME}.cpp
+      test/test_${PROJECT_NAME}_buffer_size.cpp
+    )
     target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME})
 
     find_package(cmake_code_coverage QUIET)

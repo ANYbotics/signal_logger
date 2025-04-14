@@ -25,12 +25,12 @@ class SignalLoggerNone : public SignalLoggerBase
   template<typename ValueType_>
   void add( [[maybe_unused]] const ValueType_ * const var,
             [[maybe_unused]] const std::string & name,
-            [[maybe_unused]] const std::string & group       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME,
-            [[maybe_unused]] const std::string & unit        = SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
-            [[maybe_unused]] const std::size_t divider       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
-            [[maybe_unused]] const LogElementAction action   = SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
-            [[maybe_unused]] const std::size_t bufferSize    = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
-            [[maybe_unused]] const BufferType bufferType     = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
+            [[maybe_unused]] const std::string & group                      = SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME,
+            [[maybe_unused]] const std::string & unit                       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
+            [[maybe_unused]] const std::size_t divider                      = SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
+            [[maybe_unused]] const LogElementAction action                  = SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
+            [[maybe_unused]] const BufferType bufferType                    = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE,
+            [[maybe_unused]] const std::optional<std::size_t> bufferSize    = std::nullopt)
   {
   }
 

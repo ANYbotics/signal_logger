@@ -74,6 +74,7 @@ if("$ENV{ROS_VERSION}" STREQUAL "1")
       test/ros.test
       test/test_main.cpp
       test/test_${PROJECT_NAME}.cpp
+      test/test_${PROJECT_NAME}_buffer_size.cpp
     )
 
     if(TARGET test_${PROJECT_NAME})
@@ -163,6 +164,7 @@ else() # ROS version 2
     ament_add_gtest(
       test_${PROJECT_NAME}
       test/test_${PROJECT_NAME}.cpp
+      test/test_${PROJECT_NAME}_buffer_size.cpp
       test/test_main.cpp
     )
     target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME})

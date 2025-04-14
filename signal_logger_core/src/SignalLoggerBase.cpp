@@ -65,6 +65,9 @@ void SignalLoggerBase::initLogger(const SignalLoggerOptions& options)
 
   // Set configuration
   options_ = options;
+  
+  // Set default buffer size   
+  logElementDefaultBufferSize_ = static_cast<std::size_t>(options_.maxLoggingTime_ * options_.updateFrequency_);
 
   // Init time element
   initTimeLogElement();

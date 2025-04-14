@@ -19,6 +19,7 @@
 #include "signal_logger/SignalLoggerNone.hpp"
 
 #include <memory>
+#include <optional>
 #include "assert.h"
 
 namespace signal_logger {
@@ -62,34 +63,34 @@ void setSignalLogger(const std::string& name, rclcpp::Node::SharedPtr nh);
   * @param  unit             unit of the log variable
   * @param  divider          divider is defining the update frequency of the logger element (ctrl_freq/divider)
   * @param  action           log action of the log variable
-  * @param  bufferSize       size of the buffer storing log elements
   * @param  bufferType       determines the buffer type
+  * @param  bufferSize       optional size of the buffer storing log elements
   */
 template<typename ValueType_>
 void add( const ValueType_ & var,
           const std::string & name,
-          const std::string & group       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME,
-          const std::string & unit        = SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
-          const std::size_t divider       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
-          const LogElementAction action   = SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
-          const std::size_t bufferSize    = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
-          const BufferType bufferType     = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
+          const std::string & group                      = SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME,
+          const std::string & unit                       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
+          const std::size_t divider                      = SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
+          const LogElementAction action                  = SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
+          const BufferType bufferType                    = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE,
+          const std::optional<std::size_t> bufferSize    = std::nullopt)
 {
       signal_logger_ros::SignalLoggerRos* slRos = dynamic_cast<signal_logger_ros::SignalLoggerRos*>(logger.get());
       if(slRos) {
-        slRos->add<ValueType_>(&var, name, group, unit, divider, action, bufferSize, bufferType);
+        slRos->add<ValueType_>(&var, name, group, unit, divider, action, bufferType, bufferSize);
         return;
       }
 
     signal_logger_std::SignalLoggerStd* slStd = dynamic_cast<signal_logger_std::SignalLoggerStd*>(logger.get());
     if(slStd) {
-      slStd->add<ValueType_>(&var, name, group, unit, divider, action, bufferSize, bufferType);
+      slStd->add<ValueType_>(&var, name, group, unit, divider, action, bufferType, bufferSize);
       return;
     }
 
     SignalLoggerNone* slNone = dynamic_cast<SignalLoggerNone*>(logger.get());
     if(slNone) {
-      slNone->add<ValueType_>(&var, name, group, unit, divider, action, bufferSize, bufferType);
+      slNone->add<ValueType_>(&var, name, group, unit, divider, action, bufferType, bufferSize);
       return;
     }
 }
@@ -101,19 +102,19 @@ void add( const ValueType_ & var,
   *@param unit           unit of the log variable
   *@param divider        divider is defining the update frequency of the logger element (ctrl_freq/divider)
   *@param action         log action of the log variable
-  *@param bufferSize     size of the buffer storing log elements
   *@param bufferType     determines type of buffer
+  *@param bufferSize     optional size of the buffer storing log elements
   */
 template<typename ValueType_>
 typename std::enable_if<std::is_base_of<Eigen::MatrixBase<ValueType_>, ValueType_>::value>::type
 add(const ValueType_ & var,
     Eigen::Ref<MatrixXstring> names,
-    const std::string & group       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME,
-    const std::string & unit        = SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
-    const std::size_t divider       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
-    const LogElementAction action   = SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
-    const std::size_t bufferSize    = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
-    const BufferType bufferType     = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE)
+    const std::string & group                      = SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME,
+    const std::string & unit                       = SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
+    const std::size_t divider                      = SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
+    const LogElementAction action                  = SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
+    const BufferType bufferType                    = SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE,
+    const std::optional<std::size_t> bufferSize    = std::nullopt)
 {
   assert(names.rows() == var.rows() && "rows() have different size in add");
   assert(names.cols() == var.cols() && "cols() have different size in add");
@@ -126,8 +127,8 @@ add(const ValueType_ & var,
                                      unit,
                                      divider,
                                      action,
-                                     bufferSize,
-                                     bufferType);
+                                     bufferType,
+                                     bufferSize);
   }
 }
 

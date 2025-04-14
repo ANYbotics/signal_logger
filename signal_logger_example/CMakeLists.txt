@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.16.3)
 project(signal_logger_example)
 
-add_definitions(-std=c++11 -Wall)
+add_definitions(-Wall)
+set(CMAKE_CXX_STANDARD 17)
 
 find_package(catkin REQUIRED COMPONENTS
   any_node

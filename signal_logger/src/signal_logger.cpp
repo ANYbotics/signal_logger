@@ -20,8 +20,8 @@ template void add( const double & var,
                    const std::string & unit,
                    const std::size_t divider,
                    const LogElementAction action,
-                   const std::size_t bufferSize,
-                   const BufferType bufferType);
+                   const BufferType bufferType,
+                   const std::optional<std::size_t> bufferSize);
 
 template void add( const float & var,
                    const std::string & name,
@@ -29,8 +29,8 @@ template void add( const float & var,
                    const std::string & unit,
                    const std::size_t divider,
                    const LogElementAction action,
-                   const std::size_t bufferSize,
-                   const BufferType bufferType);
+                   const BufferType bufferType,
+                   const std::optional<std::size_t> bufferSize);
 
 template void add( const int & var,
                    const std::string & name,
@@ -38,8 +38,8 @@ template void add( const int & var,
                    const std::string & unit,
                    const std::size_t divider,
                    const LogElementAction action,
-                   const std::size_t bufferSize,
-                   const BufferType bufferType);
+                   const BufferType bufferType,
+                   const std::optional<std::size_t> bufferSize);
 
 template void add( const Eigen::Vector3d & var,
                    const std::string & name,
@@ -47,8 +47,8 @@ template void add( const Eigen::Vector3d & var,
                    const std::string & unit,
                    const std::size_t divider,
                    const LogElementAction action,
-                   const std::size_t bufferSize,
-                   const BufferType bufferType);
+                   const BufferType bufferType,
+                   const std::optional<std::size_t> bufferSize);
 
 
 //! Initialize logger with standard logger.

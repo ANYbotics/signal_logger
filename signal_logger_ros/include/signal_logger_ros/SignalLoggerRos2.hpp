@@ -47,8 +47,8 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd {
    * @param  unit             unit of the log variable
    * @param  divider          divider is defining the update frequency of the logger element (ctrl_freq/divider)
    * @param  action           log action of the log variable
-   * @param  bufferSize       size of the buffer storing log elements
    * @param  bufferType       determines the buffer type
+   * @param  bufferSize       size of the buffer storing log elements. The logElementDefaultBufferSize_ is used if not set.
    */
   template <typename ValueType_>
   void add(const ValueType_* const var, const std::string& name,
@@ -56,14 +56,14 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd {
            const std::string& unit = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT,
            const std::size_t divider = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
            const signal_logger::LogElementAction action = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
-           const std::size_t bufferSize = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_SIZE,
-           const signal_logger::BufferType bufferType = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE) {
+           const signal_logger::BufferType bufferType = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE,
+           std::optional<std::size_t> bufferSize = std::nullopt){
     std::string elementName = options_.loggerPrefix_ + "/" + group + "/" + name;
     elementName.erase(std::unique(elementName.begin(), elementName.end(), signal_logger::both_slashes()), elementName.end());
     {
       // Lock the logger (blocking!)
       boost::unique_lock<boost::shared_mutex> addLoggerLock(loggerMutex_);
-      logElementsToAdd_[elementName].reset(new LogElementRos<ValueType_>(var, bufferType, bufferSize, elementName, unit, divider, action,
+      logElementsToAdd_[elementName].reset(new LogElementRos<ValueType_>(var, bufferType, bufferSize.value_or(logElementDefaultBufferSize_), elementName, unit, divider, action,
                                                                          &textStream_, &binaryStream_, node_, bagWriter_));
     }
   }

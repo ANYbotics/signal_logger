@@ -63,7 +63,7 @@ signal_logger::logger->initLogger(options);
 To add a variable to the logger use the signal_logger::add() function. This function is templated and most types are supported. A subset of the supported
 types is given in LogElementTypes.hpp. Variables can also be added in helper libraries of your main application.
 \code{c}
-signal_logger::add(myVar, name, group, unit, divider, action, bufferSize, bufferType);
+signal_logger::add(myVar, name, group, unit, divider, action, bufferType, bufferSize);
 \endcode
 <ul>
   <li> <I><B>myVar:</B></I> The variable you want to log. The ptr to this variable has to be constant and valid until the end of the program. </li>
@@ -72,8 +72,8 @@ signal_logger::add(myVar, name, group, unit, divider, action, bufferSize, buffer
   <li> <I><B>unit:</B></I> The physical unit of the logged variable.</li>
   <li> <I><B>divider:</B></I> The default divider of the log variable. (divider = 'collect frequency' / 'log var frequency') )</li>
   <li> <I><B>action:</B></I> The action that shall be performed for the log element. (see signal_logger::LogElementAction) </li>
-  <li> <I><B>bufferSize:</B></I> The size of the buffer.</li>
   <li> <I><B>bufferType:</B></I> The type of the buffer. (see signal_logger::BufferType)</li>
+  <li> <I><B>bufferSize:</B></I> The size of the buffer.</li>
 </ul>
 
 However, this will have no effect until the update function signal_logger::SignalLoggerBase::updateLogger() is called. Try to call this function at the end of the

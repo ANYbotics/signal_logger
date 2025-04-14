@@ -44,13 +44,13 @@ bool SignalLoggerExample::init()
 
   // Add different logger variables and default settings
   signal_logger::add(logVar_, "logVar1", "ns1", "[m]", 1, signal_logger::LogElementAction::SAVE,
-   100, signal_logger::BufferType::FIXED_SIZE);
+   signal_logger::BufferType::FIXED_SIZE, 100);
   signal_logger::add(logVar_, "logVar2", "ns1", "[sec]", 2, signal_logger::LogElementAction::SAVE_AND_PUBLISH,
-   200, signal_logger::BufferType::FIXED_SIZE);
+   signal_logger::BufferType::FIXED_SIZE, 200);
   signal_logger::add(logVar_, "logVar3", "ns1", "[N]", 1, signal_logger::LogElementAction::PUBLISH,
-   100, signal_logger::BufferType::LOOPING);
+   signal_logger::BufferType::LOOPING, 100);
   signal_logger::add(logVar_, "logVar4", "ns1", "[kg]", 3, signal_logger::LogElementAction::SAVE_AND_PUBLISH ,
-   10, signal_logger::BufferType::EXPONENTIALLY_GROWING);
+   signal_logger::BufferType::EXPONENTIALLY_GROWING, 10);
 
   // Add stl container types
   signal_logger::add(string_, "string", "nsSTL");
@@ -68,9 +68,9 @@ bool SignalLoggerExample::init()
 
   // Add a fifth element in a different namespace ns2
   signal_logger::add(logVar_, "logVar5", "ns2", "[m]", 5, signal_logger::LogElementAction::SAVE ,
-                     1000, signal_logger::BufferType::LOOPING);
+                     signal_logger::BufferType::LOOPING, 1000);
   signal_logger::add(logVar_, "logVar6", "ns2", "[deg]", 1, signal_logger::LogElementAction::SAVE_AND_PUBLISH ,
-                     50, signal_logger::BufferType::EXPONENTIALLY_GROWING);
+                     signal_logger::BufferType::EXPONENTIALLY_GROWING, 50);
 
   // Call update logger without loading any script to keep the default settings of logVar5
   signal_logger::logger->updateLogger(false);

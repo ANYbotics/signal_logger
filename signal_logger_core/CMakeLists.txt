@@ -127,7 +127,7 @@ else() # ROS version 2
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
   )
-  target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} yaml-cpp)
   ament_target_dependencies(${PROJECT_NAME} ${PACKAGE_DEPENDENCIES})
 
   #############
