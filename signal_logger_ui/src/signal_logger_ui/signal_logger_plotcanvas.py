@@ -748,6 +748,10 @@ class SimpleAxesDialog(QDialog):
 class PlotCanvasWithToolbar(PlotFigure, QWidget):
 
     def __init__(self, parent=None):
+
+        # Reset value to set the current working directory as the default save directory
+        matplotlib.rcParams['savefig.directory'] = ""
+
         PlotFigure.__init__(self)
         QWidget.__init__(self, parent)
 
