@@ -26,7 +26,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from PySide2 import QtGui, QtWidgets
+from PySide2 import QtGui, QtWidgets, QtCore
 
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QDialog
 
@@ -47,8 +47,10 @@ from math import asin, atan2
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from numpy import array
-from signal_logger.config import TOPIC_SEPARATOR as _SEP
+from enum import Enum
+import itertools
 
+from signal_logger.config import TOPIC_SEPARATOR as _SEP
 from .signal_logger_types import LineStyle
 
 
@@ -81,6 +83,15 @@ def rpy_from_quat(quat):
         quat[1] ** 2 + quat[0] ** 2 - quat[3] ** 2 - quat[2] ** 2)
     return array([roll, pitch, yaw])
 
+class LegendInfo(Enum):
+    """
+    Define how much information is displayed for every entry in the legend.
+    Note: first element in the list will be treated as the default option.
+    """
+    NAME_AND_VALUE = 1      # Show the name and the current value in the cursor position
+    NAME_AND_MINMAX = 2     # Show the name and the min/max values of the series
+    NAME_ONLY = 3           # Show only the name of the data series
+    NO_LEGEND = 4           # Do not show the legend at all
 
 class PlotFigure(object):
     def __init__(self):
@@ -116,6 +127,12 @@ class PlotFigure(object):
         self.computed_data = {}
         self.axes_plots = OrderedDict()
         self.axes2_plots = OrderedDict()
+
+        self._legend_left_handle = None
+        self._legend_right_handle = None
+        self.legend_types_iterator = itertools.cycle(LegendInfo)
+        # Set the legend type to the first element in LegendInfo enum
+        self.legend_type = next(self.legend_types_iterator)
 
         self.vline = None 
         self.vline2 = None 
@@ -326,15 +343,22 @@ class PlotFigure(object):
         self._legend_right()
 
     def _legend_left(self):
-        if len(self.axes_plots) > 0:
-            self.axes.legend(
+        # Remove previous legend if it exists
+        if self._legend_left_handle is not None:
+            self._legend_left_handle.remove()
+            self._legend_left_handle = None
+        if len(self.axes_plots) > 0 and self.legend_type != LegendInfo.NO_LEGEND:
+            self._legend_left_handle = self.axes.legend(
                 bbox_to_anchor=(-0.1, 1.02, 0.6, .102), loc=2,
                 ncol=self._y1_legend_ncol, mode="expand", borderaxespad=0.5,
                 fontsize=self._legend_fontsize)
 
     def _legend_right(self):
-        if len(self.axes2_plots):
-            self.axes2.legend(
+        if self._legend_right_handle is not None:
+            self._legend_right_handle.remove()
+            self._legend_right_handle = None
+        if len(self.axes2_plots) > 0 and self.legend_type != LegendInfo.NO_LEGEND:
+            self._legend_right_handle = self.axes2.legend(
                 bbox_to_anchor=(0.5, 1.02, 0.6, .102), loc=2,
                 ncol=self._y2_legend_ncol, mode="expand", borderaxespad=0.5,
                 fontsize=self._legend_fontsize)
@@ -755,12 +779,18 @@ class PlotCanvasWithToolbar(PlotFigure, QWidget):
         PlotFigure.__init__(self)
         QWidget.__init__(self, parent)
 
-        self.hover_active = True
+        # Flag to check if the mouse is hovering over the canvas region
         self.hover_over_canvas = False
+        self.hover_active = True
+
         self.canvas = FigureCanvas(self.fig)
         self.canvas.mpl_connect('draw_event', self.on_draw)
         self.canvas.mpl_connect('motion_notify_event', self.on_hover)
         self.canvas.mpl_connect("button_press_event", self.on_click)
+        self.canvas.mpl_connect("key_press_event", self.on_key_press)
+
+        self.canvas.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.canvas.setFocus()
 
         self.toolbar = NavigationToolbar(self.canvas, self)
         self.toolbar.pan()  # Pan by default
@@ -792,15 +822,79 @@ class PlotCanvasWithToolbar(PlotFigure, QWidget):
     def axesDialog(self):
         SimpleAxesDialog(self).exec_()
 
+    def on_key_press(self, event):
+
+        # 1. Pick the next legend type
+        if event.key == "l":
+            self.legend_type = next(self.legend_types_iterator)
+        else:
+            return
+
+        # 2. Update the legend based on the current legend type
+
+        #   If legend is now showing names and values,
+        #   then run the hover function to update labels with current values
+        if self.legend_type == LegendInfo.NAME_AND_VALUE:
+            self.hover_active = True
+            self.on_hover(event)
+            return
+
+        #   If legend is now only showing names, 
+        #   then remove the vertical lines and restore legend labels
+        if self.legend_type == LegendInfo.NAME_ONLY:
+            if self.axes_plots: 
+                if self.vline:
+                    self.vline.set_xdata(numpy.nan)
+                for key, ax in self.axes_plots.items():
+                    ax.set_label(f"{key}")
+
+            if self.axes2_plots:
+                if self.vline2:
+                    self.vline2.set_xdata(numpy.nan)
+                for key, ax in self.axes2_plots.items():
+                    ax.set_label(f"{key}")
+
+        #   If legend is now showing names and min/max values,
+        #   then calculate the min and max values for each plot and update the labels accordingly
+        elif self.legend_type == LegendInfo.NAME_AND_MINMAX:
+            if self.axes_plots: 
+                if self.vline:
+                    self.vline.set_xdata(numpy.nan)
+                for key, ax in self.axes_plots.items():
+                    # Calculate the max and min y values for the current x data
+                    y_max = numpy.max(self.data[key])
+                    y_min = numpy.min(self.data[key])
+                    # Set the label to the key and the y range
+                    ax.set_label(f"{key}  [{y_min:.2f}, {y_max:.2f}]")
+
+            if self.axes2_plots:
+                if self.vline2:
+                    self.vline2.set_xdata(numpy.nan)
+                for key, ax in self.axes2_plots.items():
+                    # Calculate the max and min y values for the current x data
+                    y_max = numpy.max(self.data[key])
+                    y_min = numpy.min(self.data[key])
+                    # Set the label to the key and the y range
+                    ax.set_label(f"{key}  [{y_min:.2f}, {y_max:.2f}]")
+                    
+        # Refresh the plot and legends to apply the changes
+        self._legend_left()
+        self._legend_right()
+        self.canvas.draw()
+
     def on_click(self, event):
-        if event.button == 1 and self.hover_over_canvas:
+
+        if event.button == 1 and self.legend_type == LegendInfo.NAME_AND_VALUE:
+            # Toggle hover state on left click
             self.hover_active = not self.hover_active 
 
     def on_hover(self, event):
         if event.inaxes in [self.axes, self.axes2]:  # Ensure the mouse is inside the plot area
             self.hover_over_canvas = True
-            if not self.hover_active:
+
+            if not (self.legend_type == LegendInfo.NAME_AND_VALUE and self.hover_active):
                 return
+            
             x_hover = event.xdata
             if x_hover is None:
                 return

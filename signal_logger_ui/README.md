@@ -29,7 +29,17 @@ alias silo='rosrun signal_logger_ui signal_logger_ui'
 So that ``silo motion`` opens the most recent log file recorder with the
 motion control manager
 
-## Embedded IPython shell
+### Legend
+There are 3+1 legend types:
+
+* Name and value (active type by default): shows the signal names and their value at the position where the mouse cursor is. By clicking on the plot area, the vertical line and value shown remain fixed.
+* Name and min/max values: numbers refer to the minimum and maximum values across the whole signal, regardless of the area of the plot on screen
+* Name only
+* No legend at all
+
+One can switch through the different legend types by pressing the "l" key. Note that the plot subwindow must be on focus to receive the key stroke.
+
+### Embedded IPython shell
 
 There is an embedded IPython shell (hidden by default, you need to slide it up)
 at the bottom of every window. You can read signals there via the `silo`
