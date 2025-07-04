@@ -57,14 +57,15 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd {
            const std::size_t divider = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_DIVIDER,
            const signal_logger::LogElementAction action = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_ACTION,
            const signal_logger::BufferType bufferType = signal_logger::SignalLoggerBase::LOG_ELEMENT_DEFAULT_BUFFER_TYPE,
-           std::optional<std::size_t> bufferSize = std::nullopt){
+           std::optional<std::size_t> bufferSize = std::nullopt) {
     std::string elementName = options_.loggerPrefix_ + "/" + group + "/" + name;
     elementName.erase(std::unique(elementName.begin(), elementName.end(), signal_logger::both_slashes()), elementName.end());
     {
       // Lock the logger (blocking!)
       boost::unique_lock<boost::shared_mutex> addLoggerLock(loggerMutex_);
-      logElementsToAdd_[elementName].reset(new LogElementRos<ValueType_>(var, bufferType, bufferSize.value_or(logElementDefaultBufferSize_), elementName, unit, divider, action,
-                                                                         &textStream_, &binaryStream_, node_, bagWriter_));
+      logElementsToAdd_[elementName].reset(new LogElementRos<ValueType_>(var, bufferType, bufferSize.value_or(logElementDefaultBufferSize_),
+                                                                         elementName, unit, divider, action, &textStream_, &binaryStream_,
+                                                                         node_, bagWriter_));
     }
   }
 
@@ -84,61 +85,61 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd {
    *  @param  req empty request
    *  @param  res logger_namespace, script_filepath, log_element_names, collect_frequency
    */
-  void getLoggerConfiguration(signal_logger_msgs::srv::GetLoggerConfiguration::Request::SharedPtr req,
-                              signal_logger_msgs::srv::GetLoggerConfiguration::Response::SharedPtr res);
+  void getLoggerConfigurationCb(signal_logger_msgs::srv::GetLoggerConfiguration::Request::SharedPtr req,
+                                signal_logger_msgs::srv::GetLoggerConfiguration::Response::SharedPtr res);
 
   /** Get logger element
    *  @param  req element name
    *  @param  res logger element
    */
-  void getLoggerElement(signal_logger_msgs::srv::GetLoggerElement::Request::SharedPtr req,
-                        signal_logger_msgs::srv::GetLoggerElement::Response::SharedPtr res);
+  void getLoggerElementCb(signal_logger_msgs::srv::GetLoggerElement::Request::SharedPtr req,
+                          signal_logger_msgs::srv::GetLoggerElement::Response::SharedPtr res);
 
   /** Set logger element
    *  @param  req log element
    *  @param  res success status
    */
-  void setLoggerElement(signal_logger_msgs::srv::SetLoggerElement::Request::SharedPtr req,
-                        signal_logger_msgs::srv::SetLoggerElement::Response::SharedPtr res);
+  void setLoggerElementCb(signal_logger_msgs::srv::SetLoggerElement::Request::SharedPtr req,
+                          signal_logger_msgs::srv::SetLoggerElement::Response::SharedPtr res);
 
   /** Start Logger
    *  @param  req empty request
    *  @param  res success status
    */
-  void startLogger(std_srvs::srv::Trigger::Request::SharedPtr req, std_srvs::srv::Trigger::Response::SharedPtr res);
+  void startLoggerCb(std_srvs::srv::Trigger::Request::SharedPtr req, std_srvs::srv::Trigger::Response::SharedPtr res);
 
   /** Stop Logger
    *  @param  req empty request
    *  @param  res success status
    */
-  void stopLogger(std_srvs::srv::Trigger::Request::SharedPtr req, std_srvs::srv::Trigger::Response::SharedPtr res);
+  void stopLoggerCb(std_srvs::srv::Trigger::Request::SharedPtr req, std_srvs::srv::Trigger::Response::SharedPtr res);
 
   /** Save Logger data
    *  @param  req empty request
    *  @param  res success status
    */
-  void saveLoggerData(signal_logger_msgs::srv::SaveLoggerData::Request::SharedPtr req,
-                      signal_logger_msgs::srv::SaveLoggerData::Response::SharedPtr res);
+  void saveLoggerDataCb(signal_logger_msgs::srv::SaveLoggerData::Request::SharedPtr req,
+                        signal_logger_msgs::srv::SaveLoggerData::Response::SharedPtr res);
 
   /** Is logger running
    *  @param  req empty request
    *  @param  res is logger running flag
    */
-  void isLoggerRunning(std_srvs::srv::Trigger::Request::SharedPtr req, std_srvs::srv::Trigger::Response::SharedPtr res);
+  void isLoggerRunningCb(std_srvs::srv::Trigger::Request::SharedPtr req, std_srvs::srv::Trigger::Response::SharedPtr res);
 
   /** Load logger script
    *  @param  req file path
    *  @param  res success status
    */
-  void loadLoggerScript(signal_logger_msgs::srv::EditLoggerScript::Request::SharedPtr req,
-                        signal_logger_msgs::srv::EditLoggerScript::Response::SharedPtr res);
+  void loadLoggerScriptCb(signal_logger_msgs::srv::EditLoggerScript::Request::SharedPtr req,
+                          signal_logger_msgs::srv::EditLoggerScript::Response::SharedPtr res);
 
   /** Save logger script
    *  @param  req file path
    *  @param  res success status
    */
-  void saveLoggerScript(signal_logger_msgs::srv::EditLoggerScript::Request::SharedPtr req,
-                        signal_logger_msgs::srv::EditLoggerScript::Response::SharedPtr res);
+  void saveLoggerScriptCb(signal_logger_msgs::srv::EditLoggerScript::Request::SharedPtr req,
+                          signal_logger_msgs::srv::EditLoggerScript::Response::SharedPtr res);
 
   /** Write log element to msg
    *  @param  name log element name

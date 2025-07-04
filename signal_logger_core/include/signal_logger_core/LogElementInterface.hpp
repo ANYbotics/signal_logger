@@ -28,11 +28,8 @@ namespace signal_logger {
 class LogElementInterface
 {
  public:
-  //! Default constructor
-  LogElementInterface() { }
-
   //! Destructor
-  virtual ~LogElementInterface() { }
+  virtual ~LogElementInterface() = default;
 
   //! Reads pointer and pushes the data into the buffer
   virtual void collectData() = 0;

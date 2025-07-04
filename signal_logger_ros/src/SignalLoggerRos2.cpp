@@ -17,23 +17,23 @@ namespace signal_logger_ros {
 
 SignalLoggerRos::SignalLoggerRos(rclcpp::Node::SharedPtr node) : node_(std::move(node)) {
   getLoggerConfigurationService_ = node_->create_service<signal_logger_msgs::srv::GetLoggerConfiguration>(
-      "silo_ros/get_logger_configuration", std::bind(&SignalLoggerRos::getLoggerConfiguration, this, _1, _2));
+      "silo_ros/get_logger_configuration", std::bind(&SignalLoggerRos::getLoggerConfigurationCb, this, _1, _2));
   getLoggerElementService_ = node_->create_service<signal_logger_msgs::srv::GetLoggerElement>(
-      "silo_ros/get_logger_element", std::bind(&SignalLoggerRos::getLoggerElement, this, _1, _2));
+      "silo_ros/get_logger_element", std::bind(&SignalLoggerRos::getLoggerElementCb, this, _1, _2));
   setLoggerElementService_ = node_->create_service<signal_logger_msgs::srv::SetLoggerElement>(
-      "silo_ros/set_logger_element", std::bind(&SignalLoggerRos::setLoggerElement, this, _1, _2));
+      "silo_ros/set_logger_element", std::bind(&SignalLoggerRos::setLoggerElementCb, this, _1, _2));
   startLoggerService_ =
-      node_->create_service<std_srvs::srv::Trigger>("silo_ros/start_logger", std::bind(&SignalLoggerRos::startLogger, this, _1, _2));
+      node_->create_service<std_srvs::srv::Trigger>("silo_ros/start_logger", std::bind(&SignalLoggerRos::startLoggerCb, this, _1, _2));
   stopLoggerService_ =
-      node_->create_service<std_srvs::srv::Trigger>("silo_ros/stop_logger", std::bind(&SignalLoggerRos::stopLogger, this, _1, _2));
+      node_->create_service<std_srvs::srv::Trigger>("silo_ros/stop_logger", std::bind(&SignalLoggerRos::stopLoggerCb, this, _1, _2));
   saveLoggerDataService_ = node_->create_service<signal_logger_msgs::srv::SaveLoggerData>(
-      "silo_ros/save_logger_data", std::bind(&SignalLoggerRos::saveLoggerData, this, _1, _2));
+      "silo_ros/save_logger_data", std::bind(&SignalLoggerRos::saveLoggerDataCb, this, _1, _2));
   loadLoggerScriptService_ = node_->create_service<signal_logger_msgs::srv::EditLoggerScript>(
-      "silo_ros/load_logger_script", std::bind(&SignalLoggerRos::loadLoggerScript, this, _1, _2));
+      "silo_ros/load_logger_script", std::bind(&SignalLoggerRos::loadLoggerScriptCb, this, _1, _2));
   saveLoggerScriptService_ = node_->create_service<signal_logger_msgs::srv::EditLoggerScript>(
-      "silo_ros/save_logger_script", std::bind(&SignalLoggerRos::saveLoggerScript, this, _1, _2));
+      "silo_ros/save_logger_script", std::bind(&SignalLoggerRos::saveLoggerScriptCb, this, _1, _2));
   isLoggerRunningService_ = node_->create_service<std_srvs::srv::Trigger>("silo_ros/is_logger_running",
-                                                                          std::bind(&SignalLoggerRos::isLoggerRunning, this, _1, _2));
+                                                                          std::bind(&SignalLoggerRos::isLoggerRunningCb, this, _1, _2));
 }
 
 bool SignalLoggerRos::cleanup() {
@@ -96,8 +96,9 @@ bool SignalLoggerRos::workerSaveData(const std::string& logFileName, const std::
   return success;
 }
 
-void SignalLoggerRos::getLoggerConfiguration([[maybe_unused]] const signal_logger_msgs::srv::GetLoggerConfiguration::Request::SharedPtr req,
-                                             signal_logger_msgs::srv::GetLoggerConfiguration::Response::SharedPtr res) {
+void SignalLoggerRos::getLoggerConfigurationCb(
+    [[maybe_unused]] const signal_logger_msgs::srv::GetLoggerConfiguration::Request::SharedPtr req,
+    signal_logger_msgs::srv::GetLoggerConfiguration::Response::SharedPtr res) {
   {
     boost::shared_lock<boost::shared_mutex> getLoggerConfigurationLock(loggerMutex_);
     for (auto& elem : this->logElements_) {
@@ -114,15 +115,15 @@ void SignalLoggerRos::getLoggerConfiguration([[maybe_unused]] const signal_logge
   }
 }
 
-void SignalLoggerRos::getLoggerElement(const signal_logger_msgs::srv::GetLoggerElement::Request::SharedPtr req,
-                                       signal_logger_msgs::srv::GetLoggerElement::Response::SharedPtr res) {
+void SignalLoggerRos::getLoggerElementCb(const signal_logger_msgs::srv::GetLoggerElement::Request::SharedPtr req,
+                                         signal_logger_msgs::srv::GetLoggerElement::Response::SharedPtr res) {
   signal_logger_msgs::msg::LogElement elem_msg;
   res->success = logElementtoMsg(req->name, elem_msg);
   res->log_element = elem_msg;
 }
 
-void SignalLoggerRos::setLoggerElement(const signal_logger_msgs::srv::SetLoggerElement::Request::SharedPtr req,
-                                       signal_logger_msgs::srv::SetLoggerElement::Response::SharedPtr res) {
+void SignalLoggerRos::setLoggerElementCb(const signal_logger_msgs::srv::SetLoggerElement::Request::SharedPtr req,
+                                         signal_logger_msgs::srv::SetLoggerElement::Response::SharedPtr res) {
   if (isCollectingData_) {
     res->success = false;
   } else {
@@ -130,18 +131,18 @@ void SignalLoggerRos::setLoggerElement(const signal_logger_msgs::srv::SetLoggerE
   }
 }
 
-void SignalLoggerRos::startLogger([[maybe_unused]] const std_srvs::srv::Trigger::Request::SharedPtr req,
-                                  std_srvs::srv::Trigger::Response::SharedPtr res) {
+void SignalLoggerRos::startLoggerCb([[maybe_unused]] const std_srvs::srv::Trigger::Request::SharedPtr req,
+                                    std_srvs::srv::Trigger::Response::SharedPtr res) {
   res->success = signal_logger::SignalLoggerBase::startLogger();
 }
 
-void SignalLoggerRos::stopLogger([[maybe_unused]] const std_srvs::srv::Trigger::Request::SharedPtr req,
-                                 std_srvs::srv::Trigger::Response::SharedPtr res) {
+void SignalLoggerRos::stopLoggerCb([[maybe_unused]] const std_srvs::srv::Trigger::Request::SharedPtr req,
+                                   std_srvs::srv::Trigger::Response::SharedPtr res) {
   res->success = signal_logger::SignalLoggerBase::stopLogger();
 }
 
-void SignalLoggerRos::saveLoggerData(const signal_logger_msgs::srv::SaveLoggerData::Request::SharedPtr req,
-                                     signal_logger_msgs::srv::SaveLoggerData::Response::SharedPtr res) {
+void SignalLoggerRos::saveLoggerDataCb(const signal_logger_msgs::srv::SaveLoggerData::Request::SharedPtr req,
+                                       signal_logger_msgs::srv::SaveLoggerData::Response::SharedPtr res) {
   signal_logger::LogFileTypeSet types;
   for (const auto filetype : req->logfile_types) {
     switch (filetype) {
@@ -164,13 +165,13 @@ void SignalLoggerRos::saveLoggerData(const signal_logger_msgs::srv::SaveLoggerDa
   res->success = signal_logger::SignalLoggerBase::saveLoggerData(types, req->custom_filename);
 }
 
-void SignalLoggerRos::isLoggerRunning([[maybe_unused]] const std_srvs::srv::Trigger::Request::SharedPtr req,
-                                      std_srvs::srv::Trigger::Response::SharedPtr res) {
+void SignalLoggerRos::isLoggerRunningCb([[maybe_unused]] const std_srvs::srv::Trigger::Request::SharedPtr req,
+                                        std_srvs::srv::Trigger::Response::SharedPtr res) {
   res->success = this->isCollectingData_;
 }
 
-void SignalLoggerRos::loadLoggerScript(const signal_logger_msgs::srv::EditLoggerScript::Request::SharedPtr req,
-                                       signal_logger_msgs::srv::EditLoggerScript::Response::SharedPtr res) {
+void SignalLoggerRos::loadLoggerScriptCb(const signal_logger_msgs::srv::EditLoggerScript::Request::SharedPtr req,
+                                         signal_logger_msgs::srv::EditLoggerScript::Response::SharedPtr res) {
   if (isCollectingData_) {
     res->success = false;
   } else {
@@ -178,8 +179,8 @@ void SignalLoggerRos::loadLoggerScript(const signal_logger_msgs::srv::EditLogger
   }
 }
 
-void SignalLoggerRos::saveLoggerScript(const signal_logger_msgs::srv::EditLoggerScript::Request::SharedPtr req,
-                                       signal_logger_msgs::srv::EditLoggerScript::Response::SharedPtr res) {
+void SignalLoggerRos::saveLoggerScriptCb(const signal_logger_msgs::srv::EditLoggerScript::Request::SharedPtr req,
+                                         signal_logger_msgs::srv::EditLoggerScript::Response::SharedPtr res) {
   if (isCollectingData_) {
     res->success = false;
   } else {
