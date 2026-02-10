@@ -28,7 +28,7 @@
 
 from PySide2 import QtGui, QtWidgets, QtCore
 
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QDialog
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QDialog, QComboBox
 
 import math
 import numpy
@@ -88,10 +88,10 @@ class LegendInfo(Enum):
     Define how much information is displayed for every entry in the legend.
     Note: first element in the list will be treated as the default option.
     """
-    NAME_AND_VALUE = 1      # Show the name and the current value in the cursor position
-    NAME_AND_MINMAX = 2     # Show the name and the min/max values of the series
-    NAME_ONLY = 3           # Show only the name of the data series
-    NO_LEGEND = 4           # Do not show the legend at all
+    NAME_AND_VALUE = "Name and value"       # Show the name and the current value in the cursor position
+    NAME_AND_MINMAX = "Name and min/max"    # Show the name and the min/max values of the series
+    NAME_ONLY = "Name only"                 # Show only the name of the data series
+    NO_LEGEND = "No legend"                 # Do not show the legend at all
 
 class PlotFigure(object):
     def __init__(self):
@@ -819,68 +819,29 @@ class PlotCanvasWithToolbar(PlotFigure, QWidget):
         self.y2_locked.toggled.connect(self.y2_locked_changed)
         self.y2_limits = None
 
+        # Add a QComboBox for selecting legend types
+        self.legend_selector = QComboBox(self)
+        self.legend_selector.addItems([legend_type.value for legend_type in LegendInfo])
+        self.legend_selector.currentTextChanged.connect(self.on_legend_type_changed)
+        layout.addWidget(self.legend_selector)
+
     def axesDialog(self):
         SimpleAxesDialog(self).exec_()
 
+    def on_legend_type_changed(self, name):
+        self.legend_type = LegendInfo(name)
+        self.update_legend()
+
     def on_key_press(self, event):
 
-        # 1. Pick the next legend type
+        # 'L' = Pick the next legend type
         if event.key == "l":
             self.legend_type = next(self.legend_types_iterator)
-        else:
-            return
+            self.legend_selector.setCurrentText(self.legend_type.value)
 
-        # 2. Update the legend based on the current legend type
-
-        #   If legend is now showing names and values,
-        #   then run the hover function to update labels with current values
-        if self.legend_type == LegendInfo.NAME_AND_VALUE:
-            self.hover_active = True
-            self.on_hover(event)
-            return
-
-        #   If legend is now only showing names, 
-        #   then remove the vertical lines and restore legend labels
-        if self.legend_type == LegendInfo.NAME_ONLY:
-            if self.axes_plots: 
-                if self.vline:
-                    self.vline.set_xdata(numpy.nan)
-                for key, ax in self.axes_plots.items():
-                    ax.set_label(f"{key}")
-
-            if self.axes2_plots:
-                if self.vline2:
-                    self.vline2.set_xdata(numpy.nan)
-                for key, ax in self.axes2_plots.items():
-                    ax.set_label(f"{key}")
-
-        #   If legend is now showing names and min/max values,
-        #   then calculate the min and max values for each plot and update the labels accordingly
-        elif self.legend_type == LegendInfo.NAME_AND_MINMAX:
-            if self.axes_plots: 
-                if self.vline:
-                    self.vline.set_xdata(numpy.nan)
-                for key, ax in self.axes_plots.items():
-                    # Calculate the max and min y values for the current x data
-                    y_max = numpy.max(self.data[key])
-                    y_min = numpy.min(self.data[key])
-                    # Set the label to the key and the y range
-                    ax.set_label(f"{key}  [{y_min:.2f}, {y_max:.2f}]")
-
-            if self.axes2_plots:
-                if self.vline2:
-                    self.vline2.set_xdata(numpy.nan)
-                for key, ax in self.axes2_plots.items():
-                    # Calculate the max and min y values for the current x data
-                    y_max = numpy.max(self.data[key])
-                    y_min = numpy.min(self.data[key])
-                    # Set the label to the key and the y range
-                    ax.set_label(f"{key}  [{y_min:.2f}, {y_max:.2f}]")
-                    
-        # Refresh the plot and legends to apply the changes
-        self._legend_left()
-        self._legend_right()
-        self.canvas.draw()
+            # Trigger an on_hover event to show the cursor bar immediately
+            if self.legend_type == LegendInfo.NAME_AND_VALUE:
+                self.on_hover(event)
 
     def on_click(self, event):
 
@@ -946,3 +907,57 @@ class PlotCanvasWithToolbar(PlotFigure, QWidget):
     def y2_locked_changed(self, status):
         self.y2_limits = self._y_lock_changed(
             "Y2", self.y2_locked, self.axes2.get_ylim)
+        
+    def update_legend(self, event=None):
+        # Update the legend based on the current legend type
+
+        #   If legend is now showing names and values,
+        #   then run the hover function to update labels with current values
+        if self.legend_type == LegendInfo.NAME_AND_VALUE:
+            self.hover_active = True
+            if event is not None:
+                self.on_hover(event)
+            return
+
+        #   If legend is now only showing names, 
+        #   then remove the vertical lines and restore legend labels
+        if self.legend_type == LegendInfo.NAME_ONLY:
+            if self.axes_plots: 
+                if self.vline:
+                    self.vline.set_xdata(numpy.nan)
+                for key, ax in self.axes_plots.items():
+                    ax.set_label(f"{key}")
+
+            if self.axes2_plots:
+                if self.vline2:
+                    self.vline2.set_xdata(numpy.nan)
+                for key, ax in self.axes2_plots.items():
+                    ax.set_label(f"{key}")
+
+        #   If legend is now showing names and min/max values,
+        #   then calculate the min and max values for each plot and update the labels accordingly
+        elif self.legend_type == LegendInfo.NAME_AND_MINMAX:
+            if self.axes_plots: 
+                if self.vline:
+                    self.vline.set_xdata(numpy.nan)
+                for key, ax in self.axes_plots.items():
+                    # Calculate the max and min y values for the current x data
+                    y_max = numpy.max(self.data[key])
+                    y_min = numpy.min(self.data[key])
+                    # Set the label to the key and the y range
+                    ax.set_label(f"{key}  [{y_min:.2f}, {y_max:.2f}]")
+
+            if self.axes2_plots:
+                if self.vline2:
+                    self.vline2.set_xdata(numpy.nan)
+                for key, ax in self.axes2_plots.items():
+                    # Calculate the max and min y values for the current x data
+                    y_max = numpy.max(self.data[key])
+                    y_min = numpy.min(self.data[key])
+                    # Set the label to the key and the y range
+                    ax.set_label(f"{key}  [{y_min:.2f}, {y_max:.2f}]")
+                    
+        # Refresh the plot and legends to apply the changes
+        self._legend_left()
+        self._legend_right()
+        self.canvas.draw()
