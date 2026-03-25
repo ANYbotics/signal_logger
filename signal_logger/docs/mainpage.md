@@ -1,127 +1,64 @@
-/*!
-\mainpage Overview
+# Signal Logger Overview
 
-\section signal_logger Signal Logger
-This library provides a logging tool for various data types.
-Following features were implemented:
-<ul>
-  <li>Collect data in a configurable ring buffer</li>
-  <li>Collect different data at different frequencies</li>
-  <li>Log primitive types, Eigen types and Kindr Types</li>
-  <li>Save the logged data to a log file (parallel)</li>
-  <li>Save/Load the logger configuration to/from a .yaml file</li>
-</ul>
-Furthermore a ROS implementation is available, that additionally features:
-<ul>
-  <li>Save the logged data to a bag file (parallel) </li>
-  <li>Publishing the collected data over ROS topics (parallel) </li>
-  <li>Rqt Plugin to configure the logger</li>
-</ul>
+`signal_logger` provides a configurable logging stack for time-series data.
 
-\section source_code Source Code
-The source code is available at <a href="https://github.com/anybotics/signal_logger</a>.
+## Features
 
-\section license License
-This library is <a href="http://www.gnu.org/philosophy/free-sw.html">Free Software</a> and is licensed under <a href="http://opensource.org/licenses/BSD-3-Clause">BSD 3-Clause</a>.
+Core features:
 
-\section acknowledgement Acknowledgement
-Involved people:
- - Gabriel Hottiger
- - Christian Gehring
- - C. Dario Bellicoso
+- configurable ring buffers
+- per-signal logging frequencies
+- support for primitive, Eigen, and Kindr types
+- parallel log-file export
+- YAML-based logger scripts
 
-Contact:
-Christian Gehring  (cgehring ( at ) anybotics.com)
-*/
-//--------------------------------------------------------
-/*! \page getting_started Getting started
+Additional ROS features:
 
-This is a very short guide on how to get started with this library.
+- bag-file export
+- topic publishing
+- RQT-based logger configuration
 
-\section requirements Requirements
-This library is written extensively using C++11.
+## Package Layout
 
- - GCC 4.7 is required at the minimum.
- - <a href="http://wiki.ros.org/catkin">catkin</a> is used to build the library
+- `signal_logger_core`: shared buffer and logger infrastructure
+- `signal_logger_std`: binary and CSV file export
+- `signal_logger_ros`: ROS integration
+- `signal_logger`: convenience package that combines the available logger types
+- `rqt_signal_logger`: RQT GUI for runtime configuration
 
-\section dependencies Dependencies
-The core and std library of the signal logger are non ROS dependent. And only require the following dependencies:
-<ul>
-  <li><a href="https://github.com/anybotics/message_logger">message_logger</a></li>
-  <li><a href="http://eigen.tuxfamily.org">Eigen</a></li>
-  <li><a href="https://github.com/anybotics/kindr">kindr</a></li>
-</ul>
+## Dependencies
 
-The signal_logger package combines all loggers and allows runtime logger type selection.
+The core and standard logger packages are non-ROS and depend primarily on:
 
-The ros logger requires these additional dependencies:
-<ul>
-  <li><a href="http://wiki.ros.org/roscpp">roscpp</a></li>
-  <li><a href="http://wiki.ros.org/std_msgs">std_msgs</a></li>
-  <li><a href="http://wiki.ros.org/geometry_msgs">geometry_msgs</a></li>
-  <li><a href="https://github.com/anybotics/kindr_ros">kindr_msgs</a></li>
-  <li><a href="https://bitbucket.org/leggedrobotics/any_common">bageditor</a></li>
-</ul>
+- `message_logger`
+- `Eigen`
+- `kindr`
 
-The ros rqt_gui plugin needs these two additional dependencies:
-<ul>
-  <li><a href="http://wiki.ros.org/rqt_gui">rqt_gui</a></li>
-  <li><a href="http://wiki.ros.org/rqt_gui_cpp">rqt_gui_cpp</a></li>
-</ul>
+The ROS integration adds dependencies such as `roscpp` or `rclcpp`,
+`std_msgs`, `geometry_msgs`, and `kindr_msgs`.
 
-\section install Installation
-\subsection build_lib_catkin Build the Library with Catkin
+The RQT plugin additionally depends on `rqt_gui` and `rqt_gui_cpp`.
 
-Build signal_logger with [catkin](wiki.ros.org/catkin):
+## Building
 
-\code{.sh}
-cd ~/catkin_ws/src
-git clone https://github.com/anybotics/signal_logger
-catkin_make
-\endcode
+Build the main package in a catkin workspace:
 
-or with [catkin command line tools](http://catkin-tools.readthedocs.org):
-
-\code{.sh}
-cd ~/catkin_ws/src
-git clone https://github.com/anybotics/signal_logger
+```bash
 catkin build signal_logger
-\endcode
+```
 
+Build the RQT plugin as needed:
 
-For additionally building the rqt_signal_logger:
-\code{.sh}
+```bash
 catkin build rqt_signal_logger
-\endcode
+```
 
+## Further Documentation
 
-\subsection build_doc Build this Documentation
-<a href="http://www.stack.nl/~dimitri/doxygen/" >Doxygen</a> needs to be installed to create this documentation.
-
-\code{.sh}
-cd ~/catkin_ws
-catkin build signal_logger_doc
-\endcode
-The doxygen documentation can be found here:
-doc/doxygen/doc/html/index.html
-
-\section sec_continue How to Continue
-\ref page_how_to "How-To" use this library.
-
-*/
-
-//-----------------------------------------------------------
-
-/*!
-\page page_how_to How To
- - \subpage page_use_silo <BR>
- - \subpage page_extend_silo <BR>
- - \subpage page_time <BR>
- - \subpage page_buffer <BR>
- - \subpage page_log_script <BR>
- - \subpage page_log_file
- - \subpage page_rqt_gui
-
-*/
-
-//-----------------------------------------------------------
+- [Use the signal logger in your program](page_use_silo.md)
+- [Extend the signal logger with additional log types](page_extend_silo.md)
+- [Buffer behavior](../../signal_logger_core/docs/page_buffer.md)
+- [Time handling](../../signal_logger_core/docs/page_time.md)
+- [Logger script format](../../signal_logger_core/docs/page_log_script.md)
+- [Log-file format](../../signal_logger_std/docs/page_log_file.md)
+- [RQT GUI](../../rqt_signal_logger/docs/page_rqt_gui.md)
