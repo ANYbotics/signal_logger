@@ -11,33 +11,30 @@ from warnings import warn
 
 from .config import TOPIC_SEPARATOR
 
-
 common_suffixes = []
-common_suffixes.extend(['_angular_{}'.format(coord) for coord in ['x', 'y', 'z']])
-common_suffixes.extend(['_linear_{}'.format(coord) for coord in ['x', 'y', 'z']])
-common_suffixes.extend(['_{}'.format(coord) for coord in ['w', 'x', 'y', 'z']])
+common_suffixes.extend(["_angular_{}".format(coord) for coord in ["x", "y", "z"]])
+common_suffixes.extend(["_linear_{}".format(coord) for coord in ["x", "y", "z"]])
+common_suffixes.extend(["_{}".format(coord) for coord in ["w", "x", "y", "z"]])
 
 
 class Descriptor(object):
-
     """
     Signal descriptor from the log file header.
 
-    See <https://docs.leggedrobotics.com/signal_logger_doc/page_log_file.html>.
+    See the `signal_logger` package documentation for log file details.
     """
 
     def __init__(self, line):
-        split = line.split(' ')
+        split = line.split(" ")
         self.name = self.rename_from_ros(ros_name=split[0])
         self.size = int(split[1])
         self.nb_points = int(split[2])
         self.divider = int(split[3])
-        self.looping = (split[4] == '1')
+        self.looping = split[4] == "1"
         self.data_type = split[5].strip()
 
     def __repr__(self):
-        return "{} ({} points of type {})".format(
-            self.name, self.nb_points, self.data_type)
+        return "{} ({} points of type {})".format(self.name, self.nb_points, self.data_type)
 
     def get_format(self):
         """
@@ -46,25 +43,25 @@ class Descriptor(object):
         :return: C binary format.
         """
         if self.data_type == "double":
-            return 'd'
+            return "d"
         elif self.data_type == "int8":
-            return 'b'
+            return "b"
         elif self.data_type == "int16":
-            return 'h'
+            return "h"
         elif self.data_type == "int32":
-            return 'i'
+            return "i"
         elif self.data_type == "int64":
-            return 'q'
+            return "q"
         elif self.data_type == "uint8":
-            return 'B'
+            return "B"
         elif self.data_type == "uint16":
-            return 'H'
+            return "H"
         elif self.data_type == "uint32":
-            return 'I'
+            return "I"
         elif self.data_type == "uint64":
-            return 'Q'
+            return "Q"
         warn("Unknown data type '{}'".format(self.data_type))
-        return 'd'
+        return "d"
 
     def rename_from_ros(self, ros_name):
         """
@@ -72,20 +69,21 @@ class Descriptor(object):
 
         :return: Name in UI format.
         """
+
         def update_suffix(name):
             if "ulerAnglesZyx" in name:
-                suffix_map = {'_x': 'yaw', '_y': 'pitch', '_z': 'roll'}
+                suffix_map = {"_x": "yaw", "_y": "pitch", "_z": "roll"}
                 for suffix, replacement in suffix_map.items():
                     if name.endswith(suffix):
-                      return name[:-len(suffix)] + TOPIC_SEPARATOR + replacement
+                        return name[: -len(suffix)] + TOPIC_SEPARATOR + replacement
             else:
                 for suffix in common_suffixes:
                     if name.endswith(suffix):
-                        return name[:-len(suffix)] + TOPIC_SEPARATOR + suffix[1:]
+                        return name[: -len(suffix)] + TOPIC_SEPARATOR + suffix[1:]
             return name
 
         name = update_suffix(ros_name)
-        name = name.replace('/', TOPIC_SEPARATOR)
+        name = name.replace("/", TOPIC_SEPARATOR)
         return name
 
 
@@ -103,7 +101,7 @@ class LogReader(object):
 
         :param fpath: Path to file.
         """
-        with open(fpath, 'rb') as fd:
+        with open(fpath, "rb") as fd:
             self._read_header(fd)
             self._read_data(fd)
         self._trim_common_prefix()
@@ -127,8 +125,8 @@ class LogReader(object):
         """
         going_binary = False
         while not going_binary:
-            line = str(fd.readline(), encoding='latin-1')
-            if line.startswith('#'):
+            line = str(fd.readline(), encoding="latin-1")
+            if line.startswith("#"):
                 if "Binary Data" in line:
                     going_binary = True
                 continue
@@ -157,25 +155,22 @@ class LogReader(object):
                     values = struct.unpack(format, bytes)
                     self._data[desc.name].append(values[0])
                 except struct.error as e:
-                    warn("Reading error for '{}': {}".format(
-                        desc.name, str(e)))
+                    warn("Reading error for '{}': {}".format(desc.name, str(e)))
 
     def _trim_common_prefix(self):
         """
         Trim longest common prefix to all signal names.
         """
         common_prefix = commonprefix(list(self._data.keys()))
-        self._data = {key[common_prefix.rfind('/') + 1:]: value for key, value in self._data.items()}
+        self._data = {key[common_prefix.rfind("/") + 1 :]: value for key, value in self._data.items()}
 
     def _compute_time(self):
         """
         Compute standard time axis.
         """
-        assert ("time_s" in self._data and "time_ns" in self._data)
-        assert (len(self._data["time_s"]) == len(self._data["time_ns"]))
-        epoch_times = [
-            self._data["time_s"][i] + 1e-9 * self._data["time_ns"][i]
-            for i in range(len(self._data["time_s"]))]
+        assert "time_s" in self._data and "time_ns" in self._data
+        assert len(self._data["time_s"]) == len(self._data["time_ns"])
+        epoch_times = [self._data["time_s"][i] + 1e-9 * self._data["time_ns"][i] for i in range(len(self._data["time_s"]))]
         start_time = epoch_times[0]
         silo_times = [epoch_times[i] - start_time for i in range(len(self._data["time_s"]))]
         self._data["t"] = silo_times
@@ -191,9 +186,7 @@ class LogReader(object):
         Pad data for items whose size is less than that of data["t"].
         """
         time = self._data["t"]
-        size_differences = {
-            key: len(time) - len(data)
-            for key, data in self._data.items()}
+        size_differences = {key: len(time) - len(data) for key, data in self._data.items()}
         for key, size_diff in size_differences.items():
             if size_diff > 0:
                 self._data[key] = [None] * size_diff + self._data[key]
