@@ -55,10 +55,10 @@ catkin build rqt_signal_logger
 
 ## Further Documentation
 
-- [Use the signal logger in your program](page_use_silo.md)
-- [Extend the signal logger with additional log types](page_extend_silo.md)
-- [Buffer behavior](../../signal_logger_core/docs/page_buffer.md)
-- [Time handling](../../signal_logger_core/docs/page_time.md)
-- [Logger script format](../../signal_logger_core/docs/page_log_script.md)
-- [Log-file format](../../signal_logger_std/docs/page_log_file.md)
-- [RQT GUI](../../rqt_signal_logger/docs/page_rqt_gui.md)
+- [Use the signal logger in your program](use_silo.md)
+- [Extend the signal logger with additional log types](extend_silo.md)
+- [Buffer behavior](../../signal_logger_core/docs/buffer.md)
+- [Time handling](../../signal_logger_core/docs/time.md)
+- [Logger script format](../../signal_logger_core/docs/log_script.md)
+- [Log-file format](../../signal_logger_std/docs/log_file.md)
+- [RQT GUI](../../rqt_signal_logger/docs/rqt_gui.md)
