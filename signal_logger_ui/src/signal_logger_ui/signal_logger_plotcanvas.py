@@ -610,6 +610,26 @@ class PlotFigure(object):
             self.add_yaw_plot_right(x, y)
         return True
 
+    def _add_degree_plot(self, axes, legend, x, y, y_label):
+        return self._plot(
+            axes, legend, self.data[x], numpy.degrees(self.data[y]), y_label)
+
+    def add_degree_plot_left(self, x, y, y_label):
+        self._show_left_axis()
+        if y_label in self.axes_plots:
+            return False
+        self.axes_plots[y_label] = self._add_degree_plot(
+            self.axes, self._legend_left, x, y, y_label)
+        return True
+    
+    def add_degree_plot_right(self, x, y, y_label):
+        self._show_right_axis()
+        if y_label in self.axes2_plots:
+            return False
+        self.axes2_plots[y_label] = self._add_degree_plot(
+            self.axes2, self._legend_right, x, y, y_label)
+        return True
+
     def remove_plot_left(self, y_label):
         if y_label not in self.axes_plots:
             return
@@ -855,26 +875,30 @@ class PlotCanvasWithToolbar(PlotFigure, QWidget):
 
             if not (self.legend_type == LegendInfo.NAME_AND_VALUE and self.hover_active):
                 return
-            
+
             x_hover = event.xdata
             if x_hover is None:
                 return
-            
-            if self.axes_plots: 
+
+            if self.axes_plots:
                 if self.vline:
                     self.vline.set_xdata(x_hover)
                 for key, ax in self.axes_plots.items():
-                    y_hover = numpy.interp(x_hover, self.data[self.x_data], self.data[key])
+                    # Retrieve x and y data directly from the Line2D object
+                    x_data, y_data = ax.get_data()
+                    y_hover = numpy.interp(x_hover, x_data, y_data)
                     ax.set_label(f"{key} = {y_hover:.5f}")
                     self._legend_left()
 
-            if self.axes2_plots: 
+            if self.axes2_plots:
                 if self.vline2:
                     self.vline2.set_xdata(x_hover)
                 for key, ax in self.axes2_plots.items():
-                    y_hover = numpy.interp(x_hover, self.data[self.x_data], self.data[key])
+                    # Retrieve x and y data directly from the Line2D object
+                    x_data, y_data = ax.get_data()
+                    y_hover = numpy.interp(x_hover, x_data, y_data)
                     ax.set_label(f"{key} = {y_hover:.5f}")
-                    self._legend_right() 
+                    self._legend_right()
 
             self.canvas.draw()
         else:
@@ -941,22 +965,22 @@ class PlotCanvasWithToolbar(PlotFigure, QWidget):
                 if self.vline:
                     self.vline.set_xdata(numpy.nan)
                 for key, ax in self.axes_plots.items():
-                    # Calculate the max and min y values for the current x data
-                    y_max = numpy.max(self.data[key])
-                    y_min = numpy.min(self.data[key])
-                    # Set the label to the key and the y range
+                    # Retrieve x and y data directly from the Line2D object
+                    _, y_data = ax.get_data()
+                    y_max = numpy.max(y_data)
+                    y_min = numpy.min(y_data)
                     ax.set_label(f"{key}  [{y_min:.2f}, {y_max:.2f}]")
 
             if self.axes2_plots:
                 if self.vline2:
                     self.vline2.set_xdata(numpy.nan)
                 for key, ax in self.axes2_plots.items():
-                    # Calculate the max and min y values for the current x data
-                    y_max = numpy.max(self.data[key])
-                    y_min = numpy.min(self.data[key])
-                    # Set the label to the key and the y range
+                    # Retrieve x and y data directly from the Line2D object
+                    _, y_data = ax.get_data()
+                    y_max = numpy.max(y_data)
+                    y_min = numpy.min(y_data)
                     ax.set_label(f"{key}  [{y_min:.2f}, {y_max:.2f}]")
-                    
+
         # Refresh the plot and legends to apply the changes
         self._legend_left()
         self._legend_right()

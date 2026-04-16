@@ -179,6 +179,8 @@ class SpecialPlot(object):
             self.__plot = self.__add_smooth_deriv
         elif special_id == "y":
             self.__plot = self.__add_yaw
+        elif special_id == "deg":
+            self.__plot = self.__add_deg
         else:
             print("Cannot handle this special plot: {}".format(special_id))
         self.plot()
@@ -258,6 +260,20 @@ class SpecialPlot(object):
             add_fn = self.figure.add_yaw_plot_right
         if add_fn(self.figure.x_data, self.name):
             self.added = [self.name + _SEP + "yaw"]
+
+    def __add_deg(self):
+        added = filter(
+            lambda x: re.match(
+                fr"{self.name}($|{_SEP}.*$)", x) is not None,
+            self.figure.data.keys())
+        if self.idx == 0:
+            add_fn = self.figure.add_degree_plot_left
+        else:
+            add_fn = self.figure.add_degree_plot_right
+        for a in added:
+            label = a + _SEP + "deg"
+            if add_fn(self.figure.x_data, a, label):
+                    self.added.append(label)
 
     def plot(self):
         self.__plot()
@@ -495,6 +511,13 @@ class SignalLoggerTab(QtWidgets.QWidget):
                         lambda name=plot_name, label=axis_label:
                         RemoveSpecialPlotButton(name, self, idx, label))
                     menu.addAction(action)
+
+        # Plot in degrees button
+        if "jointposition" in item.actualText.lower():
+            action = QtWidgets.QAction(u"Plot in deg".format(item.actualText), menu)
+            action.triggered.connect(lambda: RemoveSpecialPlotButton(item.actualText, self, idx, "deg"))
+            menu.addAction(action)
+
         menu.exec_(ySelector.viewport().mapToGlobal(point))
 
     @staticmethod
