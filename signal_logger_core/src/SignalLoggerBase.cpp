@@ -16,11 +16,12 @@
 #include <boost/iterator/counting_iterator.hpp>
 
 // stl
-#include "assert.h"
-#include <thread>
-#include <fstream>
+#include <algorithm>
+#include <cassert>
 #include <chrono>
 #include <ctime>
+#include <fstream>
+#include <thread>
 
 // system
 #include <sys/stat.h>
@@ -34,14 +35,9 @@ std::string SignalLoggerBase::LOG_ELEMENT_DEFAULT_GROUP_NAME = "/log/";
 std::string SignalLoggerBase::LOG_ELEMENT_DEFAULT_UNIT = "-";
 
 SignalLoggerBase::SignalLoggerBase():
-                  options_(),
                   noCollectDataCalls_(0u),
                   noCollectDataCallsCopy_(0u),
                   loggerName_(SignalLoggerOptions::LOGGER_DEFAULT_NAME),
-                  logElements_(),
-                  enabledElements_(),
-                  enabledElementsCopy_(),
-                  logElementsToAdd_(),
                   logTime_(),
                   timeElement_(),
                   isInitialized_(false),
@@ -49,9 +45,7 @@ SignalLoggerBase::SignalLoggerBase():
                   isSavingData_(false),
                   isCopyingBuffer_(false),
                   isStarting_(false),
-                  shouldPublish_(false),
-                  loggerMutex_(),
-                  saveLoggerDataMutex_()
+                  shouldPublish_(false)
 {
 }
 

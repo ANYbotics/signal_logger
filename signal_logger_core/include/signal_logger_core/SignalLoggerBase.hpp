@@ -15,7 +15,7 @@
 #include "signal_logger_core/typedefs.hpp"
 
 // message logger
-#include "message_logger/message_logger.hpp"
+#include <message_logger/message_logger.hpp>
 
 // eigen
 #include <Eigen/Dense>
@@ -25,12 +25,13 @@
 #include <boost/algorithm/string/predicate.hpp>
 
 // stl
-#include <mutex>
-#include <condition_variable>
 #include <atomic>
+#include <map>
 #include <memory>
-#include <unordered_map>
-#include <functional>
+#include <mutex>
+#include <string>
+#include <vector>
+
 
 namespace signal_logger {
 
@@ -39,7 +40,7 @@ class SignalLoggerBase {
  protected:
   //! Log element map types
   using LogPair = std::pair<std::string, std::unique_ptr<LogElementInterface>>;
-  using LogElementMap = std::unordered_map<std::string, std::unique_ptr<LogElementInterface>>;
+  using LogElementMap = std::map<std::string, std::unique_ptr<LogElementInterface>>;
   using LogElementMapIterator = LogElementMap::iterator;
 
  public:
