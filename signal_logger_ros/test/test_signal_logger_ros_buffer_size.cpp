@@ -7,24 +7,6 @@
 
  #include <signal_logger_ros/SignalLoggerRos.hpp>
  
- #ifndef ROS2_BUILD
- 
- class TestSignalLoggerRosBufferSize : public ::testing::Test {
-  protected:
-   void SetUp() override {
-    logger_ = std::make_shared<signal_logger_ros::SignalLoggerRos>(node);
-    signal_logger::SignalLoggerOptions options{updateFrequency_, maxLoggingTime_, "test_script.yaml", "/log"};
-    logger_->initLogger(options);
-   }
- 
-   void TearDown() override {
-    logger_->cleanup();
-   }
- 
-   ros::NodeHandle nh{"~"};
-   ros::NodeHandle* node = &nh;
- 
- #else  /* ROS2_BUILD */
  
  class TestSignalLoggerRosBufferSize : public ::testing::Test {
   protected:
@@ -41,7 +23,6 @@
    }
  
    rclcpp::Node::SharedPtr node;
-   #endif /* ROS2_BUILD */
    std::shared_ptr<signal_logger_ros::SignalLoggerRos> logger_;
    const unsigned int updateFrequency_{100};
    const double maxLoggingTime_{10.0};

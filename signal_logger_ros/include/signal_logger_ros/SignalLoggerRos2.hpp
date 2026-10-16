@@ -8,7 +8,6 @@
 
 #pragma once
 
-#ifdef ROS2_BUILD
 // signal logger
 #include "signal_logger_core/typedefs.hpp"
 #include "signal_logger_ros/LogElementRos.hpp"
@@ -180,4 +179,3 @@ class SignalLoggerRos : public signal_logger_std::SignalLoggerStd {
 };
 
 }  // namespace signal_logger_ros
-#endif /* ROS2_BUILD */

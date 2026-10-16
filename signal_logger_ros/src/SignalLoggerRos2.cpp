@@ -6,7 +6,6 @@
  *           Extends std logger with publishing and bag storing functionality.
  */
 
-#ifdef ROS2_BUILD
 #include <filesystem>
 #include <functional>
 #include "signal_logger_ros/SignalLoggerRos.hpp"
@@ -295,4 +294,3 @@ bool SignalLoggerRos::msgToLogElement(const signal_logger_msgs::msg::LogElement&
 }
 
 }  // namespace signal_logger_ros
-#endif /* ROS2_BUILD */

@@ -2,19 +2,6 @@
 
 #include <signal_logger_ros/SignalLoggerRos.hpp>
 
-#ifndef ROS2_BUILD
-
-class SignalLoggerRos : public ::testing::Test {
- protected:
-  void SetUp() override {}
-
-  void TearDown() override {}
-
-  ros::NodeHandle nh{"~"};
-  ros::NodeHandle* node = &nh;
-};
-
-#else  /* ROS2_BUILD */
 
 class SignalLoggerRos : public ::testing::Test {
  protected:
@@ -37,7 +24,6 @@ class SignalLoggerRos : public ::testing::Test {
   rclcpp::executors::SingleThreadedExecutor executor;
   std::thread spinThread;
 };
-#endif /* ROS2_BUILD */
 
 TEST_F(SignalLoggerRos, testSignalLoggerRos) {  // NOLINT
   // Variables to log
